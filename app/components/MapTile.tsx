@@ -1,14 +1,16 @@
-import { Tile } from "~/types";
+import { SystemTile as SystemTileType, Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
 import { ReactNode, useContext } from "react";
 import { MapContext } from "./MapContext";
 import { getHexPosition } from "~/utils/positioning";
+import { MecatolTile } from "./tiles/MecatolTile";
 
 type Props = {
   tile: Tile;
 };
 
+const MECATOL_REX_ID = 18;
 export function MapTile(props: Props) {
   const {
     tile,
@@ -25,6 +27,9 @@ export function MapTile(props: Props) {
     default:
       Tile = <EmptyTile {...props} />;
       break;
+  }
+  if (tile.system?.id === MECATOL_REX_ID) {
+    Tile = <MecatolTile {...props} tile={tile as SystemTileType} />;
   }
 
   return (

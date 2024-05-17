@@ -4,6 +4,9 @@ import { MapContext } from "../MapContext";
 import { Planet } from "../Planet";
 import { SystemTile as SystemTileType } from "~/types";
 import { Group, useMantineTheme } from "@mantine/core";
+import { Nebula } from "../features/Nebula";
+import { Supernova } from "../features/Supernova";
+import { Asteroids } from "../features/Asteroids";
 // import { Text } from "tamagui";
 
 type Props = { tile: SystemTileType };
@@ -23,16 +26,24 @@ export function SystemTile({ tile }: Props) {
   }
   scale = scale.toString();
 
-  const hasNebula = tile.system.anomaly === "NEBULA";
+  let image;
+  if (tile.system.anomaly === "NEBULA") {
+    image = <Nebula radius={radius} />;
+  }
+  if (tile.system.anomaly === "SUPERNOVA") {
+    image = <Supernova radius={radius} />;
+  }
+  if (tile.system.anomaly === "ASTEROID_FIELD") {
+    image = <Asteroids radius={radius} />;
+  }
 
   return (
     <Hex
       radius={radius}
-      color="#576d9f"
-      imageUrl={hasNebula ? "/nebula.webp" : undefined}
+      color="#475e93"
+      image={image}
       anomaly={!!tile.system.anomaly}
     >
-      {/* <div className="id">{system.id}</div> */}
       <Group gap={2} justify="center" style={{ scale, minWidth: 102 }}>
         {system.planets.map((planet) => (
           <Planet

@@ -1,5 +1,7 @@
 import { Box, Flex, Group, Text } from "@mantine/core";
 import { Planet as PlanetType, PlanetTrait, TechSpecialty } from "~/types";
+import { PlanetName } from "./PlanetName";
+import { PlanetStats } from "./PlanetStats";
 
 export type PlanetFormat =
   | "STREAMLINED"
@@ -45,28 +47,13 @@ export function Planet({ planet, showName = true, largeFonts = false }: Props) {
       justify="center"
       pos="relative"
     >
-      <Group gap={3}>
-        <Text size={fontSize} fw="bolder" style={{ color: "yellow" }} lh={0}>
-          {planet.resources}
-        </Text>
-        <Text size={fontSize} c="blue.9" fw="bolder" lh={0}>
-          {planet.influence}
-        </Text>
-      </Group>
-      {showName && (
-        <Box
-          pos="absolute"
-          top={50 - 10}
-          right={0}
-          left={0}
-          bg="rgba(0, 0, 0, 0.7)"
-          p={2}
-        >
-          <Text size="10" c="white" fw="bolder" ta="center" lh={0.9}>
-            {planet.name}
-          </Text>
-        </Box>
-      )}
+      <PlanetStats
+        resources={planet.resources}
+        influence={planet.influence}
+        fontSize={fontSize}
+      />
+
+      {showName && <PlanetName>{planet.name}</PlanetName>}
       {techSpecialty && (
         <Box pos="absolute" top={-6} right={-2}>
           <img

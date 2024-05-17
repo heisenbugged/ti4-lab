@@ -4,11 +4,11 @@ interface Props {
   color: string;
   radius: number;
   children?: ReactNode;
-  imageUrl?: string; // Add an imageUrl prop
+  image?: JSX.Element;
   anomaly?: boolean;
 }
 
-export function Hex({ color, radius, children, imageUrl, anomaly }: Props) {
+export function Hex({ color, radius, children, image, anomaly }: Props) {
   const points = Array.from({ length: 6 }).map((_, i) => {
     const angle = (i * Math.PI) / 3;
     return { x: radius * Math.cos(angle), y: radius * Math.sin(angle) };
@@ -30,17 +30,7 @@ export function Hex({ color, radius, children, imageUrl, anomaly }: Props) {
               <polygon points={pointsString} />
             </clipPath>
           </defs>
-          <g clipPath="url(#hexClip)">
-            {imageUrl && (
-              <image
-                href={imageUrl}
-                x={-radius * 1.25}
-                y={-radius * 1.25}
-                width={2 * radius * 1.25}
-                height={2 * radius * 1.25}
-              />
-            )}
-          </g>
+          <g clipPath="url(#hexClip)">{image}</g>
 
           {anomaly && <Anomaly radius={radius} points={points} />}
         </svg>
@@ -89,8 +79,8 @@ function Anomaly({
           strokeWidth={(radius / 20).toString()}
         />
       ))}
-      {points.map((p) => (
-        <circle cx={p.x} cy={p.y} r={radius / 40} fill="red" />
+      {points.map((p, idx) => (
+        <circle key={idx} cx={p.x} cy={p.y} r={radius / 40} fill="red" />
       ))}
     </>
   );
