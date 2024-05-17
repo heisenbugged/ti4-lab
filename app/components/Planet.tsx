@@ -1,5 +1,5 @@
 import { Box, Flex, Group, Text } from "@mantine/core";
-import { Planet, PlanetTrait, TechSpecialty } from "~/types";
+import { Planet as PlanetType, PlanetTrait, TechSpecialty } from "~/types";
 
 export type PlanetFormat =
   | "STREAMLINED"
@@ -8,16 +8,9 @@ export type PlanetFormat =
   | "COLORBLIND_FRIENDLY_WITH_NAME";
 
 type Props = {
-  planet: Planet;
+  planet: PlanetType;
   showName?: boolean;
   largeFonts?: boolean;
-};
-
-const techAbbreviations: Record<TechSpecialty, string> = {
-  BIOTIC: "G",
-  WARFARE: "R",
-  PROPULSION: "B",
-  CYBERNETIC: "Y",
 };
 
 const bgColor: Record<PlanetTrait, string> = {
@@ -26,15 +19,15 @@ const bgColor: Record<PlanetTrait, string> = {
   INDUSTRIAL: "green.5",
 };
 
+const techIcon: Record<TechSpecialty, string> = {
+  BIOTIC: "/biotic.webp",
+  CYBERNETIC: "/cybernetic.webp",
+  WARFARE: "/warfare.webp",
+  PROPULSION: "/propulsion.webp",
+};
+
 export function Planet({ planet, showName = true, largeFonts = false }: Props) {
   const { trait, techSpecialty } = planet;
-
-  // ok instead of using traitAbbreviations just grab the first letter of the trait
-  const traitAbbr = trait ? trait[0] : "";
-  const traitClass = trait ? trait.toLowerCase() : "";
-
-  const techClass = techSpecialty ? techSpecialty.toLowerCase() : "";
-  const techAbbr = techSpecialty ? techAbbreviations[techSpecialty] : "";
 
   // TODO: Come up with a better way of handling this lol.
   // should have it in the actual data.
@@ -43,6 +36,7 @@ export function Planet({ planet, showName = true, largeFonts = false }: Props) {
 
   const fontSize = largeFonts ? "35" : "24";
   const size = 50;
+
   return (
     <Flex
       bg={trait ? bgColor[trait] : "gray.5"}
@@ -71,6 +65,14 @@ export function Planet({ planet, showName = true, largeFonts = false }: Props) {
           <Text size="10" c="white" fw="bolder" ta="center" lh={0.9}>
             {planet.name}
           </Text>
+        </Box>
+      )}
+      {techSpecialty && (
+        <Box pos="absolute" top={-6} right={-2}>
+          <img
+            src={techIcon[techSpecialty]}
+            style={{ width: 20, height: 20 }}
+          />
         </Box>
       )}
     </Flex>

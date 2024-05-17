@@ -17,7 +17,7 @@ export const meta: MetaFunction = () => {
 const startingMap = loadMapFromLayout(defaultLayouts[0].data);
 
 const mapString =
-  "30 40 37 61 62 29 64 42 75 49 65 25 44 66 36 28 47 19 0 24 39 0 79 33 0 32 46 0 74 23 0 35 26 0 38 73".split(
+  "30 40 37 61 62 68 64 42 75 49 65 25 44 66 36 28 47 19 0 24 39 0 79 33 0 32 46 0 74 23 0 35 26 0 38 73".split(
     " ",
   );
 

@@ -23,8 +23,15 @@ export function SystemTile({ tile }: Props) {
   }
   scale = scale.toString();
 
+  const hasNebula = tile.system.anomaly === "NEBULA";
+
   return (
-    <Hex radius={radius} color="#9dddf5">
+    <Hex
+      radius={radius}
+      color="#576d9f"
+      imageUrl={hasNebula ? "/nebula.webp" : undefined}
+      anomaly={!!tile.system.anomaly}
+    >
       {/* <div className="id">{system.id}</div> */}
       <Group gap={2} justify="center" style={{ scale, minWidth: 102 }}>
         {system.planets.map((planet) => (
