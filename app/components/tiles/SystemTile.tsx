@@ -19,6 +19,7 @@ export function SystemTile({ tile }: Props) {
   const image = tile.system.anomaly ? (
     <AnomalyImage radius={radius} anomaly={tile.system.anomaly} />
   ) : undefined;
+  const showSystemId = radius >= 51;
 
   return (
     <Hex
@@ -27,9 +28,19 @@ export function SystemTile({ tile }: Props) {
       image={image}
       anomaly={!!tile.system.anomaly}
     >
-      <Text size="10" lh="1" c="white" pos="absolute" top={15} fw="bolder">
-        {tile.system.id}
-      </Text>
+      {showSystemId && (
+        <Text
+          size="10"
+          lh="1"
+          c="white"
+          pos="absolute"
+          top={15 * scale}
+          fw="bolder"
+        >
+          {tile.system.id}
+        </Text>
+      )}
+
       <Group gap={2} justify="center" style={{ scale }}>
         {system.planets.map((planet) => (
           <Planet

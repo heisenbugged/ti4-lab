@@ -17,7 +17,7 @@ export function Hex({ color, radius, children, image, anomaly }: Props) {
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
   return (
     <>
-      <div style={{ position: "absolute", zIndex: -1 }}>
+      <div style={{ position: "absolute" }}>
         <svg
           width={2 * radius}
           height={2 * radius}

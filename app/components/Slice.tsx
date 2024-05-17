@@ -1,4 +1,8 @@
-import { calcHexHeight, calculateMaxHexRadius } from "~/utils/positioning";
+import {
+  calcHexHeight,
+  calculateMaxHexRadius,
+  calculateMaxHexWidthRadius,
+} from "~/utils/positioning";
 import { useDimensions } from "~/hooks/useDimensions";
 import { MapTile } from "./MapTile";
 import { MapContext } from "./MapContext";
@@ -16,9 +20,10 @@ const slicePositionOrder = [
 
 export function Slice({ mapString }: { mapString: string }) {
   const { tiles } = parseMapString(mapString, slicePositionOrder);
-  const { ref, width, height } = useDimensions<HTMLDivElement>();
-  const gap = Math.min(width, height) * 0.03;
-  const radius = calculateMaxHexRadius(1, width, height, gap);
+  const { ref, width } = useDimensions<HTMLDivElement>();
+  const gap = 6;
+  const radius = calculateMaxHexWidthRadius(1, width, gap);
+  const height = calcHexHeight(radius) * 2 + gap;
 
   return (
     <MapContext.Provider
@@ -27,7 +32,7 @@ export function Slice({ mapString }: { mapString: string }) {
         height,
         radius,
         gap,
-        hOffset: height - calcHexHeight(radius) - gap, // + gap for 2 row offset
+        hOffset: calcHexHeight(radius) + gap, // + gap for 2 row offset
         wOffset: width * 0.5 - radius,
       }}
     >
@@ -36,7 +41,7 @@ export function Slice({ mapString }: { mapString: string }) {
         style={{
           position: "relative",
           width: "100%",
-          height: "100%",
+          height,
         }}
       >
         {tiles.map((t, idx) => (

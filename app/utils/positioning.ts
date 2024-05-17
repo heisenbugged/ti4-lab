@@ -55,6 +55,24 @@ export const calculateMaxHexRadius = (
   height: number,
   gap: number,
 ) => {
+  const numTiles = n * 2 + 1;
+  const radiusFromWidth = calculateMaxHexWidthRadius(n, width, gap);
+
+  // a tile height is radius * sqrt(3)
+  // so total height = numTiles * radius * sqrt(3)
+  // solving for r, we get: r = height / (numTiles * sqrt(3))
+  // Adjust effective height to account for gaps between hexagons
+  const effectiveHeight = height - (numTiles - 1) * gap;
+  const radiusFromHeight = effectiveHeight / (numTiles * Math.sqrt(3));
+
+  return Math.min(radiusFromWidth, radiusFromHeight);
+};
+
+export const calculateMaxHexWidthRadius = (
+  n: number, // number of concentric circles
+  width: number,
+  gap: number,
+) => {
   // There are 2n + 1 hexagons in each row
   // The width of each hexagon is 2r
   // The overlap between two hexagons is r
@@ -65,14 +83,5 @@ export const calculateMaxHexRadius = (
   const numTiles = n * 2 + 1;
   // Adjust effective width to account for gaps between hexagons
   const effectiveWidth = width - (numTiles - 1) * gap;
-  const radiusFromWidth = effectiveWidth / (numTiles * 2 - n);
-
-  // a tile height is radius * sqrt(3)
-  // so total height = numTiles * radius * sqrt(3)
-  // solving for r, we get: r = height / (numTiles * sqrt(3))
-  // Adjust effective height to account for gaps between hexagons
-  const effectiveHeight = height - (numTiles - 1) * gap;
-  const radiusFromHeight = effectiveHeight / (numTiles * Math.sqrt(3));
-
-  return Math.min(radiusFromWidth, radiusFromHeight);
+  return effectiveWidth / (numTiles * 2 - n);
 };
