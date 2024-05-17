@@ -42,19 +42,20 @@ export function Planet({ planet, showName = true, largeFonts = false }: Props) {
   const legendaryClass = isLegendary ? " legendary" : "";
 
   const fontSize = largeFonts ? "35" : "24";
+  const size = 50;
   return (
     <Flex
       bg={trait ? bgColor[trait] : "gray.5"}
-      style={{ borderRadius: 50, width: 50, height: 50 }}
+      style={{ borderRadius: size, width: size, height: size }}
       align="center"
       justify="center"
       pos="relative"
     >
       <Group gap={3}>
-        <Text size={fontSize} fw="bolder" style={{ color: "yellow" }}>
+        <Text size={fontSize} fw="bolder" style={{ color: "yellow" }} lh={0}>
           {planet.resources}
         </Text>
-        <Text size={fontSize} c="blue.9" fw="bolder">
+        <Text size={fontSize} c="blue.9" fw="bolder" lh={0}>
           {planet.influence}
         </Text>
       </Group>
