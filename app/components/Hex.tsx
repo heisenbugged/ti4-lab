@@ -15,7 +15,6 @@ export function Hex({ color, radius, children, image, anomaly }: Props) {
   });
 
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
-
   return (
     <>
       <div style={{ position: "absolute", zIndex: -1 }}>
@@ -32,7 +31,7 @@ export function Hex({ color, radius, children, image, anomaly }: Props) {
           </defs>
           <g clipPath="url(#hexClip)">{image}</g>
 
-          {anomaly && <Anomaly radius={radius} points={points} />}
+          {anomaly && <AnomalyBorder radius={radius} points={points} />}
         </svg>
       </div>
       <div
@@ -50,13 +49,12 @@ export function Hex({ color, radius, children, image, anomaly }: Props) {
   );
 }
 
-function Anomaly({
-  points,
-  radius,
-}: {
+type AnomalyBorderProps = {
   radius: number;
   points: { x: number; y: number }[];
-}) {
+};
+
+function AnomalyBorder({ points, radius }: AnomalyBorderProps) {
   const borderSegments = points.flatMap((point, index, arr) => {
     const nextIndex = (index + 1) % arr.length;
     const prevIndex = (index - 1 + arr.length) % arr.length;

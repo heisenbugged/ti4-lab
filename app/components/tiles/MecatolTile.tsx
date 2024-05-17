@@ -7,21 +7,13 @@ import { Box, Flex, Group } from "@mantine/core";
 import { MecatolPlanet } from "../features/MecatolPlanet";
 import { PlanetName } from "../PlanetName";
 import { PlanetStats } from "../PlanetStats";
+import { calcScale } from "./calcScale";
 
 type Props = { tile: SystemTileType };
 
 export function MecatolTile({ tile }: Props) {
-  const system = tile.system;
   const { radius } = useContext(MapContext);
-
-  // 70 is where 3 planets at 50px each no longer fit.
-  // so we start scaling down.
-  let scale = Math.min(1, radius / 70);
-  if (radius > 80) {
-    scale = radius / 80;
-  }
-  scale = scale.toString();
-
+  const scale = calcScale(radius).toString();
   return (
     <Hex
       radius={radius}
