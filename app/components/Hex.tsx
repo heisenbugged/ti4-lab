@@ -30,7 +30,6 @@ export function Hex({ color, radius, children, image, anomaly }: Props) {
             </clipPath>
           </defs>
           <g clipPath="url(#hexClip)">{image}</g>
-
           {anomaly && <AnomalyBorder radius={radius} points={points} />}
         </svg>
       </div>

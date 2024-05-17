@@ -3,7 +3,7 @@ import { Hex } from "../Hex";
 import { MapContext } from "../MapContext";
 import { Planet } from "../Planet";
 import { SystemTile as SystemTileType } from "~/types";
-import { Group } from "@mantine/core";
+import { Group, Text } from "@mantine/core";
 import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
 
@@ -27,6 +27,9 @@ export function SystemTile({ tile }: Props) {
       image={image}
       anomaly={!!tile.system.anomaly}
     >
+      <Text size="10" lh="1" c="white" pos="absolute" top={15} fw="bolder">
+        {tile.system.id}
+      </Text>
       <Group gap={2} justify="center" style={{ scale }}>
         {system.planets.map((planet) => (
           <Planet

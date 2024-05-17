@@ -1,334 +1,260 @@
-import { RawSystem } from "~/types";
+import { RawSystem, System } from "~/types";
+import { planetData } from "./planetData";
 
-export const systemData: RawSystem[] = [
-  {
+export const rawSystemData: Record<number, RawSystem> = {
+  18: {
     id: 18,
     planets: ["Mecatol Rex"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
-    id: 39,
-    planets: [],
-    anomaly: undefined,
-    wormhole: "ALPHA",
+  19: {
+    id: 19,
+    planets: ["Wellon"],
   },
-  {
-    id: 43,
-    planets: [],
-    anomaly: "SUPERNOVA",
-    wormhole: undefined,
+  20: {
+    id: 20,
+    planets: ["Vefut II"],
   },
-  {
-    id: 46,
-    planets: [],
-    anomaly: undefined,
-    wormhole: undefined,
+  21: {
+    id: 21,
+    planets: ["Thibah"],
   },
-  {
-    id: 49,
-    planets: [],
-    anomaly: undefined,
-    wormhole: undefined,
+  22: {
+    id: 22,
+    planets: ["Tar'Mann"],
   },
-  {
-    id: 44,
-    planets: [],
-    anomaly: "ASTEROID_FIELD",
-    wormhole: undefined,
+  23: {
+    id: 23,
+    planets: ["Saudor"],
   },
-  {
-    id: 40,
-    planets: [],
-    anomaly: undefined,
+  24: {
+    id: 24,
+    planets: ["Mehar Xull"],
+  },
+  25: {
+    id: 25,
+    planets: ["Quann"],
     wormhole: "BETA",
   },
-  {
-    id: 48,
-    planets: [],
-    anomaly: undefined,
-    wormhole: undefined,
+  26: {
+    id: 26,
+    planets: ["Lodor"],
+    wormhole: "ALPHA",
   },
-  {
-    id: 45,
-    planets: [],
-    anomaly: "ASTEROID_FIELD",
-    wormhole: undefined,
+  27: {
+    id: 27,
+    planets: ["New Albion", "Starpoint"],
   },
-  {
-    id: 47,
-    planets: [],
-    anomaly: undefined,
-    wormhole: undefined,
+  28: {
+    id: 28,
+    planets: ["Tequ'ran", "Torkan"],
   },
-  {
-    id: 42,
-    planets: [],
-    anomaly: "NEBULA",
-    wormhole: undefined,
+  29: {
+    id: 29,
+    planets: ["Qucen'n", "Rarron"],
   },
-  {
-    id: 50,
-    planets: [],
-    anomaly: undefined,
-    wormhole: undefined,
+  30: {
+    id: 30,
+    planets: ["Mellon", "Zohbat"],
   },
-  {
+  31: {
+    id: 31,
+    planets: ["Lazar", "Sakulag"],
+  },
+  32: {
+    id: 32,
+    planets: ["Dal Bootha", "Xxehan"],
+  },
+  33: {
+    id: 33,
+    planets: ["Corneeq", "Resculon"],
+  },
+  34: {
+    id: 34,
+    planets: ["Centauri", "Gral"],
+  },
+  35: {
+    id: 35,
+    planets: ["Bereg", "Lirta IV"],
+  },
+  36: {
+    id: 36,
+    planets: ["Arnor", "Lor"],
+  },
+  37: {
+    id: 37,
+    planets: ["Arinam", "Meer"],
+  },
+  38: {
+    id: 38,
+    planets: ["Abyz", "Fria"],
+  },
+  39: {
+    id: 39,
+    planets: [],
+    wormhole: "ALPHA",
+  },
+  40: {
+    id: 40,
+    planets: [],
+    wormhole: "BETA",
+  },
+  41: {
     id: 41,
     planets: [],
     anomaly: "GRAVITY_RIFT",
-    wormhole: undefined,
   },
-  {
-    id: 32,
-    planets: ["Dal Bootha", "Xxehan"],
-    anomaly: undefined,
-    wormhole: undefined,
+  42: {
+    id: 42,
+    planets: [],
+    anomaly: "NEBULA",
   },
-  {
-    id: 26,
-    planets: ["Lodor"],
-    anomaly: undefined,
-    wormhole: "ALPHA",
+  43: {
+    id: 43,
+    planets: [],
+    anomaly: "SUPERNOVA",
   },
-  {
-    id: 29,
-    planets: ["Qucen'n", "Rarron"],
-    anomaly: undefined,
-    wormhole: undefined,
+  44: {
+    id: 44,
+    planets: [],
+    anomaly: "ASTEROID_FIELD",
   },
-  {
-    id: 38,
-    planets: ["Abyz", "Fria"],
-    anomaly: undefined,
-    wormhole: undefined,
+  45: {
+    id: 45,
+    planets: [],
+    anomaly: "ASTEROID_FIELD",
   },
-  {
-    id: 22,
-    planets: ["Tar'Mann"],
-    anomaly: undefined,
-    wormhole: undefined,
+  46: {
+    id: 46,
+    planets: [],
   },
-  {
-    id: 21,
-    planets: ["Thibah"],
-    anomaly: undefined,
-    wormhole: undefined,
+  47: {
+    id: 47,
+    planets: [],
   },
-  {
-    id: 33,
-    planets: ["Corneeq", "Resculon"],
-    anomaly: undefined,
-    wormhole: undefined,
+  48: {
+    id: 48,
+    planets: [],
   },
-  {
-    id: 19,
-    planets: ["Wellon"],
-    anomaly: undefined,
-    wormhole: undefined,
+  49: {
+    id: 49,
+    planets: [],
   },
-  {
-    id: 28,
-    planets: ["Tequ'ran", "Torkan"],
-    anomaly: undefined,
-    wormhole: undefined,
+  50: {
+    id: 50,
+    planets: [],
   },
-  {
-    id: 24,
-    planets: ["Mehar Xull"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 37,
-    planets: ["Arinam", "Meer"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 30,
-    planets: ["Mellon", "Zohbat"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 20,
-    planets: ["Vefut II"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 27,
-    planets: ["New Albion", "Starpoint"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 23,
-    planets: ["Saudor"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 31,
-    planets: ["Lazar", "Sakulag"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 35,
-    planets: ["Bereg", "Lirta IV"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 34,
-    planets: ["Centauri", "Gral"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 36,
-    planets: ["Arnor", "Lor"],
-    anomaly: undefined,
-    wormhole: undefined,
-  },
-  {
-    id: 25,
-    planets: ["Quann"],
-    anomaly: undefined,
-    wormhole: "BETA",
-  },
-  {
+  59: {
     id: 59,
     planets: ["Archon Vail"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  60: {
     id: 60,
     planets: ["Perimeter"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  61: {
     id: 61,
     planets: ["Ang"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  62: {
     id: 62,
     planets: ["Sem-Lore"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  63: {
     id: 63,
     planets: ["Vorhal"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  64: {
     id: 64,
     planets: ["Atlas"],
-    anomaly: undefined,
     wormhole: "BETA",
   },
-  {
+  65: {
     id: 65,
     planets: ["Primor"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  66: {
     id: 66,
     planets: ["Hope's End"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  67: {
     id: 67,
     planets: ["Cormund"],
     anomaly: "GRAVITY_RIFT",
-    wormhole: undefined,
   },
-  {
+  68: {
     id: 68,
     planets: ["Everra"],
     anomaly: "NEBULA",
-    wormhole: undefined,
   },
-  {
+  69: {
     id: 69,
     planets: ["Accoen", "Joel Ir"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  70: {
     id: 70,
     planets: ["Kraag", "Siig"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  71: {
     id: 71,
     planets: ["Alio Prima", "Ba'kal"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  72: {
     id: 72,
     planets: ["Lisis", "Velnor"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  73: {
     id: 73,
     planets: ["Cealdri", "Xanhact"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  74: {
     id: 74,
     planets: ["Vega Major", "Vega Minor"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  75: {
     id: 75,
     planets: ["Abaddon", "Ashtroth", "Loki"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  76: {
     id: 76,
     planets: ["Rigel I", "Rigel II", "Rigel III"],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  77: {
     id: 77,
     planets: [],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  78: {
     id: 78,
     planets: [],
-    anomaly: undefined,
-    wormhole: undefined,
   },
-  {
+  79: {
     id: 79,
     planets: [],
     anomaly: "ASTEROID_FIELD",
     wormhole: "ALPHA",
   },
-  {
+  80: {
     id: 80,
     planets: [],
     anomaly: "SUPERNOVA",
-    wormhole: undefined,
   },
-];
+};
+
+export const systemData: Record<number, System> = Object.entries(
+  rawSystemData,
+).reduce(
+  (acc, [id, system]) => {
+    const planets = system.planets.map(
+      (name) => planetData.find((planet) => planet.name === name)!!,
+    );
+
+    acc[parseInt(id)] = {
+      id: parseInt(id),
+      planets,
+      anomaly: system.anomaly,
+      wormhole: system.wormhole,
+    };
+
+    return acc;
+  },
+  {} as Record<number, System>,
+);

@@ -1,11 +1,7 @@
+import { Box, Group, Text } from "@mantine/core";
 import type { MetaFunction } from "@remix-run/node";
 import { Map } from "~/components/Map";
-import { defaultLayouts } from "~/data/defaultLayouts";
-import { loadMapFromLayout } from "~/data/loadMapFromLayout";
-import { mapStringOrder } from "~/data/mapStringOrder";
-import { planetData } from "~/data/planetData";
-import { systemData } from "~/data/systemData";
-import { Tile } from "~/types";
+import { MECATOL_TILE, parseMapString } from "~/utils/map";
 
 export const meta: MetaFunction = () => {
   return [
@@ -14,58 +10,29 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-const startingMap = loadMapFromLayout(defaultLayouts[0].data);
-
 const mapString =
-  "30 43 37 61 62 68 64 42 75 49 65 25 44 66 36 28 47 19 0 24 39 0 79 33 0 32 46 0 74 23 0 35 26 0 38 73".split(
-    " ",
-  );
-
-const tiles = mapString
-  .map((n) => systemData.find((system) => system.id === parseInt(n)))
-  .map((system, idx) => {
-    const position = mapStringOrder[idx];
-    if (!system)
-      return {
-        position,
-        type: "OPEN",
-        system: undefined,
-      };
-
-    const planets = system.planets?.map(
-      (n: string) => planetData.find((planet) => planet.name === n)!!,
-    );
-
-    const tile: Tile = {
-      position,
-      type: "SYSTEM",
-      system: {
-        id: system.id,
-        planets,
-        anomaly: system.anomaly,
-        wormhole: system.wormhole,
-      },
-    };
-
-    return tile;
-  });
-
-const mecatolTile: Tile = {
-  position: { x: 0, y: 0, z: 0 },
-  type: "SYSTEM",
-  system: {
-    id: 18,
-    planets: planetData.filter((planet) => planet.name === "Mecatol Rex"),
-  },
-};
+  "30 43 37 61 62 68 64 42 75 49 65 25 44 66 36 28 47 19 0 24 39 0 79 33 0 32 46 0 74 23 0 35 26 0 38 73";
 const map = {
-  tiles: [mecatolTile, ...tiles],
+  tiles: [MECATOL_TILE, ...parseMapString(mapString).tiles],
 };
 
+const PADDING = 25;
 export default function Index() {
   return (
-    <div>
-      <Map map={map} />
-    </div>
+    <Group style={{ height: "100vh", width: "100vw" }}>
+      <Box w="250" h="100%" bg="gray">
+        <Text>hi</Text>
+      </Box>
+      <Box
+        flex={1}
+        style={{
+          height: "100vh",
+          padding: PADDING,
+          position: "relative",
+        }}
+      >
+        <Map map={map} padding={PADDING} />
+      </Box>
+    </Group>
   );
 }

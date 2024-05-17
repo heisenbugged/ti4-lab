@@ -3,12 +3,14 @@ import { MapContext } from "./MapContext";
 import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
+import { Box } from "@mantine/core";
 
 type Props = {
   map: MapType;
+  padding: number;
 };
 
-export function Map({ map }: Props) {
+export function Map({ map, padding }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = 3;
   const gap = Math.min(width, height) * 0.01;
@@ -21,27 +23,18 @@ export function Map({ map }: Props) {
         height,
         radius,
         gap,
-        hOffset: -radius + height * 0.5,
-        wOffset: -radius + width * 0.5,
+        hOffset: -radius + height * 0.5 + padding,
+        wOffset: -radius + width * 0.5 + padding,
       }}
     >
-      <div
-        ref={ref}
-        style={{
-          width: "95vw",
-          height: "95vh",
-          position: "relative",
-          // for debugging
-          // backgroundColor: "lightgray",
-        }}
-      >
+      <Box ref={ref} w="100%" h="100%">
         {map.tiles.map((tile) => (
           <MapTile
             key={`${tile.position.x}-${tile.position.y}-${tile.position.z}`}
             tile={tile}
           />
         ))}
-      </div>
+      </Box>
     </MapContext.Provider>
   );
 }
