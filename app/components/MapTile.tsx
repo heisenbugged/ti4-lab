@@ -5,6 +5,7 @@ import { ReactNode, useContext } from "react";
 import { MapContext } from "./MapContext";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
+import { HomeTile } from "./tiles/HomeTile";
 
 type Props = {
   mapId: string;
@@ -22,6 +23,9 @@ export function MapTile(props: Props) {
 
   let Tile: JSX.Element;
   switch (tile.type) {
+    case "HOME":
+      Tile = <HomeTile mapId={props.mapId} tile={tile} />;
+      break;
     case "SYSTEM":
       Tile = <SystemTile {...props} tile={tile} />;
       break;
@@ -29,6 +33,7 @@ export function MapTile(props: Props) {
       Tile = <EmptyTile {...props} />;
       break;
   }
+
   if (tile.system?.id === MECATOL_REX_ID) {
     Tile = <MecatolTile {...props} tile={tile as SystemTileType} />;
   }

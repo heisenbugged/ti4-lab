@@ -11,17 +11,19 @@ export function PlanetStatsPill({ resources, influence, flex }: Props) {
     <Group gap={2}>
       <Box
         bg="yellow"
-        px="sm"
+        px="xs"
         style={{
           borderTopLeftRadius: 5,
           borderBottomLeftRadius: 5,
         }}
       >
-        <Text fw={600}>{resources}</Text>
+        <Text fw={600} size="sm">
+          {resources}
+        </Text>
       </Box>
       <Box
         bg="blue.4"
-        px="sm"
+        px="xs"
         style={
           !(flex !== undefined)
             ? {
@@ -31,12 +33,14 @@ export function PlanetStatsPill({ resources, influence, flex }: Props) {
             : undefined
         }
       >
-        <Text fw={600}>{influence}</Text>
+        <Text fw={600} size="sm">
+          {influence}
+        </Text>
       </Box>
       {flex !== undefined ? (
         <Box
           bg="gray.5"
-          px="sm"
+          px="xs"
           style={
             flex !== undefined
               ? {
@@ -46,7 +50,9 @@ export function PlanetStatsPill({ resources, influence, flex }: Props) {
               : undefined
           }
         >
-          <Text fw={600}>{flex}</Text>
+          <Text fw={600} size="sm">
+            {flex}
+          </Text>
         </Box>
       ) : undefined}
     </Group>

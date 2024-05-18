@@ -10,10 +10,10 @@ import {
 import type { MetaFunction } from "@remix-run/node";
 import { Map } from "~/components/Map";
 import { Slice } from "~/components/Slice";
-import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
-import { TechIcon } from "~/components/features/TechIcon";
+
 import { useDimensions } from "~/hooks/useDimensions";
-import { MECATOL_TILE, parseMapString } from "~/utils/map";
+import { Draft as TDraft, Player, Tile } from "~/types";
+import { MECATOL_TILE, hydrateMap, parseMapString } from "~/utils/map";
 import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
 
 export const meta: MetaFunction = () => {
@@ -24,9 +24,66 @@ export const meta: MetaFunction = () => {
 };
 
 const mapString =
-  "59 33 64 71 29 62 0 30 0 32 0 26 0 69 0 27 0 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
+  "59 33 64 71 29 62 0 30 0 32 0 26 0 69 0 27 0 20 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0";
 const map = {
   tiles: [MECATOL_TILE, ...parseMapString(mapString).tiles],
+};
+
+const players: Player[] = [
+  {
+    id: "abc",
+    name: "James",
+    faction: "mentak",
+    seat: 0,
+    sliceIdx: 0,
+  },
+  {
+    id: "def",
+    name: "Steven",
+    faction: "yssaril",
+    seat: 1,
+    sliceIdx: 1,
+  },
+  {
+    id: "def",
+    name: "Joe",
+    faction: "yssaril",
+    seat: 2,
+    sliceIdx: 2,
+  },
+  {
+    id: "def",
+    name: "Jim",
+    faction: "yssaril",
+    seat: 3,
+    sliceIdx: 3,
+  },
+  {
+    id: "def",
+    name: "Jan",
+    faction: "yssaril",
+    seat: 4,
+    sliceIdx: 4,
+  },
+  {
+    id: "def",
+    name: "Jen",
+    faction: "yssaril",
+    seat: 5,
+    sliceIdx: 5,
+  },
+];
+
+const draft: TDraft = {
+  players,
+  slices: [
+    "0 30 23 37",
+    "0 38 42 70",
+    "0 43 71 72",
+    "0 61 62 67",
+    "0 43 71 72",
+    "0 61 62 67",
+  ],
 };
 
 export default function Draft() {
@@ -36,37 +93,31 @@ export default function Draft() {
   const radius = calculateMaxHexWidthRadius(3, width, gap);
   const height = 7 * calcHexHeight(radius) + 6 * gap;
 
+  // extract this functionality to a function. hydrateMapTiles(map, draft)
+  const hydratedMap = hydrateMap(map, draft);
+
   return (
-    <SimpleGrid
-      cols={{
-        base: 1,
-        sm: 1,
-        md: 1,
-        lg: 2,
-      }}
-    >
+    <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }}>
       <Stack flex={1} p="lg">
         <Title>Slices</Title>
         <SimpleGrid
           flex={1}
-          cols={{
-            base: 1,
-            sm: 2,
-            md: 2,
-            lg: 2,
-          }}
+          cols={{ base: 1, sm: 2, md: 2, lg: 2 }}
           spacing="lg"
         >
-          <Slice id="slice-1" mapString="0 30 23 37" />
-          <Slice id="slice-2" mapString="0 38 42 70" />
-          <Slice id="slice-3" mapString="0 43 71 72" />
-          <Slice id="slice-4" mapString="0 61 62 67" />
-          <Slice id="slice-5" mapString="0 43 71 72" />
-          <Slice id="slice-6" mapString="0 61 62 67" />
+          {draft.slices.map((slice, idx) => (
+            <Slice
+              key={idx}
+              id={`slice-${idx}`}
+              name={`Slice ${idx + 1}`}
+              mapString={slice}
+              player={players.find((p) => p.sliceIdx === idx)}
+            />
+          ))}
         </SimpleGrid>
       </Stack>
       <Stack flex={1} p="lg" pos="relative">
-        <div style={{ position: "sticky", width: "auto", top: 25 }}>
+        <div style={{ position: "sticky", width: "auto", top: 25 + 30 + 5 }}>
           <Title>Full Map</Title>
           <Box
             ref={ref}
@@ -76,7 +127,7 @@ export default function Draft() {
               position: "relative",
             }}
           >
-            <Map id="full-map" map={map} padding={0} />
+            <Map id="full-map" map={hydratedMap} padding={0} />
           </Box>
         </div>
       </Stack>

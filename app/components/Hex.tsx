@@ -10,11 +10,7 @@ interface Props {
 }
 
 export function Hex({ id, color, radius, children, image, anomaly }: Props) {
-  const points = Array.from({ length: 6 }).map((_, i) => {
-    const angle = (i * Math.PI) / 3;
-    return { x: radius * Math.cos(angle), y: radius * Math.sin(angle) };
-  });
-
+  const points = hexVertices(radius);
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
   return (
     <>
@@ -54,7 +50,10 @@ type AnomalyBorderProps = {
   points: { x: number; y: number }[];
 };
 
-function AnomalyBorder({ points, radius }: AnomalyBorderProps) {
+function AnomalyBorder({ radius }: AnomalyBorderProps) {
+  const strokeWidth = radius / 15;
+  // reduce radius by half of stroke width so that the border is inside the hex
+  const points = hexVertices(radius - strokeWidth * 0.5);
   const borderSegments = points.flatMap((point, index, arr) => {
     const nextIndex = (index + 1) % arr.length;
     const prevIndex = (index - 1 + arr.length) % arr.length;
@@ -74,7 +73,7 @@ function AnomalyBorder({ points, radius }: AnomalyBorderProps) {
           x2={pointB.x}
           y2={pointB.y}
           stroke="red"
-          strokeWidth={(radius / 20).toString()}
+          strokeWidth={strokeWidth.toString()}
         />
       ))}
       {points.map((p, idx) => (
@@ -83,6 +82,12 @@ function AnomalyBorder({ points, radius }: AnomalyBorderProps) {
     </>
   );
 }
+
+const hexVertices = (radius: number) =>
+  Array.from({ length: 6 }).map((_, i) => {
+    const angle = (i * Math.PI) / 3;
+    return { x: radius * Math.cos(angle), y: radius * Math.sin(angle) };
+  });
 
 function interpolatePoint(a, b, t) {
   const x = (1 - t) * a.x + t * b.x;

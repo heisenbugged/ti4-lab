@@ -2,13 +2,18 @@ import { Divider, Group, Stack, Text } from "@mantine/core";
 import { SliceMap } from "./SliceMap";
 import { TechIcon } from "../features/TechIcon";
 import { PlanetStatsPill } from "./PlanetStatsPill";
-import { SliceTitle } from "./SliceTitle";
+
 import {
   optimalStats,
   totalStats,
   parseMapString,
   techSpecialties,
 } from "~/utils/map";
+import { FactionIcon } from "../features/FactionIcon";
+import { Titles } from "../Titles";
+import { SliceHeader } from "./SliceHeader";
+import { PlayerLabel } from "../PlayerLabel";
+import { Player } from "~/types";
 
 const slicePositionOrder = [
   { x: 0, y: 0, z: 0 },
@@ -20,12 +25,20 @@ const slicePositionOrder = [
   { x: 0, y: -2, z: 0 },
 ];
 
-export function Slice({ id, mapString }: { id: string; mapString: string }) {
+type Props = {
+  id: string;
+  name: string;
+  mapString: string;
+  player?: Player;
+};
+
+export function Slice({ id, name, mapString, player }: Props) {
   const { tiles } = parseMapString(mapString, slicePositionOrder);
 
   const total = totalStats(tiles);
   const optimal = optimalStats(tiles);
   const specialties = techSpecialties(tiles);
+  const selected = !!player;
 
   return (
     <Stack
@@ -36,20 +49,31 @@ export function Slice({ id, mapString }: { id: string; mapString: string }) {
         boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <SliceTitle>Slice 1</SliceTitle>
+      <SliceHeader
+        selected={selected}
+        right={
+          player && <PlayerLabel faction={player.faction} name={player.name} />
+        }
+      >
+        <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>
+      </SliceHeader>
       <SliceMap id={id} tiles={tiles} />
       <Divider mt="md" />
       <Stack gap="0">
         <Group align="center" p="sm" gap="lg">
           <Group gap="xs">
-            <Text fw={600}>Total</Text>
+            <Text fw={600} size="xs">
+              Total
+            </Text>
             <PlanetStatsPill
               resources={total.resources}
               influence={total.influence}
             />
           </Group>
           <Group gap="xs">
-            <Text fw={600}>Optimal</Text>
+            <Text fw={600} size="xs">
+              Optimal
+            </Text>
             <PlanetStatsPill
               resources={optimal.resources}
               influence={optimal.influence}
@@ -68,7 +92,6 @@ export function Slice({ id, mapString }: { id: string; mapString: string }) {
             borderBottomLeftRadius: 10,
             borderBottomRightRadius: 10,
             minHeight: 50,
-            borderBottom: "2px solid white",
           }}
         >
           <Text c="gray.8" tt="uppercase" fw="bold" size="sm">

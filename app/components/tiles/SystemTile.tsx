@@ -3,7 +3,7 @@ import { Hex } from "../Hex";
 import { MapContext } from "../MapContext";
 import { Planet } from "../Planet";
 import { SystemTile as SystemTileType } from "~/types";
-import { Group, Text } from "@mantine/core";
+import { Group, Text, useMantineContext, useMantineTheme } from "@mantine/core";
 import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
 
@@ -20,12 +20,13 @@ export function SystemTile({ mapId, tile }: Props) {
     <AnomalyImage radius={radius} anomaly={tile.system.anomaly} />
   ) : undefined;
   const showSystemId = radius >= 51;
+  const { colors } = useMantineTheme();
 
   return (
     <Hex
       id={`${mapId}-${tile.system.id}`}
       radius={radius}
-      color="#475e93"
+      color={colors.spaceBlue[8]}
       image={image}
       anomaly={!!tile.system.anomaly}
     >

@@ -2,6 +2,7 @@
 export type RawSystem = {
   id: number;
   planets: string[];
+  home?: boolean;
   anomaly?: Anomaly;
   wormhole?: Wormhole;
 };
@@ -24,6 +25,7 @@ export type Wormhole = "ALPHA" | "BETA" | "DELTA";
 export type System = {
   id: number;
   planets: Planet[];
+  home?: boolean;
   anomaly?: Anomaly;
   wormhole?: Wormhole;
 };
@@ -33,7 +35,7 @@ export type MapSpaceType = "SYSTEM" | "HOME" | "OPEN" | "CLOSED" | "WARP";
 export type TilePosition = {
   x: number;
   y: number;
-  z: number;
+  // z: number;
 };
 
 export type SystemTile = {
@@ -47,8 +49,30 @@ type BaseTile = {
   system?: System;
 };
 
+// TODO: Finish filling out
+export type Faction = "mentak" | "yssaril";
+
+export type Player = {
+  id: string;
+  name: string;
+  faction: Faction; // TODO: Make nullable
+  seat?: number;
+  sliceIdx?: number;
+};
+
+export type HomeTile = {
+  position: TilePosition;
+  type: "HOME";
+  player?: Player;
+};
+
+export type Draft = {
+  players: Player[];
+  slices: string[]; // TODO: Should I make them the actual objects?
+};
+
 export type Tile =
-  | ({ type: "HOME" } & BaseTile)
+  | HomeTile
   | ({ type: "OPEN" } & BaseTile)
   | ({ type: "CLOSED" } & BaseTile)
   | ({ type: "WARP" } & BaseTile)

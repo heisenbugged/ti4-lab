@@ -18,12 +18,44 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Staatliches&display=swap"
+          rel="stylesheet"
+        />
         <Meta />
         <Links />
         <ColorSchemeScript />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider
+          theme={{
+            colors: {
+              spaceBlue: [
+                "#eef3ff",
+                "#dee4f3",
+                "#bcc6df",
+                "#98a7cc",
+                "#798cbb",
+                "#657cb2",
+                "#5a73ae",
+                "#4a6299",
+                "#40578a",
+                "#324b7c",
+              ],
+            },
+          }}
+          // theme={{
+          //   headings: { fontFamily: "Staatliches, system-ui" },
+          // }}
+        >
+          {children}
+        </MantineProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
