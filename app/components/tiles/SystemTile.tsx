@@ -7,15 +7,15 @@ import { Group, Text } from "@mantine/core";
 import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
 
-type Props = { tile: SystemTileType };
+type Props = { mapId: string; tile: SystemTileType };
 
-export function SystemTile({ tile }: Props) {
+export function SystemTile({ mapId, tile }: Props) {
   const system = tile.system;
   const { radius } = useContext(MapContext);
 
   // TODO: Implement this some time.
   // outlined:system.isLegendary() || system.isMecatolRexSystem(),
-  const scale = calcScale(radius).toString();
+  const scale = calcScale(radius);
   const image = tile.system.anomaly ? (
     <AnomalyImage radius={radius} anomaly={tile.system.anomaly} />
   ) : undefined;
@@ -23,6 +23,7 @@ export function SystemTile({ tile }: Props) {
 
   return (
     <Hex
+      id={`${mapId}-${tile.system.id}`}
       radius={radius}
       color="#475e93"
       image={image}
@@ -41,12 +42,12 @@ export function SystemTile({ tile }: Props) {
         </Text>
       )}
 
-      <Group gap={2} justify="center" style={{ scale }}>
+      <Group gap={2} justify="center" style={{ scale: scale.toString() }}>
         {system.planets.map((planet) => (
           <Planet
             planet={planet}
-            showName={radius >= 51}
-            largeFonts={radius < 51}
+            showName={radius >= 53}
+            largeFonts={radius < 53}
             key={planet.name}
           />
         ))}

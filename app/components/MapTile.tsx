@@ -7,6 +7,7 @@ import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 
 type Props = {
+  mapId: string;
   tile: Tile;
 };
 

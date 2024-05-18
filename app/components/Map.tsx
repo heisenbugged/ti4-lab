@@ -6,11 +6,12 @@ import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
 
 type Props = {
+  id: string;
   map: MapType;
   padding: number;
 };
 
-export function Map({ map, padding }: Props) {
+export function Map({ id, map, padding }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = 3;
   const gap = Math.min(width, height) * 0.01;
@@ -30,6 +31,7 @@ export function Map({ map, padding }: Props) {
       <Box ref={ref} w="100%" h="100%">
         {map.tiles.map((tile) => (
           <MapTile
+            mapId={id}
             key={`${tile.position.x}-${tile.position.y}-${tile.position.z}`}
             tile={tile}
           />

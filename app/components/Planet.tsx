@@ -2,6 +2,7 @@ import { Box, Flex, Group, Text } from "@mantine/core";
 import { Planet as PlanetType, PlanetTrait, TechSpecialty } from "~/types";
 import { PlanetName } from "./PlanetName";
 import { PlanetStats } from "./PlanetStats";
+import { TechIcon } from "./features/TechIcon";
 
 export type PlanetFormat =
   | "STREAMLINED"
@@ -56,10 +57,7 @@ export function Planet({ planet, showName = true, largeFonts = false }: Props) {
       {showName && <PlanetName>{planet.name}</PlanetName>}
       {techSpecialty && (
         <Box pos="absolute" top={-6} right={-2}>
-          <img
-            src={techIcon[techSpecialty]}
-            style={{ width: 20, height: 20 }}
-          />
+          <TechIcon techSpecialty={techSpecialty} />
         </Box>
       )}
     </Flex>

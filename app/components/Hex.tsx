@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
 interface Props {
+  id: string;
   color: string;
   radius: number;
   children?: ReactNode;
@@ -8,7 +9,7 @@ interface Props {
   anomaly?: boolean;
 }
 
-export function Hex({ color, radius, children, image, anomaly }: Props) {
+export function Hex({ id, color, radius, children, image, anomaly }: Props) {
   const points = Array.from({ length: 6 }).map((_, i) => {
     const angle = (i * Math.PI) / 3;
     return { x: radius * Math.cos(angle), y: radius * Math.sin(angle) };
@@ -17,7 +18,7 @@ export function Hex({ color, radius, children, image, anomaly }: Props) {
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
   return (
     <>
-      <div style={{ position: "absolute" }}>
+      <div style={{ position: "absolute", zIndex: -1 }}>
         <svg
           width={2 * radius}
           height={2 * radius}
@@ -25,11 +26,11 @@ export function Hex({ color, radius, children, image, anomaly }: Props) {
         >
           <polygon points={pointsString} fill={color} />
           <defs>
-            <clipPath id="hexClip">
+            <clipPath id={`hexClip-${id}`}>
               <polygon points={pointsString} />
             </clipPath>
           </defs>
-          <g clipPath="url(#hexClip)">{image}</g>
+          <g clipPath={`url(#hexClip-${id}`}>{image}</g>
           {anomaly && <AnomalyBorder radius={radius} points={points} />}
         </svg>
       </div>
