@@ -12,6 +12,7 @@ import {
 import type { MetaFunction } from "@remix-run/node";
 import { Map } from "~/components/Map";
 import { Slice } from "~/components/Slice";
+import { useDraftStore } from "~/draftStore";
 
 import { useDimensions } from "~/hooks/useDimensions";
 import { Draft as TDraft, Player, Tile } from "~/types";
@@ -34,65 +35,67 @@ const map = {
   tiles: [MECATOL_TILE, ...parseMapString(mapString).tiles],
 };
 
-const players: Player[] = [
-  {
-    id: "abc",
-    name: "James",
-    faction: "mentak",
-    seat: 5,
-    sliceIdx: 0,
-  },
-  {
-    id: "def",
-    name: "Steven",
-    faction: "yssaril",
-    // seat: 1,
-    // sliceIdx: 1,
-  },
-  {
-    id: "def",
-    name: "Joe",
-    faction: "yssaril",
-    // seat: 2,
-    // sliceIdx: 2,
-  },
-  {
-    id: "def",
-    name: "Jim",
-    faction: "yssaril",
-    // seat: 3,
-    // sliceIdx: 3,
-  },
-  {
-    id: "def",
-    name: "Jan",
-    faction: "yssaril",
-    // seat: 4,
-    // sliceIdx: 4,
-  },
-  {
-    id: "def",
-    name: "Jen",
-    faction: "yssaril",
-    // seat: 5,
-    // sliceIdx: 5,
-  },
-];
+// const players: Player[] = [
+//   {
+//     id: "abc",
+//     name: "James",
+//     faction: "mentak",
+//     seat: 5,
+//     sliceIdx: 0,
+//   },
+//   {
+//     id: "def",
+//     name: "Steven",
+//     faction: "yssaril",
+//     // seat: 1,
+//     // sliceIdx: 1,
+//   },
+//   {
+//     id: "def",
+//     name: "Joe",
+//     faction: "yssaril",
+//     // seat: 2,
+//     // sliceIdx: 2,
+//   },
+//   {
+//     id: "def",
+//     name: "Jim",
+//     faction: "yssaril",
+//     // seat: 3,
+//     // sliceIdx: 3,
+//   },
+//   {
+//     id: "def",
+//     name: "Jan",
+//     faction: "yssaril",
+//     // seat: 4,
+//     // sliceIdx: 4,
+//   },
+//   {
+//     id: "def",
+//     name: "Jen",
+//     faction: "yssaril",
+//     // seat: 5,
+//     // sliceIdx: 5,
+//   },
+// ];
 
-const draft: TDraft = {
-  players,
-  slices: [
-    ["-1", "76", "79", "61"],
-    ["-1", "39", "48", "23"],
-    ["-1", "31", "32", "30"],
-    // ["-1", "38", "60", "64"],
-    // ["-1", "37", "63", "73"],
-    // ["-1", "40", "22", "36"],
-  ],
-};
+// const draft: TDraft = {
+//   players,
+//   slices: [
+//     ["-1", "76", "79", "61"],
+//     ["-1", "39", "48", "23"],
+//     ["-1", "31", "32", "30"],
+//     // ["-1", "38", "60", "64"],
+//     // ["-1", "37", "63", "73"],
+//     // ["-1", "40", "22", "36"],
+//   ],
+// };
 
 export default function Draft() {
   const { ref, width } = useDimensions<HTMLDivElement>();
+  const draft = useDraftStore();
+  const players = draft.players;
 
   const gap = 6;
   const radius = calculateMaxHexWidthRadius(3, width, gap);
@@ -145,6 +148,9 @@ export default function Draft() {
                 name={`Slice ${idx + 1}`}
                 systems={slice}
                 player={players.find((p) => p.sliceIdx === idx)}
+                onSelectSystem={(tileIdx, system) => {
+                  draft.addSystemToSlice(idx, tileIdx, system);
+                }}
               />
             ))}
 
@@ -155,7 +161,13 @@ export default function Draft() {
               justify="center"
               style={{ borderRadius: 8, border: "3px dashed #e1e1e1" }}
             >
-              <Button>Add New Slice</Button>
+              <Button
+                onMouseDown={() => {
+                  draft.addNewSlice();
+                }}
+              >
+                Add New Slice
+              </Button>
             </Flex>
           </SimpleGrid>
         </Stack>

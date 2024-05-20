@@ -1,4 +1,10 @@
-import { RawSystem, System } from "~/types";
+import {
+  Anomaly,
+  PlanetTrait,
+  RawSystem,
+  System,
+  TechSpecialty,
+} from "~/types";
 import { planetData } from "./planetData";
 
 export const rawSystemData: Record<number, RawSystem> = {
@@ -257,4 +263,43 @@ export const systemData: Record<number, System> = Object.entries(
     return acc;
   },
   {} as Record<number, System>,
+);
+
+const searchableTech: Record<TechSpecialty, string> = {
+  BIOTIC: "green tech",
+  CYBERNETIC: "yellow tech",
+  WARFARE: "red tech",
+  PROPULSION: "blue tech",
+};
+
+const searchableTrait: Record<PlanetTrait, string> = {
+  INDUSTRIAL: "green planet",
+  CULTURAL: "blue planet",
+  HAZARDOUS: "red planet",
+};
+
+const searchableAnomaly: Record<Anomaly, string> = {
+  ASTEROID_FIELD: "asteroid field",
+  GRAVITY_RIFT: "gravity rift",
+  NEBULA: "nebula",
+  SUPERNOVA: "supernova",
+};
+
+export const searchableSystemData = Object.values(systemData).reduce(
+  (acc, system) => {
+    const nameParts: string[] = [system.id.toString()];
+    if (system.anomaly) nameParts.push(searchableAnomaly[system.anomaly]);
+    for (const planet of system.planets) {
+      nameParts.push(planet.name.toLowerCase());
+      if (planet.trait) nameParts.push(searchableTrait[planet.trait]);
+      if (planet.techSpecialty)
+        nameParts.push(searchableTech[planet.techSpecialty]);
+      nameParts.push(`${planet.resources} resources`);
+      nameParts.push(`${planet.influence} influence`);
+    }
+
+    acc.push([nameParts.join(" "), system.id] as const);
+    return acc;
+  },
+  [] as [string, number][],
 );

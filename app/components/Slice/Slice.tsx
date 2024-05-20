@@ -9,11 +9,10 @@ import {
   parseMapString,
   techSpecialties,
 } from "~/utils/map";
-import { FactionIcon } from "../features/FactionIcon";
 import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
 import { PlayerLabel } from "../PlayerLabel";
-import { Player } from "~/types";
+import { Player, System } from "~/types";
 
 const slicePositionOrder = [
   { x: 0, y: 0, z: 0 },
@@ -30,9 +29,10 @@ type Props = {
   name: string;
   systems: string[];
   player?: Player;
+  onSelectSystem?: (tileIdx: number, system: System) => void;
 };
 
-export function Slice({ id, name, systems, player }: Props) {
+export function Slice({ id, name, systems, player, onSelectSystem }: Props) {
   const { tiles } = parseMapString(systems, slicePositionOrder);
 
   const total = totalStats(tiles);
@@ -57,7 +57,7 @@ export function Slice({ id, name, systems, player }: Props) {
       >
         <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>
       </SliceHeader>
-      <SliceMap id={id} tiles={tiles} />
+      <SliceMap id={id} tiles={tiles} onSelectSystem={onSelectSystem} />
       <Divider mt="md" />
       <Stack gap="0">
         <Group align="center" p="sm" gap="lg">

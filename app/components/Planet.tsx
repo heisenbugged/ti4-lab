@@ -16,17 +16,10 @@ type Props = {
   largeFonts?: boolean;
 };
 
-const bgColor: Record<PlanetTrait, string> = {
+export const bgColor: Record<PlanetTrait, string> = {
   CULTURAL: "blue.4",
   HAZARDOUS: "red.5",
   INDUSTRIAL: "green.5",
-};
-
-const techIcon: Record<TechSpecialty, string> = {
-  BIOTIC: "/biotic.webp",
-  CYBERNETIC: "/cybernetic.webp",
-  WARFARE: "/warfare.webp",
-  PROPULSION: "/propulsion.webp",
 };
 
 export function Planet({ planet, showName = true, largeFonts = false }: Props) {

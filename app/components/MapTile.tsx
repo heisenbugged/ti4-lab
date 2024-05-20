@@ -1,4 +1,4 @@
-import { SystemTile as SystemTileType, Tile } from "~/types";
+import { System, SystemTile as SystemTileType, Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
 import { ReactNode, useContext } from "react";
@@ -10,6 +10,7 @@ import { HomeTile } from "./tiles/HomeTile";
 type Props = {
   mapId: string;
   tile: Tile;
+  onSelectSystem?: (system: System) => void;
 };
 
 const MECATOL_REX_ID = 18;

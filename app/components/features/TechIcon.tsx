@@ -9,8 +9,9 @@ const techIcon: Record<TechSpecialty, string> = {
 
 type Props = {
   techSpecialty: TechSpecialty;
+  size?: number;
 };
 
-export function TechIcon({ techSpecialty }: Props) {
-  return <img src={techIcon[techSpecialty]} style={{ width: 20 }} />;
+export function TechIcon({ techSpecialty, size = 20 }: Props) {
+  return <img src={techIcon[techSpecialty]} style={{ width: size }} />;
 }
