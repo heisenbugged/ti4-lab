@@ -3,9 +3,16 @@ import { Hex } from "../Hex";
 import { MapContext } from "../MapContext";
 import { Planet } from "../Planet";
 import { SystemTile as SystemTileType } from "~/types";
-import { Group, Text, useMantineContext, useMantineTheme } from "@mantine/core";
+import {
+  Box,
+  Group,
+  Text,
+  useMantineContext,
+  useMantineTheme,
+} from "@mantine/core";
 import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
+import { GravityRift } from "../features/GravityRift";
 
 type Props = { mapId: string; tile: SystemTileType };
 
@@ -43,7 +50,7 @@ export function SystemTile({ mapId, tile }: Props) {
         </Text>
       )}
 
-      <Group gap={2} justify="center" style={{ scale: scale.toString() }}>
+      <Group gap={4} justify="center" style={{ scale: scale.toString() }}>
         {system.planets.map((planet) => (
           <Planet
             planet={planet}
@@ -52,6 +59,7 @@ export function SystemTile({ mapId, tile }: Props) {
             key={planet.name}
           />
         ))}
+        {system.anomaly === "GRAVITY_RIFT" && <GravityRift />}
       </Group>
     </Hex>
   );

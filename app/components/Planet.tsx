@@ -35,7 +35,7 @@ export function Planet({ planet, showName = true, largeFonts = false }: Props) {
   // TODO: Come up with a better way of handling this lol.
   // should have it in the actual data.
   const isLegendary = planet.name === "Primor" || planet.name === "Hope's End";
-  const legendaryClass = isLegendary ? " legendary" : "";
+  // const legendaryClass = isLegendary ? " legendary" : "";
 
   const fontSize = largeFonts ? "35" : "24";
   const size = 50;
@@ -54,7 +54,9 @@ export function Planet({ planet, showName = true, largeFonts = false }: Props) {
         fontSize={fontSize}
       />
 
-      {showName && <PlanetName>{planet.name}</PlanetName>}
+      {showName && (
+        <PlanetName legendary={isLegendary}>{planet.name}</PlanetName>
+      )}
       {techSpecialty && (
         <Box pos="absolute" top={-6} right={-2}>
           <TechIcon techSpecialty={techSpecialty} />

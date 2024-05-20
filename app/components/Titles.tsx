@@ -1,7 +1,7 @@
 import { Text, TextProps, Title, TitleProps } from "@mantine/core";
 
 const Slice = ({ children, ...rest }: { children: string } & TitleProps) => (
-  <Title order={6} c="gray.8" tt="uppercase" fw="bold" {...rest}>
+  <Title order={4} c="gray.8" tt="uppercase" fw="bold" {...rest}>
     {children}
   </Title>
 );

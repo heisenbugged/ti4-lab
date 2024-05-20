@@ -25,7 +25,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Staatliches&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Staatliches&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Bebas+Neue&display=swap"
           rel="stylesheet"
         />
         <Meta />
@@ -49,10 +49,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 "#324b7c",
               ],
             },
+            headings: { fontFamily: '"Bebas Neue", sans-serif' },
           }}
-          // theme={{
-          //   headings: { fontFamily: "Staatliches, system-ui" },
-          // }}
         >
           {children}
         </MantineProvider>

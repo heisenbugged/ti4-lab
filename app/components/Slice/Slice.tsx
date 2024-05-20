@@ -94,9 +94,6 @@ export function Slice({ id, name, mapString, player }: Props) {
             minHeight: 50,
           }}
         >
-          <Text c="gray.8" tt="uppercase" fw="bold" size="sm">
-            Features
-          </Text>
           {specialties.map((tech) => (
             <TechIcon key={tech} techSpecialty={tech} />
           ))}
