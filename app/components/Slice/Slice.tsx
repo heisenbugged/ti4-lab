@@ -29,10 +29,10 @@ type Props = {
   name: string;
   systems: string[];
   player?: Player;
-  onSelectSystem?: (tileIdx: number, system: System) => void;
+  onSelectTile?: (tileIdx: number) => void;
 };
 
-export function Slice({ id, name, systems, player, onSelectSystem }: Props) {
+export function Slice({ id, name, systems, player, onSelectTile }: Props) {
   const { tiles } = parseMapString(systems, slicePositionOrder);
 
   const total = totalStats(tiles);
@@ -57,7 +57,7 @@ export function Slice({ id, name, systems, player, onSelectSystem }: Props) {
       >
         <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>
       </SliceHeader>
-      <SliceMap id={id} tiles={tiles} onSelectSystem={onSelectSystem} />
+      <SliceMap id={id} tiles={tiles} onSelectTile={onSelectTile} />
       <Divider mt="md" />
       <Stack gap="0">
         <Group align="center" p="sm" gap="lg">

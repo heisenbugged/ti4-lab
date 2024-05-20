@@ -8,10 +8,10 @@ import { System, Tile } from "~/types";
 type Props = {
   id: string;
   tiles: Tile[];
-  onSelectSystem?: (tileIdx: number, system: System) => void;
+  onSelectTile?: (tileIdx: number) => void;
 };
 
-export function SliceMap({ id, tiles, onSelectSystem }: Props) {
+export function SliceMap({ id, tiles, onSelectTile }: Props) {
   const { ref, width } = useDimensions<HTMLDivElement>();
   const gap = 6;
   const radius = calculateMaxHexWidthRadius(1, width, gap);
@@ -42,9 +42,7 @@ export function SliceMap({ id, tiles, onSelectSystem }: Props) {
               mapId={id}
               key={idx}
               tile={t}
-              onSelectSystem={(system) => {
-                if (onSelectSystem) onSelectSystem(idx, system);
-              }}
+              onSelect={onSelectTile ? () => onSelectTile(idx) : undefined}
             />
           ))}
       </div>

@@ -1,0 +1,9 @@
+.searchable-system:hover {
+    background-color: var(--mantine-color-gray-2);
+    border-radius: 5px;
+    cursor: pointer;
+    /* @hover {
+        background-color: red;
+    } */
+
+}

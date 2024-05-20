@@ -9,10 +9,10 @@ type Props = {
   id: string;
   map: MapType;
   padding: number;
-  onSelectSystem?: (tileIdx: number, system: System) => void;
+  onSelectTile?: (tileIdx: number) => void;
 };
 
-export function Map({ id, map, padding, onSelectSystem }: Props) {
+export function Map({ id, map, padding, onSelectTile }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = 3;
   const gap = Math.min(width, height) * 0.01;
@@ -35,9 +35,7 @@ export function Map({ id, map, padding, onSelectSystem }: Props) {
             mapId={id}
             key={`${tile.position.x}-${tile.position.y}-${tile.position.z}`}
             tile={tile}
-            onSelectSystem={(system) => {
-              if (onSelectSystem) onSelectSystem(idx, system);
-            }}
+            onSelect={() => onSelectTile?.(idx)}
           />
         ))}
       </Box>

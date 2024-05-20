@@ -10,7 +10,7 @@ import { HomeTile } from "./tiles/HomeTile";
 type Props = {
   mapId: string;
   tile: Tile;
-  onSelectSystem?: (system: System) => void;
+  onSelect?: () => void;
 };
 
 const MECATOL_REX_ID = 18;
