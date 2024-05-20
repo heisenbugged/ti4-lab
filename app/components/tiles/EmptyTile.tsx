@@ -1,6 +1,6 @@
 import { Hex } from "../Hex";
 import { System, SystemTile, Tile } from "~/types";
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { MapContext } from "../MapContext";
 import { Box, Button, Group, Input, Menu, Text } from "@mantine/core";
 import { PlanetStatsPill } from "../Slice/PlanetStatsPill";
@@ -26,6 +26,12 @@ export function EmptyTile({ mapId, onSelectSystem }: Props) {
           .slice(0, 8)
       : [];
 
+  const handleMenuOpen = (e: React.MouseEvent) => {
+    setTimeout(() => searchRef.current?.focus(), 150);
+  };
+
+  const searchRef = useRef<HTMLInputElement>(null);
+
   return (
     <Hex id={`${mapId}-empty`} radius={radius} color="#d6d6ea">
       {/* + */}
@@ -37,7 +43,7 @@ export function EmptyTile({ mapId, onSelectSystem }: Props) {
         trapFocus
       >
         <Menu.Target>
-          <Button px="6" py="4" h="auto">
+          <Button px="6" py="4" h="auto" onMouseDown={handleMenuOpen}>
             +
           </Button>
         </Menu.Target>
@@ -46,6 +52,7 @@ export function EmptyTile({ mapId, onSelectSystem }: Props) {
           <Menu.Label>Search Systems</Menu.Label>
           <Box px="4">
             <Input
+              ref={searchRef}
               placeholder="Planet Name"
               onChange={(e) => setSearchString(e.target.value.toLowerCase())}
             />

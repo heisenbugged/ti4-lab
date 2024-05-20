@@ -106,7 +106,7 @@ export default function Draft() {
 
   return (
     <Box p="lg">
-      <Stack gap="sm" mb="60">
+      {/* <Stack gap="sm" mb="60">
         <Title>Draft Order</Title>
         <Group gap={1}>
           {players.map((player, idx) => (
@@ -129,10 +129,27 @@ export default function Draft() {
             </Box>
           ))}
         </Group>
-      </Stack>
+      </Stack> */}
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 60 }}>
         <Stack flex={1} gap="xl">
-          <Title>Slices</Title>
+          <Group
+            justify="space-between"
+            px="sm"
+            py="sm"
+            style={{
+              borderBottom: "rgba(0,0,0, 0.1) solid 1px",
+            }}
+          >
+            <Title>Slices</Title>
+            <Button
+              onMouseDown={() => {
+                draft.addNewSlice();
+              }}
+            >
+              Add New Slice
+            </Button>
+          </Group>
+
           <SimpleGrid
             flex={1}
             cols={{ base: 1, sm: 2, md: 2, lg: 2 }}
@@ -153,22 +170,6 @@ export default function Draft() {
                 }}
               />
             ))}
-
-            <Flex
-              // bg="gray.1"
-              h="100%"
-              align="center"
-              justify="center"
-              style={{ borderRadius: 8, border: "3px dashed #e1e1e1" }}
-            >
-              <Button
-                onMouseDown={() => {
-                  draft.addNewSlice();
-                }}
-              >
-                Add New Slice
-              </Button>
-            </Flex>
           </SimpleGrid>
         </Stack>
         <Stack flex={1} pos="relative">
@@ -179,7 +180,17 @@ export default function Draft() {
               top: 25 + 30 + 5,
             }}
           >
-            <Title>Full Map</Title>
+            <Group
+              justify="space-between"
+              px="sm"
+              py="sm"
+              mb="lg"
+              style={{
+                borderBottom: "rgba(0,0,0, 0.1) solid 1px",
+              }}
+            >
+              <Title>Full Map</Title>
+            </Group>
             <Box
               ref={ref}
               style={{
