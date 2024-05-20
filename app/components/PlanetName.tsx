@@ -12,8 +12,11 @@ export function PlanetName({ children, legendary = false }: Props) {
       top={50 - 10}
       right={0}
       left={0}
-      bg={legendary ? "#f08a00e6" : "rgba(0, 0, 0, 0.7)"}
+      bg={legendary ? "#d27900" : "rgba(0, 0, 0, 0.7)"}
       p={2}
+      style={{
+        border: legendary ? "1px solid #ffb35d" : "none",
+      }}
     >
       <Text size="10" c="white" fw="bolder" ta="center" lh={0.9}>
         {children}

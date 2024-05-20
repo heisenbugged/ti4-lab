@@ -68,7 +68,7 @@ export type HomeTile = {
 
 export type Draft = {
   players: Player[];
-  slices: string[]; // TODO: Should I make them the actual objects?
+  slices: string[][]; // TODO: Should I make them the actual objects?
 };
 
 export type Tile =

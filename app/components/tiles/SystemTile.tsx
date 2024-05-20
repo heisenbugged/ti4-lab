@@ -50,7 +50,11 @@ export function SystemTile({ mapId, tile }: Props) {
         </Text>
       )}
 
-      <Group gap={4} justify="center" style={{ scale: scale.toString() }}>
+      <Group
+        gap={4}
+        justify="center"
+        style={{ scale: scale.toString(), minWidth: 110, maxWidth: 110 }}
+      >
         {system.planets.map((planet) => (
           <Planet
             planet={planet}

@@ -28,12 +28,12 @@ const slicePositionOrder = [
 type Props = {
   id: string;
   name: string;
-  mapString: string;
+  systems: string[];
   player?: Player;
 };
 
-export function Slice({ id, name, mapString, player }: Props) {
-  const { tiles } = parseMapString(mapString, slicePositionOrder);
+export function Slice({ id, name, systems, player }: Props) {
+  const { tiles } = parseMapString(systems, slicePositionOrder);
 
   const total = totalStats(tiles);
   const optimal = optimalStats(tiles);
@@ -62,7 +62,7 @@ export function Slice({ id, name, mapString, player }: Props) {
       <Stack gap="0">
         <Group align="center" p="sm" gap="lg">
           <Group gap="xs">
-            <Text fw={600} size="xs">
+            <Text fw={600} size="sm">
               Total
             </Text>
             <PlanetStatsPill
@@ -71,7 +71,7 @@ export function Slice({ id, name, mapString, player }: Props) {
             />
           </Group>
           <Group gap="xs">
-            <Text fw={600} size="xs">
+            <Text fw={600} size="sm">
               Optimal
             </Text>
             <PlanetStatsPill

@@ -25,7 +25,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Staatliches&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Bebas+Neue&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Audiowide&family=Bebas+Neue&family=Orbitron:wght@400..900&family=Quantico:ital,wght@0,400;0,700;1,400;1,700&family=Share+Tech&display=swap"
           rel="stylesheet"
         />
         <Meta />
@@ -49,7 +49,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 "#324b7c",
               ],
             },
-            headings: { fontFamily: '"Bebas Neue", sans-serif' },
+            fontFamily: '"Quantico", sans-serif',
+            // fontFamily: "Orbitron",
+            headings: {
+              // fontFamily: '"Quantico", sans-serif',
+              fontFamily: "Orbitron",
+            },
           }}
         >
           {children}

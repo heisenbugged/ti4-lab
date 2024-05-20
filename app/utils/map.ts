@@ -3,8 +3,59 @@ import { planetData } from "~/data/planetData";
 import { systemData } from "~/data/systemData";
 import { Draft, HomeTile, Map, TechSpecialty, Tile } from "~/types";
 
+/**
+ * Represents the pre-computed values required to manipulate the map
+ * during the drafting process.
+ */
+const mapConfig = {
+  standard: {
+    // Represents the location of each home system (or 'seat') in the map string
+    // ordered from 12 o'clock going clockwise
+    //
+    // these indexes assume mecatol is the first on the map string.
+    // TODO: Double check that is how map string importing actually works.
+    homeIdxInMapString: [28, 25, 22, 19, 34, 31],
+
+    // For a given seat number (in clockwise order, from 0 to 5),
+    // contains the relative positions to modify around the home system
+    // to insert the player's slice.
+    seatTilePositions: {
+      0: [
+        [1, 0],
+        [0, 1],
+        [-1, 1],
+      ],
+      1: [
+        [0, 1],
+        [-1, 1],
+        [-1, 0],
+      ],
+      2: [
+        [-1, 1],
+        [-1, 0],
+        [0, -1],
+      ],
+      3: [
+        [-1, 0],
+        [0, -1],
+        [1, -1],
+      ],
+      4: [
+        [0, -1],
+        [1, -1],
+        [1, 0],
+      ],
+      5: [
+        [1, -1],
+        [1, 0],
+        [0, 1],
+      ],
+    } as Record<number, [number, number][]>,
+  },
+};
+
 export const MECATOL_TILE: Tile = {
-  position: { x: 0, y: 0, z: 0 },
+  position: { x: 0, y: 0 },
   type: "SYSTEM",
   system: {
     id: 18,
@@ -12,84 +63,41 @@ export const MECATOL_TILE: Tile = {
   },
 };
 
-/**
- * For a given seat number (in clockwise order, from 1 to 6), this object
- * contains the relative positions to modify around the home system
- * to insert the player's slice.
- */
-const posToModify: Record<number, number[][]> = {
-  0: [
-    [1, 0],
-    [0, 1],
-    [-1, 1],
-  ],
-  1: [
-    [0, 1],
-    [-1, 1],
-    [-1, 0],
-  ],
-  2: [
-    [-1, 1],
-    [-1, 0],
-    [0, -1],
-  ],
-  3: [
-    [-1, 0],
-    [0, -1],
-    [1, -1],
-  ],
-  4: [
-    [0, -1],
-    [1, -1],
-    [1, 0],
-  ],
-  5: [
-    [1, -1],
-    [1, 0],
-    [0, 1],
-  ],
-};
-
 export const hydrateMap = (map: Map, draft: Draft): Map => {
-  let homeSystemIdx = 0;
-  const hydrated: Tile[] = [];
+  const hydrated: Tile[] = [...map.tiles];
 
   // add player data to home systems
-  map.tiles.forEach((tile) => {
-    if (tile.type === "HOME") {
-      hydrated.push(hydrateHomeTile(tile, draft, homeSystemIdx));
-      homeSystemIdx += 1;
-      return;
-    }
-
-    // otherwise
-    hydrated.push(tile);
+  forHomeTiles(hydrated, (tile, homeIdx) => {
+    const tileIdx = mapConfig.standard.homeIdxInMapString[homeIdx];
+    hydrated[tileIdx] = hydrateHomeTile(tile, draft, homeIdx);
   });
 
   // Function to modify positions based on slices
   const applySlice = (tile: Tile, homeIdx: number) => {
     const player = draft.players.find((p) => p.seat === homeIdx);
     if (!player || player.sliceIdx === undefined) return;
-    const slice = draft.slices[player.sliceIdx].split(" ");
+    const slice = draft.slices[player.sliceIdx];
 
-    posToModify[homeIdx]?.forEach(([x, y], sliceIdx) => {
-      const pos = {
-        x: tile.position.x + x,
-        y: tile.position.y + y,
-      };
+    mapConfig.standard.seatTilePositions[homeIdx]?.forEach(
+      ([x, y], sliceIdx) => {
+        const pos = {
+          x: tile.position.x + x,
+          y: tile.position.y + y,
+        };
 
-      // find tile the matches the hexagonal coordinate position to modify
-      const idxToModify = hydrated.findIndex(
-        (t) => t.position.x === pos.x && t.position.y === pos.y,
-      );
+        // find tile the matches the hexagonal coordinate position to modify
+        const idxToModify = hydrated.findIndex(
+          (t) => t.position.x === pos.x && t.position.y === pos.y,
+        );
 
-      // replace with new tile from slice.
-      hydrated[idxToModify] = {
-        position: pos,
-        type: "SYSTEM",
-        system: systemData[parseInt(slice[sliceIdx + 1])],
-      };
-    });
+        // replace with new tile from slice.
+        hydrated[idxToModify] = {
+          position: pos,
+          type: "SYSTEM",
+          system: systemData[parseInt(slice[sliceIdx + 1])],
+        };
+      },
+    );
   };
 
   // Iterate over home tiles to apply slices
@@ -97,45 +105,36 @@ export const hydrateMap = (map: Map, draft: Draft): Map => {
   return { ...map, tiles: hydrated };
 };
 
-// Order of home systems in the map string
-// (0-indexed, starting from 12 o'clock going clockwise)
-const homeSystemOrder = [3, 2, 1, 0, 5, 4];
-
 /**
  * Iterates over the home systems in the map, calling the provided function
  */
 const forHomeTiles = (
   tiles: Tile[],
-  fn: (tile: HomeTile, homeIdx: number) => void,
+  fn: (tile: Tile, homeIdx: number) => void,
 ) => {
-  let homeSystemIdx = 0;
   tiles.forEach((tile, idx) => {
-    if (tile.type === "HOME") {
-      fn(tile, homeSystemOrder[homeSystemIdx]);
-      homeSystemIdx += 1;
+    const homeSystemIdx = mapConfig.standard.homeIdxInMapString.indexOf(idx);
+    if (homeSystemIdx !== -1) {
+      fn(tile, homeSystemIdx);
     }
   });
 };
 
 const hydrateHomeTile = (
-  tile: HomeTile,
+  tile: Tile,
   draft: Draft,
-  homeSystemIdx: number,
-): Tile => {
-  const player = draft.players.find(
-    (p) => p.seat === homeSystemOrder[homeSystemIdx],
-  );
-  if (!player) return tile;
-  return { ...tile, player };
+  seatIdx: number,
+): HomeTile => {
+  const player = draft.players.find((p) => p.seat === seatIdx);
+  return { ...tile, type: "HOME", player };
 };
 
 export const parseMapString = (
-  mapString: string,
+  systems: string[],
   // TODO: Technically 'z' is superfluous, but it's easier to keep it in for now.
   positionOrder: { x: number; y: number; z: number }[] = mapStringOrder,
 ): Map => {
-  const tiles: Tile[] = mapString
-    .split(" ")
+  const tiles: Tile[] = systems
     .map((n) => [n, systemData[parseInt(n)]] as const)
     .map(([id, system], idx) => {
       const position = positionOrder[idx];

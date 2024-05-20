@@ -18,7 +18,7 @@ type Props = {
 
 const bgColor: Record<PlanetTrait, string> = {
   CULTURAL: "blue.4",
-  HAZARDOUS: "red.4",
+  HAZARDOUS: "red.5",
   INDUSTRIAL: "green.5",
 };
 
