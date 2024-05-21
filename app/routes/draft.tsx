@@ -43,6 +43,14 @@ export default function Draft() {
   ] = useDisclosure(false);
 
   const activePlayer = 1;
+  const usedSystemIds = [
+    draft.slices,
+    draft.hydratedMap.tiles
+      .filter((t) => t.type === "SYSTEM")
+      .map((t) => t.system!!.id.toString()),
+  ]
+    .flat(2)
+    .filter((t) => t !== "-1" && t !== "0");
 
   return (
     <Box p="lg">
@@ -67,6 +75,7 @@ export default function Draft() {
 
           closePlanetFinder();
         }}
+        usedSystemIds={usedSystemIds}
       />
       {players.length > 0 && (
         <Stack gap="sm" mb="60">

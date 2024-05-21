@@ -12,11 +12,17 @@ import { useArrowFocus } from "~/hooks/useArrowFocus";
 
 type Props = {
   opened?: boolean;
+  usedSystemIds: string[];
   onClose: () => void;
   onSelectSystem: (system: System) => void;
 };
 
-export function PlanetFinder({ opened, onClose, onSelectSystem }: Props) {
+export function PlanetFinder({
+  usedSystemIds,
+  opened,
+  onClose,
+  onSelectSystem,
+}: Props) {
   const [searchString, setSearchString] = useState<string>("");
   const systems =
     searchString.length > 0
@@ -64,6 +70,7 @@ export function PlanetFinder({ opened, onClose, onSelectSystem }: Props) {
             key={system.id}
             gap="sm"
             align="center"
+            justify="space-between"
             className="searchable-system"
             py="sm"
             px="sm"
@@ -74,30 +81,38 @@ export function PlanetFinder({ opened, onClose, onSelectSystem }: Props) {
             }}
             onMouseDown={() => onSelectSystem(system)}
           >
-            <Text size="xs" tt="uppercase" c="gray.8">
-              {system.id}
-            </Text>
-            {system.planets.map((planet, idx) => (
-              <Fragment key={planet.name}>
-                <Group gap={2}>
-                  <Box
-                    w="10"
-                    h="10"
-                    style={{ borderRadius: 10 }}
-                    bg={planet.trait ? bgColor[planet.trait] : "gray.5"}
-                  />
-                  <Text size="sm">{planet.name}</Text>
-                  <PlanetStatsPill
-                    resources={planet.resources}
-                    influence={planet.influence}
-                  />
-                  {planet.techSpecialty && (
-                    <TechIcon techSpecialty={planet.techSpecialty} size={16} />
-                  )}
-                </Group>
-                {idx < system.planets.length - 1 && <Divider />}
-              </Fragment>
-            ))}
+            <Group gap="sm">
+              <Text size="xs" tt="uppercase" c="gray.8">
+                {system.id}
+              </Text>
+              {system.planets.map((planet, idx) => (
+                <Fragment key={planet.name}>
+                  <Group gap={2}>
+                    <Box
+                      w="10"
+                      h="10"
+                      style={{ borderRadius: 10 }}
+                      bg={planet.trait ? bgColor[planet.trait] : "gray.5"}
+                    />
+                    <Text size="sm">{planet.name}</Text>
+                    <PlanetStatsPill
+                      resources={planet.resources}
+                      influence={planet.influence}
+                    />
+                    {planet.techSpecialty && (
+                      <TechIcon
+                        techSpecialty={planet.techSpecialty}
+                        size={16}
+                      />
+                    )}
+                  </Group>
+                  {idx < system.planets.length - 1 && <Divider />}
+                </Fragment>
+              ))}
+            </Group>
+            {usedSystemIds.includes(system.id.toString()) && (
+              <Text c="violet">In Use</Text>
+            )}
           </Group>
         ))}
       </Stack>
