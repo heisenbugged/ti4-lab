@@ -9,6 +9,8 @@ import { HomeTile } from "./tiles/HomeTile";
 import { Button } from "@mantine/core";
 import { Hex } from "./Hex";
 
+import "./MapTile.css";
+
 type Props = {
   mapId: string;
   tile: Tile;
@@ -73,20 +75,13 @@ export function MapTile(props: Props) {
       {Tile}
 
       {showOverlay && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            zIndex: 1,
-          }}
-        >
+        <div className="modify-tile-overlay" onMouseDown={onSelect}>
           <Hex
             id={`${props.mapId}-${tile.idx}-overlay`}
             color={overlayColor}
             radius={radius}
           >
-            <Button px="6" py="4" h="auto" onMouseDown={onSelect}>
+            <Button px="6" py="4" h="auto">
               +
             </Button>
           </Hex>
