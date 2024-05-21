@@ -110,7 +110,6 @@ const forHomeTiles = (
   tiles: Tile[],
   fn: (tile: Tile, homeIdx: number) => void,
 ) => {
-  console.log("tiles", tiles);
   tiles.forEach((tile, idx) => {
     const homeSystemIdx = mapConfig.standard.homeIdxInMapString.indexOf(idx);
     if (homeSystemIdx !== -1) {
@@ -126,6 +125,41 @@ const hydrateHomeTile = (
 ): HomeTile => {
   const player = draft.players.find((p) => p.seatIdx === seatIdx);
   return { ...tile, type: "HOME", player, seatIdx };
+};
+
+export const sliceMap = (map: Map): { map: Map; slices: string[][] } => {
+  const tiles = [...map.tiles];
+  const slices: string[][] = [];
+  mapConfig.standard.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
+    const homeTile = tiles[tileIdx];
+    const slice: string[] = ["-1"];
+    mapConfig.standard.seatTilePositions[seatIdx]?.forEach(([x, y]) => {
+      const pos = { x: homeTile.position.x + x, y: homeTile.position.y + y };
+      // find tile the matches the hexagonal coordinate position to modify
+      const tileToModify = tiles.find(
+        (t) => t.position.x === pos.x && t.position.y === pos.y,
+      )!!; // TODO: Handle if tile not found
+
+      if (tileToModify.system) {
+        slice.push(tileToModify.system?.id.toString());
+      } else {
+        slice.push("0");
+      }
+
+      tiles[tileToModify.idx] = {
+        position: tileToModify.position,
+        type: "OPEN",
+        idx: tileToModify.idx,
+        system: undefined,
+      };
+    });
+    slices.push(slice);
+  });
+
+  return {
+    map: { tiles },
+    slices,
+  };
 };
 
 export const parseMapString = (

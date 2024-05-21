@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { Draft, Map, Player, System } from "./types";
-import { hydrateMap, parseMapString } from "./utils/map";
+import { hydrateMap, parseMapString, sliceMap } from "./utils/map";
 
 type DraftState = {
   draft: Draft;
+  importMap: (mapString: string) => void;
   selectSeat: (playerId: number, seatIdx: number) => void;
   selectSlice: (playerId: number, sliceIdx: number) => void;
   addNewSlice: () => void;
@@ -41,6 +42,27 @@ export const useDraftStore = create<DraftState>((set) => ({
       "-1 0 0 0".split(" "),
     ],
   },
+  importMap: (mapString: string) =>
+    set(({ draft }) => {
+      const rawMap = parseMapString(mapString.split(" "));
+      const { slices, map: slicedMap } = sliceMap(rawMap);
+      // debugger;
+      // const hydratedMap = hydrateMap(slicedMap, {
+      //   players: draft.players,
+      //   slices: [],
+      // });
+
+      debugger;
+      return {
+        draft: {
+          ...draft,
+          rawMap: slicedMap,
+          hydratedMap: slicedMap,
+          slices,
+        },
+      };
+    }),
+
   selectSlice: (playerId: number, sliceIdx: number) =>
     set(({ draft }) => {
       const players = draft.players.map((p) =>

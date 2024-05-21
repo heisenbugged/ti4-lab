@@ -1,4 +1,12 @@
-import { Box, Button, Group, SimpleGrid, Stack, Title } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Group,
+  Input,
+  SimpleGrid,
+  Stack,
+  Title,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { MetaFunction } from "@remix-run/node";
 import { useRef, useState } from "react";
@@ -52,6 +60,8 @@ export default function Draft() {
     .flat(2)
     .filter((t) => t !== "-1" && t !== "0");
 
+  const [importableMap, setImportableMap] = useState<string>("");
+
   return (
     <Box p="lg">
       <PlanetFinder
@@ -77,9 +87,25 @@ export default function Draft() {
         }}
         usedSystemIds={usedSystemIds}
       />
+
+      <Box>
+        <Input
+          size="lg"
+          placeholder="Map String to Import"
+          onChange={(e) => setImportableMap(e.currentTarget.value)}
+        />
+        <Button
+          onClick={() => {
+            draftStore.importMap(importableMap);
+          }}
+        >
+          Import
+        </Button>
+      </Box>
+
       {players.length > 0 && (
         <Stack gap="sm" mb="60">
-          <Title>Draft Order</Title>
+          <Title order={2}>Draft Order</Title>
           <Group gap={1}>
             {players.map((player, idx) => (
               <Box
@@ -113,7 +139,7 @@ export default function Draft() {
               borderBottom: "rgba(0,0,0, 0.1) solid 1px",
             }}
           >
-            <Title>Slices</Title>
+            <Title order={2}>Slices</Title>
             <Button onMouseDown={() => draftStore.addNewSlice()}>
               Add New Slice
             </Button>
@@ -165,7 +191,7 @@ export default function Draft() {
                 borderBottom: "rgba(0,0,0, 0.1) solid 1px",
               }}
             >
-              <Title>Full Map</Title>
+              <Title order={2}>Full Map</Title>
             </Group>
             <Box
               ref={ref}
