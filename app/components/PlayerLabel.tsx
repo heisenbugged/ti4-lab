@@ -1,10 +1,10 @@
 import { Group } from "@mantine/core";
-import { Faction } from "~/types";
+import { FactionId } from "~/types";
 import { FactionIcon } from "./features/FactionIcon";
 import { Titles } from "./Titles";
 
 type Props = {
-  faction?: Faction;
+  faction?: FactionId;
   name: string;
 };
 

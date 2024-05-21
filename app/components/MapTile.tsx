@@ -1,11 +1,13 @@
 import { System, SystemTile as SystemTileType, Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
-import { ReactNode, useContext } from "react";
+import { ReactNode, useContext, useState } from "react";
 import { MapContext } from "./MapContext";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
+import { Button } from "@mantine/core";
+import { Hex } from "./Hex";
 
 type Props = {
   mapId: string;
@@ -17,10 +19,12 @@ type Props = {
 
 const MECATOL_REX_ID = 18;
 export function MapTile(props: Props) {
+  const [hovered, setHovered] = useState(false);
   const {
     tile,
     tile: { position },
     modifiable = false,
+    onSelect,
   } = props;
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
@@ -49,6 +53,13 @@ export function MapTile(props: Props) {
     Tile = <MecatolTile {...props} tile={tile as SystemTileType} />;
   }
 
+  // maybe an easier way of making this condition
+  const showOverlay =
+    modifiable && (hovered || tile.type === "OPEN") && tile.type !== "HOME";
+
+  const overlayColor =
+    tile.type !== "OPEN" ? "rgba(255, 255, 255, 0.70)" : "rgba(0, 0, 0, 0)";
+
   return (
     <div
       style={{
@@ -56,8 +67,31 @@ export function MapTile(props: Props) {
         left: x + wOffset,
         top: y + hOffset,
       }}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered(false)}
     >
       {Tile}
+
+      {showOverlay && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 1,
+          }}
+        >
+          <Hex
+            id={`${props.mapId}-${tile.idx}-overlay`}
+            color={overlayColor}
+            radius={radius}
+          >
+            <Button px="6" py="4" h="auto" onMouseDown={onSelect}>
+              +
+            </Button>
+          </Hex>
+        </div>
+      )}
     </div>
   );
 }

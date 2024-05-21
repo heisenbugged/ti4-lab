@@ -27,6 +27,18 @@ export const useDraftStore = create<DraftState>((set) => ({
     rawMap: EMPTY_MAP,
     hydratedMap: EMPTY_HYDRATED_MAP,
     activePlayer: 1,
+    factions: [
+      "argent",
+      "creuss",
+      "hacan",
+      "muaat",
+      "sol",
+      "titans",
+      "vulraith",
+      "winnu",
+      "yin",
+    ],
+    // TODO: Should not preload these factions, but for now it's fine.
     players: [
       ...[1, 2, 3, 4, 5, 6].map((i) => ({
         id: i,

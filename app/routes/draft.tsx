@@ -9,10 +9,12 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { MetaFunction } from "@remix-run/node";
-import { useRef, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 import { Map } from "~/components/Map";
 import { PlanetFinder } from "~/components/PlanetFinder";
 import { Slice } from "~/components/Slice";
+import { FactionIcon } from "~/components/features/FactionIcon";
+import { factions } from "~/data/factionData";
 import { useDraftStore } from "~/draftStore";
 import { useDimensions } from "~/hooks/useDimensions";
 import { mapConfig } from "~/utils/map";
@@ -88,9 +90,10 @@ export default function Draft() {
         usedSystemIds={usedSystemIds}
       />
 
-      <Box>
+      <Group mb="lg">
         <Input
-          size="lg"
+          flex={1}
+          size="md"
           placeholder="Map String to Import"
           onChange={(e) => setImportableMap(e.currentTarget.value)}
         />
@@ -101,7 +104,7 @@ export default function Draft() {
         >
           Import
         </Button>
-      </Box>
+      </Group>
 
       {players.length > 0 && (
         <Stack gap="sm" mb="60">
@@ -131,20 +134,61 @@ export default function Draft() {
       )}
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 60 }}>
         <Stack flex={1} gap="xl">
-          <Group
-            justify="space-between"
-            px="sm"
-            py="sm"
-            style={{
-              borderBottom: "rgba(0,0,0, 0.1) solid 1px",
-            }}
-          >
-            <Title order={2}>Slices</Title>
-            <Button onMouseDown={() => draftStore.addNewSlice()}>
-              Add New Slice
-            </Button>
-          </Group>
+          <SectionTitle title="Speaker Order" />
+          <SimpleGrid cols={6}>
+            {[1, 2, 3, 4, 5, 6].map((idx) => (
+              <Stack
+                bg="gray.1"
+                align="center"
+                gap="sm"
+                p="sm"
+                style={{
+                  borderRadius: 8,
+                  border: "1px solid rgba(0,0,0,0.1)",
+                }}
+              >
+                <Title order={5} ta="center" flex={1}>
+                  Position {idx}
+                </Title>
+                <Button key={idx} size="sm">
+                  Select
+                </Button>
+              </Stack>
+            ))}
+          </SimpleGrid>
 
+          <Stack flex={1} gap="xl">
+            <SectionTitle title="Faction" />
+            <SimpleGrid cols={5}>
+              {draft.factions.map((factionId) => (
+                <Stack
+                  bg="gray.1"
+                  align="center"
+                  gap="sm"
+                  p="sm"
+                  style={{
+                    borderRadius: 8,
+                    border: "1px solid rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <FactionIcon faction={factionId} style={{ width: 30 }} />
+                  <Title order={5} ta="center" flex={1}>
+                    {factions[factionId].name}
+                  </Title>
+                  <Button key={factionId} size="sm">
+                    Select
+                  </Button>
+                </Stack>
+              ))}
+            </SimpleGrid>
+          </Stack>
+
+          <SectionTitle title="Slices">
+            {/* Re-enable for draft editor */}
+            {/* <Button onMouseDown={() => draftStore.addNewSlice()}>
+              Add New Slice
+            </Button> */}
+          </SectionTitle>
           <SimpleGrid
             flex={1}
             cols={{ base: 1, sm: 2, md: 2, lg: 2 }}
@@ -179,20 +223,10 @@ export default function Draft() {
             style={{
               position: "sticky",
               width: "auto",
-              top: -20,
+              top: -10,
             }}
           >
-            <Group
-              justify="space-between"
-              px="sm"
-              py="sm"
-              mb="lg"
-              style={{
-                borderBottom: "rgba(0,0,0, 0.1) solid 1px",
-              }}
-            >
-              <Title order={2}>Full Map</Title>
-            </Group>
+            <SectionTitle title="Full Map" />
             <Box
               ref={ref}
               style={{
@@ -200,6 +234,7 @@ export default function Draft() {
                 width: "100%",
                 position: "relative",
               }}
+              mt="md"
             >
               <Map
                 id="full-map"
@@ -222,5 +257,27 @@ export default function Draft() {
         </Stack>
       </SimpleGrid>
     </Box>
+  );
+}
+
+function SectionTitle({
+  title,
+  children,
+}: {
+  title: string;
+  children?: ReactNode;
+}) {
+  return (
+    <Group
+      justify="space-between"
+      px="sm"
+      py="sm"
+      style={{
+        borderBottom: "rgba(0,0,0, 0.1) solid 1px",
+      }}
+    >
+      <Title order={2}>{title}</Title>
+      {children}
+    </Group>
   );
 }

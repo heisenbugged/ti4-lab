@@ -68,12 +68,26 @@ export type Map = {
 };
 
 // TODO: Finish filling out
-export type Faction = "mentak" | "yssaril";
+export type FactionId =
+  | "winnu"
+  | "hacan"
+  | "muaat"
+  | "creuss"
+  | "argent"
+  | "yin"
+  | "sol"
+  | "titans"
+  | "vulraith";
+
+export type Faction = {
+  iconPath: string;
+  name: string;
+};
 
 export type Player = {
   id: number;
   name: string;
-  faction?: Faction;
+  faction?: FactionId;
   seatIdx?: number;
   sliceIdx?: number;
 };
@@ -82,6 +96,7 @@ export type Draft = {
   rawMap: Map;
   hydratedMap: Map;
   activePlayer: number;
+  factions: FactionId[];
   players: Player[];
   slices: string[][];
 };

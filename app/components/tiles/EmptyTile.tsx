@@ -19,12 +19,6 @@ export function EmptyTile({ mapId, onSelect, modifiable = false }: Props) {
       id={`${mapId}-empty`}
       radius={radius}
       color={modifiable ? "#d6d6ea" : darken("#d6d6ea", 0.2)}
-    >
-      {modifiable && (
-        <Button px="6" py="4" h="auto" onMouseDown={onSelect}>
-          +
-        </Button>
-      )}
-    </Hex>
+    />
   );
 }

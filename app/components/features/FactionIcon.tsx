@@ -1,15 +1,11 @@
-import { Faction } from "~/types";
-
-const factionIcon: Record<Faction, string> = {
-  mentak: "/mentak.png",
-  yssaril: "/yssaril.png",
-};
+import { factions } from "~/data/factionData";
+import { FactionId } from "~/types";
 
 type Props = {
-  faction: Faction;
+  faction: FactionId;
   style?: React.CSSProperties;
 };
 
 export function FactionIcon({ faction, style }: Props) {
-  return <img src={factionIcon[faction]} style={style} />;
+  return <img src={factions[faction].iconPath} style={style} />;
 }
