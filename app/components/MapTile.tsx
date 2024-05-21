@@ -10,6 +10,8 @@ import { HomeTile } from "./tiles/HomeTile";
 type Props = {
   mapId: string;
   tile: Tile;
+  modifiable?: boolean;
+  homeSelectable?: boolean;
   onSelect?: () => void;
 };
 
@@ -18,6 +20,7 @@ export function MapTile(props: Props) {
   const {
     tile,
     tile: { position },
+    modifiable = false,
   } = props;
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
@@ -25,7 +28,14 @@ export function MapTile(props: Props) {
   let Tile: JSX.Element;
   switch (tile.type) {
     case "HOME":
-      Tile = <HomeTile mapId={props.mapId} tile={tile} />;
+      Tile = (
+        <HomeTile
+          mapId={props.mapId}
+          tile={tile}
+          selectable={!!props.homeSelectable}
+          onSelect={props.onSelect}
+        />
+      );
       break;
     case "SYSTEM":
       Tile = <SystemTile {...props} tile={tile} />;

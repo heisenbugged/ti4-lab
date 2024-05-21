@@ -1,5 +1,5 @@
 import { Box, Group, Input, Modal, Stack, Text } from "@mantine/core";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { searchableSystemData, systemData } from "~/data/systemData";
 import { PlanetStatsPill } from "../Slice/PlanetStatsPill";
 import { TechIcon } from "../features/TechIcon";
@@ -78,7 +78,7 @@ export function PlanetFinder({ opened, onClose, onSelectSystem }: Props) {
               {system.id}
             </Text>
             {system.planets.map((planet, idx) => (
-              <>
+              <Fragment key={planet.name}>
                 <Group gap={2}>
                   <Box
                     w="10"
@@ -96,7 +96,7 @@ export function PlanetFinder({ opened, onClose, onSelectSystem }: Props) {
                   )}
                 </Group>
                 {idx < system.planets.length - 1 && <Divider />}
-              </>
+              </Fragment>
             ))}
           </Group>
         ))}

@@ -1,14 +1,4 @@
-import {
-  Box,
-  Button,
-  Divider,
-  Flex,
-  Group,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Box, Button, Group, SimpleGrid, Stack, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { MetaFunction } from "@remix-run/node";
 import { useRef, useState } from "react";
@@ -17,6 +7,7 @@ import { PlanetFinder } from "~/components/PlanetFinder";
 import { Slice } from "~/components/Slice";
 import { useDraftStore } from "~/draftStore";
 import { useDimensions } from "~/hooks/useDimensions";
+import { mapConfig } from "~/utils/map";
 import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
 
 export const meta: MetaFunction = () => {
@@ -28,7 +19,8 @@ export const meta: MetaFunction = () => {
 
 export default function Draft() {
   const { ref, width } = useDimensions<HTMLDivElement>();
-  const draft = useDraftStore();
+  const draftStore = useDraftStore();
+  const draft = draftStore.draft;
   const hydratedMap = draft.hydratedMap;
   const players = draft.players;
 
@@ -36,36 +28,43 @@ export default function Draft() {
   const radius = calculateMaxHexWidthRadius(3, width, gap);
   const height = 7 * calcHexHeight(radius) + 6 * gap;
 
-  const selectedSliceIdx = useRef<number>(-1);
-  const selectedTileIdx = useRef<number>(-1);
+  const openTile = useRef<{
+    mode: "map" | "slice";
+    sliceIdx: number;
+    tileIdx: number;
+  }>({
+    mode: "map",
+    sliceIdx: -1,
+    tileIdx: -1,
+  });
   const [
     planetFinderOpened,
     { open: openPlanetFinder, close: closePlanetFinder },
   ] = useDisclosure(false);
+
+  const activePlayer = 1;
 
   return (
     <Box p="lg">
       <PlanetFinder
         opened={planetFinderOpened}
         onClose={() => {
-          selectedTileIdx.current = -1;
-          selectedSliceIdx.current = -1;
+          openTile.current = {
+            mode: "map",
+            sliceIdx: -1,
+            tileIdx: -1,
+          };
           closePlanetFinder();
         }}
         onSelectSystem={(system) => {
-          // TODO: Need a better way to handle if the selection mode is MAP vs TILE
-          if (selectedTileIdx.current > -1 && selectedSliceIdx.current === -1) {
-            draft.addSystemToMap(selectedTileIdx.current, system);
-          } else if (
-            selectedTileIdx.current > -1 &&
-            selectedSliceIdx.current > -1
-          ) {
-            draft.addSystemToSlice(
-              selectedSliceIdx.current,
-              selectedTileIdx.current,
-              system,
-            );
+          if (!openTile.current) return;
+          const { mode, sliceIdx, tileIdx } = openTile.current;
+
+          if (mode === "map") draftStore.addSystemToMap(tileIdx, system);
+          if (mode === "slice" && sliceIdx > -1) {
+            draftStore.addSystemToSlice(sliceIdx, tileIdx, system);
           }
+
           closePlanetFinder();
         }}
       />
@@ -80,14 +79,14 @@ export default function Draft() {
                 px="md"
                 py="xs"
               >
-                <Title order={3} c={idx === 3 ? "white" : "gray.8"} lh={1}>
+                <Title order={5} c={idx === 3 ? "white" : "gray.8"} lh={1}>
                   {player.name}
                 </Title>
               </Box>
             ))}
-            {players.reverse().map((player) => (
+            {[...players].reverse().map((player) => (
               <Box key={`${player.id}-2`} bg="gray.5" px="md" py="xs">
-                <Title order={3} c="gray.8" lh={1}>
+                <Title order={5} c="gray.8" lh={1}>
                   {player.name}
                 </Title>
               </Box>
@@ -106,11 +105,7 @@ export default function Draft() {
             }}
           >
             <Title>Slices</Title>
-            <Button
-              onMouseDown={() => {
-                draft.addNewSlice();
-              }}
-            >
+            <Button onMouseDown={() => draftStore.addNewSlice()}>
               Add New Slice
             </Button>
           </Group>
@@ -119,9 +114,7 @@ export default function Draft() {
             flex={1}
             cols={{ base: 1, sm: 2, md: 2, lg: 2 }}
             spacing="lg"
-            style={{
-              alignItems: "flex-start",
-            }}
+            style={{ alignItems: "flex-start" }}
           >
             {draft.slices.map((slice, idx) => (
               <Slice
@@ -131,9 +124,16 @@ export default function Draft() {
                 systems={slice}
                 player={players.find((p) => p.sliceIdx === idx)}
                 onSelectTile={(tileIdx) => {
-                  selectedSliceIdx.current = idx;
-                  selectedTileIdx.current = tileIdx;
+                  openTile.current = {
+                    mode: "slice",
+                    sliceIdx: idx,
+                    tileIdx: tileIdx,
+                  };
                   openPlanetFinder();
+                }}
+                onSelectSlice={() => {
+                  console.log("selecting", idx);
+                  draftStore.selectSlice(activePlayer, idx);
                 }}
               />
             ))}
@@ -144,7 +144,7 @@ export default function Draft() {
             style={{
               position: "sticky",
               width: "auto",
-              top: 25 + 30 + 5,
+              top: -20,
             }}
           >
             <Group
@@ -170,9 +170,21 @@ export default function Draft() {
                 id="full-map"
                 map={hydratedMap}
                 padding={0}
-                onSelectTile={(tileIdx) => {
-                  selectedTileIdx.current = tileIdx;
+                onSelectSystemTile={(tileIdx) => {
+                  openTile.current = {
+                    mode: "map",
+                    sliceIdx: -1,
+                    tileIdx,
+                  };
                   openPlanetFinder();
+                }}
+                onSelectHomeTile={(tileIdx) => {
+                  // TODO: make a better way of doing this
+                  // awkward that I'm getting the 'overall tile index' and have to do a manual search
+                  // honestly, the "tile index" should just be part of the home tile data object.
+                  const seat =
+                    mapConfig.standard.homeIdxInMapString.indexOf(tileIdx);
+                  draftStore.selectSeat(activePlayer, seat);
                 }}
               />
             </Box>

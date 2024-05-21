@@ -1,4 +1,4 @@
-import { Divider, Group, Stack, Text } from "@mantine/core";
+import { Button, Divider, Group, Stack, Text } from "@mantine/core";
 import { SliceMap } from "./SliceMap";
 import { TechIcon } from "../features/TechIcon";
 import { PlanetStatsPill } from "./PlanetStatsPill";
@@ -30,11 +30,20 @@ type Props = {
   systems: string[];
   player?: Player;
   onSelectTile?: (tileIdx: number) => void;
+  onSelectSlice?: () => void;
 };
 
-export function Slice({ id, name, systems, player, onSelectTile }: Props) {
-  const { tiles } = parseMapString(systems, slicePositionOrder);
-
+export function Slice({
+  id,
+  name,
+  systems,
+  player,
+  onSelectTile,
+  onSelectSlice,
+}: Props) {
+  // TODO: Ideally this parsing happens
+  // in the store, and not in this render function.
+  const { tiles } = parseMapString(systems, slicePositionOrder, false);
   const total = totalStats(tiles);
   const optimal = optimalStats(tiles);
   const specialties = techSpecialties(tiles);
@@ -52,7 +61,14 @@ export function Slice({ id, name, systems, player, onSelectTile }: Props) {
       <SliceHeader
         selected={selected}
         right={
-          player && <PlayerLabel faction={player.faction} name={player.name} />
+          <>
+            {player && (
+              <PlayerLabel faction={player.faction} name={player.name} />
+            )}
+            <Button lh={1} py={6} px={10} h="auto" onMouseDown={onSelectSlice}>
+              Select
+            </Button>
+          </>
         }
       >
         <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>

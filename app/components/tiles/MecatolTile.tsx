@@ -1,9 +1,8 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
 import { MapContext } from "../MapContext";
-import { Planet } from "../Planet";
 import { SystemTile as SystemTileType } from "~/types";
-import { Box, Flex, Group } from "@mantine/core";
+import { Box, Flex } from "@mantine/core";
 import { MecatolPlanet } from "../features/MecatolPlanet";
 import { PlanetName } from "../PlanetName";
 import { PlanetStats } from "../PlanetStats";

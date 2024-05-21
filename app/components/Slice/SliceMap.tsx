@@ -43,6 +43,7 @@ export function SliceMap({ id, tiles, onSelectTile }: Props) {
               key={idx}
               tile={t}
               onSelect={onSelectTile ? () => onSelectTile(idx) : undefined}
+              modifiable
             />
           ))}
       </div>

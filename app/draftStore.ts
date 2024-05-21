@@ -1,44 +1,11 @@
 import { create } from "zustand";
 import { Draft, Map, Player, System } from "./types";
-import { Map } from "./components/Map";
-import { MECATOL_TILE, hydrateMap, parseMapString } from "./utils/map";
+import { hydrateMap, parseMapString } from "./utils/map";
 
-// const players: Player[] = [
-//   {
-//     id: "abc",
-//     name: "James",
-//     faction: "mentak",
-//   },
-//   {
-//     id: "def",
-//     name: "Steven",
-//     faction: "yssaril",
-//   },
-//   {
-//     id: "def",
-//     name: "Joe",
-//     faction: "yssaril",
-//   },
-//   {
-//     id: "def",
-//     name: "Jim",
-//     faction: "yssaril",
-//   },
-//   {
-//     id: "def",
-//     name: "Jan",
-//     faction: "yssaril",
-//   },
-//   {
-//     id: "def",
-//     name: "Jen",
-//     faction: "yssaril",
-//   },
-// ];
-
-type DraftState = Draft & {
-  mapString: string[];
-  hydratedMap: Map;
+type DraftState = {
+  draft: Draft;
+  selectSeat: (playerId: number, seatIdx: number) => void;
+  selectSlice: (playerId: number, sliceIdx: number) => void;
   addNewSlice: () => void;
   addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) => void;
   addSystemToMap: (tileIdx: number, system: System) => void;
@@ -48,39 +15,108 @@ const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
     " ",
   );
-const EMPTY_MAP = {
-  tiles: [MECATOL_TILE, ...parseMapString(EMPTY_MAP_STRING).tiles],
-};
-
+const EMPTY_MAP = parseMapString(EMPTY_MAP_STRING);
 const EMPTY_HYDRATED_MAP = hydrateMap(EMPTY_MAP, {
   players: [],
   slices: [],
 });
 
 export const useDraftStore = create<DraftState>((set) => ({
-  mapString: EMPTY_MAP_STRING,
-  hydratedMap: EMPTY_HYDRATED_MAP,
-  players: [],
-  slices: [],
+  draft: {
+    rawMap: EMPTY_MAP,
+    hydratedMap: EMPTY_HYDRATED_MAP,
+    activePlayer: 1,
+    players: [
+      ...[1, 2, 3, 4, 5, 6].map((i) => ({
+        id: i,
+        name: `Player ${i}`,
+      })),
+    ],
+    slices: [
+      "-1 0 0 0".split(" "),
+      "-1 0 0 0".split(" "),
+      "-1 0 0 0".split(" "),
+      "-1 0 0 0".split(" "),
+      "-1 0 0 0".split(" "),
+      "-1 0 0 0".split(" "),
+    ],
+  },
+  selectSlice: (playerId: number, sliceIdx: number) =>
+    set(({ draft }) => {
+      const players = draft.players.map((p) =>
+        p.id === playerId ? { ...p, sliceIdx } : p,
+      );
+      const hydratedMap = hydrateMap(draft.rawMap, {
+        players,
+        slices: draft.slices,
+      });
+      return {
+        draft: {
+          ...draft,
+          players,
+          hydratedMap,
+        },
+      };
+    }),
+
+  selectSeat: (playerId: number, seatIdx: number) =>
+    set(({ draft }) => {
+      const players = draft.players.map((p) =>
+        p.id === playerId ? { ...p, seatIdx: seatIdx } : p,
+      );
+      const hydratedMap = hydrateMap(draft.rawMap, {
+        players,
+        slices: draft.slices,
+      });
+      return {
+        draft: {
+          ...draft,
+          players,
+          hydratedMap,
+        },
+      };
+    }),
+
   addNewSlice: () =>
-    set((state) => ({
-      slices: [...state.slices, ["-1", "0", "0", "0"]],
+    set(({ draft }) => ({
+      draft: {
+        ...draft,
+        slices: [...draft.slices, ["-1", "0", "0", "0"]],
+      },
     })),
+
   addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
-    set((state) => {
-      const slices = [...state.slices];
+    set(({ draft }) => {
+      const slices = [...draft.slices];
       slices[sliceIdx][tileIdx] = system.id.toString();
-      return { slices };
+      return {
+        draft: {
+          ...draft,
+          slices,
+        },
+      };
     }),
 
   addSystemToMap: (tileIdx: number, system: System) =>
-    set((state) => {
-      const hydratedMap = { ...state.hydratedMap };
-      hydratedMap.tiles[tileIdx] = {
-        ...hydratedMap.tiles[tileIdx],
+    set(({ draft }) => {
+      const map = { ...draft.rawMap };
+      map.tiles[tileIdx] = {
+        ...draft.rawMap.tiles[tileIdx],
         type: "SYSTEM",
         system,
       };
-      return { hydratedMap };
+
+      const hydratedMap = hydrateMap(map, {
+        players: draft.players,
+        slices: draft.slices,
+      });
+
+      return {
+        draft: {
+          ...draft,
+          rawMap: map,
+          hydratedMap,
+        },
+      };
     }),
 }));

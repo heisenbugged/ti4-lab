@@ -3,13 +3,7 @@ import { Hex } from "../Hex";
 import { MapContext } from "../MapContext";
 import { Planet } from "../Planet";
 import { SystemTile as SystemTileType } from "~/types";
-import {
-  Box,
-  Group,
-  Text,
-  useMantineContext,
-  useMantineTheme,
-} from "@mantine/core";
+import { Box, Group, Text, useMantineTheme } from "@mantine/core";
 import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
 import { GravityRift } from "../features/GravityRift";
@@ -17,17 +11,15 @@ import { GravityRift } from "../features/GravityRift";
 type Props = { mapId: string; tile: SystemTileType };
 
 export function SystemTile({ mapId, tile }: Props) {
-  const system = tile.system;
   const { radius } = useContext(MapContext);
+  const { colors } = useMantineTheme();
 
-  // TODO: Implement this some time.
-  // outlined:system.isLegendary() || system.isMecatolRexSystem(),
   const scale = calcScale(radius);
+  const system = tile.system;
   const image = tile.system.anomaly ? (
     <AnomalyImage radius={radius} anomaly={tile.system.anomaly} />
   ) : undefined;
-  const showSystemId = radius >= 51;
-  const { colors } = useMantineTheme();
+  const showSystemId = radius >= 53;
 
   return (
     <Hex

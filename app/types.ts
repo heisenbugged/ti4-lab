@@ -38,37 +38,22 @@ export type TilePosition = {
   // z: number;
 };
 
-export type SystemTile = {
+type BaseTile = {
+  tileIdx: number;
+  position: TilePosition;
+  system?: System;
+};
+
+export type SystemTile = BaseTile & {
   position: TilePosition;
   type: "SYSTEM";
   system: System;
 };
 
-type BaseTile = {
-  position: TilePosition;
-  system?: System;
-};
-
-// TODO: Finish filling out
-export type Faction = "mentak" | "yssaril";
-
-export type Player = {
-  id: string;
-  name: string;
-  faction: Faction; // TODO: Make nullable
-  seat?: number;
-  sliceIdx?: number;
-};
-
-export type HomeTile = {
-  position: TilePosition;
+export type HomeTile = BaseTile & {
   type: "HOME";
+  seatIdx: number;
   player?: Player;
-};
-
-export type Draft = {
-  players: Player[];
-  slices: string[][]; // TODO: Should I make them the actual objects?
 };
 
 export type Tile =
@@ -80,4 +65,23 @@ export type Tile =
 
 export type Map = {
   tiles: Tile[];
+};
+
+// TODO: Finish filling out
+export type Faction = "mentak" | "yssaril";
+
+export type Player = {
+  id: number;
+  name: string;
+  faction?: Faction;
+  seatIdx?: number;
+  sliceIdx?: number;
+};
+
+export type Draft = {
+  rawMap: Map;
+  hydratedMap: Map;
+  activePlayer: number;
+  players: Player[];
+  slices: string[][];
 };

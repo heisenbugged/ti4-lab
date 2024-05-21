@@ -14,9 +14,7 @@ const mapString =
   "30 43 37 61 62 68 64 42 75 49 65 25 44 66 36 28 47 19 0 24 39 0 79 33 0 32 46 0 74 23 0 35 26 0 38 73".split(
     " ",
   );
-const map = {
-  tiles: [MECATOL_TILE, ...parseMapString(mapString).tiles],
-};
+const map = parseMapString(mapString);
 
 const PADDING = 25;
 export default function Index() {

@@ -4,15 +4,23 @@ import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
+import { isTileModifiable } from "~/utils/map";
 
 type Props = {
   id: string;
   map: MapType;
   padding: number;
-  onSelectTile?: (tileIdx: number) => void;
+  onSelectSystemTile?: (tileIdx: number) => void;
+  onSelectHomeTile?: (tileIdx: number) => void;
 };
 
-export function Map({ id, map, padding, onSelectTile }: Props) {
+export function Map({
+  id,
+  map,
+  padding,
+  onSelectSystemTile,
+  onSelectHomeTile,
+}: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = 3;
   const gap = Math.min(width, height) * 0.01;
@@ -33,9 +41,15 @@ export function Map({ id, map, padding, onSelectTile }: Props) {
         {map.tiles.map((tile, idx) => (
           <MapTile
             mapId={id}
-            key={`${tile.position.x}-${tile.position.y}-${tile.position.z}`}
+            key={`${tile.position.x}-${tile.position.y}`}
             tile={tile}
-            onSelect={() => onSelectTile?.(idx)}
+            onSelect={() => {
+              if (tile.type === "SYSTEM" || tile.type === "OPEN")
+                onSelectSystemTile?.(idx);
+              if (tile.type === "HOME") onSelectHomeTile?.(idx);
+            }}
+            modifiable={isTileModifiable(idx)} // TODO: Make this false if not draftig
+            homeSelectable // TODO: Make this false if not drafting
           />
         ))}
       </Box>

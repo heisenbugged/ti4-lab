@@ -1,20 +1,27 @@
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { planetData } from "~/data/planetData";
 import { systemData } from "~/data/systemData";
-import { Draft, HomeTile, Map, TechSpecialty, Tile } from "~/types";
+import {
+  Draft,
+  HomeTile,
+  Map,
+  TechSpecialty,
+  Tile,
+  TilePosition,
+} from "~/types";
 
 /**
  * Represents the pre-computed values required to manipulate the map
  * during the drafting process.
  */
-const mapConfig = {
+export const mapConfig = {
   standard: {
-    // Represents the location of each home system (or 'seat') in the map string
+    // Represents the location of each home system (or 'seat') in the map string (w/ mecatol included)
     // ordered from 12 o'clock going clockwise
-    //
-    // these indexes assume mecatol is the first on the map string.
-    // TODO: Double check that is how map string importing actually works.
     homeIdxInMapString: [28, 25, 22, 19, 34, 31],
+
+    // tiles that are directly modifiable on the map (i.e. not part of a slice)
+    modifiableMapTiles: [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18],
 
     // For a given seat number (in clockwise order, from 0 to 5),
     // contains the relative positions to modify around the home system
@@ -54,7 +61,11 @@ const mapConfig = {
   },
 };
 
+export const isTileModifiable = (tileIdx: number) =>
+  mapConfig.standard.modifiableMapTiles.includes(tileIdx);
+
 export const MECATOL_TILE: Tile = {
+  tileIdx: 0,
   position: { x: 0, y: 0 },
   type: "SYSTEM",
   system: {
@@ -63,7 +74,10 @@ export const MECATOL_TILE: Tile = {
   },
 };
 
-export const hydrateMap = (map: Map, draft: Draft): Map => {
+export const hydrateMap = (
+  map: Map,
+  draft: Pick<Draft, "players" | "slices">,
+): Map => {
   const hydrated: Tile[] = [...map.tiles];
 
   // add player data to home systems
@@ -74,7 +88,7 @@ export const hydrateMap = (map: Map, draft: Draft): Map => {
 
   // Function to modify positions based on slices
   const applySlice = (tile: Tile, homeIdx: number) => {
-    const player = draft.players.find((p) => p.seat === homeIdx);
+    const player = draft.players.find((p) => p.seatIdx === homeIdx);
     if (!player || player.sliceIdx === undefined) return;
     const slice = draft.slices[player.sliceIdx];
 
@@ -92,6 +106,7 @@ export const hydrateMap = (map: Map, draft: Draft): Map => {
 
         // replace with new tile from slice.
         hydrated[idxToModify] = {
+          tileIdx: idxToModify,
           position: pos,
           type: "SYSTEM",
           system: systemData[parseInt(slice[sliceIdx + 1])],
@@ -112,6 +127,7 @@ const forHomeTiles = (
   tiles: Tile[],
   fn: (tile: Tile, homeIdx: number) => void,
 ) => {
+  console.log("tiles", tiles);
   tiles.forEach((tile, idx) => {
     const homeSystemIdx = mapConfig.standard.homeIdxInMapString.indexOf(idx);
     if (homeSystemIdx !== -1) {
@@ -122,43 +138,51 @@ const forHomeTiles = (
 
 const hydrateHomeTile = (
   tile: Tile,
-  draft: Draft,
+  draft: Pick<Draft, "players" | "slices">,
   seatIdx: number,
 ): HomeTile => {
-  const player = draft.players.find((p) => p.seat === seatIdx);
-  return { ...tile, type: "HOME", player };
+  const player = draft.players.find((p) => p.seatIdx === seatIdx);
+  return { ...tile, type: "HOME", player, seatIdx };
 };
 
 export const parseMapString = (
   systems: string[],
-  // TODO: Technically 'z' is superfluous, but it's easier to keep it in for now.
-  positionOrder: { x: number; y: number; z: number }[] = mapStringOrder,
+  positionOrder: TilePosition[] = mapStringOrder,
+  includeMecatol = true,
 ): Map => {
-  const tiles: Tile[] = systems
+  const rawSystems = includeMecatol ? ["18", ...systems] : systems;
+  console.log("the raw systems are", rawSystems);
+  const tiles: Tile[] = rawSystems
     .map((n) => [n, systemData[parseInt(n)]] as const)
-    .map(([id, system], idx) => {
-      const position = positionOrder[idx];
-      // empty home system is denoted by a -1 on the map string
-      if (id === "-1")
+    .map(([id, system], tileIdx) => {
+      const position = positionOrder[tileIdx];
+      const seatIdx = mapConfig.standard.homeIdxInMapString.indexOf(tileIdx);
+      if (seatIdx >= 0 || id === "-1") {
         return {
+          tileIdx,
           position,
           type: "HOME" as const,
           system: undefined,
+          seatIdx,
         };
+      }
 
       if (!system)
         return {
+          tileIdx,
           position,
           type: "OPEN" as const,
           system: undefined,
         };
 
       return {
+        tileIdx,
         position,
         type: "SYSTEM",
         system,
       };
     });
+
   return { tiles };
 };
 
