@@ -1,4 +1,4 @@
-import { Map as MapType, System } from "~/types";
+import { HomeTile, Map as MapType, System } from "~/types";
 import { MapContext } from "./MapContext";
 import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
@@ -11,7 +11,7 @@ type Props = {
   map: MapType;
   padding: number;
   onSelectSystemTile?: (tileIdx: number) => void;
-  onSelectHomeTile?: (tileIdx: number) => void;
+  onSelectHomeTile?: (tile: HomeTile) => void;
 };
 
 export function Map({
@@ -46,9 +46,9 @@ export function Map({
             onSelect={() => {
               if (tile.type === "SYSTEM" || tile.type === "OPEN")
                 onSelectSystemTile?.(idx);
-              if (tile.type === "HOME") onSelectHomeTile?.(idx);
+              if (tile.type === "HOME") onSelectHomeTile?.(tile);
             }}
-            modifiable={isTileModifiable(idx)} // TODO: Make this false if not draftig
+            modifiable={isTileModifiable(idx)} // TODO: Make this false if not drafting
             homeSelectable // TODO: Make this false if not drafting
           />
         ))}

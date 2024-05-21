@@ -1,5 +1,4 @@
 import { mapStringOrder } from "~/data/mapStringOrder";
-import { planetData } from "~/data/planetData";
 import { systemData } from "~/data/systemData";
 import {
   Draft,
@@ -64,16 +63,6 @@ export const mapConfig = {
 export const isTileModifiable = (tileIdx: number) =>
   mapConfig.standard.modifiableMapTiles.includes(tileIdx);
 
-export const MECATOL_TILE: Tile = {
-  tileIdx: 0,
-  position: { x: 0, y: 0 },
-  type: "SYSTEM",
-  system: {
-    id: 18,
-    planets: planetData.filter((planet) => planet.name === "Mecatol Rex"),
-  },
-};
-
 export const hydrateMap = (
   map: Map,
   draft: Pick<Draft, "players" | "slices">,
@@ -86,19 +75,15 @@ export const hydrateMap = (
     hydrated[tileIdx] = hydrateHomeTile(tile, draft, homeIdx);
   });
 
-  // Function to modify positions based on slices
-  const applySlice = (tile: Tile, homeIdx: number) => {
+  // Iterate over home tiles to apply slices
+  forHomeTiles(hydrated, (tile, homeIdx) => {
     const player = draft.players.find((p) => p.seatIdx === homeIdx);
     if (!player || player.sliceIdx === undefined) return;
     const slice = draft.slices[player.sliceIdx];
 
     mapConfig.standard.seatTilePositions[homeIdx]?.forEach(
       ([x, y], sliceIdx) => {
-        const pos = {
-          x: tile.position.x + x,
-          y: tile.position.y + y,
-        };
-
+        const pos = { x: tile.position.x + x, y: tile.position.y + y };
         // find tile the matches the hexagonal coordinate position to modify
         const idxToModify = hydrated.findIndex(
           (t) => t.position.x === pos.x && t.position.y === pos.y,
@@ -106,17 +91,15 @@ export const hydrateMap = (
 
         // replace with new tile from slice.
         hydrated[idxToModify] = {
-          tileIdx: idxToModify,
+          idx: idxToModify,
           position: pos,
           type: "SYSTEM",
           system: systemData[parseInt(slice[sliceIdx + 1])],
         };
       },
     );
-  };
+  });
 
-  // Iterate over home tiles to apply slices
-  forHomeTiles(hydrated, applySlice);
   return { ...map, tiles: hydrated };
 };
 
@@ -151,36 +134,20 @@ export const parseMapString = (
   includeMecatol = true,
 ): Map => {
   const rawSystems = includeMecatol ? ["18", ...systems] : systems;
-  console.log("the raw systems are", rawSystems);
   const tiles: Tile[] = rawSystems
     .map((n) => [n, systemData[parseInt(n)]] as const)
-    .map(([id, system], tileIdx) => {
-      const position = positionOrder[tileIdx];
-      const seatIdx = mapConfig.standard.homeIdxInMapString.indexOf(tileIdx);
+    .map(([id, system], idx) => {
+      const position = positionOrder[idx];
+      const seatIdx = mapConfig.standard.homeIdxInMapString.indexOf(idx);
+
+      const baseAttrs = { id, idx, seatIdx, position, system };
       if (seatIdx >= 0 || id === "-1") {
-        return {
-          tileIdx,
-          position,
-          type: "HOME" as const,
-          system: undefined,
-          seatIdx,
-        };
+        return { ...baseAttrs, type: "HOME" as const };
+      } else if (system) {
+        return { ...baseAttrs, type: "SYSTEM" };
+      } else {
+        return { ...baseAttrs, type: "OPEN" as const };
       }
-
-      if (!system)
-        return {
-          tileIdx,
-          position,
-          type: "OPEN" as const,
-          system: undefined,
-        };
-
-      return {
-        tileIdx,
-        position,
-        type: "SYSTEM",
-        system,
-      };
     });
 
   return { tiles };

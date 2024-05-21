@@ -39,7 +39,7 @@ export type TilePosition = {
 };
 
 type BaseTile = {
-  tileIdx: number;
+  idx: number;
   position: TilePosition;
   system?: System;
 };

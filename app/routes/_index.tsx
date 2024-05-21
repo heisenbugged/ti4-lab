@@ -1,7 +1,7 @@
 import { Box, Group, Text } from "@mantine/core";
 import type { MetaFunction } from "@remix-run/node";
 import { Map } from "~/components/Map";
-import { MECATOL_TILE, parseMapString } from "~/utils/map";
+import { parseMapString } from "~/utils/map";
 
 export const meta: MetaFunction = () => {
   return [

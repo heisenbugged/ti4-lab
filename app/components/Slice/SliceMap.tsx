@@ -8,7 +8,7 @@ import { System, Tile } from "~/types";
 type Props = {
   id: string;
   tiles: Tile[];
-  onSelectTile?: (tileIdx: number) => void;
+  onSelectTile?: (tile: Tile) => void;
 };
 
 export function SliceMap({ id, tiles, onSelectTile }: Props) {
@@ -42,7 +42,7 @@ export function SliceMap({ id, tiles, onSelectTile }: Props) {
               mapId={id}
               key={idx}
               tile={t}
-              onSelect={onSelectTile ? () => onSelectTile(idx) : undefined}
+              onSelect={onSelectTile ? () => onSelectTile(t) : undefined}
               modifiable
             />
           ))}

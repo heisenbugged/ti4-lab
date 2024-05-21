@@ -123,11 +123,11 @@ export default function Draft() {
                 name={`Slice ${idx + 1}`}
                 systems={slice}
                 player={players.find((p) => p.sliceIdx === idx)}
-                onSelectTile={(tileIdx) => {
+                onSelectTile={(tile) => {
                   openTile.current = {
                     mode: "slice",
                     sliceIdx: idx,
-                    tileIdx: tileIdx,
+                    tileIdx: tile.idx,
                   };
                   openPlanetFinder();
                 }}
@@ -178,14 +178,9 @@ export default function Draft() {
                   };
                   openPlanetFinder();
                 }}
-                onSelectHomeTile={(tileIdx) => {
-                  // TODO: make a better way of doing this
-                  // awkward that I'm getting the 'overall tile index' and have to do a manual search
-                  // honestly, the "tile index" should just be part of the home tile data object.
-                  const seat =
-                    mapConfig.standard.homeIdxInMapString.indexOf(tileIdx);
-                  draftStore.selectSeat(activePlayer, seat);
-                }}
+                onSelectHomeTile={(tile) =>
+                  draftStore.selectSeat(activePlayer, tile.seatIdx)
+                }
               />
             </Box>
           </div>

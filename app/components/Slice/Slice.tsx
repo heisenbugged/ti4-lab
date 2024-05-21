@@ -12,7 +12,7 @@ import {
 import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
 import { PlayerLabel } from "../PlayerLabel";
-import { Player, System } from "~/types";
+import { Player, System, Tile } from "~/types";
 
 const slicePositionOrder = [
   { x: 0, y: 0, z: 0 },
@@ -29,7 +29,7 @@ type Props = {
   name: string;
   systems: string[];
   player?: Player;
-  onSelectTile?: (tileIdx: number) => void;
+  onSelectTile?: (tile: Tile) => void;
   onSelectSlice?: () => void;
 };
 
