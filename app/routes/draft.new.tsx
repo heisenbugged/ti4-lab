@@ -1,7 +1,7 @@
 import { Box, Group, Input, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { MetaFunction } from "@remix-run/node";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { PlanetFinder } from "~/components/PlanetFinder";
 import {
   AvailableFactionsSection,
@@ -20,6 +20,17 @@ export const meta: MetaFunction = () => {
 };
 
 export default function DraftNew() {
+  // Example of socket, to be put on actual draft page.
+  // const socket = useSocket();
+  // useEffect(() => {
+  //   if (!socket) return;
+  //   socket.on("event", (data) => {
+  //     debugger;
+  //     console.log(data);
+  //   });
+  //   socket.emit("event", "ping");
+  // }, [socket]);
+
   const draft = useNewDraft();
   const openTile = useRef<{
     mode: "map" | "slice";
@@ -69,6 +80,10 @@ export default function DraftNew() {
         }}
         usedSystemIds={usedSystemIds}
       />
+
+      <button type="button" onClick={() => socket?.emit("event", "ping")}>
+        Send ping
+      </button>
 
       <ImportMapInput onImport={draft.importMap} />
 

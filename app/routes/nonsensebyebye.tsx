@@ -211,7 +211,6 @@ export default function Draft() {
                   openPlanetFinder();
                 }}
                 onSelectSlice={() => {
-                  console.log("selecting", idx);
                   draftStore.selectSlice(activePlayer, idx);
                 }}
               />

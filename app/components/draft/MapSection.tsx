@@ -19,8 +19,6 @@ export function MapSection({ map, onSelectSystemTile }: Props) {
   const { ref, width } = useDimensions<HTMLDivElement>();
   const { height: windowHeight } = useWindowDimensions();
 
-  console.log("width", width);
-
   const gap = 6;
   // Calculate preliminary height and radius bounded by width.
   const radius = calculateMaxHexWidthRadius(3, width, gap);

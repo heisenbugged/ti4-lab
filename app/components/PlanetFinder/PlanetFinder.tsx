@@ -33,7 +33,6 @@ export function PlanetFinder({
       : [];
 
   const { itemRefs, resetFocus } = useArrowFocus(systems, (idx) => {
-    console.log("the idx is", idx);
     // 0 is reserved for search bar
     if (idx <= 0) return;
     onSelectSystem(systems[idx - 1]);
