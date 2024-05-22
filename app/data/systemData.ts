@@ -289,6 +289,7 @@ export const searchableSystemData = Object.values(systemData).reduce(
   (acc, system) => {
     const nameParts: string[] = [system.id.toString()];
     if (system.anomaly) nameParts.push(searchableAnomaly[system.anomaly]);
+    if (system.wormhole) nameParts.push(system.wormhole.toLowerCase());
     for (const planet of system.planets) {
       nameParts.push(planet.name.toLowerCase());
       if (planet.trait) nameParts.push(searchableTrait[planet.trait]);

@@ -1,15 +1,11 @@
 import { create } from "zustand";
-import { Draft, Map, Player, System } from "./types";
+import { Draft, FactionId, Map, Player, System } from "./types";
 import { hydrateMap, parseMapString, sliceMap } from "./utils/map";
 
 type DraftState = {
   draft: Draft;
-  importMap: (mapString: string) => void;
   selectSeat: (playerId: number, seatIdx: number) => void;
   selectSlice: (playerId: number, sliceIdx: number) => void;
-  addNewSlice: () => void;
-  addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) => void;
-  addSystemToMap: (tileIdx: number, system: System) => void;
 };
 
 const EMPTY_MAP_STRING =
@@ -27,17 +23,7 @@ export const useDraftStore = create<DraftState>((set) => ({
     rawMap: EMPTY_MAP,
     hydratedMap: EMPTY_HYDRATED_MAP,
     activePlayer: 1,
-    factions: [
-      "argent",
-      "creuss",
-      "hacan",
-      "muaat",
-      "sol",
-      "titans",
-      "vulraith",
-      "winnu",
-      "yin",
-    ],
+    factions: [],
     // TODO: Should not preload these factions, but for now it's fine.
     players: [
       ...[1, 2, 3, 4, 5, 6].map((i) => ({
@@ -54,26 +40,6 @@ export const useDraftStore = create<DraftState>((set) => ({
       "-1 0 0 0".split(" "),
     ],
   },
-  importMap: (mapString: string) =>
-    set(({ draft }) => {
-      const rawMap = parseMapString(mapString.split(" "));
-      const { slices, map: slicedMap } = sliceMap(rawMap);
-      // debugger;
-      // const hydratedMap = hydrateMap(slicedMap, {
-      //   players: draft.players,
-      //   slices: [],
-      // });
-
-      debugger;
-      return {
-        draft: {
-          ...draft,
-          rawMap: slicedMap,
-          hydratedMap: slicedMap,
-          slices,
-        },
-      };
-    }),
 
   selectSlice: (playerId: number, sliceIdx: number) =>
     set(({ draft }) => {
@@ -110,47 +76,72 @@ export const useDraftStore = create<DraftState>((set) => ({
         },
       };
     }),
+}));
 
-  addNewSlice: () =>
-    set(({ draft }) => ({
-      draft: {
-        ...draft,
-        slices: [["-1", "0", "0", "0"], ...draft.slices],
-      },
-    })),
+type DraftOptionsState = {
+  map: Map;
+  slices: string[][];
+  availableFactions: FactionId[];
+  importMap: (mapString: string) => void;
+  addSystemToMap: (tileIdx: number, system: System) => void;
+  addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) => void;
+  addNewSlice: () => void;
+  addFaction: (id: FactionId) => void;
+  removeFaction: (id: FactionId) => void;
+};
 
-  addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
-    set(({ draft }) => {
-      const slices = [...draft.slices];
-      slices[sliceIdx][tileIdx] = system.id.toString();
+export const useDraftOptions = create<DraftOptionsState>((set) => ({
+  map: EMPTY_MAP,
+  slices: [
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+  ],
+  availableFactions: [],
+  importMap: (mapString: string) =>
+    set(() => {
+      const rawMap = parseMapString(mapString.split(" "));
+      const { slices, map: slicedMap } = sliceMap(rawMap);
       return {
-        draft: {
-          ...draft,
-          slices,
-        },
+        map: slicedMap,
+        slices,
       };
     }),
 
   addSystemToMap: (tileIdx: number, system: System) =>
-    set(({ draft }) => {
-      const map = { ...draft.rawMap };
+    set((state) => {
+      const map = { ...state.map };
       map.tiles[tileIdx] = {
-        ...draft.rawMap.tiles[tileIdx],
+        ...state.map.tiles[tileIdx],
         type: "SYSTEM",
         system,
       };
 
-      const hydratedMap = hydrateMap(map, {
-        players: draft.players,
-        slices: draft.slices,
-      });
-
-      return {
-        draft: {
-          ...draft,
-          rawMap: map,
-          hydratedMap,
-        },
-      };
+      return { map };
     }),
+
+  addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
+    set((state) => {
+      const slices = [...state.slices];
+      slices[sliceIdx][tileIdx] = system.id.toString();
+      return { slices };
+    }),
+
+  addNewSlice: () =>
+    set((state) => ({
+      slices: [["-1", "0", "0", "0"], ...state.slices],
+    })),
+
+  addFaction: (id: FactionId) =>
+    set(({ availableFactions }) => ({
+      availableFactions: [...availableFactions, id],
+    })),
+
+  removeFaction: (id: FactionId) =>
+    set(({ availableFactions }) => ({
+      availableFactions: availableFactions.filter((f) => f !== id),
+    })),
 }));

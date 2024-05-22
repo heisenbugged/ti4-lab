@@ -3,10 +3,11 @@ import { Hex } from "../Hex";
 import { MapContext } from "../MapContext";
 import { Planet } from "../Planet";
 import { SystemTile as SystemTileType } from "~/types";
-import { Box, Group, Text, useMantineTheme } from "@mantine/core";
+import { Group, Text, useMantineTheme } from "@mantine/core";
 import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
 import { GravityRift } from "../features/GravityRift";
+import { Wormhole } from "../features/Wormhole";
 
 type Props = { mapId: string; tile: SystemTileType };
 
@@ -56,6 +57,7 @@ export function SystemTile({ mapId, tile }: Props) {
           />
         ))}
         {system.anomaly === "GRAVITY_RIFT" && <GravityRift />}
+        {system.wormhole && <Wormhole wormhole={system.wormhole} />}
       </Group>
     </Hex>
   );

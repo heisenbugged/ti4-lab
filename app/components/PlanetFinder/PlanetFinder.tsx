@@ -121,6 +121,11 @@ export function PlanetFinder({
                     EMPTY
                   </Text>
                 )}
+              {system.wormhole && (
+                <Text size="sm" c="gray.7">
+                  {system.wormhole} wormhole
+                </Text>
+              )}
             </Group>
             {usedSystemIds.includes(system.id.toString()) && (
               <Text c="violet">In Use</Text>

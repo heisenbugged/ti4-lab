@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Checkbox,
   Group,
   Input,
   SimpleGrid,
@@ -16,9 +15,8 @@ import { Map } from "~/components/Map";
 import { NewDraftFaction } from "~/components/NewDraftFaction";
 import { PlanetFinder } from "~/components/PlanetFinder";
 import { Slice } from "~/components/Slice";
-import { FactionIcon } from "~/components/features/FactionIcon";
 import { factions } from "~/data/factionData";
-import { useDraftStore } from "~/draftStore";
+import { useDraftOptions } from "~/draftStore";
 import { useDimensions } from "~/hooks/useDimensions";
 import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
 
@@ -31,10 +29,7 @@ export const meta: MetaFunction = () => {
 
 export default function DraftNew() {
   const { ref, width } = useDimensions<HTMLDivElement>();
-  const draftStore = useDraftStore();
-  const draft = draftStore.draft;
-  const hydratedMap = draft.hydratedMap;
-  const players = draft.players;
+  const draft = useDraftOptions(); // TODO: Rename
 
   const gap = 6;
   const radius = calculateMaxHexWidthRadius(3, width, gap);
@@ -57,7 +52,7 @@ export default function DraftNew() {
   const activePlayer = 1;
   const usedSystemIds = [
     draft.slices,
-    draft.hydratedMap.tiles
+    draft.map.tiles
       .filter((t) => t.type === "SYSTEM")
       .map((t) => t.system!!.id.toString()),
   ]
@@ -82,9 +77,9 @@ export default function DraftNew() {
           if (!openTile.current) return;
           const { mode, sliceIdx, tileIdx } = openTile.current;
 
-          if (mode === "map") draftStore.addSystemToMap(tileIdx, system);
+          if (mode === "map") draft.addSystemToMap(tileIdx, system);
           if (mode === "slice" && sliceIdx > -1) {
-            draftStore.addSystemToSlice(sliceIdx, tileIdx, system);
+            draft.addSystemToSlice(sliceIdx, tileIdx, system);
           }
 
           closePlanetFinder();
@@ -101,7 +96,7 @@ export default function DraftNew() {
         />
         <Button
           onClick={() => {
-            draftStore.importMap(importableMap);
+            draft.importMap(importableMap);
           }}
         >
           Import
@@ -124,6 +119,11 @@ export default function DraftNew() {
                   size="sm"
                   type="number"
                   min={6}
+                  value={
+                    draft.availableFactions.length > 0
+                      ? draft.availableFactions.length
+                      : ""
+                  }
                 />
               </Group>
             </SectionTitle>
@@ -132,13 +132,21 @@ export default function DraftNew() {
                 <NewDraftFaction
                   key={factionId}
                   faction={factions[factionId]}
+                  onCheck={(checked) => {
+                    console.log("hi");
+                    if (checked) {
+                      draft.addFaction(factionId);
+                    } else {
+                      draft.removeFaction(factionId);
+                    }
+                  }}
                 />
               ))}
             </SimpleGrid>
           </Stack>
 
           <SectionTitle title="Slices">
-            <Button onMouseDown={() => draftStore.addNewSlice()}>
+            <Button onMouseDown={() => draft.addNewSlice()}>
               Add New Slice
             </Button>
           </SectionTitle>
@@ -155,7 +163,6 @@ export default function DraftNew() {
                 name={`Slice ${idx + 1}`}
                 mode="create"
                 systems={slice}
-                player={players.find((p) => p.sliceIdx === idx)}
                 onSelectTile={(tile) => {
                   openTile.current = {
                     mode: "slice",
@@ -163,10 +170,6 @@ export default function DraftNew() {
                     tileIdx: tile.idx,
                   };
                   openPlanetFinder();
-                }}
-                onSelectSlice={() => {
-                  console.log("selecting", idx);
-                  draftStore.selectSlice(activePlayer, idx);
                 }}
               />
             ))}
@@ -192,7 +195,7 @@ export default function DraftNew() {
             >
               <Map
                 id="full-map"
-                map={hydratedMap}
+                map={draft.map}
                 padding={0}
                 onSelectSystemTile={(tileIdx) => {
                   openTile.current = {
@@ -202,9 +205,6 @@ export default function DraftNew() {
                   };
                   openPlanetFinder();
                 }}
-                onSelectHomeTile={(tile) =>
-                  draftStore.selectSeat(activePlayer, tile.seatIdx)
-                }
                 mode="create"
               />
             </Box>
