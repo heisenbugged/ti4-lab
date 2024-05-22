@@ -25,6 +25,7 @@ export function SectionTitle({
         borderBottom: "var(--mantine-color-spaceBlue-1) solid 1px",
         background:
           "linear-gradient(90deg, var(--mantine-color-spaceBlue-1) 0%, #ffffff 50%)",
+        borderTopLeftRadius: 8,
       }}
     >
       <Title order={2}>{title}</Title>
