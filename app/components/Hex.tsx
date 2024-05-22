@@ -26,7 +26,7 @@ export function Hex({ id, color, radius, children, image, anomaly }: Props) {
               <polygon points={pointsString} />
             </clipPath>
           </defs>
-          <g clipPath={`url(#hexClip-${id}`}>{image}</g>
+          <g clipPath={`url(#hexClip-${id})`}>{image}</g>
           {anomaly && <AnomalyBorder radius={radius} points={points} />}
         </svg>
       </div>

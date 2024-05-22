@@ -115,7 +115,7 @@ export const useDraftStore = create<DraftState>((set) => ({
     set(({ draft }) => ({
       draft: {
         ...draft,
-        slices: [...draft.slices, ["-1", "0", "0", "0"]],
+        slices: [["-1", "0", "0", "0"], ...draft.slices],
       },
     })),
 

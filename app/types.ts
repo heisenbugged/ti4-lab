@@ -69,17 +69,34 @@ export type Map = {
 
 // TODO: Finish filling out
 export type FactionId =
-  | "winnu"
-  | "hacan"
+  | "sardakk"
+  | "arborec"
+  | "barony"
+  | "saar"
   | "muaat"
-  | "creuss"
-  | "argent"
-  | "yin"
+  | "hacan"
   | "sol"
+  | "creuss"
+  | "l1z1x"
+  | "mentak"
+  | "naalu"
+  | "nekro"
+  | "jolnar"
+  | "winnu"
+  | "xxcha"
+  | "yin"
+  | "yssaril"
+  | "argent"
+  | "empyrean"
+  | "mahact"
+  | "naazrokha"
+  | "nomad"
   | "titans"
-  | "vulraith";
+  | "vulraith"
+  | "keleres";
 
 export type Faction = {
+  id: FactionId;
   iconPath: string;
   name: string;
 };

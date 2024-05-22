@@ -36,6 +36,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <MantineProvider
           theme={{
             colors: {
+              purple: [
+                "#f3edff",
+                "#e0d7fa",
+                "#beabf0",
+                "#9a7ce6",
+                "#7c56de",
+                "#683dd9",
+                "#5f2fd8",
+                "#4f23c0",
+                "#451eac",
+                "#3a1899",
+              ],
               spaceBlue: [
                 "#eef3ff",
                 "#dee4f3",
@@ -49,6 +61,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 "#324b7c",
               ],
             },
+            primaryColor: "purple",
             fontFamily: '"Quantico", sans-serif',
             // fontFamily: "Orbitron",
             headings: {

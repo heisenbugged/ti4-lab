@@ -1,6 +1,7 @@
 import { AppShell, Burger, Flex, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import Draft from "./draft";
+// import Draft from "./draft.$id";
+// import Draft from "./draft";
 
 export default function Testing() {
   const [opened, { toggle }] = useDisclosure();
@@ -15,9 +16,7 @@ export default function Testing() {
         </Flex>
       </AppShell.Header>
 
-      <AppShell.Main>
-        <Draft />
-      </AppShell.Main>
+      <AppShell.Main>{/* <Draft /> */}</AppShell.Main>
     </AppShell>
   );
 }

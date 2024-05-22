@@ -6,7 +6,7 @@ import { MapContext } from "./MapContext";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
-import { Button } from "@mantine/core";
+import { Button, alpha } from "@mantine/core";
 import { Hex } from "./Hex";
 
 import "./MapTile.css";
@@ -60,7 +60,9 @@ export function MapTile(props: Props) {
     modifiable && (hovered || tile.type === "OPEN") && tile.type !== "HOME";
 
   const overlayColor =
-    tile.type !== "OPEN" ? "rgba(255, 255, 255, 0.70)" : "rgba(0, 0, 0, 0)";
+    tile.type !== "OPEN"
+      ? alpha("var(--mantine-primary-color-filled)", 0.6)
+      : "rgba(0, 0, 0, 0)";
 
   return (
     <div

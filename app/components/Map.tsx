@@ -10,6 +10,7 @@ type Props = {
   id: string;
   map: MapType;
   padding: number;
+  mode: "create" | "draft";
   onSelectSystemTile?: (tileIdx: number) => void;
   onSelectHomeTile?: (tile: HomeTile) => void;
 };
@@ -18,6 +19,7 @@ export function Map({
   id,
   map,
   padding,
+  mode,
   onSelectSystemTile,
   onSelectHomeTile,
 }: Props) {
@@ -49,7 +51,7 @@ export function Map({
               if (tile.type === "HOME") onSelectHomeTile?.(tile);
             }}
             modifiable={isTileModifiable(idx)} // TODO: Make this false if not drafting
-            homeSelectable // TODO: Make this false if not drafting
+            homeSelectable={mode === "draft"}
           />
         ))}
       </Box>
