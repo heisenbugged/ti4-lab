@@ -12,9 +12,11 @@ type Props = {
 export function SlicesSection({ slices, onAddNewSlice, onSelectTile }: Props) {
   return (
     <Section>
-      <SectionTitle title="Slices">
-        <Button onMouseDown={onAddNewSlice}>Add New Slice</Button>
-      </SectionTitle>
+      <div style={{ position: "sticky", top: 60, zIndex: 5 }}>
+        <SectionTitle title="Slices">
+          <Button onMouseDown={onAddNewSlice}>Add New Slice</Button>
+        </SectionTitle>
+      </div>
       <Tabs defaultValue="detailed">
         <Tabs.List mb="sm">
           <Tabs.Tab value="detailed">Detailed</Tabs.Tab>

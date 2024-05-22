@@ -14,9 +14,7 @@ export function useDimensions<T extends HTMLElement>() {
     };
 
     const observer = new ResizeObserver(handleResize);
-
     if (ref.current) observer.observe(ref.current);
-
     return () => {
       if (ref.current) observer.unobserve(ref.current);
     };

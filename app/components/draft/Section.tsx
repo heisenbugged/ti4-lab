@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 export function Section({ children }: { children: ReactNode }) {
   return (
-    <Stack flex={1} gap="xl">
+    <Stack flex={0} gap="xl">
       {children}
     </Stack>
   );

@@ -90,7 +90,7 @@ type DraftOptionsState = {
   removeFaction: (id: FactionId) => void;
 };
 
-export const useDraftOptions = create<DraftOptionsState>((set) => ({
+export const useNewDraft = create<DraftOptionsState>((set) => ({
   map: EMPTY_MAP,
   slices: [
     "-1 0 0 0".split(" "),

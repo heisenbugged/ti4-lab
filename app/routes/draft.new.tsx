@@ -1,4 +1,4 @@
-import { Box, SimpleGrid, Stack } from "@mantine/core";
+import { Box, Input, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { MetaFunction } from "@remix-run/node";
 import { useRef } from "react";
@@ -9,7 +9,8 @@ import {
   MapSection,
   SlicesSection,
 } from "~/components/draft";
-import { useDraftOptions } from "~/draftStore";
+import { Section, SectionTitle } from "~/components/draft/Section";
+import { useNewDraft } from "~/draftStore";
 
 export const meta: MetaFunction = () => {
   return [
@@ -19,7 +20,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function DraftNew() {
-  const draft = useDraftOptions(); // TODO: Rename
+  const draft = useNewDraft();
   const openTile = useRef<{
     mode: "map" | "slice";
     sliceIdx: number;
@@ -71,7 +72,7 @@ export default function DraftNew() {
 
       <ImportMapInput onImport={draft.importMap} />
 
-      <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 60 }}>
+      <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <Stack flex={1} gap="xl">
           <AvailableFactionsSection
             selectedFactions={draft.availableFactions}
@@ -96,7 +97,21 @@ export default function DraftNew() {
             }}
           />
         </Stack>
-        <Stack flex={1} pos="relative">
+        <Stack flex={1} gap="xl">
+          <Section>
+            <SectionTitle title="Player Names" />
+            <Stack>
+              {[0, 1, 2, 3, 4, 5].map((seatIdx) => (
+                <Input
+                  key={seatIdx}
+                  placeholder={`Player ${seatIdx + 1}`}
+                  // value={draft.players[seatIdx].name}
+                  // onChange={(e) => draft.setPlayerName(seatIdx, e.currentTarget.value)}
+                />
+              ))}
+            </Stack>
+          </Section>
+
           <MapSection
             map={draft.map}
             onSelectSystemTile={(tileIdx) => {
