@@ -59,10 +59,9 @@ export function MapTile(props: Props) {
   const showOverlay =
     modifiable && (hovered || tile.type === "OPEN") && tile.type !== "HOME";
 
-  const overlayColor =
-    tile.type !== "OPEN"
-      ? alpha("var(--mantine-primary-color-filled)", 0.6)
-      : "rgba(0, 0, 0, 0)";
+  const overlayColor = hovered
+    ? alpha("var(--mantine-primary-color-filled)", 0.7)
+    : "rgba(0, 0, 0, 0)";
 
   return (
     <div

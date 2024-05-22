@@ -16,9 +16,9 @@ import { Player, System, Tile } from "~/types";
 
 const slicePositionOrder = [
   { x: 0, y: 0, z: 0 },
+  { x: 1, y: -1, z: 0 },
   { x: -1, y: 0, z: 0 },
   { x: 0, y: -1, z: 0 },
-  { x: 1, y: -1, z: 0 },
   // additional two slices for full milty draft
   { x: -1, y: -1, z: 0 },
   { x: 0, y: -2, z: 0 },
@@ -64,6 +64,21 @@ export function Slice({
         selected={selected}
         right={
           <>
+            <Group align="center" gap="xs">
+              <PlanetStatsPill
+                resources={optimal.resources}
+                influence={optimal.influence}
+                flex={optimal.flex}
+              />
+              <Text fw={600} size="sm" c="white">
+                /
+              </Text>
+              <PlanetStatsPill
+                size="xs"
+                resources={total.resources}
+                influence={total.influence}
+              />
+            </Group>
             {player && (
               <PlayerLabel faction={player.faction} name={player.name} />
             )}
@@ -83,33 +98,12 @@ export function Slice({
       >
         <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>
       </SliceHeader>
-      <div style={{ filter: selected ? "grayscale(100%)" : "none" }}>
+      <div style={{ filter: selected ? "grayscale(50%)" : "none" }}>
         <SliceMap id={id} tiles={tiles} onSelectTile={onSelectTile} />
       </div>
 
       <Divider mt="md" />
       <Stack gap="0">
-        <Group align="center" p="sm" gap="lg">
-          <Group gap="xs">
-            <Text fw={600} size="sm">
-              Total
-            </Text>
-            <PlanetStatsPill
-              resources={total.resources}
-              influence={total.influence}
-            />
-          </Group>
-          <Group gap="xs">
-            <Text fw={600} size="sm">
-              Optimal
-            </Text>
-            <PlanetStatsPill
-              resources={optimal.resources}
-              influence={optimal.influence}
-              flex={optimal.flex}
-            />
-          </Group>
-        </Group>
         <Group
           gap="sm"
           align="center"

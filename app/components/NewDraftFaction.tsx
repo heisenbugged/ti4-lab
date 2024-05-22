@@ -29,7 +29,7 @@ export function NewDraftFaction({ faction, onCheck }: Props) {
       }}
     >
       <FactionIcon faction={faction.id} style={{ width: 30 }} />
-      <Title order={6} flex={1}>
+      <Title order={6} flex={1} size={14}>
         {faction.name}
       </Title>
       <Checkbox

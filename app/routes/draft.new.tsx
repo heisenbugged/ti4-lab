@@ -1,40 +1,25 @@
-import {
-  Box,
-  Button,
-  Group,
-  Input,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Box, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { MetaFunction } from "@remix-run/node";
-import { ReactNode, useRef, useState } from "react";
-import { Map } from "~/components/Map";
-import { NewDraftFaction } from "~/components/NewDraftFaction";
+import { useRef } from "react";
 import { PlanetFinder } from "~/components/PlanetFinder";
-import { Slice } from "~/components/Slice";
-import { factions } from "~/data/factionData";
+import {
+  AvailableFactionsSection,
+  ImportMapInput,
+  MapSection,
+  SlicesSection,
+} from "~/components/draft";
 import { useDraftOptions } from "~/draftStore";
-import { useDimensions } from "~/hooks/useDimensions";
-import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "TI4 Lab Draftz" },
+    { title: "TI4 Lab Draft" },
     { name: "description", content: "TI4 Lab, for drafting and map creation." },
   ];
 };
 
 export default function DraftNew() {
-  const { ref, width } = useDimensions<HTMLDivElement>();
   const draft = useDraftOptions(); // TODO: Rename
-
-  const gap = 6;
-  const radius = calculateMaxHexWidthRadius(3, width, gap);
-  const height = 7 * calcHexHeight(radius) + 6 * gap;
-
   const openTile = useRef<{
     mode: "map" | "slice";
     sliceIdx: number;
@@ -49,7 +34,6 @@ export default function DraftNew() {
     { open: openPlanetFinder, close: closePlanetFinder },
   ] = useDisclosure(false);
 
-  const activePlayer = 1;
   const usedSystemIds = [
     draft.slices,
     draft.map.tiles
@@ -58,8 +42,6 @@ export default function DraftNew() {
   ]
     .flat(2)
     .filter((t) => t !== "-1" && t !== "0");
-
-  const [importableMap, setImportableMap] = useState<string>("");
 
   return (
     <Box p="lg">
@@ -87,155 +69,47 @@ export default function DraftNew() {
         usedSystemIds={usedSystemIds}
       />
 
-      <Group>
-        <Input
-          flex={1}
-          size="md"
-          placeholder="Map String to Import"
-          onChange={(e) => setImportableMap(e.currentTarget.value)}
-        />
-        <Button
-          onClick={() => {
-            draft.importMap(importableMap);
-          }}
-        >
-          Import
-        </Button>
-      </Group>
-      <Text size="sm" c="gray.7" mb="xl">
-        Copy paste in a map string, and we will populate the relevant slices.
-        Alternatively, you can click on a tile to add a system to either a map
-        or a slice.
-      </Text>
+      <ImportMapInput onImport={draft.importMap} />
 
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 60 }}>
         <Stack flex={1} gap="xl">
-          <Stack flex={1} gap="xl">
-            <SectionTitle title="Available Factions">
-              <Group>
-                <Text>Number of factions in draft:</Text>
-                <Input
-                  placeholder="6 or 9 or 12 etc"
-                  size="sm"
-                  type="number"
-                  min={6}
-                  value={
-                    draft.availableFactions.length > 0
-                      ? draft.availableFactions.length
-                      : ""
-                  }
-                />
-              </Group>
-            </SectionTitle>
-            <SimpleGrid cols={4}>
-              {Object.keys(factions).map((factionId) => (
-                <NewDraftFaction
-                  key={factionId}
-                  faction={factions[factionId]}
-                  onCheck={(checked) => {
-                    console.log("hi");
-                    if (checked) {
-                      draft.addFaction(factionId);
-                    } else {
-                      draft.removeFaction(factionId);
-                    }
-                  }}
-                />
-              ))}
-            </SimpleGrid>
-          </Stack>
-
-          <SectionTitle title="Slices">
-            <Button onMouseDown={() => draft.addNewSlice()}>
-              Add New Slice
-            </Button>
-          </SectionTitle>
-          <SimpleGrid
-            flex={1}
-            cols={{ base: 1, sm: 2, md: 2, lg: 2 }}
-            spacing="lg"
-            style={{ alignItems: "flex-start" }}
-          >
-            {draft.slices.map((slice, idx) => (
-              <Slice
-                key={idx}
-                id={`slice-${idx}`}
-                name={`Slice ${idx + 1}`}
-                mode="create"
-                systems={slice}
-                onSelectTile={(tile) => {
-                  openTile.current = {
-                    mode: "slice",
-                    sliceIdx: idx,
-                    tileIdx: tile.idx,
-                  };
-                  openPlanetFinder();
-                }}
-              />
-            ))}
-          </SimpleGrid>
+          <AvailableFactionsSection
+            selectedFactions={draft.availableFactions}
+            onToggleFaction={(factionId, checked) => {
+              if (checked) {
+                draft.addFaction(factionId);
+              } else {
+                draft.removeFaction(factionId);
+              }
+            }}
+          />
+          <SlicesSection
+            slices={draft.slices}
+            onAddNewSlice={draft.addNewSlice}
+            onSelectTile={(sliceIdx, tileIdx) => {
+              openTile.current = {
+                mode: "slice",
+                sliceIdx,
+                tileIdx,
+              };
+              openPlanetFinder();
+            }}
+          />
         </Stack>
         <Stack flex={1} pos="relative">
-          <div
-            style={{
-              position: "sticky",
-              width: "auto",
-              top: -10,
+          <MapSection
+            map={draft.map}
+            onSelectSystemTile={(tileIdx) => {
+              openTile.current = {
+                mode: "map",
+                sliceIdx: -1,
+                tileIdx,
+              };
+              openPlanetFinder();
             }}
-          >
-            <SectionTitle title="Full Map" />
-            <Box
-              ref={ref}
-              style={{
-                height,
-                width: "100%",
-                position: "relative",
-              }}
-              mt="md"
-            >
-              <Map
-                id="full-map"
-                map={draft.map}
-                padding={0}
-                onSelectSystemTile={(tileIdx) => {
-                  openTile.current = {
-                    mode: "map",
-                    sliceIdx: -1,
-                    tileIdx,
-                  };
-                  openPlanetFinder();
-                }}
-                mode="create"
-              />
-            </Box>
-          </div>
+          />
         </Stack>
       </SimpleGrid>
     </Box>
-  );
-}
-
-function SectionTitle({
-  title,
-  children,
-}: {
-  title: string;
-  children?: ReactNode;
-}) {
-  return (
-    <Group
-      justify="space-between"
-      px="sm"
-      py="sm"
-      style={{
-        borderBottom: "var(--mantine-color-spaceBlue-1) solid 1px",
-        background:
-          "linear-gradient(90deg, var(--mantine-color-spaceBlue-1) 0%, #ffffff 50%)",
-      }}
-      // bg="spaceBlue.1"
-    >
-      <Title order={2}>{title}</Title>
-      {children}
-    </Group>
   );
 }
