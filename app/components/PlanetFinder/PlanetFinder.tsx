@@ -109,6 +109,18 @@ export function PlanetFinder({
                   {idx < system.planets.length - 1 && <Divider />}
                 </Fragment>
               ))}
+              {system.anomaly && (
+                <Text size="sm" c="gray.7">
+                  {system.anomaly.replace("_", " ")}
+                </Text>
+              )}
+              {system.planets.length === 0 &&
+                !system.anomaly &&
+                !system.wormhole && (
+                  <Text size="sm" c="gray.7">
+                    EMPTY
+                  </Text>
+                )}
             </Group>
             {usedSystemIds.includes(system.id.toString()) && (
               <Text c="violet">In Use</Text>
