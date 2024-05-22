@@ -1,4 +1,4 @@
-import { Box, Input, SimpleGrid, Stack } from "@mantine/core";
+import { Box, Group, Input, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { MetaFunction } from "@remix-run/node";
 import { useRef } from "react";
@@ -102,12 +102,20 @@ export default function DraftNew() {
             <SectionTitle title="Player Names" />
             <Stack>
               {[0, 1, 2, 3, 4, 5].map((seatIdx) => (
-                <Input
-                  key={seatIdx}
-                  placeholder={`Player ${seatIdx + 1}`}
-                  // value={draft.players[seatIdx].name}
-                  // onChange={(e) => draft.setPlayerName(seatIdx, e.currentTarget.value)}
-                />
+                <Group>
+                  <img
+                    src={`/avatar/avatar${seatIdx}.png`}
+                    style={{ width: 60 }}
+                  />
+                  <Input
+                    key={seatIdx}
+                    placeholder={`Player ${seatIdx + 1}`}
+                    flex={1}
+                    size="lg"
+                    // value={draft.players[seatIdx].name}
+                    // onChange={(e) => draft.setPlayerName(seatIdx, e.currentTarget.value)}
+                  />
+                </Group>
               ))}
             </Stack>
           </Section>
