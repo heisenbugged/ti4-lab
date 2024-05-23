@@ -1,7 +1,7 @@
 import { Box, Button, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
-import { redirect, useFetcher } from "@remix-run/react";
+import { redirect } from "@remix-run/react";
 import { useRef } from "react";
 import { PlanetFinder } from "~/components/PlanetFinder";
 import {
@@ -11,40 +11,12 @@ import {
   SlicesSection,
 } from "~/components/draft";
 import { PlayerInputSection } from "~/components/draft/PlayerInputSection";
-import { serializeDraft, serializeMap } from "~/data/serialize";
+import { serializeMap } from "~/data/serialize";
 import { useNewDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
-import { Player } from "~/types";
-
-export async function action({ request }: ActionFunctionArgs) {
-  const body = await request.json();
-
-  // Pre-fill in player names if they don't exist.
-  const players = body.players.map((p: Player) => ({
-    ...p,
-    name: p.name.length > 0 ? p.name : `Player ${p.id}`,
-  }));
-
-  const result = db
-    .insert(drafts)
-    .values({
-      data: JSON.stringify({
-        ...body,
-        players,
-      }),
-    })
-    .run();
-
-  return redirect(`/draft/${result.lastInsertRowid}`);
-}
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: "TI4 Lab Draft" },
-    { name: "description", content: "TI4 Lab, for drafting and map creation." },
-  ];
-};
+import { PersistedDraft, Player } from "~/types";
+import { CreateDraftInput, useCreateDraft } from "./useCreateDraft";
 
 export default function DraftNew() {
   // Example of socket, to be put on actual draft page.
@@ -58,8 +30,7 @@ export default function DraftNew() {
   //   socket.emit("event", "ping");
   // }, [socket]);
 
-  const fetcher = useFetcher();
-
+  const createDraft = useCreateDraft();
   const draft = useNewDraft();
   const openTile = useRef<{
     mode: "map" | "slice";
@@ -88,19 +59,12 @@ export default function DraftNew() {
     <Box p="lg">
       <Button
         onClick={() => {
-          const { players, availableFactions, map, slices } = draft;
-          fetcher.submit(
-            serializeDraft({
-              players,
-              factions: availableFactions,
-              mapString: serializeMap(map),
-              slices,
-            }),
-            {
-              method: "POST",
-              encType: "application/json",
-            },
-          );
+          createDraft({
+            availableFactions: draft.availableFactions,
+            mapString: serializeMap(draft.map).join(" "),
+            players: draft.players,
+            slices: draft.slices,
+          });
         }}
       >
         will we submit
@@ -183,3 +147,36 @@ export default function DraftNew() {
     </Box>
   );
 }
+
+export async function action({ request }: ActionFunctionArgs) {
+  const body = (await request.json()) as CreateDraftInput;
+
+  const draft: PersistedDraft = {
+    factions: body.availableFactions,
+    mapString: body.mapString,
+    slices: body.slices,
+    // Pre-fill in player names if they don't exist.
+    players: body.players.map((p: Player) => ({
+      ...p,
+      name: p.name.length > 0 ? p.name : `Player ${p.id}`,
+    })),
+    currentPick: 0,
+    // TODO: Pick order needs to be a proper 'snake draft'
+    // that needs to be computed based on the draft options.
+    pickOrder: body.players.map((p) => p.id),
+  };
+
+  const result = db
+    .insert(drafts)
+    .values({ data: JSON.stringify(draft) })
+    .run();
+
+  return redirect(`/draft/${result.lastInsertRowid}`);
+}
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "TI4 Lab Draft" },
+    { name: "description", content: "TI4 Lab, for drafting and map creation." },
+  ];
+};

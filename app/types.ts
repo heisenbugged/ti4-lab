@@ -110,8 +110,10 @@ export type Player = {
 };
 
 export type PersistedDraft = {
-  availableFactions: FactionId[];
+  factions: FactionId[];
   players: Player[];
   slices: string[][];
   mapString: string;
+  currentPick: number;
+  pickOrder: number[];
 };

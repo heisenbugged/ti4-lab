@@ -1,4 +1,4 @@
-import { create, createStore } from "zustand";
+import { create } from "zustand";
 import { FactionId, Map, PersistedDraft, Player, System } from "./types";
 import { hydrateMap, parseMapString, sliceMap } from "./utils/map";
 import { mapStringOrder } from "./data/mapStringOrder";
@@ -15,17 +15,30 @@ type DraftsState = {
   players: Player[];
   slices: string[][];
   factions: FactionId[];
+  currentPick: number;
+  pickOrder: number[];
   selectSlice: (playerId: number, sliceIdx: number) => void;
   selectSeat: (playerId: number, seatIdx: number) => void;
   hydrate: (draft: PersistedDraft) => void;
+  getPersisted: () => PersistedDraft;
 };
 
-export const useDraft = create<DraftsState>((set) => ({
+export const useDraft = create<DraftsState>((set, get) => ({
   mapString: EMPTY_MAP_STRING,
   hydratedMap: EMPTY_MAP,
   players: [],
   slices: [],
   factions: [],
+  currentPick: 0,
+  pickOrder: [],
+  getPersisted: () => ({
+    mapString: get().mapString.join(" "),
+    players: get().players,
+    slices: get().slices,
+    factions: get().factions,
+    currentPick: get().currentPick,
+    pickOrder: get().pickOrder,
+  }),
   selectSlice: (playerId: number, sliceIdx: number) =>
     set((state) => {
       const players = state.players.map((p) =>
@@ -86,7 +99,7 @@ type NewDraftState = {
   removeFaction: (id: FactionId) => void;
 };
 
-export const useNewDraft = create<NewDraftState>((set) => ({
+export const useNewDraft = create<NewDraftState>((set, get) => ({
   map: EMPTY_MAP,
   slices: [
     "-1 0 0 0".split(" "),
