@@ -2,14 +2,26 @@ import { Button, SimpleGrid, Table, Tabs } from "@mantine/core";
 import { Section, SectionTitle } from "./Section";
 import { Slice } from "../Slice";
 import { PlanetStatsPill } from "../Slice/PlanetStatsPill";
+import { Player } from "~/types";
 
 type Props = {
+  mode: "create" | "draft";
   slices: string[][];
-  onAddNewSlice: () => void;
-  onSelectTile: (sliceIdx: number, tileIdx: number) => void;
+  players?: Player[];
+  onAddNewSlice?: () => void;
+  onSelectSlice?: (sliceIdx: number) => void;
+  onSelectTile?: (sliceIdx: number, tileIdx: number) => void;
 };
 
-export function SlicesSection({ slices, onAddNewSlice, onSelectTile }: Props) {
+export function SlicesSection({
+  slices,
+  players,
+  mode = "create",
+  onAddNewSlice,
+  onSelectTile,
+  onSelectSlice,
+}: Props) {
+  console.log("the players are", players);
   return (
     <Section>
       <div style={{ position: "sticky", top: 60, zIndex: 5 }}>
@@ -34,11 +46,13 @@ export function SlicesSection({ slices, onAddNewSlice, onSelectTile }: Props) {
                 key={idx}
                 id={`slice-${idx}`}
                 name={`Slice ${idx + 1}`}
-                mode="create"
+                player={players?.find((p) => p.sliceIdx === idx)}
+                mode={mode}
                 systems={slice}
                 onSelectTile={(tile) => {
-                  onSelectTile(idx, tile.idx);
+                  onSelectTile?.(idx, tile.idx);
                 }}
+                onSelectSlice={() => onSelectSlice?.(idx)}
               />
             ))}
           </SimpleGrid>

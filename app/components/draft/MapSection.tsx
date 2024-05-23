@@ -7,15 +7,22 @@ import {
   calculateMaxHexWidthRadius,
 } from "~/utils/positioning";
 import { Map } from "../Map";
-import { Map as TMap } from "~/types";
+import { HomeTile, Map as TMap } from "~/types";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 
 type Props = {
   map: TMap;
-  onSelectSystemTile: (tileIdx: number) => void;
+  mode: "create" | "draft";
+  onSelectSystemTile?: (tileIdx: number) => void;
+  onSelectHomeTile?: (homeTile: HomeTile) => void;
 };
 
-export function MapSection({ map, onSelectSystemTile }: Props) {
+export function MapSection({
+  map,
+  mode = "create",
+  onSelectSystemTile,
+  onSelectHomeTile,
+}: Props) {
   const { ref, width } = useDimensions<HTMLDivElement>();
   const { height: windowHeight } = useWindowDimensions();
 
@@ -46,9 +53,10 @@ export function MapSection({ map, onSelectSystemTile }: Props) {
         <Map
           id="full-map"
           map={map}
+          mode={mode}
           padding={0}
           onSelectSystemTile={onSelectSystemTile}
-          mode="create"
+          onSelectHomeTile={onSelectHomeTile}
         />
       </Box>
     </div>

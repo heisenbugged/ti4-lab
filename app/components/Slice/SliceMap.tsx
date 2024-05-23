@@ -2,16 +2,16 @@ import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
 import { useDimensions } from "~/hooks/useDimensions";
 import { MapTile } from "../MapTile";
 import { MapContext } from "../MapContext";
-
-import { System, Tile } from "~/types";
+import { Tile } from "~/types";
 
 type Props = {
   id: string;
   tiles: Tile[];
   onSelectTile?: (tile: Tile) => void;
+  mode: "create" | "draft";
 };
 
-export function SliceMap({ id, tiles, onSelectTile }: Props) {
+export function SliceMap({ id, tiles, onSelectTile, mode = "create" }: Props) {
   const { ref, width } = useDimensions<HTMLDivElement>();
   const gap = 6;
   const radius = calculateMaxHexWidthRadius(1, width, gap);
@@ -43,7 +43,7 @@ export function SliceMap({ id, tiles, onSelectTile }: Props) {
               key={idx}
               tile={t}
               onSelect={onSelectTile ? () => onSelectTile(t) : undefined}
-              modifiable
+              modifiable={mode === "create"}
             />
           ))}
       </div>

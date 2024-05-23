@@ -1,84 +1,78 @@
-import { create } from "zustand";
-import { Draft, FactionId, Map, Player, System } from "./types";
+import { create, createStore } from "zustand";
+import { FactionId, Map, PersistedDraft, Player, System } from "./types";
 import { hydrateMap, parseMapString, sliceMap } from "./utils/map";
-
-type DraftState = {
-  draft: Draft;
-  selectSeat: (playerId: number, seatIdx: number) => void;
-  selectSlice: (playerId: number, sliceIdx: number) => void;
-};
+import { mapStringOrder } from "./data/mapStringOrder";
 
 const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
     " ",
   );
 const EMPTY_MAP = parseMapString(EMPTY_MAP_STRING);
-const EMPTY_HYDRATED_MAP = hydrateMap(EMPTY_MAP, {
+
+type DraftsState = {
+  mapString: string[];
+  hydratedMap: Map;
+  players: Player[];
+  slices: string[][];
+  factions: FactionId[];
+  selectSlice: (playerId: number, sliceIdx: number) => void;
+  selectSeat: (playerId: number, seatIdx: number) => void;
+  hydrate: (draft: PersistedDraft) => void;
+};
+
+export const useDraft = create<DraftsState>((set) => ({
+  mapString: EMPTY_MAP_STRING,
+  hydratedMap: EMPTY_MAP,
   players: [],
   slices: [],
-});
-
-export const useDraftStore = create<DraftState>((set) => ({
-  draft: {
-    rawMap: EMPTY_MAP,
-    hydratedMap: EMPTY_HYDRATED_MAP,
-    activePlayer: 1,
-    factions: [],
-    // TODO: Should not preload these factions, but for now it's fine.
-    players: [
-      ...[1, 2, 3, 4, 5, 6].map((i) => ({
-        id: i,
-        name: `Player ${i}`,
-      })),
-    ],
-    slices: [
-      "-1 0 0 0".split(" "),
-      "-1 0 0 0".split(" "),
-      "-1 0 0 0".split(" "),
-      "-1 0 0 0".split(" "),
-      "-1 0 0 0".split(" "),
-      "-1 0 0 0".split(" "),
-    ],
-  },
-
+  factions: [],
   selectSlice: (playerId: number, sliceIdx: number) =>
-    set(({ draft }) => {
-      const players = draft.players.map((p) =>
+    set((state) => {
+      const players = state.players.map((p) =>
         p.id === playerId ? { ...p, sliceIdx } : p,
       );
-      const hydratedMap = hydrateMap(draft.rawMap, {
-        players,
-        slices: draft.slices,
-      });
+      const hydratedMap = hydrateMap(state.hydratedMap, players, state.slices);
       return {
-        draft: {
-          ...draft,
-          players,
-          hydratedMap,
-        },
+        players,
+        hydratedMap: hydratedMap,
       };
     }),
 
   selectSeat: (playerId: number, seatIdx: number) =>
-    set(({ draft }) => {
-      const players = draft.players.map((p) =>
+    set((state) => {
+      const players = state.players.map((p) =>
         p.id === playerId ? { ...p, seatIdx: seatIdx } : p,
       );
-      const hydratedMap = hydrateMap(draft.rawMap, {
-        players,
-        slices: draft.slices,
-      });
+
+      const parsedMap = parseMapString(state.mapString, mapStringOrder, false);
+      const hydratedMap = hydrateMap(parsedMap, players, state.slices);
+
       return {
-        draft: {
-          ...draft,
-          players,
-          hydratedMap,
-        },
+        players,
+        hydratedMap: hydratedMap,
+      };
+    }),
+  hydrate: (draft: PersistedDraft) =>
+    set(() => {
+      const parsedMap = parseMapString(
+        draft.mapString.split(" "),
+        mapStringOrder,
+        false,
+      );
+      const hydratedMap = hydrateMap(parsedMap, draft.players, draft.slices);
+
+      return {
+        mapString: draft.mapString.split(" "),
+        hydratedMap: hydratedMap,
+        players: draft.players,
+        slices: draft.slices,
+        // TODO: Make consistent name.
+        factions: draft.availableFactions,
       };
     }),
 }));
 
-type DraftOptionsState = {
+type NewDraftState = {
   map: Map;
   slices: string[][];
   availableFactions: FactionId[];
@@ -92,7 +86,7 @@ type DraftOptionsState = {
   removeFaction: (id: FactionId) => void;
 };
 
-export const useNewDraft = create<DraftOptionsState>((set) => ({
+export const useNewDraft = create<NewDraftState>((set) => ({
   map: EMPTY_MAP,
   slices: [
     "-1 0 0 0".split(" "),

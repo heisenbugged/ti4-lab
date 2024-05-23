@@ -50,7 +50,7 @@ export function Map({
                 onSelectSystemTile?.(idx);
               if (tile.type === "HOME") onSelectHomeTile?.(tile);
             }}
-            modifiable={isTileModifiable(idx)} // TODO: Make this false if not drafting
+            modifiable={mode === "create" && isTileModifiable(idx)}
             homeSelectable={mode === "draft"}
           />
         ))}

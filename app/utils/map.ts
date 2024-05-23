@@ -1,9 +1,9 @@
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { systemData } from "~/data/systemData";
 import {
-  Draft,
   HomeTile,
   Map,
+  Player,
   TechSpecialty,
   Tile,
   TilePosition,
@@ -65,21 +65,22 @@ export const isTileModifiable = (tileIdx: number) =>
 
 export const hydrateMap = (
   map: Map,
-  draft: Pick<Draft, "players" | "slices">,
+  players: Player[],
+  slices: string[][],
 ): Map => {
   const hydrated: Tile[] = [...map.tiles];
 
   // add player data to home systems
   forHomeTiles(hydrated, (tile, homeIdx) => {
     const tileIdx = mapConfig.standard.homeIdxInMapString[homeIdx];
-    hydrated[tileIdx] = hydrateHomeTile(tile, draft, homeIdx);
+    hydrated[tileIdx] = hydrateHomeTile(tile, players, homeIdx);
   });
 
   // Iterate over home tiles to apply slices
   forHomeTiles(hydrated, (tile, homeIdx) => {
-    const player = draft.players.find((p) => p.seatIdx === homeIdx);
+    const player = players.find((p) => p.seatIdx === homeIdx);
     if (!player || player.sliceIdx === undefined) return;
-    const slice = draft.slices[player.sliceIdx];
+    const slice = slices[player.sliceIdx];
 
     mapConfig.standard.seatTilePositions[homeIdx]?.forEach(
       ([x, y], sliceIdx) => {
@@ -120,10 +121,10 @@ const forHomeTiles = (
 
 const hydrateHomeTile = (
   tile: Tile,
-  draft: Pick<Draft, "players" | "slices">,
+  players: Player[],
   seatIdx: number,
 ): HomeTile => {
-  const player = draft.players.find((p) => p.seatIdx === seatIdx);
+  const player = players.find((p) => p.seatIdx === seatIdx);
   return { ...tile, type: "HOME", player, seatIdx };
 };
 

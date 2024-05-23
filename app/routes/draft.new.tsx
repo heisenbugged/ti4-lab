@@ -1,7 +1,8 @@
-import { Box, Group, Input, SimpleGrid, Stack } from "@mantine/core";
+import { Box, Button, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import type { MetaFunction } from "@remix-run/node";
-import { useEffect, useRef } from "react";
+import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
+import { redirect, useFetcher } from "@remix-run/react";
+import { useRef } from "react";
 import { PlanetFinder } from "~/components/PlanetFinder";
 import {
   AvailableFactionsSection,
@@ -10,7 +11,33 @@ import {
   SlicesSection,
 } from "~/components/draft";
 import { PlayerInputSection } from "~/components/draft/PlayerInputSection";
+import { serializeDraft, serializeMap } from "~/data/serialize";
 import { useNewDraft } from "~/draftStore";
+import { db } from "~/drizzle/config.server";
+import { drafts } from "~/drizzle/schema.server";
+import { Player } from "~/types";
+
+export async function action({ request }: ActionFunctionArgs) {
+  const body = await request.json();
+
+  // Pre-fill in player names if they don't exist.
+  const players = body.players.map((p: Player) => ({
+    ...p,
+    name: p.name.length > 0 ? p.name : `Player ${p.id}`,
+  }));
+
+  const result = db
+    .insert(drafts)
+    .values({
+      data: JSON.stringify({
+        ...body,
+        players,
+      }),
+    })
+    .run();
+
+  return redirect(`/draft/${result.lastInsertRowid}`);
+}
 
 export const meta: MetaFunction = () => {
   return [
@@ -30,6 +57,8 @@ export default function DraftNew() {
   //   });
   //   socket.emit("event", "ping");
   // }, [socket]);
+
+  const fetcher = useFetcher();
 
   const draft = useNewDraft();
   const openTile = useRef<{
@@ -57,6 +86,26 @@ export default function DraftNew() {
 
   return (
     <Box p="lg">
+      <Button
+        onClick={() => {
+          const { players, availableFactions, map, slices } = draft;
+          fetcher.submit(
+            serializeDraft({
+              players,
+              factions: availableFactions,
+              mapString: serializeMap(map),
+              slices,
+            }),
+            {
+              method: "POST",
+              encType: "application/json",
+            },
+          );
+        }}
+      >
+        will we submit
+      </Button>
+
       <PlanetFinder
         opened={planetFinderOpened}
         onClose={() => {
@@ -96,6 +145,7 @@ export default function DraftNew() {
             }}
           />
           <SlicesSection
+            mode="create"
             slices={draft.slices}
             onAddNewSlice={draft.addNewSlice}
             onSelectTile={(sliceIdx, tileIdx) => {
@@ -117,6 +167,7 @@ export default function DraftNew() {
           />
 
           <MapSection
+            mode="create"
             map={draft.map}
             onSelectSystemTile={(tileIdx) => {
               openTile.current = {

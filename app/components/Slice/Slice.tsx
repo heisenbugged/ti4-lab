@@ -29,7 +29,7 @@ type Props = {
   name: string;
   systems: string[];
   player?: Player;
-  mode: "draft" | "create";
+  mode: "create" | "draft";
   onSelectTile?: (tile: Tile) => void;
   onSelectSlice?: () => void;
 };
@@ -63,7 +63,7 @@ export function Slice({
       <SliceHeader
         selected={selected}
         right={
-          <>
+          <Group>
             <Group align="center" gap="xs">
               <PlanetStatsPill
                 resources={optimal.resources}
@@ -82,7 +82,7 @@ export function Slice({
             {player && (
               <PlayerLabel faction={player.faction} name={player.name} />
             )}
-            {mode === "draft" && (
+            {mode === "draft" && !selected && (
               <Button
                 lh={1}
                 py={6}
@@ -93,13 +93,18 @@ export function Slice({
                 Select
               </Button>
             )}
-          </>
+          </Group>
         }
       >
         <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>
       </SliceHeader>
-      <div style={{ filter: selected ? "grayscale(50%)" : "none" }}>
-        <SliceMap id={id} tiles={tiles} onSelectTile={onSelectTile} />
+      <div style={{ filter: selected ? "grayscale(70%)" : "none" }}>
+        <SliceMap
+          id={id}
+          tiles={tiles}
+          onSelectTile={onSelectTile}
+          mode={mode}
+        />
       </div>
 
       <Divider mt="md" />

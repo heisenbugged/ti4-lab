@@ -109,11 +109,9 @@ export type Player = {
   sliceIdx?: number;
 };
 
-export type Draft = {
-  rawMap: Map;
-  hydratedMap: Map;
-  activePlayer: number;
-  factions: FactionId[];
+export type PersistedDraft = {
+  availableFactions: FactionId[];
   players: Player[];
   slices: string[][];
+  mapString: string;
 };
