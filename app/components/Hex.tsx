@@ -7,9 +7,18 @@ interface Props {
   children?: ReactNode;
   image?: JSX.Element;
   anomaly?: boolean;
+  showBorder?: boolean;
 }
 
-export function Hex({ id, color, radius, children, image, anomaly }: Props) {
+export function Hex({
+  id,
+  color,
+  radius,
+  children,
+  image,
+  anomaly,
+  showBorder = false,
+}: Props) {
   const points = hexVertices(radius);
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
   return (
@@ -21,6 +30,7 @@ export function Hex({ id, color, radius, children, image, anomaly }: Props) {
           viewBox={`-${radius} -${radius} ${2 * radius} ${2 * radius}`}
         >
           <polygon points={pointsString} fill={color} />
+          {showBorder && <HexBorder radius={radius} />}
           <defs>
             <clipPath id={`hexClip-${id}`}>
               <polygon points={pointsString} />
@@ -42,6 +52,22 @@ export function Hex({ id, color, radius, children, image, anomaly }: Props) {
         {children}
       </div>
     </>
+  );
+}
+
+function HexBorder({ radius }) {
+  const strokeWidth = 1;
+  // reduce radius by half of stroke width so that the border is inside the hex
+  const points = hexVertices(radius - strokeWidth * 0.5);
+  const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
+
+  return (
+    <polygon
+      points={pointsString}
+      stroke="#e5e5e5"
+      strokeWidth={strokeWidth}
+      fill="transparent"
+    />
   );
 }
 

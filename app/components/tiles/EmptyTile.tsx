@@ -2,7 +2,7 @@ import { Hex } from "../Hex";
 import { Tile } from "~/types";
 import { useContext } from "react";
 import { MapContext } from "../MapContext";
-import { Button, darken } from "@mantine/core";
+import { Button, darken, lighten } from "@mantine/core";
 
 type Props = {
   mapId: string;
@@ -18,7 +18,8 @@ export function EmptyTile({ mapId, onSelect, modifiable = false }: Props) {
     <Hex
       id={`${mapId}-empty`}
       radius={radius}
-      color={modifiable ? "#d6d6ea" : darken("#d6d6ea", 0.2)}
+      color={modifiable ? "#d6d6ea" : lighten("#d6d6ea", 0.8)}
+      showBorder={!modifiable}
     />
   );
 }
