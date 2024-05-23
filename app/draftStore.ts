@@ -82,6 +82,8 @@ type DraftOptionsState = {
   map: Map;
   slices: string[][];
   availableFactions: FactionId[];
+  players: Player[];
+  updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
   importMap: (mapString: string) => void;
   addSystemToMap: (tileIdx: number, system: System) => void;
   addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) => void;
@@ -101,6 +103,18 @@ export const useNewDraft = create<DraftOptionsState>((set) => ({
     "-1 0 0 0".split(" "),
   ],
   availableFactions: [],
+  players: [
+    ...[1, 2, 3, 4, 5, 6].map((i) => ({
+      id: i,
+      name: "",
+    })),
+  ],
+  updatePlayer: (playerIdx: number, player: Partial<Player>) =>
+    set(({ players }) => ({
+      players: players.map((p, idx) =>
+        idx === playerIdx ? { ...p, ...player } : p,
+      ),
+    })),
   importMap: (mapString: string) =>
     set(() => {
       const rawMap = parseMapString(mapString.split(" "));

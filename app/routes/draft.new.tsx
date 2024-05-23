@@ -9,7 +9,7 @@ import {
   MapSection,
   SlicesSection,
 } from "~/components/draft";
-import { Section, SectionTitle } from "~/components/draft/Section";
+import { PlayerInputSection } from "~/components/draft/PlayerInputSection";
 import { useNewDraft } from "~/draftStore";
 
 export const meta: MetaFunction = () => {
@@ -81,10 +81,6 @@ export default function DraftNew() {
         usedSystemIds={usedSystemIds}
       />
 
-      <button type="button" onClick={() => socket?.emit("event", "ping")}>
-        Send ping
-      </button>
-
       <ImportMapInput onImport={draft.importMap} />
 
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
@@ -113,27 +109,12 @@ export default function DraftNew() {
           />
         </Stack>
         <Stack flex={1} gap="xl">
-          <Section>
-            <SectionTitle title="Player Names" />
-            <Stack>
-              {[0, 1, 2, 3, 4, 5].map((seatIdx) => (
-                <Group>
-                  <img
-                    src={`/avatar/avatar${seatIdx}.png`}
-                    style={{ width: 60 }}
-                  />
-                  <Input
-                    key={seatIdx}
-                    placeholder={`Player ${seatIdx + 1}`}
-                    flex={1}
-                    size="lg"
-                    // value={draft.players[seatIdx].name}
-                    // onChange={(e) => draft.setPlayerName(seatIdx, e.currentTarget.value)}
-                  />
-                </Group>
-              ))}
-            </Stack>
-          </Section>
+          <PlayerInputSection
+            players={draft.players}
+            onChangeName={(playerIdx, name) => {
+              draft.updatePlayer(playerIdx, { name });
+            }}
+          />
 
           <MapSection
             map={draft.map}
