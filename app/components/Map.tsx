@@ -40,20 +40,22 @@ export function Map({
       }}
     >
       <Box ref={ref} w="100%" h="100%">
-        {map.tiles.map((tile, idx) => (
-          <MapTile
-            mapId={id}
-            key={`${tile.position.x}-${tile.position.y}`}
-            tile={tile}
-            onSelect={() => {
-              if (tile.type === "SYSTEM" || tile.type === "OPEN")
-                onSelectSystemTile?.(idx);
-              if (tile.type === "HOME") onSelectHomeTile?.(tile);
-            }}
-            modifiable={mode === "create" && isTileModifiable(idx)}
-            homeSelectable={mode === "draft"}
-          />
-        ))}
+        {map.tiles
+          .filter((t) => !!t.position)
+          .map((tile, idx) => (
+            <MapTile
+              mapId={id}
+              key={`${tile.position.x}-${tile.position.y}`}
+              tile={tile}
+              onSelect={() => {
+                if (tile.type === "SYSTEM" || tile.type === "OPEN")
+                  onSelectSystemTile?.(idx);
+                if (tile.type === "HOME") onSelectHomeTile?.(tile);
+              }}
+              modifiable={mode === "create" && isTileModifiable(idx)}
+              homeSelectable={mode === "draft"}
+            />
+          ))}
       </Box>
     </MapContext.Provider>
   );

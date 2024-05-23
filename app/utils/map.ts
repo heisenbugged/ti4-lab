@@ -17,7 +17,7 @@ export const mapConfig = {
   standard: {
     // Represents the location of each home system (or 'seat') in the map string (w/ mecatol included)
     // ordered from 12 o'clock going clockwise
-    homeIdxInMapString: [28, 25, 22, 19, 34, 31],
+    homeIdxInMapString: [19, 22, 25, 28, 31, 34],
 
     // tiles that are directly modifiable on the map (i.e. not part of a slice)
     modifiableMapTiles: [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18],
