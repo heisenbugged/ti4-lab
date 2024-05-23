@@ -13,6 +13,7 @@ import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 type Props = {
   map: TMap;
   mode: "create" | "draft";
+  allowSeatSelection?: boolean;
   onSelectSystemTile?: (tileIdx: number) => void;
   onSelectHomeTile?: (homeTile: HomeTile) => void;
 };
@@ -20,6 +21,7 @@ type Props = {
 export function MapSection({
   map,
   mode = "create",
+  allowSeatSelection = true,
   onSelectSystemTile,
   onSelectHomeTile,
 }: Props) {
@@ -56,7 +58,7 @@ export function MapSection({
           mode={mode}
           padding={0}
           onSelectSystemTile={onSelectSystemTile}
-          onSelectHomeTile={onSelectHomeTile}
+          onSelectHomeTile={allowSeatSelection ? onSelectHomeTile : undefined}
         />
       </Box>
     </div>

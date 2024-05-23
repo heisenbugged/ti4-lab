@@ -82,7 +82,7 @@ export function Slice({
             {player && (
               <PlayerLabel faction={player.faction} name={player.name} />
             )}
-            {mode === "draft" && !selected && (
+            {mode === "draft" && !selected && onSelectSlice && (
               <Button
                 lh={1}
                 py={6}

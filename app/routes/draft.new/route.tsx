@@ -151,6 +151,11 @@ export default function DraftNew() {
 export async function action({ request }: ActionFunctionArgs) {
   const body = (await request.json()) as CreateDraftInput;
 
+  const playerIds = body.players.map((p) => p.id);
+  // TODO: Pick order needs to be a proper 'snake draft'
+  // that needs to be computed based on the draft options.
+  const pickOrder = [...playerIds, ...[...playerIds]]; //.reverse()
+
   const draft: PersistedDraft = {
     factions: body.availableFactions,
     mapString: body.mapString,
@@ -161,9 +166,7 @@ export async function action({ request }: ActionFunctionArgs) {
       name: p.name.length > 0 ? p.name : `Player ${p.id}`,
     })),
     currentPick: 0,
-    // TODO: Pick order needs to be a proper 'snake draft'
-    // that needs to be computed based on the draft options.
-    pickOrder: body.players.map((p) => p.id),
+    pickOrder,
   };
 
   const result = db

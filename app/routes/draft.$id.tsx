@@ -21,23 +21,31 @@ export default function RunningDraft() {
   const syncDraft = useSyncDraft();
 
   if (!draft.hydratedMap) return <></>;
+
+  const activePlayerId = draft.pickOrder[draft.currentPick];
+  const activePlayer = draft.players.find((p) => p.id === activePlayerId);
+  const hasSelectedSlice = (activePlayer?.sliceIdx ?? -1) >= 0;
+  const hasSelectedSeat = (activePlayer?.seatIdx ?? -1) >= 0;
+
   return (
     <>
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <SlicesSection
           mode="draft"
+          allowSliceSelection={!hasSelectedSlice}
           slices={draft.slices}
           players={draft.players}
           onSelectSlice={(sliceIdx) => {
-            draft.selectSlice(1, sliceIdx);
+            draft.selectSlice(activePlayerId, sliceIdx);
             syncDraft(result.id, draft.getPersisted());
           }}
         />
         <MapSection
           map={draft.hydratedMap}
+          allowSeatSelection={!hasSelectedSeat}
           mode="draft"
           onSelectHomeTile={(tile) => {
-            draft.selectSeat(1, tile.seatIdx);
+            draft.selectSeat(activePlayerId, tile.seatIdx);
             syncDraft(result.id, draft.getPersisted());
           }}
         />

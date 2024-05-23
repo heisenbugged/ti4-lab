@@ -48,6 +48,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
       return {
         players,
         hydratedMap: hydratedMap,
+        currentPick: state.currentPick + 1,
       };
     }),
 
@@ -63,6 +64,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
       return {
         players,
         hydratedMap: hydratedMap,
+        currentPick: state.currentPick + 1,
       };
     }),
   hydrate: (draft: PersistedDraft) =>

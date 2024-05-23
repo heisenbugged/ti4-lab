@@ -7,6 +7,7 @@ import { Player } from "~/types";
 type Props = {
   mode: "create" | "draft";
   slices: string[][];
+  allowSliceSelection?: boolean;
   players?: Player[];
   onAddNewSlice?: () => void;
   onSelectSlice?: (sliceIdx: number) => void;
@@ -17,6 +18,7 @@ export function SlicesSection({
   slices,
   players,
   mode = "create",
+  allowSliceSelection = true,
   onAddNewSlice,
   onSelectTile,
   onSelectSlice,
@@ -51,7 +53,9 @@ export function SlicesSection({
                 onSelectTile={(tile) => {
                   onSelectTile?.(idx, tile.idx);
                 }}
-                onSelectSlice={() => onSelectSlice?.(idx)}
+                onSelectSlice={
+                  allowSliceSelection ? () => onSelectSlice?.(idx) : undefined
+                }
               />
             ))}
           </SimpleGrid>

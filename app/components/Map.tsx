@@ -53,7 +53,7 @@ export function Map({
                 if (tile.type === "HOME") onSelectHomeTile?.(tile);
               }}
               modifiable={mode === "create" && isTileModifiable(idx)}
-              homeSelectable={mode === "draft"}
+              homeSelectable={onSelectHomeTile && mode === "draft"}
             />
           ))}
       </Box>
