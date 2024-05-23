@@ -120,6 +120,8 @@ export default function DraftNew() {
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <Stack flex={1} gap="xl">
           <AvailableFactionsSection
+            numFactions={draft.numFactionsToDraft}
+            onChangeNumFactions={draft.setNumFactionsToDraft}
             selectedFactions={draft.availableFactions}
             onToggleFaction={(factionId, checked) => {
               if (checked) {

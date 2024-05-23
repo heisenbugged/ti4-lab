@@ -45,7 +45,12 @@ export const useDraft = create<DraftsState>((set, get) => ({
       const players = state.players.map((p) =>
         p.id === playerId ? { ...p, faction: factionId } : p,
       );
-      return { players, currentPick: state.currentPick + 1 };
+      const hydratedMap = hydrateMap(state.hydratedMap, players, state.slices);
+      return {
+        players,
+        hydratedMap: hydratedMap,
+        currentPick: state.currentPick + 1,
+      };
     }),
   selectSlice: (playerId: number, sliceIdx: number) =>
     set((state) => {
@@ -99,8 +104,10 @@ export const useDraft = create<DraftsState>((set, get) => ({
 type NewDraftState = {
   map: Map;
   slices: string[][];
+  numFactionsToDraft: number;
   availableFactions: FactionId[];
   players: Player[];
+  setNumFactionsToDraft: (num: number | undefined) => void;
   updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
   importMap: (mapString: string) => void;
   addSystemToMap: (tileIdx: number, system: System) => void;
@@ -127,6 +134,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       name: "",
     })),
   ],
+  numFactionsToDraft: undefined,
+  setNumFactionsToDraft: (num) => set({ numFactionsToDraft: num }),
   updatePlayer: (playerIdx: number, player: Partial<Player>) =>
     set(({ players }) => ({
       players: players.map((p, idx) =>
@@ -145,7 +154,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
   addSystemToMap: (tileIdx: number, system: System) =>
     set((state) => {
-      const map = { ...state.map };
+      const map = [...state.map];
       map[tileIdx] = {
         ...state.map[tileIdx],
         type: "SYSTEM",

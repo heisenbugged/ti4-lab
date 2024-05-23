@@ -5,14 +5,20 @@ import { factionIds, factions } from "~/data/factionData";
 import { NewDraftFaction } from "../NewDraftFaction";
 
 type Props = {
+  numFactions?: number;
   selectedFactions: FactionId[];
+  onChangeNumFactions: (num: number | undefined) => void;
   onToggleFaction: (factionId: FactionId, checked: boolean) => void;
 };
 
 export function AvailableFactionsSection({
+  numFactions,
   selectedFactions,
+  onChangeNumFactions,
   onToggleFaction,
 }: Props) {
+  const defaultInputValue =
+    selectedFactions.length > 0 ? selectedFactions.length : "";
   return (
     <Section>
       <SectionTitle title="Available Factions">
@@ -23,7 +29,14 @@ export function AvailableFactionsSection({
             size="sm"
             type="number"
             min={6}
-            value={selectedFactions.length > 0 ? selectedFactions.length : ""}
+            value={numFactions ?? defaultInputValue}
+            onChange={(e) => {
+              if (e.currentTarget.value.length === 0) {
+                onChangeNumFactions(undefined);
+                return;
+              }
+              onChangeNumFactions(parseInt(e.currentTarget.value, 10));
+            }}
           />
         </Group>
       </SectionTitle>

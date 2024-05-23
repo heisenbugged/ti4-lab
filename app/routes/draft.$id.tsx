@@ -35,23 +35,28 @@ export default function RunningDraft() {
 
   return (
     <>
-      <Stack gap="sm" mb="60">
-        <Title order={2}>Draft Order</Title>
+      <Stack gap="sm" mb="60" mt="lg">
+        <Title order={3}>Draft Order</Title>
         <Group gap={1}>
           {draft.pickOrder.map((playerId, idx) => {
             const player = draft.players.find(({ id }) => id === playerId)!!;
             const active = idx === draft.currentPick;
             return (
-              <Box
+              <Group
                 key={player.id}
-                bg={active ? "violet.7" : "gray.5"}
+                bg={active ? "purple.7" : "gray.2"}
                 px="md"
                 py="xs"
+                gap="sm"
               >
+                <img
+                  src={`/avatar/avatar${player.id - 1}.png`}
+                  style={{ width: 20 }}
+                />
                 <Title order={5} c={active ? "white" : "gray.8"} lh={1}>
                   {player.name}
                 </Title>
-              </Box>
+              </Group>
             );
           })}
         </Group>

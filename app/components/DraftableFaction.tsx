@@ -29,9 +29,10 @@ export function DraftableFaction({ faction, player, onSelect }: Props) {
         style={{
           filter: player ? "grayscale(1)" : "none",
         }}
+        pt={10}
       >
         <FactionIcon faction={faction.id} style={{ width: 30 }} />
-        <Title order={6} flex={1} size={14}>
+        <Title order={6} flex={1} size={14} lh={1}>
           {faction.name}
         </Title>
       </Group>
@@ -44,12 +45,15 @@ export function DraftableFaction({ faction, player, onSelect }: Props) {
         }}
       >
         {player && (
-          <Box bg="gray.4" px={8} py={2} style={{ borderRadius: 8 }}>
+          <Group bg="gray.4" px={8} py={4} style={{ borderRadius: 4 }} gap="xs">
+            <img
+              src={`/avatar/avatar${player.id - 1}.png`}
+              style={{ width: 20 }}
+            />
             <Text size="xs" tt="uppercase" c="purple" fw={600}>
               {player.name}
             </Text>
-            {/* <Titles.Player>{player.name}</Titles.Player> */}
-          </Box>
+          </Group>
         )}
         {!player && onSelect && (
           <Button size="xs" onMouseDown={onSelect}>
