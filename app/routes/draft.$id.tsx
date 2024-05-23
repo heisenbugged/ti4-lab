@@ -78,15 +78,17 @@ export default function RunningDraft() {
             }}
           />
         </Stack>
-        <MapSection
-          map={draft.hydratedMap}
-          allowSeatSelection={!hasSelectedSeat}
-          mode="draft"
-          onSelectHomeTile={(tile) => {
-            draft.selectSeat(activePlayerId, tile.seatIdx);
-            syncDraft(result.id, draft.getPersisted());
-          }}
-        />
+        <Stack flex={1} gap="xl">
+          <MapSection
+            map={draft.hydratedMap}
+            allowSeatSelection={!hasSelectedSeat}
+            mode="draft"
+            onSelectHomeTile={(tile) => {
+              draft.selectSeat(activePlayerId, tile.seatIdx);
+              syncDraft(result.id, draft.getPersisted());
+            }}
+          />
+        </Stack>
       </SimpleGrid>
     </>
   );
