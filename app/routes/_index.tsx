@@ -31,7 +31,7 @@ export default function Index() {
           position: "relative",
         }}
       >
-        <Map map={map} padding={PADDING} />
+        <Map map={map} padding={PADDING} mode="create" id="map-explorer" />
       </Box>
     </Group>
   );

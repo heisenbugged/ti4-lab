@@ -49,19 +49,22 @@ export default function RunningDraft() {
 function useSyncDraft() {
   const fetcher = useFetcher();
   return async (id: number, draft: PersistedDraft) =>
-    fetcher.submit(draft, { method: "POST", encType: "application/json" });
+    fetcher.submit(
+      { id, draft },
+      { method: "POST", encType: "application/json" },
+    );
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { id, data } = (await request.json()) as {
+  const { id, draft } = (await request.json()) as {
     id: number;
-    data: PersistedDraft;
+    draft: PersistedDraft;
   };
 
   // TODO: Handle if not successful
   const result = db
     .update(drafts)
-    .set({ data: JSON.stringify(data) })
+    .set({ data: JSON.stringify(draft) })
     .where(eq(drafts.id, id))
     .run();
 

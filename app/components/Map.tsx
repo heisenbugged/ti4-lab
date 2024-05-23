@@ -40,7 +40,7 @@ export function Map({
       }}
     >
       <Box ref={ref} w="100%" h="100%">
-        {map.tiles
+        {map
           .filter((t) => !!t.position)
           .map((tile, idx) => (
             <MapTile

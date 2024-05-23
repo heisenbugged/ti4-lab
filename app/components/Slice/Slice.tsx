@@ -45,7 +45,7 @@ export function Slice({
 }: Props) {
   // TODO: Ideally this parsing happens
   // in the store, and not in this render function.
-  const { tiles } = parseMapString(systems, slicePositionOrder, false);
+  const tiles = parseMapString(systems, slicePositionOrder, false);
   const total = totalStats(tiles);
   const optimal = optimalStats(tiles);
   const specialties = techSpecialties(tiles);

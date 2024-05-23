@@ -63,9 +63,7 @@ export type Tile =
   | ({ type: "WARP" } & BaseTile)
   | SystemTile;
 
-export type Map = {
-  tiles: Tile[];
-};
+export type Map = Tile[];
 
 // TODO: Finish filling out
 export type FactionId =

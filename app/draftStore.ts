@@ -75,12 +75,13 @@ export const useDraft = create<DraftsState>((set, get) => ({
       const hydratedMap = hydrateMap(parsedMap, draft.players, draft.slices);
 
       return {
-        mapString: draft.mapString.split(" "),
         hydratedMap: hydratedMap,
+        mapString: draft.mapString.split(" "),
         players: draft.players,
         slices: draft.slices,
-        // TODO: Make consistent name.
-        factions: draft.availableFactions,
+        factions: draft.factions,
+        currentPick: draft.currentPick,
+        pickOrder: draft.pickOrder,
       };
     }),
 }));
@@ -135,8 +136,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   addSystemToMap: (tileIdx: number, system: System) =>
     set((state) => {
       const map = { ...state.map };
-      map.tiles[tileIdx] = {
-        ...state.map.tiles[tileIdx],
+      map[tileIdx] = {
+        ...state.map[tileIdx],
         type: "SYSTEM",
         system,
       };

@@ -68,7 +68,7 @@ export const hydrateMap = (
   players: Player[],
   slices: string[][],
 ): Map => {
-  const hydrated: Tile[] = [...map.tiles];
+  const hydrated: Map = [...map];
 
   // add player data to home systems
   forHomeTiles(hydrated, (tile, homeIdx) => {
@@ -101,7 +101,7 @@ export const hydrateMap = (
     );
   });
 
-  return { ...map, tiles: hydrated };
+  return hydrated;
 };
 
 /**
@@ -129,7 +129,7 @@ const hydrateHomeTile = (
 };
 
 export const sliceMap = (map: Map): { map: Map; slices: string[][] } => {
-  const tiles = [...map.tiles];
+  const tiles = [...map];
   const slices: string[][] = [];
   mapConfig.standard.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
     const homeTile = tiles[tileIdx];
@@ -157,7 +157,7 @@ export const sliceMap = (map: Map): { map: Map; slices: string[][] } => {
   });
 
   return {
-    map: { tiles },
+    map: tiles,
     slices,
   };
 };
@@ -168,7 +168,7 @@ export const parseMapString = (
   includeMecatol = true,
 ): Map => {
   const rawSystems = includeMecatol ? ["18", ...systems] : systems;
-  const tiles: Tile[] = rawSystems
+  const map: Map = rawSystems
     .map((n) => [n, systemData[parseInt(n)]] as const)
     .map(([id, system], idx) => {
       const position = positionOrder[idx];
@@ -184,7 +184,7 @@ export const parseMapString = (
       }
     });
 
-  return { tiles };
+  return map;
 };
 
 export const totalStats = (tiles: Tile[]) =>
