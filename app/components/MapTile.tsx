@@ -82,7 +82,7 @@ export function MapTile(props: Props) {
             color={overlayColor}
             radius={radius}
           >
-            <Button px="6" py="4" h="auto">
+            <Button px="6" py="4" h="auto" variant="filled">
               +
             </Button>
           </Hex>

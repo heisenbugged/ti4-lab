@@ -10,7 +10,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import { ColorSchemeScript, MantineProvider } from "@mantine/core";
+import { Button, ColorSchemeScript, MantineProvider } from "@mantine/core";
 import { useEffect, useState } from "react";
 import type { Socket } from "socket.io-client";
 import io from "socket.io-client";
@@ -88,6 +88,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             headings: {
               // fontFamily: '"Quantico", sans-serif',
               fontFamily: "Orbitron",
+            },
+            components: {
+              Button: Button.extend({
+                defaultProps: {
+                  variant: "gradient",
+                  gradient: { from: "purple", to: "indigo.7", deg: 90 },
+                },
+              }),
             },
           }}
         >

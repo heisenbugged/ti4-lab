@@ -27,7 +27,9 @@ export function SlicesSection({
     <Section>
       <div style={{ position: "sticky", top: 60, zIndex: 5 }}>
         <SectionTitle title="Slices">
-          <Button onMouseDown={onAddNewSlice}>Add New Slice</Button>
+          {mode === "create" && (
+            <Button onMouseDown={onAddNewSlice}>Add New Slice</Button>
+          )}
         </SectionTitle>
       </div>
       <Tabs defaultValue="detailed">

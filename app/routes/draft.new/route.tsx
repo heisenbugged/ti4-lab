@@ -1,4 +1,4 @@
-import { Box, Button, SimpleGrid, Stack } from "@mantine/core";
+import { Box, Button, Flex, Group, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/react";
@@ -57,18 +57,37 @@ export default function DraftNew() {
 
   return (
     <Box p="lg">
-      <Button
-        onClick={() => {
-          createDraft({
-            availableFactions: draft.availableFactions,
-            mapString: serializeMap(draft.map).join(" "),
-            players: draft.players,
-            slices: draft.slices,
-          });
+      <div
+        style={{
+          position: "fixed",
+          top: 60,
+          right: -1,
+          paddingRight: 25,
+          zIndex: 1000,
+          backgroundColor: "white",
+          border: "1px solid rgba(0, 0, 0, 0.2)",
+          borderRight: "none",
+          borderTop: "none",
+          borderBottomLeftRadius: 8,
+          borderTopRightRadius: 8,
+          cursor: "pointer",
+          padding: 25,
         }}
       >
-        will we submit
-      </Button>
+        <Button
+          size="xl"
+          onClick={() => {
+            createDraft({
+              availableFactions: draft.availableFactions,
+              mapString: serializeMap(draft.map).join(" "),
+              players: draft.players,
+              slices: draft.slices,
+            });
+          }}
+        >
+          Create Draft
+        </Button>
+      </div>
 
       <PlanetFinder
         opened={planetFinderOpened}
@@ -94,7 +113,9 @@ export default function DraftNew() {
         usedSystemIds={usedSystemIds}
       />
 
-      <ImportMapInput onImport={draft.importMap} />
+      <Box w="calc(50% - 20px)">
+        <ImportMapInput onImport={draft.importMap} />
+      </Box>
 
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <Stack flex={1} gap="xl">
@@ -154,7 +175,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const playerIds = body.players.map((p) => p.id);
   // TODO: Pick order needs to be a proper 'snake draft'
   // that needs to be computed based on the draft options.
-  const pickOrder = [...playerIds, ...[...playerIds]]; //.reverse()
+  const pickOrder = [...playerIds, ...[...playerIds].reverse(), ...playerIds];
 
   const draft: PersistedDraft = {
     factions: body.availableFactions,

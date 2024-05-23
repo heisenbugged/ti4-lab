@@ -1,4 +1,4 @@
-import { Button, Divider, Group, Stack, Text } from "@mantine/core";
+import { Box, Button, Divider, Group, Stack, Text } from "@mantine/core";
 import { SliceMap } from "./SliceMap";
 import { TechIcon } from "../features/TechIcon";
 import { PlanetStatsPill } from "./PlanetStatsPill";
@@ -79,9 +79,7 @@ export function Slice({
                 influence={total.influence}
               />
             </Group>
-            {player && (
-              <PlayerLabel faction={player.faction} name={player.name} />
-            )}
+
             {mode === "draft" && !selected && onSelectSlice && (
               <Button
                 lh={1}
@@ -89,6 +87,7 @@ export function Slice({
                 px={10}
                 h="auto"
                 onMouseDown={onSelectSlice}
+                variant="filled"
               >
                 Select
               </Button>
@@ -96,7 +95,11 @@ export function Slice({
           </Group>
         }
       >
-        <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>
+        {player ? (
+          <PlayerLabel faction={player.faction} name={player.name} />
+        ) : (
+          <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>
+        )}
       </SliceHeader>
       <div style={{ filter: selected ? "grayscale(70%)" : "none" }}>
         <SliceMap
