@@ -21,7 +21,6 @@ export function SlicesSection({
   onSelectTile,
   onSelectSlice,
 }: Props) {
-  console.log("the players are", players);
   return (
     <Section>
       <div style={{ position: "sticky", top: 60, zIndex: 5 }}>

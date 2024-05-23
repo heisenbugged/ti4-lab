@@ -30,7 +30,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!socket) return;
     socket.on("confirmation", (data) => {
-      console.log("WE GOT SOME CONFIRMATION");
       console.log(data);
     });
   }, [socket]);

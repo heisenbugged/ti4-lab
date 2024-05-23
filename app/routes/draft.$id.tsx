@@ -45,7 +45,6 @@ export default function RunningDraft() {
   useEffect(() => {
     draft.hydrate(result.data);
   }, []);
-  console.log(draft);
 
   const syncDraft = async () => {
     const { players, factions, mapString, slices } = useDraft.getState();

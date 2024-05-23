@@ -139,8 +139,7 @@ export const sliceMap = (map: Map): { map: Map; slices: string[][] } => {
       // find tile the matches the hexagonal coordinate position to modify
       const tileToModify = tiles.find(
         (t) => t.position.x === pos.x && t.position.y === pos.y,
-      )!!; // TODO: Handle if tile not found
-
+      )!!;
       if (tileToModify.system) {
         slice.push(tileToModify.system?.id.toString());
       } else {

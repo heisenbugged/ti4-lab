@@ -12,16 +12,16 @@ import {
 import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
 import { PlayerLabel } from "../PlayerLabel";
-import { Player, System, Tile } from "~/types";
+import { Player, Tile } from "~/types";
 
 const slicePositionOrder = [
   { x: 0, y: 0, z: 0 },
-  { x: 1, y: -1, z: 0 },
   { x: -1, y: 0, z: 0 },
   { x: 0, y: -1, z: 0 },
+  { x: 1, y: -1, z: 0 },
   // additional two slices for full milty draft
-  { x: -1, y: -1, z: 0 },
-  { x: 0, y: -2, z: 0 },
+  // { x: -1, y: -1, z: 0 },
+  // { x: 0, y: -2, z: 0 },
 ];
 
 type Props = {
