@@ -125,8 +125,8 @@ export function Slice({
             minHeight: 50,
           }}
         >
-          {specialties.map((tech) => (
-            <TechIcon key={tech} techSpecialty={tech} />
+          {specialties.map((tech, idx) => (
+            <TechIcon key={idx} techSpecialty={tech} />
           ))}
         </Group>
       </Stack>

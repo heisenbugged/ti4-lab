@@ -63,7 +63,7 @@ export default function DraftNew() {
           top: 60,
           right: -1,
           paddingRight: 25,
-          zIndex: 1000,
+          zIndex: 100,
           backgroundColor: "white",
           border: "1px solid rgba(0, 0, 0, 0.2)",
           borderRight: "none",

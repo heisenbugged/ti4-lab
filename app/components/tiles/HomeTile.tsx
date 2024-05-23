@@ -30,13 +30,16 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
               style={{ maxWidth: radius * 0.6, maxHeight: radius * 0.6 }}
             />
           )}
+          {!tile.player.faction && (
+            <img src={`/avatar/avatar${tile.player.id - 1}.png`} />
+          )}
           <Text
             ta="center"
             lh={1}
             c="violet.9"
             fw="bold"
             tt="uppercase"
-            size="xs"
+            size="md"
           >
             {tile.player.name}
           </Text>

@@ -18,7 +18,6 @@ export function DraftableFactionsSection({
   players,
   onSelectFaction,
 }: Props) {
-  console.log("factions", factions);
   return (
     <Section>
       <SectionTitle title="Available Factions" />

@@ -57,7 +57,7 @@ export function DraftableFaction({ faction, player, onSelect }: Props) {
         )}
         {!player && onSelect && (
           <Button size="xs" onMouseDown={onSelect}>
-            Choose
+            Select
           </Button>
         )}
       </div>

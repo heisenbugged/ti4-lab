@@ -43,7 +43,7 @@ export default function RunningDraft() {
             const active = idx === draft.currentPick;
             return (
               <Group
-                key={player.id}
+                key={idx}
                 bg={active ? "purple.7" : "gray.2"}
                 px="md"
                 py="xs"
