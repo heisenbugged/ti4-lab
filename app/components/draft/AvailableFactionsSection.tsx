@@ -21,9 +21,9 @@ export function AvailableFactionsSection({
     selectedFactions.length > 0 ? selectedFactions.length : "";
   return (
     <Section>
-      <SectionTitle title="Available Factions">
+      <SectionTitle title="Faction Pool">
         <Group>
-          <Text>Number of factions in draft:</Text>
+          <Text># of factions in draft:</Text>
           <Input
             placeholder="6 or 9 or 12 etc"
             size="sm"

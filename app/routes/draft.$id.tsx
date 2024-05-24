@@ -12,9 +12,21 @@ import { DraftableFactionsSection } from "~/components/draft/DraftableFactionsSe
 import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
+import { useSocket } from "~/socketContext";
 import { PersistedDraft } from "~/types";
 
 export default function RunningDraft() {
+  // Example of socket, to be put on actual draft page.
+  const socket = useSocket();
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("syncDraft", (data) => {
+      const draft = JSON.parse(data) as PersistedDraft;
+      useDraft.getState().hydrate(draft);
+    });
+    socket.emit("joinDraft", result.id);
+  }, [socket]);
+
   const result = useLoaderData<typeof loader>();
   const draft = useDraft();
 
@@ -24,6 +36,12 @@ export default function RunningDraft() {
   }, []);
 
   const syncDraft = useSyncDraft();
+
+  const handleSync = async () => {
+    const persistedDraft = draft.getPersisted();
+    await syncDraft(result.id, persistedDraft);
+    socket?.emit("syncDraft", result.id, JSON.stringify(persistedDraft));
+  };
 
   if (!draft.hydratedMap) return <></>;
 
@@ -69,7 +87,7 @@ export default function RunningDraft() {
             players={draft.players}
             onSelectFaction={(factionId) => {
               draft.selectFaction(activePlayerId, factionId);
-              syncDraft(result.id, draft.getPersisted());
+              handleSync();
             }}
           />
           <SlicesSection
@@ -79,7 +97,7 @@ export default function RunningDraft() {
             players={draft.players}
             onSelectSlice={(sliceIdx) => {
               draft.selectSlice(activePlayerId, sliceIdx);
-              syncDraft(result.id, draft.getPersisted());
+              handleSync();
             }}
           />
         </Stack>
@@ -90,7 +108,7 @@ export default function RunningDraft() {
             mode="draft"
             onSelectHomeTile={(tile) => {
               draft.selectSeat(activePlayerId, tile.seatIdx);
-              syncDraft(result.id, draft.getPersisted());
+              handleSync();
             }}
           />
         </Stack>

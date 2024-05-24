@@ -19,17 +19,6 @@ import { PersistedDraft, Player } from "~/types";
 import { CreateDraftInput, useCreateDraft } from "./useCreateDraft";
 
 export default function DraftNew() {
-  // Example of socket, to be put on actual draft page.
-  // const socket = useSocket();
-  // useEffect(() => {
-  //   if (!socket) return;
-  //   socket.on("event", (data) => {
-  //     debugger;
-  //     console.log(data);
-  //   });
-  //   socket.emit("event", "ping");
-  // }, [socket]);
-
   const createDraft = useCreateDraft();
   const draft = useNewDraft();
   const openTile = useRef<{

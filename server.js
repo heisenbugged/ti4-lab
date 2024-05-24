@@ -30,12 +30,18 @@ const httpServer = createServer(app);
 const io = new Server(httpServer);
 io.on("connection", (socket) => {
   // from this point you are on the WS connection with a specific client
-  console.log(socket.id, "connected");
+  // console.log(socket.id, "connected");
+
   socket.emit("confirmation", "connected!");
-  socket.on("event", (data) => {
-    console.log(socket.id, data);
-    socket.broadcast.emit("event", "pong");
+  socket.on("joinDraft", (draftId) => {
+    console.log(socket.id, "joined draft", draftId);
+    socket.join("draft:"+draftId)
   });
+
+  socket.on("syncDraft", (draftId, data) => {
+    console.log(socket.id, "synced draft", draftId);
+    socket.to("draft:"+draftId).emit("syncDraft", data);
+  })
 });
 
 // instead of running listen on the Express app, do it on the HTTP server
