@@ -1,15 +1,20 @@
 import { Box, Button, Group, Stack, Text, Title } from "@mantine/core";
 import { Faction, Player } from "~/types";
 import { FactionIcon } from "./features/FactionIcon";
-import { Titles } from "./Titles";
 
 type Props = {
   faction: Faction;
   player?: Player;
   onSelect?: () => void;
+  applyGreyscale?: boolean;
 };
 
-export function DraftableFaction({ faction, player, onSelect }: Props) {
+export function DraftableFaction({
+  faction,
+  player,
+  applyGreyscale = true,
+  onSelect,
+}: Props) {
   return (
     <Stack
       gap="md"
@@ -26,9 +31,7 @@ export function DraftableFaction({ faction, player, onSelect }: Props) {
       <Group
         align="center"
         flex={1}
-        style={{
-          filter: player ? "grayscale(1)" : "none",
-        }}
+        style={{ filter: player && applyGreyscale ? "grayscale(1)" : "none" }}
         pt={10}
       >
         <FactionIcon faction={faction.id} style={{ width: 30 }} />

@@ -1,19 +1,20 @@
-import { Box, Group, SimpleGrid, Stack, Title } from "@mantine/core";
+import { Box, Group, SimpleGrid, Stack, Table, Title } from "@mantine/core";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { useEffect } from "react";
-import {
-  AvailableFactionsSection,
-  MapSection,
-  SlicesSection,
-} from "~/components/draft";
+import { DraftableFaction } from "~/components/DraftableFaction";
+import { factions as allFactions } from "~/data/factionData";
+import { MapSection, SlicesSection } from "~/components/draft";
 import { DraftableFactionsSection } from "~/components/draft/DraftableFactionsSection";
 import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { useSocket } from "~/socketContext";
 import { PersistedDraft } from "~/types";
+import { Section, SectionTitle } from "~/components/draft/Section";
+import { SlicesSummary } from "~/components/draft/SlicesSummary";
+import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 
 export default function RunningDraft() {
   // Example of socket, to be put on actual draft page.
@@ -43,13 +44,18 @@ export default function RunningDraft() {
     socket?.emit("syncDraft", result.id, JSON.stringify(persistedDraft));
   };
 
-  if (!draft.hydratedMap) return <></>;
-
+  const draftFinalized = draft.currentPick >= draft.pickOrder.length;
   const activePlayerId = draft.pickOrder[draft.currentPick];
   const activePlayer = draft.players.find((p) => p.id === activePlayerId);
   const hasSelectedSlice = (activePlayer?.sliceIdx ?? -1) >= 0;
   const hasSelectedSeat = (activePlayer?.seatIdx ?? -1) >= 0;
   const hasSelectedFaction = !!activePlayer?.faction;
+
+  if (!draft.hydratedMap) return <></>;
+
+  if (draftFinalized) {
+    return <FinalizedDraft />;
+  }
 
   return (
     <>
@@ -156,3 +162,62 @@ export const loader = async ({ params }: { params: { id: number } }) => {
     data: JSON.parse(result.data as string) as PersistedDraft,
   });
 };
+
+function FinalizedDraft() {
+  const draft = useDraft();
+  const slices = draft.slices;
+  const players = draft.players;
+  const factions = draft.players.map((p) => p.faction!!);
+
+  return (
+    <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
+      <Stack flex={1} gap="xl">
+        <Section>
+          <SectionTitle title="Drafted Factions" />
+          <SimpleGrid cols={{ base: 3, md: 4, lg: 3, xl: 4 }}>
+            {factions.map((factionId) => (
+              <DraftableFaction
+                key={factionId}
+                player={players.find((p) => p.faction === factionId)}
+                faction={allFactions[factionId]}
+                applyGreyscale={false}
+              />
+            ))}
+          </SimpleGrid>
+        </Section>
+        <Section>
+          <SectionTitle title="Slice Summary" />
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Name</Table.Th>
+                <Table.Th>Optimal</Table.Th>
+                <Table.Th>Total</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {slices.map((slice, idx) => (
+                <Table.Tr key={idx}>
+                  <Table.Td>{`Slice ${idx + 1}`}</Table.Td>
+                  <Table.Td>
+                    <PlanetStatsPill size="sm" resources={9} influence={2} />
+                  </Table.Td>
+                  <Table.Td>
+                    <PlanetStatsPill size="sm" resources={9} influence={2} />
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Section>
+      </Stack>
+      <Stack flex={1} gap="xl">
+        <MapSection
+          map={draft.hydratedMap}
+          allowSeatSelection={false}
+          mode="draft"
+        />
+      </Stack>
+    </SimpleGrid>
+  );
+}

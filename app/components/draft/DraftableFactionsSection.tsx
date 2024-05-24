@@ -2,14 +2,13 @@ import { Group, Input, SimpleGrid, Text } from "@mantine/core";
 import { Section, SectionTitle } from "./Section";
 import { FactionId, Player } from "~/types";
 import { factions as allFactions } from "~/data/factionData";
-
 import { DraftableFaction } from "../DraftableFaction";
 
 type Props = {
   allowFactionSelection?: boolean;
   factions: FactionId[];
   players: Player[];
-  onSelectFaction: (factionId: FactionId) => void;
+  onSelectFaction?: (factionId: FactionId) => void;
 };
 
 export function DraftableFactionsSection({
@@ -28,7 +27,7 @@ export function DraftableFactionsSection({
             player={players.find((p) => p.faction === factionId)}
             faction={allFactions[factionId]}
             onSelect={
-              allowFactionSelection
+              allowFactionSelection && onSelectFaction
                 ? () => onSelectFaction(factionId)
                 : undefined
             }

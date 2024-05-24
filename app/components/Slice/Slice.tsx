@@ -13,6 +13,8 @@ import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
 import { PlayerLabel } from "../PlayerLabel";
 import { Player, Tile } from "~/types";
+import { useMemo } from "react";
+import { useSlice } from "./useSlice";
 
 const slicePositionOrder = [
   { x: 0, y: 0, z: 0 },
@@ -43,12 +45,7 @@ export function Slice({
   onSelectTile,
   onSelectSlice,
 }: Props) {
-  // TODO: Ideally this parsing happens
-  // in the store, and not in this render function.
-  const tiles = parseMapString(systems, slicePositionOrder, false);
-  const total = totalStats(tiles);
-  const optimal = optimalStats(tiles);
-  const specialties = techSpecialties(tiles);
+  const { tiles, total, optimal, specialties } = useSlice(systems);
   const selected = !!player;
 
   return (
