@@ -56,11 +56,18 @@ export type HomeTile = BaseTile & {
   player?: Player;
 };
 
+export type PlayerDemoTile = BaseTile & {
+  type: "PLAYER_DEMO";
+  playerNumber: number;
+  isHomeSystem: boolean;
+};
+
 export type Tile =
   | HomeTile
   | ({ type: "OPEN" } & BaseTile)
   | ({ type: "CLOSED" } & BaseTile)
   | ({ type: "WARP" } & BaseTile)
+  | PlayerDemoTile
   | SystemTile;
 
 export type Map = Tile[];
@@ -114,4 +121,25 @@ export type PersistedDraft = {
   mapString: string;
   currentPick: number;
   pickOrder: number[];
+};
+
+export type SystemStats = {
+  tileColor: "RED" | "BLUE";
+  totalResources: number;
+  totalInfluence: number;
+  totalTech: string[];
+  redTraits: number;
+  greenTraits: number;
+  blueTraits: number;
+};
+
+export type MapStats = {
+  redTiles: number;
+  blueTiles: number;
+  totalResources: number;
+  totalInfluence: number;
+  totalTech: string[];
+  redTraits: number;
+  greenTraits: number;
+  blueTraits: number;
 };

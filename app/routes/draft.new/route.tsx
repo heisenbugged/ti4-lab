@@ -50,16 +50,12 @@ export default function DraftNew() {
         visibleFrom="sm"
         style={{
           position: "fixed",
-          top: 60,
+          bottom: 0,
           right: 10,
           paddingRight: 25,
           zIndex: 100,
           backgroundColor: "white",
-          border: "1px solid rgba(0, 0, 0, 0.2)",
-          borderRight: "none",
-          borderTop: "none",
-          borderBottomLeftRadius: 8,
-          borderTopRightRadius: 8,
+          borderTopLeftRadius: 8,
           cursor: "pointer",
           padding: 25,
         }}
@@ -152,6 +148,7 @@ export default function DraftNew() {
           <MapSection
             mode="create"
             map={draft.map}
+            stats={draft.getStats()}
             onSelectSystemTile={(tileIdx) => {
               openTile.current = {
                 mode: "map",

@@ -1,7 +1,16 @@
 import { create } from "zustand";
-import { FactionId, Map, PersistedDraft, Player, System } from "./types";
+import {
+  FactionId,
+  Map,
+  MapStats,
+  PersistedDraft,
+  Player,
+  System,
+  SystemStats,
+} from "./types";
 import { hydrateMap, parseMapString, sliceMap } from "./utils/map";
 import { mapStringOrder } from "./data/mapStringOrder";
+import { systemData } from "./data/systemData";
 
 const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
@@ -107,6 +116,7 @@ type NewDraftState = {
   numFactionsToDraft: number | undefined;
   availableFactions: FactionId[];
   players: Player[];
+  getStats: () => MapStats;
   setNumFactionsToDraft: (num: number | undefined) => void;
   updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
   importMap: (mapString: string) => void;
@@ -135,6 +145,44 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     })),
   ],
   numFactionsToDraft: undefined,
+  getStats: () => {
+    const stats: SystemStats[] = [];
+
+    get().slices.forEach((slice) => {
+      slice.forEach((t) => {
+        const system = systemData[parseInt(t)];
+        if (!system) return;
+        stats.push(systemStats(system));
+      });
+    });
+    get().map.forEach((tile) => {
+      if (tile.type !== "SYSTEM") return;
+      stats.push(systemStats(tile.system));
+    });
+
+    return stats.reduce(
+      (acc, s) => {
+        acc.totalResources += s.totalResources;
+        acc.totalInfluence += s.totalInfluence;
+        acc.totalTech = acc.totalTech.concat(s.totalTech);
+        acc.redTraits += s.redTraits;
+        acc.greenTraits += s.greenTraits;
+        acc.blueTraits += s.blueTraits;
+        s.tileColor === "RED" ? acc.redTiles++ : acc.blueTiles++;
+        return acc;
+      },
+      {
+        redTiles: 0,
+        blueTiles: 0,
+        totalResources: 0,
+        totalInfluence: 0,
+        totalTech: [] as string[],
+        redTraits: 0,
+        greenTraits: 0,
+        blueTraits: 0,
+      },
+    );
+  },
   setNumFactionsToDraft: (num) => set({ numFactionsToDraft: num }),
   updatePlayer: (playerIdx: number, player: Partial<Player>) =>
     set(({ players }) => ({
@@ -187,3 +235,50 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       availableFactions: availableFactions.filter((f) => f !== id),
     })),
 }));
+
+function tileColor(system: System): "RED" | "BLUE" {
+  if (system.planets.length === 0) return "RED";
+  if (system.anomaly) return "RED";
+  return "BLUE";
+}
+
+function systemStats(system: System): SystemStats {
+  const techSpecialtyMap = {
+    BIOTIC: "G",
+    CYBERNETIC: "Y",
+    WARFARE: "R",
+    PROPULSION: "B",
+  } as const;
+
+  const traitCount = {
+    HAZARDOUS: "redTraits",
+    INDUSTRIAL: "greenTraits",
+    CULTURAL: "blueTraits",
+  } as const;
+
+  return system.planets.reduce(
+    (stats, p) => {
+      stats.totalResources += p.resources;
+      stats.totalInfluence += p.influence;
+
+      if (p.techSpecialty) {
+        stats.totalTech.push(techSpecialtyMap[p.techSpecialty]);
+      }
+
+      if (p.trait) {
+        stats[traitCount[p.trait]]++;
+      }
+
+      return stats;
+    },
+    {
+      tileColor: tileColor(system),
+      totalResources: 0,
+      totalInfluence: 0,
+      totalTech: [] as string[],
+      redTraits: 0,
+      greenTraits: 0,
+      blueTraits: 0,
+    },
+  );
+}

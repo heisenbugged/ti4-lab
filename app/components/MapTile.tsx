@@ -10,6 +10,7 @@ import { Hex } from "./Hex";
 
 import "./MapTile.css";
 import { MapContext } from "~/contexts/MapContext";
+import { PlayerDemoTile } from "./tiles/PlayerDemoTile";
 
 type Props = {
   mapId: string;
@@ -33,6 +34,9 @@ export function MapTile(props: Props) {
 
   let Tile: JSX.Element;
   switch (tile.type) {
+    case "PLAYER_DEMO":
+      Tile = <PlayerDemoTile tile={tile} />;
+      break;
     case "HOME":
       Tile = (
         <HomeTile
