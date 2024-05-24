@@ -5,6 +5,12 @@ import Database from "better-sqlite3";
 if (!process.env.TI4_LAB_DATABASE_PATH) {
   throw new Error("Missing environment variable: TI4_LAB_DATABASE_PATH");
 }
+
+console.log(
+  "THE DATABASE IS",
+  new URL(process.env.TI4_LAB_DATABASE_PATH).pathname,
+);
+
 export const db = drizzle(
   new Database(new URL(process.env.TI4_LAB_DATABASE_PATH).pathname),
 );

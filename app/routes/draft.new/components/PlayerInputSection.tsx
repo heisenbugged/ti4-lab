@@ -13,7 +13,7 @@ export function PlayerInputSection({ players, onChangeName }: Props) {
       <SectionTitle title="Player Names" />
       <Stack>
         {players.map((player, idx) => (
-          <Group>
+          <Group key={idx}>
             <img src={`/avatar/avatar${idx}.png`} style={{ width: 60 }} />
             <Input
               key={idx}
