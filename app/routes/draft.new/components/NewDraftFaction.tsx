@@ -34,8 +34,8 @@ export function NewDraftFaction({ faction, onCheck }: Props) {
         {faction.name}
       </Text>
       <Checkbox
-        radius="lg"
-        size="lg"
+        radius="xl"
+        size="md"
         checked={checked}
         onChange={() => {
           onCheck(!checked);
