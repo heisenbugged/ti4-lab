@@ -16,6 +16,7 @@ type Props = {
   stats: MapStats;
   allowSeatSelection?: boolean;
   onSelectSystemTile?: (tileIdx: number) => void;
+  onDeleteSystemTile?: (tileIdx: number) => void;
   onSelectHomeTile?: (homeTile: HomeTile) => void;
 };
 
@@ -24,6 +25,7 @@ export function MapSection({
   stats,
   mode = "create",
   allowSeatSelection = true,
+  onDeleteSystemTile,
   onSelectSystemTile,
   onSelectHomeTile,
 }: Props) {
@@ -54,7 +56,7 @@ export function MapSection({
         }}
         mt="md"
       >
-        <Stack pos="absolute" top={0} right={0} gap={1}>
+        <Stack pos="absolute" top={0} right={0} gap={1} visibleFrom="xs">
           <Text size="sm" ta="right">
             Blue/Red: {stats.blueTiles}/{stats.redTiles}
           </Text>
@@ -75,6 +77,7 @@ export function MapSection({
           mode={mode}
           padding={0}
           onSelectSystemTile={onSelectSystemTile}
+          onDeleteSystemTile={onDeleteSystemTile}
           onSelectHomeTile={allowSeatSelection ? onSelectHomeTile : undefined}
         />
       </Box>

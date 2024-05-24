@@ -15,6 +15,7 @@ type Props = {
   player?: Player;
   mode: "create" | "draft";
   onSelectTile?: (tile: Tile) => void;
+  onDeleteTile?: (tile: Tile) => void;
   onSelectSlice?: () => void;
 };
 
@@ -25,6 +26,7 @@ export function Slice({
   player,
   mode,
   onSelectTile,
+  onDeleteTile,
   onSelectSlice,
 }: Props) {
   const { tiles, total, optimal, specialties } = useSlice(systems);
@@ -85,6 +87,7 @@ export function Slice({
           id={id}
           tiles={tiles}
           onSelectTile={onSelectTile}
+          onDeleteTile={onDeleteTile}
           mode={mode}
         />
       </div>

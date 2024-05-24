@@ -1,4 +1,4 @@
-import { Box, Button, SimpleGrid, Stack } from "@mantine/core";
+import { Box, Button, Group, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/react";
@@ -17,6 +17,7 @@ import { PlayerInputSection } from "./components/PlayerInputSection";
 import { MapSection } from "../draft/MapSection";
 
 import "./draft.new.css";
+import { ExportMapModal } from "./components/ExportMapModal";
 
 export default function DraftNew() {
   const createDraft = useCreateDraft();
@@ -35,6 +36,9 @@ export default function DraftNew() {
     { open: openPlanetFinder, close: closePlanetFinder },
   ] = useDisclosure(false);
 
+  const [mapExportOpened, { open: openMapExport, close: closeMapExport }] =
+    useDisclosure(false);
+
   const usedSystemIds = [
     draft.slices,
     draft.map
@@ -46,7 +50,8 @@ export default function DraftNew() {
 
   return (
     <Box p="lg">
-      <Box
+      <Group
+        gap="sm"
         visibleFrom="sm"
         style={{
           position: "fixed",
@@ -73,7 +78,23 @@ export default function DraftNew() {
         >
           Create Draft
         </Button>
-      </Box>
+        <Button
+          variant="outline"
+          size="lg"
+          color="blue"
+          onClick={() => {
+            openMapExport();
+          }}
+        >
+          Export
+        </Button>
+      </Group>
+
+      <ExportMapModal
+        mapString={draft.exportableMapString()}
+        opened={mapExportOpened}
+        onClose={closeMapExport}
+      />
 
       <PlanetFinder
         opened={planetFinderOpened}
@@ -127,6 +148,9 @@ export default function DraftNew() {
             mode="create"
             slices={draft.slices}
             onAddNewSlice={draft.addNewSlice}
+            onDeleteTile={(sliceIdx, tileIdx) => {
+              draft.removeSystemFromSlice(sliceIdx, tileIdx);
+            }}
             onSelectTile={(sliceIdx, tileIdx) => {
               openTile.current = {
                 mode: "slice",
@@ -148,7 +172,10 @@ export default function DraftNew() {
           <MapSection
             mode="create"
             map={draft.map}
-            stats={draft.getStats()}
+            stats={draft.mapStats()}
+            onDeleteSystemTile={(tileIdx) => {
+              draft.removeSystemFromMap(tileIdx);
+            }}
             onSelectSystemTile={(tileIdx) => {
               openTile.current = {
                 mode: "map",

@@ -7,11 +7,18 @@ import { MapContext } from "~/contexts/MapContext";
 type Props = {
   id: string;
   tiles: Tile[];
-  onSelectTile?: (tile: Tile) => void;
   mode: "create" | "draft";
+  onSelectTile?: (tile: Tile) => void;
+  onDeleteTile?: (tile: Tile) => void;
 };
 
-export function SliceMap({ id, tiles, onSelectTile, mode = "create" }: Props) {
+export function SliceMap({
+  id,
+  tiles,
+  mode = "create",
+  onSelectTile,
+  onDeleteTile,
+}: Props) {
   const { ref, width } = useDimensions<HTMLDivElement>();
   const gap = 6;
   const radius = calculateMaxHexWidthRadius(1, width, gap);
@@ -43,6 +50,7 @@ export function SliceMap({ id, tiles, onSelectTile, mode = "create" }: Props) {
               key={idx}
               tile={t}
               onSelect={onSelectTile ? () => onSelectTile(t) : undefined}
+              onDelete={onDeleteTile ? () => onDeleteTile(t) : undefined}
               modifiable={mode === "create"}
             />
           ))}

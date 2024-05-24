@@ -12,6 +12,7 @@ type Props = {
   onAddNewSlice?: () => void;
   onSelectSlice?: (sliceIdx: number) => void;
   onSelectTile?: (sliceIdx: number, tileIdx: number) => void;
+  onDeleteTile?: (sliceIdx: number, tileIdx: number) => void;
 };
 
 export function SlicesSection({
@@ -21,6 +22,7 @@ export function SlicesSection({
   allowSliceSelection = true,
   onAddNewSlice,
   onSelectTile,
+  onDeleteTile,
   onSelectSlice,
 }: Props) {
   return (
@@ -54,6 +56,9 @@ export function SlicesSection({
                 systems={slice}
                 onSelectTile={(tile) => {
                   onSelectTile?.(idx, tile.idx);
+                }}
+                onDeleteTile={(tile) => {
+                  onDeleteTile?.(idx, tile.idx);
                 }}
                 onSelectSlice={
                   allowSliceSelection ? () => onSelectSlice?.(idx) : undefined

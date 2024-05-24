@@ -12,6 +12,7 @@ type Props = {
   padding: number;
   mode: "create" | "draft";
   onSelectSystemTile?: (tileIdx: number) => void;
+  onDeleteSystemTile?: (tileIdx: number) => void;
   onSelectHomeTile?: (tile: HomeTile) => void;
 };
 
@@ -21,6 +22,7 @@ export function Map({
   padding,
   mode,
   onSelectSystemTile,
+  onDeleteSystemTile,
   onSelectHomeTile,
 }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
@@ -51,6 +53,9 @@ export function Map({
                 if (tile.type === "SYSTEM" || tile.type === "OPEN")
                   onSelectSystemTile?.(idx);
                 if (tile.type === "HOME") onSelectHomeTile?.(tile);
+              }}
+              onDelete={() => {
+                if (tile.type === "SYSTEM") onDeleteSystemTile?.(idx);
               }}
               modifiable={mode === "create" && isTileModifiable(idx)}
               homeSelectable={onSelectHomeTile && mode === "draft"}

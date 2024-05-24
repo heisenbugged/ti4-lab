@@ -1,11 +1,11 @@
 import { System, SystemTile as SystemTileType, Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
-import { ReactNode, useContext, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
-import { Button, alpha } from "@mantine/core";
+import { Button, Stack, alpha } from "@mantine/core";
 import { Hex } from "./Hex";
 
 import "./MapTile.css";
@@ -18,6 +18,7 @@ type Props = {
   modifiable?: boolean;
   homeSelectable?: boolean;
   onSelect?: () => void;
+  onDelete?: () => void;
 };
 
 const MECATOL_REX_ID = 18;
@@ -28,9 +29,22 @@ export function MapTile(props: Props) {
     tile: { position },
     modifiable = false,
     onSelect,
+    onDelete,
   } = props;
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [hovered]);
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!hovered) return;
+    if (e.key === "Delete") {
+      onDelete?.();
+    }
+  };
 
   let Tile: JSX.Element;
   switch (tile.type) {
@@ -86,9 +100,27 @@ export function MapTile(props: Props) {
             color={overlayColor}
             radius={radius}
           >
-            <Button px="6" py="4" h="auto" variant="filled">
-              +
-            </Button>
+            <Stack gap={2}>
+              <Button px="6" py="4" h="auto" variant="filled">
+                +
+              </Button>
+              {tile.type === "SYSTEM" && (
+                <Button
+                  px="6"
+                  py="4"
+                  h="auto"
+                  variant="filled"
+                  bg="red"
+                  size="xs"
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    onDelete?.();
+                  }}
+                >
+                  Del
+                </Button>
+              )}
+            </Stack>
           </Hex>
         </div>
       )}

@@ -116,12 +116,16 @@ type NewDraftState = {
   numFactionsToDraft: number | undefined;
   availableFactions: FactionId[];
   players: Player[];
-  getStats: () => MapStats;
+
+  exportableMapString: () => string;
+  mapStats: () => MapStats;
   setNumFactionsToDraft: (num: number | undefined) => void;
   updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
   importMap: (mapString: string) => void;
   addSystemToMap: (tileIdx: number, system: System) => void;
+  removeSystemFromMap: (tileIdx: number) => void;
   addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) => void;
+  removeSystemFromSlice: (sliceIdx: number, tileIdx: number) => void;
   addNewSlice: () => void;
   addFaction: (id: FactionId) => void;
   removeFaction: (id: FactionId) => void;
@@ -145,9 +149,31 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     })),
   ],
   numFactionsToDraft: undefined,
-  getStats: () => {
-    const stats: SystemStats[] = [];
 
+  exportableMapString: () => {
+    // we pretend as if all players have seated.
+    const hydratedMap = hydrateMap(
+      get().map,
+      get().players.map((p, idx) => ({ ...p, seatIdx: idx, sliceIdx: idx })),
+      get().slices,
+    );
+
+    return hydratedMap
+      .map((tile) => {
+        return tile.system?.id ?? "0";
+        // if (tile.type === "HOME") return "0";
+        // if (tile.type === "SYSTEM") {
+        //   if (tile.system === undefined) debugger;
+        //   return tile.system?.id ?? "WWHNAT";
+        // }
+
+        // return "0";
+      })
+      .slice(1, hydratedMap.length)
+      .join(" ");
+  },
+  mapStats: () => {
+    const stats: SystemStats[] = [];
     get().slices.forEach((slice) => {
       slice.forEach((t) => {
         const system = systemData[parseInt(t)];
@@ -212,11 +238,31 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       return { map };
     }),
 
+  removeSystemFromMap: (tileIdx: number) =>
+    set((state) => {
+      const map = [...state.map];
+      map[tileIdx] = {
+        position: state.map[tileIdx].position,
+        idx: state.map[tileIdx].idx,
+        system: undefined,
+        type: "OPEN",
+      };
+      return { map };
+    }),
+
   addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
     set((state) => {
       const slices = [...state.slices];
       slices[sliceIdx] = [...slices[sliceIdx]];
       slices[sliceIdx][tileIdx] = system.id.toString();
+      return { slices };
+    }),
+
+  removeSystemFromSlice: (sliceIdx: number, tileIdx: number) =>
+    set((state) => {
+      const slices = [...state.slices];
+      slices[sliceIdx] = [...slices[sliceIdx]];
+      slices[sliceIdx][tileIdx] = "0";
       return { slices };
     }),
 
