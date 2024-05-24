@@ -27,6 +27,7 @@ export function SummaryRow({ player, systems }: Props) {
           size="sm"
           resources={optimal.resources}
           influence={optimal.influence}
+          flex={optimal.flex}
         />
       </Table.Td>
       <Table.Td>
