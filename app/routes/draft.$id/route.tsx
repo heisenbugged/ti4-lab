@@ -1,4 +1,12 @@
-import { Box, Group, SimpleGrid, Stack, Title } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Group,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
@@ -12,6 +20,9 @@ import { FinalizedDraft } from "./components/FinalizedDraft";
 import { DraftableFactionsSection } from "./components/DraftableFactionsSection";
 import { SlicesSection } from "../draft/SlicesSection";
 import { MapSection } from "../draft/MapSection";
+import { Section, SectionTitle } from "~/components/Section";
+import { playerSpeakerOrder } from "~/utils/map";
+import { PlayerChip } from "./components/PlayerChip";
 
 export default function RunningDraft() {
   // Example of socket, to be put on actual draft page.
@@ -47,6 +58,7 @@ export default function RunningDraft() {
   const hasSelectedSlice = (activePlayer?.sliceIdx ?? -1) >= 0;
   const hasSelectedSeat = (activePlayer?.seatIdx ?? -1) >= 0;
   const hasSelectedFaction = !!activePlayer?.faction;
+  const hasSelectedSpeakerOrder = !!activePlayer?.speakerOrder;
 
   if (!draft.hydratedMap) return <></>;
 
@@ -105,6 +117,48 @@ export default function RunningDraft() {
           />
         </Stack>
         <Stack flex={1} gap="xl">
+          <Section>
+            <SectionTitle title="Speaker Order" />
+            <SimpleGrid cols={{ base: 8, sm: 6, md: 6, lg: 6 }}>
+              {playerSpeakerOrder.map((so, idx) => {
+                const player = draft.players.find(
+                  (p) => p.speakerOrder === idx,
+                );
+                return (
+                  <Stack
+                    key={so}
+                    bg="gray.1"
+                    align="center"
+                    p="sm"
+                    style={{
+                      borderRadius: 8,
+                      border: "1px solid rgba(0,0,0,0.1)",
+                    }}
+                    pos="relative"
+                    gap={6}
+                    justify="stretch"
+                  >
+                    <Text ff="heading" fw="bold">
+                      {so}
+                    </Text>
+                    {!player && !hasSelectedSpeakerOrder && (
+                      <Button
+                        size="xs"
+                        px="lg"
+                        onMouseDown={() => {
+                          draft.selectSpeakerOrder(activePlayerId, idx);
+                          handleSync();
+                        }}
+                      >
+                        Select
+                      </Button>
+                    )}
+                    {player && <PlayerChip player={player} />}
+                  </Stack>
+                );
+              })}
+            </SimpleGrid>
+          </Section>
           <MapSection
             map={draft.hydratedMap}
             allowSeatSelection={!hasSelectedSeat}

@@ -212,9 +212,15 @@ export async function action({ request }: ActionFunctionArgs) {
   const body = (await request.json()) as CreateDraftInput;
 
   const playerIds = body.players.map((p) => p.id);
-  // TODO: Pick order needs to be a proper 'snake draft'
-  // that needs to be computed based on the draft options.
-  const pickOrder = [...playerIds, ...[...playerIds].reverse(), ...playerIds];
+  const reversedPlayerIds = [...playerIds].reverse();
+
+  // TODO: Make 'speaker order' pick dynamic. shouldn't be assumed.
+  const pickOrder = [
+    ...playerIds,
+    ...reversedPlayerIds,
+    ...playerIds,
+    ...reversedPlayerIds,
+  ];
 
   const draft: PersistedDraft = {
     factions: body.availableFactions,

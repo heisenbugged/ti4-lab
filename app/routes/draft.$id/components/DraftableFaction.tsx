@@ -1,6 +1,8 @@
 import { Button, Group, Stack, Text, Title } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction, Player } from "~/types";
+import { PlayerChip } from "./PlayerChip";
+import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
 
 type Props = {
   faction: Faction;
@@ -40,30 +42,7 @@ export function DraftableFaction({
         </Title>
       </Group>
 
-      <div
-        style={{
-          position: "absolute",
-          top: -10,
-          right: -10,
-        }}
-      >
-        {player && (
-          <Group bg="gray.4" px={8} py={4} style={{ borderRadius: 4 }} gap="xs">
-            <img
-              src={`/avatar/avatar${player.id - 1}.png`}
-              style={{ width: 20 }}
-            />
-            <Text size="xs" tt="uppercase" c="purple" fw={600}>
-              {player.name}
-            </Text>
-          </Group>
-        )}
-        {!player && onSelect && (
-          <Button size="xs" onMouseDown={onSelect}>
-            Select
-          </Button>
-        )}
-      </div>
+      <PlayerChipOrSelect player={player} onSelect={onSelect} />
     </Stack>
   );
 }

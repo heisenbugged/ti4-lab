@@ -164,6 +164,14 @@ export const sliceMap = (map: Map): { map: Map; slices: string[][] } => {
 };
 
 export const playerLetters = ["a", "b", "c", "d", "e", "f", "g"];
+export const playerSpeakerOrder = [
+  "Speaker",
+  "2nd",
+  "3rd",
+  "4th",
+  "5th",
+  "6th",
+];
 
 export const parseMapString = (
   systems: string[],

@@ -31,6 +31,7 @@ type DraftsState = {
   selectSlice: (playerId: number, sliceIdx: number) => void;
   selectSeat: (playerId: number, seatIdx: number) => void;
   selectFaction: (playerId: number, factionId: FactionId) => void;
+  selectSpeakerOrder: (playerId: number, speakerOrder: number) => void;
   hydrate: (draft: PersistedDraft) => void;
   getPersisted: () => PersistedDraft;
 };
@@ -88,6 +89,16 @@ export const useDraft = create<DraftsState>((set, get) => ({
       return {
         players,
         hydratedMap: hydratedMap,
+        currentPick: state.currentPick + 1,
+      };
+    }),
+  selectSpeakerOrder: (playerId: number, speakerOrder: number) =>
+    set((state) => {
+      const players = state.players.map((p) =>
+        p.id === playerId ? { ...p, speakerOrder } : p,
+      );
+      return {
+        players,
         currentPick: state.currentPick + 1,
       };
     }),

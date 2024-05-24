@@ -22,6 +22,7 @@ export function SummaryRow({ player, systems }: Props) {
           <Text>{faction.name}</Text>
         </Group>
       </Table.Td>
+      <Table.Td>{player.speakerOrder!! + 1}</Table.Td>
       <Table.Td>{player.seatIdx!! + 1}</Table.Td>
       <Table.Td>
         <PlanetStatsPill

@@ -11,7 +11,7 @@ export function FinalizedDraft() {
   const players = draft.players;
 
   const sortedPlayers = useMemo(
-    () => players.sort((a, b) => a.seatIdx!! - b.seatIdx!!),
+    () => players.sort((a, b) => a.speakerOrder!! - b.speakerOrder!!),
     [players],
   );
 
@@ -27,6 +27,7 @@ export function FinalizedDraft() {
                 <Table.Tr>
                   <Table.Th>Name</Table.Th>
                   <Table.Th>Faction</Table.Th>
+                  <Table.Th>Speaker Order</Table.Th>
                   <Table.Th>Seat</Table.Th>
                   <Table.Th>Optimal Value</Table.Th>
                   <Table.Th>Total Value</Table.Th>

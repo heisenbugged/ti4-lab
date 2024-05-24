@@ -113,6 +113,7 @@ export type Player = {
   faction?: FactionId;
   seatIdx?: number;
   sliceIdx?: number;
+  speakerOrder?: number;
 };
 
 export type PersistedDraft = {
