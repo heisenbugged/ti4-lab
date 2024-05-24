@@ -13,7 +13,7 @@ import { SectionTitle } from "~/components/Section";
 type Props = {
   map: TMap;
   mode: "create" | "draft";
-  stats: MapStats;
+  stats?: MapStats;
   allowSeatSelection?: boolean;
   onSelectSystemTile?: (tileIdx: number) => void;
   onDeleteSystemTile?: (tileIdx: number) => void;
@@ -56,21 +56,23 @@ export function MapSection({
         }}
         mt="md"
       >
-        <Stack pos="absolute" top={0} right={0} gap={1} visibleFrom="xs">
-          <Text size="sm" ta="right">
-            Blue/Red: {stats.blueTiles}/{stats.redTiles}
-          </Text>
-          <Text size="sm" ta="right">
-            Resources/Influence: {stats.totalResources}/{stats.totalInfluence}
-          </Text>
-          <Text size="sm" ta="right">
-            Tech: {stats.totalTech}
-          </Text>
-          <Text size="sm" ta="right">
-            Traits R/G/B: {stats.redTraits}/{stats.greenTraits}/
-            {stats.blueTraits}
-          </Text>
-        </Stack>
+        {stats && (
+          <Stack pos="absolute" top={0} right={0} gap={1} visibleFrom="xs">
+            <Text size="sm" ta="right">
+              Blue/Red: {stats.blueTiles}/{stats.redTiles}
+            </Text>
+            <Text size="sm" ta="right">
+              Resources/Influence: {stats.totalResources}/{stats.totalInfluence}
+            </Text>
+            <Text size="sm" ta="right">
+              Tech: {stats.totalTech}
+            </Text>
+            <Text size="sm" ta="right">
+              Traits R/G/B: {stats.redTraits}/{stats.greenTraits}/
+              {stats.blueTraits}
+            </Text>
+          </Stack>
+        )}
         <Map
           id="full-map"
           map={map}
