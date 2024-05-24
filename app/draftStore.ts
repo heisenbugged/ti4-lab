@@ -12,6 +12,8 @@ import { hydrateMap, parseMapString, sliceMap } from "./utils/map";
 import { mapStringOrder } from "./data/mapStringOrder";
 import { systemData } from "./data/systemData";
 
+const MECATOL_REX_ID = 18;
+
 const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
     " ",
@@ -159,16 +161,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     );
 
     return hydratedMap
-      .map((tile) => {
-        return tile.system?.id ?? "0";
-        // if (tile.type === "HOME") return "0";
-        // if (tile.type === "SYSTEM") {
-        //   if (tile.system === undefined) debugger;
-        //   return tile.system?.id ?? "WWHNAT";
-        // }
-
-        // return "0";
-      })
+      .map((tile) => tile.system?.id ?? "0")
       .slice(1, hydratedMap.length)
       .join(" ");
   },
@@ -194,7 +187,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         acc.redTraits += s.redTraits;
         acc.greenTraits += s.greenTraits;
         acc.blueTraits += s.blueTraits;
-        s.tileColor === "RED" ? acc.redTiles++ : acc.blueTiles++;
+        if (s.tileColor !== undefined)
+          s.tileColor === "RED" ? acc.redTiles++ : acc.blueTiles++;
         return acc;
       },
       {
@@ -282,7 +276,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     })),
 }));
 
-function tileColor(system: System): "RED" | "BLUE" {
+function tileColor(system: System): "RED" | "BLUE" | undefined {
+  if (system.id == MECATOL_REX_ID) return undefined;
   if (system.planets.length === 0) return "RED";
   if (system.anomaly) return "RED";
   return "BLUE";
