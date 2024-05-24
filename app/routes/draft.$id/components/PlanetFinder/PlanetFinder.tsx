@@ -1,14 +1,13 @@
 import { Box, Group, Input, Modal, Stack, Text } from "@mantine/core";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { searchableSystemData, systemData } from "~/data/systemData";
-import { PlanetStatsPill } from "../Slice/PlanetStatsPill";
-import { TechIcon } from "../features/TechIcon";
+import { PlanetStatsPill } from "../../../../components/Slice/PlanetStatsPill";
 import { System } from "~/types";
-import { useDisclosure } from "@mantine/hooks";
-import { bgColor } from "../Planet";
+import { bgColor } from "../../../../components/Planet";
+import { useArrowFocus } from "~/hooks/useArrowFocus";
+import { TechIcon } from "~/components/icons/TechIcon";
 
 import "./PlanetFinder.css";
-import { useArrowFocus } from "~/hooks/useArrowFocus";
 
 type Props = {
   opened?: boolean;

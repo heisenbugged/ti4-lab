@@ -1,8 +1,8 @@
 import { Group, Input, SimpleGrid, Text } from "@mantine/core";
-import { Section, SectionTitle } from "./Section";
 import { FactionId } from "~/types";
 import { factionIds, factions } from "~/data/factionData";
-import { NewDraftFaction } from "../NewDraftFaction";
+import { Section, SectionTitle } from "~/components/Section";
+import { NewDraftFaction } from "./NewDraftFaction";
 
 type Props = {
   numFactions?: number;

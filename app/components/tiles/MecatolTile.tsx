@@ -1,12 +1,11 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
-import { MapContext } from "../MapContext";
 import { SystemTile as SystemTileType } from "~/types";
 import { Box, Flex } from "@mantine/core";
 import { MecatolPlanet } from "../features/MecatolPlanet";
-import { PlanetName } from "../PlanetName";
-import { PlanetStats } from "../PlanetStats";
 import { calcScale } from "./calcScale";
+import { MapContext } from "~/contexts/MapContext";
+import { PlanetName, PlanetStats } from "../Planet";
 
 type Props = { mapId: string; tile: SystemTileType };
 

@@ -1,7 +1,7 @@
 import { Checkbox, Group, Title } from "@mantine/core";
 import { Faction } from "~/types";
-import { FactionIcon } from "./features/FactionIcon";
 import { useState } from "react";
+import { FactionIcon } from "~/components/icons/FactionIcon";
 
 type Props = {
   faction: Faction;

@@ -1,14 +1,14 @@
 import { Box } from "@mantine/core";
-import { SectionTitle } from "./Section";
 import { useDimensions } from "~/hooks/useDimensions";
 import {
   calcHexHeight,
   calculateMaxHexRadius,
   calculateMaxHexWidthRadius,
 } from "~/utils/positioning";
-import { Map } from "../Map";
 import { HomeTile, Map as TMap } from "~/types";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
+import { Map } from "~/components/Map";
+import { SectionTitle } from "~/components/Section";
 
 type Props = {
   map: TMap;

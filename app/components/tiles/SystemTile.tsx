@@ -1,6 +1,5 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
-import { MapContext } from "../MapContext";
 import { Planet } from "../Planet";
 import { SystemTile as SystemTileType } from "~/types";
 import { Group, Text, useMantineTheme } from "@mantine/core";
@@ -8,6 +7,7 @@ import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
 import { GravityRift } from "../features/GravityRift";
 import { Wormhole } from "../features/Wormhole";
+import { MapContext } from "~/contexts/MapContext";
 
 type Props = { mapId: string; tile: SystemTileType };
 

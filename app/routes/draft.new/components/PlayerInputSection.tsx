@@ -1,5 +1,5 @@
 import { Group, Input, Stack } from "@mantine/core";
-import { Section, SectionTitle } from "./Section";
+import { Section, SectionTitle } from "~/components/Section";
 import { Player } from "~/types";
 
 type Props = {

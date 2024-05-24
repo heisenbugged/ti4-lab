@@ -1,20 +1,17 @@
-import { Box, Group, SimpleGrid, Stack, Table, Title } from "@mantine/core";
+import { Box, Group, SimpleGrid, Stack, Title } from "@mantine/core";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { useEffect } from "react";
-import { DraftableFaction } from "~/components/DraftableFaction";
-import { factions as allFactions } from "~/data/factionData";
-import { MapSection, SlicesSection } from "~/components/draft";
-import { DraftableFactionsSection } from "~/components/draft/DraftableFactionsSection";
 import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { useSocket } from "~/socketContext";
 import { PersistedDraft } from "~/types";
-import { Section, SectionTitle } from "~/components/draft/Section";
-import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
-import { FinalizedDraft } from "./FinalizedDraft";
+import { FinalizedDraft } from "./components/FinalizedDraft";
+import { DraftableFactionsSection } from "./components/DraftableFactionsSection";
+import { SlicesSection } from "../draft/SlicesSection";
+import { MapSection } from "../draft/MapSection";
 
 export default function RunningDraft() {
   // Example of socket, to be put on actual draft page.

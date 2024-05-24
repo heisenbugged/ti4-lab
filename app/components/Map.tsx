@@ -1,10 +1,10 @@
-import { HomeTile, Map as MapType, System } from "~/types";
-import { MapContext } from "./MapContext";
+import { HomeTile, Map as MapType } from "~/types";
 import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
 import { isTileModifiable } from "~/utils/map";
+import { MapContext } from "~/contexts/MapContext";
 
 type Props = {
   id: string;

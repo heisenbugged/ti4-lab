@@ -1,7 +1,7 @@
 import { Button, SimpleGrid, Table, Tabs } from "@mantine/core";
-import { Section, SectionTitle } from "./Section";
-import { Slice } from "../Slice";
-import { PlanetStatsPill } from "../Slice/PlanetStatsPill";
+import { Section, SectionTitle } from "~/components/Section";
+import { Slice } from "~/components/Slice";
+import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { Player } from "~/types";
 
 type Props = {

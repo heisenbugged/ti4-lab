@@ -1,9 +1,9 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
-import { MapContext } from "../MapContext";
 import { Button, Stack, Text } from "@mantine/core";
 import { HomeTile as THomeTile } from "~/types";
-import { FactionIcon } from "../features/FactionIcon";
+import { MapContext } from "~/contexts/MapContext";
+import { FactionIcon } from "../icons/FactionIcon";
 
 type Props = {
   mapId: string;

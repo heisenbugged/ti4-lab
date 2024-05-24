@@ -1,8 +1,8 @@
-import { Group, Input, SimpleGrid, Text } from "@mantine/core";
-import { Section, SectionTitle } from "./Section";
+import { SimpleGrid } from "@mantine/core";
 import { FactionId, Player } from "~/types";
 import { factions as allFactions } from "~/data/factionData";
-import { DraftableFaction } from "../DraftableFaction";
+import { Section, SectionTitle } from "~/components/Section";
+import { DraftableFaction } from "./DraftableFaction";
 
 type Props = {
   allowFactionSelection?: boolean;

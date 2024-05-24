@@ -1,6 +1,6 @@
-import { Box, Button, Group, Stack, Text, Title } from "@mantine/core";
+import { Button, Group, Stack, Text, Title } from "@mantine/core";
+import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction, Player } from "~/types";
-import { FactionIcon } from "./features/FactionIcon";
 
 type Props = {
   faction: Faction;

@@ -1,22 +1,20 @@
-import { Box, Button, Flex, Group, SimpleGrid, Stack } from "@mantine/core";
+import { Box, Button, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/react";
 import { useRef } from "react";
-import { PlanetFinder } from "~/components/PlanetFinder";
-import {
-  AvailableFactionsSection,
-  ImportMapInput,
-  MapSection,
-  SlicesSection,
-} from "~/components/draft";
-import { PlayerInputSection } from "~/components/draft/PlayerInputSection";
+import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { serializeMap } from "~/data/serialize";
 import { useNewDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { PersistedDraft, Player } from "~/types";
 import { CreateDraftInput, useCreateDraft } from "./useCreateDraft";
+import { ImportMapInput } from "~/components/ImportMapInput";
+import { AvailableFactionsSection } from "./components/AvailableFactionsSection";
+import { SlicesSection } from "../draft/SlicesSection";
+import { PlayerInputSection } from "./components/PlayerInputSection";
+import { MapSection } from "../draft/MapSection";
 
 export default function DraftNew() {
   const createDraft = useCreateDraft();

@@ -2,7 +2,6 @@ import { System, SystemTile as SystemTileType, Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
 import { ReactNode, useContext, useState } from "react";
-import { MapContext } from "./MapContext";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
@@ -10,6 +9,7 @@ import { Button, alpha } from "@mantine/core";
 import { Hex } from "./Hex";
 
 import "./MapTile.css";
+import { MapContext } from "~/contexts/MapContext";
 
 type Props = {
   mapId: string;

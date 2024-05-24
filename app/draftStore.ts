@@ -104,7 +104,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
 type NewDraftState = {
   map: Map;
   slices: string[][];
-  numFactionsToDraft: number;
+  numFactionsToDraft: number | undefined;
   availableFactions: FactionId[];
   players: Player[];
   setNumFactionsToDraft: (num: number | undefined) => void;

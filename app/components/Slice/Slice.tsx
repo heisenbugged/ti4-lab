@@ -1,30 +1,12 @@
-import { Box, Button, Divider, Group, Stack, Text } from "@mantine/core";
+import { Button, Divider, Group, Stack, Text } from "@mantine/core";
 import { SliceMap } from "./SliceMap";
-import { TechIcon } from "../features/TechIcon";
 import { PlanetStatsPill } from "./PlanetStatsPill";
-
-import {
-  optimalStats,
-  totalStats,
-  parseMapString,
-  techSpecialties,
-} from "~/utils/map";
 import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
 import { PlayerLabel } from "../PlayerLabel";
 import { Player, Tile } from "~/types";
-import { useMemo } from "react";
 import { useSlice } from "./useSlice";
-
-const slicePositionOrder = [
-  { x: 0, y: 0, z: 0 },
-  { x: -1, y: 0, z: 0 },
-  { x: 0, y: -1, z: 0 },
-  { x: 1, y: -1, z: 0 },
-  // additional two slices for full milty draft
-  // { x: -1, y: -1, z: 0 },
-  // { x: 0, y: -2, z: 0 },
-];
+import { TechIcon } from "../icons/TechIcon";
 
 type Props = {
   id: string;

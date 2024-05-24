@@ -1,8 +1,8 @@
 import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
 import { useDimensions } from "~/hooks/useDimensions";
 import { MapTile } from "../MapTile";
-import { MapContext } from "../MapContext";
 import { Tile } from "~/types";
+import { MapContext } from "~/contexts/MapContext";
 
 type Props = {
   id: string;

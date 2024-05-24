@@ -1,8 +1,8 @@
-import { Box, Flex, Group, Text } from "@mantine/core";
-import { Planet as PlanetType, PlanetTrait, TechSpecialty } from "~/types";
+import { Box, Flex } from "@mantine/core";
+import { Planet as PlanetType, PlanetTrait } from "~/types";
 import { PlanetName } from "./PlanetName";
 import { PlanetStats } from "./PlanetStats";
-import { TechIcon } from "./features/TechIcon";
+import { TechIcon } from "../icons/TechIcon";
 
 export type PlanetFormat =
   | "STREAMLINED"
