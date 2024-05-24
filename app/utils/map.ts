@@ -4,6 +4,7 @@ import {
   HomeTile,
   Map,
   Player,
+  System,
   TechSpecialty,
   Tile,
   TilePosition,
@@ -162,6 +163,8 @@ export const sliceMap = (map: Map): { map: Map; slices: string[][] } => {
   };
 };
 
+export const playerLetters = ["a", "b", "c", "d", "e", "f", "g"];
+
 export const parseMapString = (
   systems: string[],
   positionOrder: TilePosition[] = mapStringOrder,
@@ -173,9 +176,18 @@ export const parseMapString = (
     .map(([id, system], idx) => {
       const position = positionOrder[idx];
       const seatIdx = mapConfig.standard.homeIdxInMapString.indexOf(idx);
-
       const baseAttrs = { id, idx, seatIdx, position, system };
-      if (seatIdx >= 0 || id === "-1") {
+      const playerNo = playerLetters.findIndex((l) => id.includes(l));
+      const isHomeSystem = seatIdx >= 0 || id === "-1";
+
+      if (playerNo >= 0) {
+        return {
+          ...baseAttrs,
+          type: "PLAYER_DEMO" as const,
+          playerNumber: playerNo,
+          isHomeSystem,
+        };
+      } else if (seatIdx >= 0 || id === "-1") {
         return { ...baseAttrs, type: "HOME" as const };
       } else if (system) {
         return { ...baseAttrs, type: "SYSTEM" };
@@ -188,9 +200,12 @@ export const parseMapString = (
 };
 
 export const totalStats = (tiles: Tile[]) =>
-  tiles.reduce(
-    (acc, t) => {
-      t.system?.planets.forEach((p) => {
+  totalStatsForSystems(tiles.filter((t) => t.system).map((t) => t.system!!));
+
+export const totalStatsForSystems = (systems: System[]) =>
+  systems.reduce(
+    (acc, s) => {
+      s.planets.forEach((p) => {
         acc.resources += p.resources;
         acc.influence += p.influence;
       });
@@ -200,9 +215,12 @@ export const totalStats = (tiles: Tile[]) =>
   );
 
 export const optimalStats = (tiles: Tile[]) =>
-  tiles.reduce(
-    (acc, t) => {
-      t.system?.planets.forEach((p) => {
+  optimalStatsForSystems(tiles.filter((t) => t.system).map((t) => t.system!!));
+
+export const optimalStatsForSystems = (systems: System[]) =>
+  systems.reduce(
+    (acc, s) => {
+      s.planets.forEach((p) => {
         if (p.resources > p.influence) {
           acc.resources += p.resources;
         } else if (p.resources < p.influence) {
@@ -223,3 +241,11 @@ export const techSpecialties = (tiles: Tile[]) =>
     });
     return acc;
   }, [] as TechSpecialty[]);
+
+export const systemsInSlice = (slice: string[]): System[] =>
+  slice.reduce((acc, t) => {
+    const system = systemData[parseInt(t)];
+    if (!system) return acc;
+    acc.push(system);
+    return acc;
+  }, [] as System[]);

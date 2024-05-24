@@ -3,6 +3,12 @@ import { Section, SectionTitle } from "~/components/Section";
 import { Slice } from "~/components/Slice";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { Player } from "~/types";
+import {
+  optimalStatsForSystems,
+  systemsInSlice,
+  totalStats,
+  totalStatsForSystems,
+} from "~/utils/map";
 
 type Props = {
   mode: "create" | "draft";
@@ -51,15 +57,11 @@ export function SlicesSection({
                 key={idx}
                 id={`slice-${idx}`}
                 name={`Slice ${idx + 1}`}
-                player={players?.find((p) => p.sliceIdx === idx)}
                 mode={mode}
                 systems={slice}
-                onSelectTile={(tile) => {
-                  onSelectTile?.(idx, tile.idx);
-                }}
-                onDeleteTile={(tile) => {
-                  onDeleteTile?.(idx, tile.idx);
-                }}
+                player={players?.find((p) => p.sliceIdx === idx)}
+                onSelectTile={(tile) => onSelectTile?.(idx, tile.idx)}
+                onDeleteTile={(tile) => onDeleteTile?.(idx, tile.idx)}
                 onSelectSlice={
                   allowSliceSelection ? () => onSelectSlice?.(idx) : undefined
                 }
@@ -77,17 +79,31 @@ export function SlicesSection({
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {slices.map((slice, idx) => (
-                <Table.Tr key={idx}>
-                  <Table.Td>{`Slice ${idx + 1}`}</Table.Td>
-                  <Table.Td>
-                    <PlanetStatsPill size="sm" resources={9} influence={2} />
-                  </Table.Td>
-                  <Table.Td>
-                    <PlanetStatsPill size="sm" resources={9} influence={2} />
-                  </Table.Td>
-                </Table.Tr>
-              ))}
+              {slices.map((slice, idx) => {
+                const systems = systemsInSlice(slice);
+                const total = totalStatsForSystems(systems);
+                const optimal = optimalStatsForSystems(systems);
+                return (
+                  <Table.Tr key={idx}>
+                    <Table.Td>{`Slice ${idx + 1}`}</Table.Td>
+                    <Table.Td>
+                      <PlanetStatsPill
+                        size="sm"
+                        resources={optimal.resources}
+                        influence={optimal.influence}
+                        flex={optimal.flex}
+                      />
+                    </Table.Td>
+                    <Table.Td>
+                      <PlanetStatsPill
+                        size="sm"
+                        resources={total.resources}
+                        influence={total.influence}
+                      />
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })}
             </Table.Tbody>
           </Table>
         </Tabs.Panel>
