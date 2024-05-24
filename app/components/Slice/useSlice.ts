@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import {
-  optimalStats,
+  optimalStatsForSystems,
   parseMapString,
-  techSpecialties,
-  totalStats,
+  systemsInSlice,
+  techSpecialtiesForSystems,
+  totalStatsForSystems,
 } from "~/utils/map";
 
 const slicePositionOrder = [
@@ -16,13 +17,14 @@ const slicePositionOrder = [
   // { x: 0, y: -2, z: 0 },
 ];
 
-export function useSlice(systems: string[]) {
+export function useSlice(slice: string[]) {
   const tiles = useMemo(
-    () => parseMapString(systems, slicePositionOrder, false),
-    [systems],
+    () => parseMapString(slice, slicePositionOrder, false),
+    [slice],
   );
-  const total = totalStats(tiles);
-  const optimal = optimalStats(tiles);
-  const specialties = techSpecialties(tiles);
+  const systems = systemsInSlice(slice);
+  const total = totalStatsForSystems(systems);
+  const optimal = optimalStatsForSystems(systems);
+  const specialties = techSpecialtiesForSystems(systems);
   return { tiles, total, optimal, specialties };
 }

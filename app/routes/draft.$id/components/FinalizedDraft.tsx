@@ -3,11 +3,17 @@ import { useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
 import { MapSection } from "~/routes/draft/MapSection";
 import { SummaryRow } from "./SummaryRow";
+import { useMemo } from "react";
 
 export function FinalizedDraft() {
   const draft = useDraft();
   const slices = draft.slices;
   const players = draft.players;
+
+  const sortedPlayers = useMemo(
+    () => players.sort((a, b) => a.seatIdx!! - b.seatIdx!!),
+    [players],
+  );
 
   return (
     <Stack mt="lg" gap={30}>
@@ -28,7 +34,7 @@ export function FinalizedDraft() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {players.map((p) => (
+                {sortedPlayers.map((p) => (
                   <SummaryRow
                     key={p.id}
                     player={p}

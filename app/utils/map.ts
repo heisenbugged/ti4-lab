@@ -199,9 +199,6 @@ export const parseMapString = (
   return map;
 };
 
-export const totalStats = (tiles: Tile[]) =>
-  totalStatsForSystems(tiles.filter((t) => t.system).map((t) => t.system!!));
-
 export const totalStatsForSystems = (systems: System[]) =>
   systems.reduce(
     (acc, s) => {
@@ -213,9 +210,6 @@ export const totalStatsForSystems = (systems: System[]) =>
     },
     { resources: 0, influence: 0 },
   );
-
-export const optimalStats = (tiles: Tile[]) =>
-  optimalStatsForSystems(tiles.filter((t) => t.system).map((t) => t.system!!));
 
 export const optimalStatsForSystems = (systems: System[]) =>
   systems.reduce(
@@ -234,9 +228,9 @@ export const optimalStatsForSystems = (systems: System[]) =>
     { resources: 0, influence: 0, flex: 0 },
   );
 
-export const techSpecialties = (tiles: Tile[]) =>
-  tiles.reduce((acc, t) => {
-    t.system?.planets.forEach((p) => {
+export const techSpecialtiesForSystems = (systems: System[]) =>
+  systems.reduce((acc, s) => {
+    s.planets.forEach((p) => {
       if (p.techSpecialty) acc.push(p.techSpecialty);
     });
     return acc;

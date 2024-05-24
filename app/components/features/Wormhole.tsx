@@ -1,4 +1,4 @@
-import { Title, alpha, darken, lighten } from "@mantine/core";
+import { Text, Title, alpha, darken, lighten } from "@mantine/core";
 import { Wormhole as TWormhole } from "~/types";
 
 const wormholeColor: Record<TWormhole, string> = {
@@ -7,19 +7,29 @@ const wormholeColor: Record<TWormhole, string> = {
   DELTA: "var(--mantine-color-blue-8)",
 };
 
-export function Wormhole({ wormhole }: { wormhole: TWormhole }) {
+type Props = {
+  wormhole: TWormhole;
+  size?: number;
+  fontSize?: number;
+};
+
+export function Wormhole({ wormhole, size = 40, fontSize = 18 }: Props) {
   return (
     <div
       style={{
         borderRadius: 99,
-        padding: "2px 8px",
+        height: size,
+        width: size,
         border: `4px solid ${wormholeColor[wormhole]}`,
         background: lighten(wormholeColor[wormhole], 0.3),
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <Title order={3} c="white">
+      <Text ff="heading" fw="bold" size={`${fontSize}px`} c="white">
         {wormhole.slice(0, 1)}
-      </Title>
+      </Text>
     </div>
   );
 }

@@ -15,6 +15,7 @@ export type Planet = {
   techSpecialty?: TechSpecialty;
   resources: number;
   influence: number;
+  legendary?: boolean;
 };
 export type Anomaly =
   | "NEBULA"

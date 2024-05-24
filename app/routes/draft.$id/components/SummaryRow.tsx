@@ -1,6 +1,7 @@
 import { Group, Table, Text } from "@mantine/core";
 import { useSlice } from "~/components/Slice";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
+import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
 import { Player } from "~/types";
@@ -36,6 +37,9 @@ export function SummaryRow({ player, systems }: Props) {
           resources={total.resources}
           influence={total.influence}
         />
+      </Table.Td>
+      <Table.Td>
+        <SliceFeatures slice={systems} />
       </Table.Td>
     </Table.Tr>
   );

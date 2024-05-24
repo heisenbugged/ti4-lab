@@ -66,6 +66,16 @@ export default function DraftNew() {
         }}
       >
         <Button
+          variant="outline"
+          size="lg"
+          color="blue"
+          onClick={() => {
+            openMapExport();
+          }}
+        >
+          Export
+        </Button>
+        <Button
           size="xl"
           onClick={() => {
             createDraft({
@@ -77,16 +87,6 @@ export default function DraftNew() {
           }}
         >
           Create Draft
-        </Button>
-        <Button
-          variant="outline"
-          size="lg"
-          color="blue"
-          onClick={() => {
-            openMapExport();
-          }}
-        >
-          Export
         </Button>
       </Group>
 

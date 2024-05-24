@@ -280,6 +280,7 @@ export const planetData: Planet[] = [
     techSpecialty: undefined,
     resources: 2,
     influence: 1,
+    legendary: true,
   },
   {
     name: "Hope's End",
@@ -287,6 +288,7 @@ export const planetData: Planet[] = [
     techSpecialty: undefined,
     resources: 3,
     influence: 0,
+    legendary: true,
   },
   {
     name: "Cormund",

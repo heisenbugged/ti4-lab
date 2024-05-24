@@ -2,6 +2,7 @@ import { Button, SimpleGrid, Table, Tabs } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
 import { Slice } from "~/components/Slice";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
+import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { Player } from "~/types";
 import {
   optimalStatsForSystems,
@@ -76,6 +77,7 @@ export function SlicesSection({
                 <Table.Th>Name</Table.Th>
                 <Table.Th>Optimal</Table.Th>
                 <Table.Th>Total</Table.Th>
+                <Table.Th visibleFrom="xs">Features</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -100,6 +102,9 @@ export function SlicesSection({
                         resources={total.resources}
                         influence={total.influence}
                       />
+                    </Table.Td>
+                    <Table.Td visibleFrom="xs">
+                      <SliceFeatures slice={slice} />
                     </Table.Td>
                   </Table.Tr>
                 );

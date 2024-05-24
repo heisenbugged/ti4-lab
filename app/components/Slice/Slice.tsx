@@ -1,4 +1,4 @@
-import { Button, Divider, Group, Stack, Text } from "@mantine/core";
+import { Box, Button, Divider, Group, Stack, Text } from "@mantine/core";
 import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { Titles } from "../Titles";
@@ -7,6 +7,7 @@ import { PlayerLabel } from "../PlayerLabel";
 import { Player, Tile } from "~/types";
 import { useSlice } from "./useSlice";
 import { TechIcon } from "../icons/TechIcon";
+import { SliceFeatures } from "./SliceFeatures";
 
 type Props = {
   id: string;
@@ -93,25 +94,19 @@ export function Slice({
       </div>
 
       <Divider mt="md" />
-      <Stack gap="0">
-        <Group
-          gap="sm"
-          align="center"
-          bg="rgba(222 226 230)"
-          px="md"
-          py="sm"
-          style={{
-            boxShadow: "0 5px 7px rgba(0, 0, 0, 0.1) inset",
-            borderBottomLeftRadius: 10,
-            borderBottomRightRadius: 10,
-            minHeight: 50,
-          }}
-        >
-          {specialties.map((tech, idx) => (
-            <TechIcon key={idx} techSpecialty={tech} />
-          ))}
-        </Group>
-      </Stack>
+      <Box
+        bg="rgba(222 226 230)"
+        style={{
+          boxShadow: "0 5px 7px rgba(0, 0, 0, 0.1) inset",
+          borderBottomLeftRadius: 10,
+          borderBottomRightRadius: 10,
+          minHeight: 50,
+        }}
+        px="md"
+        py="sm"
+      >
+        <SliceFeatures slice={systems} />
+      </Box>
     </Stack>
   );
 }
