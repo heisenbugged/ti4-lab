@@ -167,6 +167,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
     set((state) => {
       const slices = [...state.slices];
+      slices[sliceIdx] = [...slices[sliceIdx]];
       slices[sliceIdx][tileIdx] = system.id.toString();
       return { slices };
     }),

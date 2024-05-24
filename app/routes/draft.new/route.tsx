@@ -92,6 +92,7 @@ export default function DraftNew() {
 
           if (mode === "map") draft.addSystemToMap(tileIdx, system);
           if (mode === "slice" && sliceIdx > -1) {
+            console.log("ADDING SYSTEM TO SLICE", sliceIdx, tileIdx, system);
             draft.addSystemToSlice(sliceIdx, tileIdx, system);
           }
 
