@@ -1,4 +1,4 @@
-import { Checkbox, Group, Title } from "@mantine/core";
+import { Checkbox, Group, Text, Title } from "@mantine/core";
 import { Faction } from "~/types";
 import { useState } from "react";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -16,7 +16,8 @@ export function NewDraftFaction({ faction, onCheck }: Props) {
       gap="xs"
       bg="gray.1"
       align="center"
-      p="sm"
+      px="sm"
+      py={4}
       style={{
         borderRadius: 8,
         border: "1px solid rgba(0,0,0,0.1)",
@@ -29,12 +30,12 @@ export function NewDraftFaction({ faction, onCheck }: Props) {
       }}
     >
       <FactionIcon faction={faction.id} style={{ width: 30 }} />
-      <Title order={6} flex={1} size={14}>
+      <Text flex={1} lh={1}>
         {faction.name}
-      </Title>
+      </Text>
       <Checkbox
-        radius="xl"
-        size="xl"
+        radius="lg"
+        size="lg"
         checked={checked}
         onChange={() => {
           onCheck(!checked);

@@ -163,10 +163,7 @@ export default function DraftNew() {
           />
         </Stack>
       </SimpleGrid>
-      <Box
-        hiddenFrom="sm"
-        // visibleFrom="sm"
-      >
+      <Box hiddenFrom="sm">
         <Button
           mt="lg"
           w="100%"
