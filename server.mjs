@@ -31,7 +31,6 @@ const io = new Server(httpServer);
 io.on("connection", (socket) => {
   // from this point you are on the WS connection with a specific client
   // console.log(socket.id, "connected");
-
   socket.emit("confirmation", "connected!");
   socket.on("joinDraft", (draftId) => {
     console.log(socket.id, "joined draft", draftId);

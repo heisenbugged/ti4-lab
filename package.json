@@ -4,8 +4,9 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "node ./server.js",
-    "start": "cross-env NODE_ENV=production node ./server.js",
+    "dev": "node ./server.mjs",
+    "build": "remix vite:build",
+    "start": "cross-env NODE_ENV=production node ./server.mjs",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "db:migrations": "drizzle-kit generate --dialect=sqlite --out=./app/drizzle/migrations --schema=./app/drizzle/schema.server.ts",
     "typecheck": "tsc"
@@ -17,6 +18,7 @@
     "@remix-run/react": "^2.9.2",
     "@remix-run/serve": "^2.9.2",
     "better-sqlite3": "^10.0.0",
+    "cross-env": "^7.0.3",
     "drizzle-orm": "^0.30.10",
     "isbot": "^4.1.0",
     "react": "^18.2.0",
@@ -26,6 +28,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.5.7",
     "@remix-run/dev": "^2.9.2",
     "@types/better-sqlite3": "^7.6.10",
     "@types/react": "^18.2.20",

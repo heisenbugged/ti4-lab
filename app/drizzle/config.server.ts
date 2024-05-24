@@ -5,7 +5,9 @@ import Database from "better-sqlite3";
 if (!process.env.TI4_LAB_DATABASE_PATH) {
   throw new Error("Missing environment variable: TI4_LAB_DATABASE_PATH");
 }
-export const db = drizzle(new Database(process.env.TI4_LAB_DATABASE_PATH));
+export const db = drizzle(
+  new Database(new URL(process.env.TI4_LAB_DATABASE_PATH).pathname),
+);
 // Automatically run migrations on startup
 void migrate(db, {
   migrationsFolder: "app/drizzle/migrations",
