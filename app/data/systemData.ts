@@ -290,11 +290,22 @@ export const searchableSystemData = Object.values(systemData).reduce(
     const nameParts: string[] = [system.id.toString()];
     if (system.anomaly) nameParts.push(searchableAnomaly[system.anomaly]);
     if (system.wormhole) nameParts.push(system.wormhole.toLowerCase());
+
+    if (!system.anomaly && !system.wormhole && system.planets.length === 0) {
+      nameParts.push("empty");
+    }
+
     for (const planet of system.planets) {
       nameParts.push(planet.name.toLowerCase());
-      if (planet.trait) nameParts.push(searchableTrait[planet.trait]);
-      if (planet.techSpecialty)
+      if (planet.trait) {
+        nameParts.push(searchableTrait[planet.trait]);
+        nameParts.push(planet.trait.toLowerCase());
+      }
+      if (planet.techSpecialty) {
         nameParts.push(searchableTech[planet.techSpecialty]);
+        nameParts.push(planet.techSpecialty.toLowerCase());
+      }
+
       nameParts.push(`${planet.resources} resources`);
       nameParts.push(`${planet.influence} influence`);
     }

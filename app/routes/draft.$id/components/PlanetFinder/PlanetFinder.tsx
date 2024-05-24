@@ -47,7 +47,13 @@ export function PlanetFinder({
   }, [opened]);
 
   return (
-    <Modal opened={!!opened} onClose={onClose} size="md" title="Search systems">
+    <Modal
+      opened={!!opened}
+      onClose={onClose}
+      size="lg"
+      title="Search systems"
+      removeScrollProps={{ removeScrollBar: false }}
+    >
       <Box px="4">
         <Input
           ref={(el) => {
