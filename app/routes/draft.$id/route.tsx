@@ -13,8 +13,8 @@ import { drafts } from "~/drizzle/schema.server";
 import { useSocket } from "~/socketContext";
 import { PersistedDraft } from "~/types";
 import { Section, SectionTitle } from "~/components/draft/Section";
-import { SlicesSummary } from "~/components/draft/SlicesSummary";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
+import { FinalizedDraft } from "./FinalizedDraft";
 
 export default function RunningDraft() {
   // Example of socket, to be put on actual draft page.
@@ -162,62 +162,3 @@ export const loader = async ({ params }: { params: { id: number } }) => {
     data: JSON.parse(result.data as string) as PersistedDraft,
   });
 };
-
-function FinalizedDraft() {
-  const draft = useDraft();
-  const slices = draft.slices;
-  const players = draft.players;
-  const factions = draft.players.map((p) => p.faction!!);
-
-  return (
-    <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
-      <Stack flex={1} gap="xl">
-        <Section>
-          <SectionTitle title="Drafted Factions" />
-          <SimpleGrid cols={{ base: 3, md: 4, lg: 3, xl: 4 }}>
-            {factions.map((factionId) => (
-              <DraftableFaction
-                key={factionId}
-                player={players.find((p) => p.faction === factionId)}
-                faction={allFactions[factionId]}
-                applyGreyscale={false}
-              />
-            ))}
-          </SimpleGrid>
-        </Section>
-        <Section>
-          <SectionTitle title="Slice Summary" />
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Optimal</Table.Th>
-                <Table.Th>Total</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {slices.map((slice, idx) => (
-                <Table.Tr key={idx}>
-                  <Table.Td>{`Slice ${idx + 1}`}</Table.Td>
-                  <Table.Td>
-                    <PlanetStatsPill size="sm" resources={9} influence={2} />
-                  </Table.Td>
-                  <Table.Td>
-                    <PlanetStatsPill size="sm" resources={9} influence={2} />
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </Section>
-      </Stack>
-      <Stack flex={1} gap="xl">
-        <MapSection
-          map={draft.hydratedMap}
-          allowSeatSelection={false}
-          mode="draft"
-        />
-      </Stack>
-    </SimpleGrid>
-  );
-}
