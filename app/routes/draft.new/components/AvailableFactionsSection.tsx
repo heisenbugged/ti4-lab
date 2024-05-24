@@ -40,7 +40,7 @@ export function AvailableFactionsSection({
           />
         </Group>
       </SectionTitle>
-      <SimpleGrid cols={{ base: 3, md: 4, lg: 3, xl: 4 }}>
+      <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4, lg: 2, xl: 3, xxl: 4 }}>
         {factionIds.map((factionId) => (
           <NewDraftFaction
             key={factionId}

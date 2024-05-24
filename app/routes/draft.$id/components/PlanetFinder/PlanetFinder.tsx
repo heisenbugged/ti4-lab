@@ -47,7 +47,7 @@ export function PlanetFinder({
   }, [opened]);
 
   return (
-    <Modal opened={!!opened} onClose={onClose} size="xl" title="Search systems">
+    <Modal opened={!!opened} onClose={onClose} size="md" title="Search systems">
       <Box px="4">
         <Input
           ref={(el) => {

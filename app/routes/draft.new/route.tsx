@@ -16,6 +16,8 @@ import { SlicesSection } from "../draft/SlicesSection";
 import { PlayerInputSection } from "./components/PlayerInputSection";
 import { MapSection } from "../draft/MapSection";
 
+import "./draft.new.css";
+
 export default function DraftNew() {
   const createDraft = useCreateDraft();
   const draft = useNewDraft();
@@ -44,11 +46,12 @@ export default function DraftNew() {
 
   return (
     <Box p="lg">
-      <div
+      <Box
+        visibleFrom="sm"
         style={{
           position: "fixed",
           top: 60,
-          right: -1,
+          right: 10,
           paddingRight: 25,
           zIndex: 100,
           backgroundColor: "white",
@@ -74,7 +77,7 @@ export default function DraftNew() {
         >
           Create Draft
         </Button>
-      </div>
+      </Box>
 
       <PlanetFinder
         opened={planetFinderOpened}
@@ -92,7 +95,6 @@ export default function DraftNew() {
 
           if (mode === "map") draft.addSystemToMap(tileIdx, system);
           if (mode === "slice" && sliceIdx > -1) {
-            console.log("ADDING SYSTEM TO SLICE", sliceIdx, tileIdx, system);
             draft.addSystemToSlice(sliceIdx, tileIdx, system);
           }
 
@@ -101,7 +103,13 @@ export default function DraftNew() {
         usedSystemIds={usedSystemIds}
       />
 
-      <Box w="calc(50% - 20px)">
+      <Box
+        w={{
+          base: "100%",
+          sm: "calc(100vw - 320px)",
+          md: "calc(50vw - 60px)",
+        }}
+      >
         <ImportMapInput onImport={draft.importMap} />
       </Box>
 
@@ -155,6 +163,26 @@ export default function DraftNew() {
           />
         </Stack>
       </SimpleGrid>
+      <Box
+        hiddenFrom="sm"
+        // visibleFrom="sm"
+      >
+        <Button
+          mt="lg"
+          w="100%"
+          size="xl"
+          onClick={() => {
+            createDraft({
+              availableFactions: draft.availableFactions,
+              mapString: serializeMap(draft.map).join(" "),
+              players: draft.players,
+              slices: draft.slices,
+            });
+          }}
+        >
+          Create Draft
+        </Button>
+      </Box>
     </Box>
   );
 }
