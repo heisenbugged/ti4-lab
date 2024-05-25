@@ -18,9 +18,28 @@ import { PlayerChip } from "./components/PlayerChip";
 import { CurrentPickBanner } from "./components/CurrentPickBanner";
 import { DraftOrder } from "./components/DraftOrder";
 import { PlayerSelectionScreen } from "./components/PlayerSelectionScreen";
+import {
+  playNotificationSound,
+  requestNotificationPermission,
+  showNotification,
+} from "~/utils/notifications";
 
 export default function RunningDraft() {
   const { adminMode } = useOutletContext<{ adminMode: boolean }>();
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
+  const handleNotify = () => {
+    const title = "It's your turn to draft!";
+    const options = {
+      icon: "/icon.png",
+      badge: "/badge.png",
+    };
+    showNotification(title, options);
+    playNotificationSound();
+  };
 
   // Real-time socket connection to push and receive state updates.
   const socket = useSocket();
@@ -66,6 +85,12 @@ export default function RunningDraft() {
   const canSelectFaction = currentlyPicking && !activePlayer?.faction;
   const canSelectSpeakerOrder = currentlyPicking && !activePlayer?.speakerOrder;
 
+  useEffect(() => {
+    if (activePlayerId === selectedPlayer) {
+      handleNotify();
+    }
+  }, [activePlayerId === selectedPlayer]);
+
   if (!draft.hydratedMap) return <></>;
 
   if (draftFinalized) {
@@ -89,6 +114,7 @@ export default function RunningDraft() {
 
   return (
     <>
+      <audio id="notificationSound" src="/chime.mp3" preload="auto"></audio>
       <Stack gap="sm" mb="60" mt="lg">
         <CurrentPickBanner
           player={activePlayer!!}
