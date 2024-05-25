@@ -165,6 +165,7 @@ type NewDraftState = {
   availableFactions: FactionId[];
   players: Player[];
 
+  validationErrors: () => string[];
   exportableMapString: () => string;
   mapStats: () => MapStats;
   setNumFactionsToDraft: (num: number | undefined) => void;
@@ -198,6 +199,36 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   ],
   numFactionsToDraft: undefined,
 
+  validationErrors: () => {
+    const errors = [];
+    const numFactionsToDraft = get().numFactionsToDraft;
+
+    if (numFactionsToDraft !== undefined && numFactionsToDraft < 6) {
+      errors.push("Number of factions to draft must be 6 or more");
+    }
+
+    // if there are any zeroes in slices except for the first value in the slice, return false
+    const slices = get().slices.map((slice) => slice.slice(1));
+    slices.forEach((slice, idx) => {
+      if (slice.some((tile) => tile === "0")) {
+        errors.push(`Slice ${idx} has empty tiles`);
+      }
+    });
+
+    // we pretend as if all players have seated.
+    const hydratedMap = hydrateMap(
+      get().map,
+      get().players.map((p, idx) => ({ ...p, seatIdx: idx, sliceIdx: idx })),
+      get().slices,
+    );
+
+    // if there are any zeroes on the map, return false.
+    if (hydratedMap.some((tile) => tile.type === "OPEN")) {
+      errors.push("Map has empty tiles");
+    }
+
+    return errors;
+  },
   exportableMapString: () => {
     // we pretend as if all players have seated.
     const hydratedMap = hydrateMap(
@@ -229,7 +260,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       (acc, s) => {
         acc.totalResources += s.totalResources;
         acc.totalInfluence += s.totalInfluence;
-        acc.totalTech = acc.totalTech.concat(s.totalTech);
+        acc.totalTech = acc.totalTech.concat(s.totalTech).sort();
         acc.redTraits += s.redTraits;
         acc.greenTraits += s.greenTraits;
         acc.blueTraits += s.blueTraits;

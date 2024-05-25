@@ -1,4 +1,14 @@
-import { Box, Button, Flex, Group, SimpleGrid, Stack } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Flex,
+  Group,
+  List,
+  Menu,
+  Popover,
+  SimpleGrid,
+  Stack,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/react";
@@ -46,6 +56,23 @@ export default function DraftNew() {
     .flat(2)
     .filter((t) => t !== "-1" && t !== "0");
 
+  const handleCreate = () =>
+    createDraft({
+      availableFactions: draft.availableFactions,
+      mapString: serializeMap(draft.map).join(" "),
+      players: draft.players,
+      slices: draft.slices,
+      numFactionsToDraft: draft.numFactionsToDraft ?? null,
+    });
+
+  const validationErrors = draft.validationErrors();
+  const draftIsValid = validationErrors.length === 0;
+
+  const [
+    openedValidationErrors,
+    { close: closeValidationErrors, open: openValidationErrors },
+  ] = useDisclosure(false);
+
   return (
     <Box p="lg">
       <Group
@@ -67,25 +94,39 @@ export default function DraftNew() {
           variant="outline"
           size="lg"
           color="blue"
-          onClick={() => {
-            openMapExport();
-          }}
+          onClick={openMapExport}
         >
           Export
         </Button>
-        <Button
-          size="xl"
-          onClick={() => {
-            createDraft({
-              availableFactions: draft.availableFactions,
-              mapString: serializeMap(draft.map).join(" "),
-              players: draft.players,
-              slices: draft.slices,
-            });
-          }}
+        <Popover
+          shadow="md"
+          width={300}
+          opened={openedValidationErrors && !draftIsValid}
         >
-          Create Draft
-        </Button>
+          <Popover.Target>
+            <Button
+              size="xl"
+              onClick={handleCreate}
+              disabled={!draftIsValid}
+              onMouseOver={openValidationErrors}
+              onMouseLeave={closeValidationErrors}
+              style={{
+                border: !draftIsValid
+                  ? "1px solid var(--mantine-color-red-3)"
+                  : undefined,
+              }}
+            >
+              Create Draft
+            </Button>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <List>
+              {validationErrors.map((error) => (
+                <List.Item key={error}>{error}</List.Item>
+              ))}
+            </List>
+          </Popover.Dropdown>
+        </Popover>
       </Group>
 
       <ExportMapModal
@@ -190,14 +231,8 @@ export default function DraftNew() {
           mt="lg"
           w="100%"
           size="xl"
-          onClick={() => {
-            createDraft({
-              availableFactions: draft.availableFactions,
-              mapString: serializeMap(draft.map).join(" "),
-              players: draft.players,
-              slices: draft.slices,
-            });
-          }}
+          onClick={handleCreate}
+          disabled={!draftIsValid}
         >
           Create Draft
         </Button>
@@ -220,8 +255,15 @@ export async function action({ request }: ActionFunctionArgs) {
     ...reversedPlayerIds,
   ];
 
+  // pull out the factions to draft if specified
+  const factions = body.numFactionsToDraft
+    ? fisherYatesShuffle(body.availableFactions, body.numFactionsToDraft)
+    : body.availableFactions;
+
+  console.log("the factions are", factions);
+
   const draft: PersistedDraft = {
-    factions: body.availableFactions,
+    factions,
     mapString: body.mapString,
     slices: body.slices,
     // Pre-fill in player names if they don't exist.
@@ -239,6 +281,20 @@ export async function action({ request }: ActionFunctionArgs) {
     .run();
 
   return redirect(`/draft/${result.lastInsertRowid}`);
+}
+
+function fisherYatesShuffle<T>(array: T[], x: number) {
+  // Copy the original array to avoid modifying it
+  let copiedArray = array.slice();
+
+  // Fisher-Yates Shuffle
+  for (let i = copiedArray.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [copiedArray[i], copiedArray[j]] = [copiedArray[j], copiedArray[i]]; // Swap elements
+  }
+
+  // Return the first x elements of the shuffled array
+  return copiedArray.slice(0, x);
 }
 
 export const meta: MetaFunction = () => {

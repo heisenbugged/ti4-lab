@@ -1,8 +1,8 @@
 import { Button, SimpleGrid, Stack, Text } from "@mantine/core";
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
@@ -17,8 +17,11 @@ import { playerSpeakerOrder } from "~/utils/map";
 import { PlayerChip } from "./components/PlayerChip";
 import { CurrentPickBanner } from "./components/CurrentPickBanner";
 import { DraftOrder } from "./components/DraftOrder";
+import { PlayerSelectionScreen } from "./components/PlayerSelectionScreen";
 
 export default function RunningDraft() {
+  const { adminMode } = useOutletContext<{ adminMode: boolean }>();
+
   // Real-time socket connection to push and receive state updates.
   const socket = useSocket();
   useEffect(() => {
@@ -32,10 +35,17 @@ export default function RunningDraft() {
 
   const result = useLoaderData<typeof loader>();
   const draft = useDraft();
+  const [selectedPlayer, setSelectedPlayer] = useState<number | undefined>();
 
   // pre-seed store with loaded persisted draft
   useEffect(() => {
     draft.hydrate(result.data);
+    const storedSelectedPlayer = localStorage.getItem(
+      `draft:player:${result.id}`,
+    );
+    if (storedSelectedPlayer) {
+      setSelectedPlayer(parseInt(storedSelectedPlayer));
+    }
   }, []);
 
   const syncDraft = useSyncDraft();
@@ -49,15 +59,32 @@ export default function RunningDraft() {
   const draftFinalized = draft.currentPick >= draft.pickOrder.length;
   const activePlayerId = draft.pickOrder[draft.currentPick];
   const activePlayer = draft.players.find((p) => p.id === activePlayerId);
-  const hasSelectedSlice = (activePlayer?.sliceIdx ?? -1) >= 0;
-  const hasSelectedSeat = (activePlayer?.seatIdx ?? -1) >= 0;
-  const hasSelectedFaction = !!activePlayer?.faction;
-  const hasSelectedSpeakerOrder = !!activePlayer?.speakerOrder;
+
+  const currentlyPicking = activePlayerId === selectedPlayer || adminMode;
+  const canSelectSlice = currentlyPicking && (activePlayer?.sliceIdx ?? -1) < 0;
+  const canSelectSeat = currentlyPicking && (activePlayer?.seatIdx ?? -1) < 0;
+  const canSelectFaction = currentlyPicking && !activePlayer?.faction;
+  const canSelectSpeakerOrder = currentlyPicking && !activePlayer?.speakerOrder;
 
   if (!draft.hydratedMap) return <></>;
 
   if (draftFinalized) {
     return <FinalizedDraft />;
+  }
+
+  if (selectedPlayer === undefined) {
+    return (
+      <PlayerSelectionScreen
+        players={draft.players}
+        onDraftJoined={(player) => {
+          localStorage.setItem(
+            `draft:player:${result.id}`,
+            player.id.toString(),
+          );
+          setSelectedPlayer(player.id);
+        }}
+      />
+    );
   }
 
   return (
@@ -67,7 +94,7 @@ export default function RunningDraft() {
           player={activePlayer!!}
           lastEvent={draft.lastEvent}
         />
-        <div style={{ height: 50 }} />
+        <div style={{ height: 65 }} />
         <DraftOrder
           players={draft.players}
           pickOrder={draft.pickOrder}
@@ -77,7 +104,7 @@ export default function RunningDraft() {
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <Stack flex={1} gap="xl">
           <DraftableFactionsSection
-            allowFactionSelection={!hasSelectedFaction}
+            allowFactionSelection={canSelectFaction}
             factions={draft.factions}
             players={draft.players}
             onSelectFaction={(factionId) => {
@@ -87,7 +114,7 @@ export default function RunningDraft() {
           />
           <SlicesSection
             mode="draft"
-            allowSliceSelection={!hasSelectedSlice}
+            allowSliceSelection={canSelectSlice}
             slices={draft.slices}
             players={draft.players}
             onSelectSlice={(sliceIdx) => {
@@ -121,9 +148,9 @@ export default function RunningDraft() {
                     <Text ff="heading" fw="bold">
                       {so}
                     </Text>
-                    {!player && !hasSelectedSpeakerOrder && (
+                    {!player && canSelectSpeakerOrder && (
                       <Button
-                        size="xs"
+                        size="compact-sm"
                         px="lg"
                         onMouseDown={() => {
                           draft.selectSpeakerOrder(activePlayerId, idx);
@@ -141,7 +168,7 @@ export default function RunningDraft() {
           </Section>
           <MapSection
             map={draft.hydratedMap}
-            allowSeatSelection={!hasSelectedSeat}
+            allowSeatSelection={canSelectSeat}
             mode="draft"
             onSelectHomeTile={(tile) => {
               draft.selectSeat(activePlayerId, tile.seatIdx);

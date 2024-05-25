@@ -6,6 +6,7 @@ export type CreateDraftInput = {
   availableFactions: FactionId[];
   mapString: string;
   slices: string[][];
+  numFactionsToDraft: number | null;
 };
 
 export function useCreateDraft() {

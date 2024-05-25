@@ -18,7 +18,7 @@ export function PlayerChipOrSelect({ player, onSelect }: Props) {
     >
       {player && <PlayerChip player={player} />}
       {!player && onSelect && (
-        <Button size="xs" onMouseDown={onSelect}>
+        <Button size="compact-xs" onMouseDown={onSelect}>
           Select
         </Button>
       )}

@@ -135,7 +135,7 @@ export const playerColors = [
   "blue",
   "red",
   "green",
-  "yellow",
+  "magenta",
   "violet",
   "orange",
 ];

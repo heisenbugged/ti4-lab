@@ -4,6 +4,7 @@ import { Button, Stack, Text } from "@mantine/core";
 import { HomeTile as THomeTile } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 import { FactionIcon } from "../icons/FactionIcon";
+import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
 
 type Props = {
   mapId: string;
@@ -23,26 +24,16 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
         </Button>
       )}
       {tile.player && (
-        <Stack align="center" gap={12} w={radius * 1.25} justify="center">
+        <Stack align="center" gap="6px" w={radius * 1.25} justify="center">
           {tile.player.faction && (
             <FactionIcon
+              visibleFrom="xs"
               faction={tile.player.faction}
               style={{ maxWidth: radius * 0.6, maxHeight: radius * 0.6 }}
             />
           )}
-          {!tile.player.faction && (
-            <img src={`/avatar/avatar${tile.player.id}.png`} />
-          )}
-          <Text
-            ta="center"
-            lh={1}
-            c="violet.9"
-            fw="bold"
-            tt="uppercase"
-            size="md"
-          >
-            {tile.player.name}
-          </Text>
+          <PlayerChip player={tile.player} size="lg" visibleFrom="lg" />
+          <PlayerChip player={tile.player} size="md" hiddenFrom="lg" />
         </Stack>
       )}
     </Hex>
