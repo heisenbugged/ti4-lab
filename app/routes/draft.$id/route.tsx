@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Flex,
   Group,
   SimpleGrid,
   Stack,
@@ -23,6 +24,9 @@ import { MapSection } from "../draft/MapSection";
 import { Section, SectionTitle } from "~/components/Section";
 import { playerSpeakerOrder } from "~/utils/map";
 import { PlayerChip } from "./components/PlayerChip";
+import { playerColors } from "~/data/factionData";
+import { CurrentPickBanner } from "./components/CurrentPickBanner";
+import { DraftOrder } from "./components/DraftOrder";
 
 export default function RunningDraft() {
   // Example of socket, to be put on actual draft page.
@@ -65,34 +69,21 @@ export default function RunningDraft() {
   if (draftFinalized) {
     return <FinalizedDraft />;
   }
+  console.log("test");
 
   return (
     <>
       <Stack gap="sm" mb="60" mt="lg">
-        <Title order={3}>Draft Order</Title>
-        <Group gap={1}>
-          {draft.pickOrder.map((playerId, idx) => {
-            const player = draft.players.find(({ id }) => id === playerId)!!;
-            const active = idx === draft.currentPick;
-            return (
-              <Group
-                key={idx}
-                bg={active ? "purple.7" : "gray.2"}
-                px="md"
-                py="xs"
-                gap="sm"
-              >
-                <img
-                  src={`/avatar/avatar${player.id - 1}.png`}
-                  style={{ width: 20 }}
-                />
-                <Title order={5} c={active ? "white" : "gray.8"} lh={1}>
-                  {player.name}
-                </Title>
-              </Group>
-            );
-          })}
-        </Group>
+        <CurrentPickBanner
+          player={activePlayer!!}
+          lastEvent={draft.lastEvent}
+        />
+        <div style={{ height: 50 }} />
+        <DraftOrder
+          players={draft.players}
+          pickOrder={draft.pickOrder}
+          currentPick={draft.currentPick}
+        />
       </Stack>
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <Stack flex={1} gap="xl">

@@ -8,9 +8,15 @@ import {
   System,
   SystemStats,
 } from "./types";
-import { hydrateMap, parseMapString, sliceMap } from "./utils/map";
+import {
+  hydrateMap,
+  parseMapString,
+  playerSpeakerOrder,
+  sliceMap,
+} from "./utils/map";
 import { mapStringOrder } from "./data/mapStringOrder";
 import { systemData } from "./data/systemData";
+import { factionIds, factions } from "./data/factionData";
 
 const MECATOL_REX_ID = 18;
 
@@ -28,6 +34,7 @@ type DraftsState = {
   factions: FactionId[];
   currentPick: number;
   pickOrder: number[];
+  lastEvent: string;
   selectSlice: (playerId: number, sliceIdx: number) => void;
   selectSeat: (playerId: number, seatIdx: number) => void;
   selectFaction: (playerId: number, factionId: FactionId) => void;
@@ -44,6 +51,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
   factions: [],
   currentPick: 0,
   pickOrder: [],
+  lastEvent: "",
   getPersisted: () => ({
     mapString: get().mapString.join(" "),
     players: get().players,
@@ -51,6 +59,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
     factions: get().factions,
     currentPick: get().currentPick,
     pickOrder: get().pickOrder,
+    lastEvent: get().lastEvent,
   }),
   selectFaction: (playerId: number, factionId: FactionId) =>
     set((state) => {
@@ -58,10 +67,17 @@ export const useDraft = create<DraftsState>((set, get) => ({
         p.id === playerId ? { ...p, faction: factionId } : p,
       );
       const hydratedMap = hydrateMap(state.hydratedMap, players, state.slices);
+      const activePlayerName = state.players.find(
+        (p) => p.id === playerId,
+      )?.name;
+
       return {
         players,
         hydratedMap: hydratedMap,
         currentPick: state.currentPick + 1,
+        lastEvent:
+          activePlayerName &&
+          `${activePlayerName} selected ${factions[factionId].name}`,
       };
     }),
   selectSlice: (playerId: number, sliceIdx: number) =>
@@ -70,10 +86,16 @@ export const useDraft = create<DraftsState>((set, get) => ({
         p.id === playerId ? { ...p, sliceIdx } : p,
       );
       const hydratedMap = hydrateMap(state.hydratedMap, players, state.slices);
+      const activePlayerName = state.players.find(
+        (p) => p.id === playerId,
+      )?.name;
       return {
         players,
         hydratedMap: hydratedMap,
         currentPick: state.currentPick + 1,
+        lastEvent:
+          activePlayerName &&
+          `${activePlayerName} selected Slice ${sliceIdx + 1}`,
       };
     }),
 
@@ -85,11 +107,17 @@ export const useDraft = create<DraftsState>((set, get) => ({
 
       const parsedMap = parseMapString(state.mapString, mapStringOrder, false);
       const hydratedMap = hydrateMap(parsedMap, players, state.slices);
+      const activePlayerName = state.players.find(
+        (p) => p.id === playerId,
+      )?.name;
 
       return {
         players,
         hydratedMap: hydratedMap,
         currentPick: state.currentPick + 1,
+        lastEvent:
+          activePlayerName &&
+          `${activePlayerName} selected Seat ${seatIdx + 1}`,
       };
     }),
   selectSpeakerOrder: (playerId: number, speakerOrder: number) =>
@@ -97,9 +125,15 @@ export const useDraft = create<DraftsState>((set, get) => ({
       const players = state.players.map((p) =>
         p.id === playerId ? { ...p, speakerOrder } : p,
       );
+      const activePlayerName = state.players.find(
+        (p) => p.id === playerId,
+      )?.name;
       return {
         players,
         currentPick: state.currentPick + 1,
+        lastEvent:
+          activePlayerName &&
+          `${activePlayerName} selected ${playerSpeakerOrder[speakerOrder]} on the speaker order.`,
       };
     }),
   hydrate: (draft: PersistedDraft) =>
@@ -119,6 +153,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
         factions: draft.factions,
         currentPick: draft.currentPick,
         pickOrder: draft.pickOrder,
+        lastEvent: draft.lastEvent,
       };
     }),
 }));
@@ -154,7 +189,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     "-1 0 0 0".split(" "),
     "-1 0 0 0".split(" "),
   ],
-  availableFactions: [],
+  availableFactions: [...factionIds],
   players: [
     ...[1, 2, 3, 4, 5, 6].map((i) => ({
       id: i,

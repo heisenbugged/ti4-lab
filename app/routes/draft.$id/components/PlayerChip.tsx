@@ -1,4 +1,5 @@
-import { Group, Text } from "@mantine/core";
+import { Badge, Chip } from "@mantine/core";
+import { playerColors } from "~/data/factionData";
 import { Player } from "~/types";
 
 type Props = {
@@ -6,12 +7,5 @@ type Props = {
 };
 
 export function PlayerChip({ player }: Props) {
-  return (
-    <Group bg="gray.4" px={8} py={4} style={{ borderRadius: 4 }} gap="xs">
-      <img src={`/avatar/avatar${player.id - 1}.png`} style={{ width: 20 }} />
-      <Text size="xs" tt="uppercase" c="purple" fw={600}>
-        {player.name}
-      </Text>
-    </Group>
-  );
+  return <Badge color={playerColors[player.id - 1]}>{player.name}</Badge>;
 }

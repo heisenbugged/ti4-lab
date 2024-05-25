@@ -123,10 +123,11 @@ export type PersistedDraft = {
   mapString: string;
   currentPick: number;
   pickOrder: number[];
+  lastEvent?: string;
 };
 
 export type SystemStats = {
-  tileColor: "RED" | "BLUE";
+  tileColor: "RED" | "BLUE" | undefined;
   totalResources: number;
   totalInfluence: number;
   totalTech: string[];

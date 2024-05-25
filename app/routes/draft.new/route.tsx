@@ -1,8 +1,8 @@
-import { Box, Button, Group, SimpleGrid, Stack } from "@mantine/core";
+import { Box, Button, Flex, Group, SimpleGrid, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { serializeMap } from "~/data/serialize";
 import { useNewDraft } from "~/draftStore";
@@ -15,8 +15,6 @@ import { AvailableFactionsSection } from "./components/AvailableFactionsSection"
 import { SlicesSection } from "../draft/SlicesSection";
 import { PlayerInputSection } from "./components/PlayerInputSection";
 import { MapSection } from "../draft/MapSection";
-
-import "./draft.new.css";
 import { ExportMapModal } from "./components/ExportMapModal";
 
 export default function DraftNew() {

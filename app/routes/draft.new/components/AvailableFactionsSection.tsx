@@ -17,19 +17,18 @@ export function AvailableFactionsSection({
   onChangeNumFactions,
   onToggleFaction,
 }: Props) {
-  const defaultInputValue =
-    selectedFactions.length > 0 ? selectedFactions.length : "";
+  const needsMoreFactions = numFactions !== undefined && numFactions < 6;
   return (
     <Section>
       <SectionTitle title="Faction Pool">
         <Group>
-          <Text># of factions in draft:</Text>
+          <Text># of factions in draft (min 6):</Text>
           <Input
             placeholder="6 or 9 or 12 etc"
             size="sm"
             type="number"
             min={6}
-            value={numFactions ?? defaultInputValue}
+            value={numFactions ?? ""}
             onChange={(e) => {
               if (e.currentTarget.value.length === 0) {
                 onChangeNumFactions(undefined);
@@ -37,6 +36,7 @@ export function AvailableFactionsSection({
               }
               onChangeNumFactions(parseInt(e.currentTarget.value, 10));
             }}
+            error={needsMoreFactions ? "Must be at least 6" : null}
           />
         </Group>
       </SectionTitle>
@@ -45,6 +45,7 @@ export function AvailableFactionsSection({
           <NewDraftFaction
             key={factionId}
             faction={factions[factionId]}
+            checked={selectedFactions.includes(factionId)}
             onCheck={(checked) => onToggleFaction(factionId, checked)}
           />
         ))}

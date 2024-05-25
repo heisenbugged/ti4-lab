@@ -23,6 +23,7 @@
     "isbot": "^4.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-transition-group": "^4.4.5",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "zustand": "^4.5.2"
@@ -33,6 +34,7 @@
     "@types/better-sqlite3": "^7.6.10",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
+    "@types/react-transition-group": "^4.4.10",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "drizzle-kit": "^0.21.4",

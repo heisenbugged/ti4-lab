@@ -1,16 +1,15 @@
 import { Checkbox, Group, Text, Title } from "@mantine/core";
 import { Faction } from "~/types";
-import { useState } from "react";
+
 import { FactionIcon } from "~/components/icons/FactionIcon";
 
 type Props = {
   faction: Faction;
+  checked: boolean;
   onCheck: (checked: boolean) => void;
 };
 
-export function NewDraftFaction({ faction, onCheck }: Props) {
-  // TODO: make controlled component, maybe?
-  const [checked, setChecked] = useState(false);
+export function NewDraftFaction({ faction, checked, onCheck }: Props) {
   return (
     <Group
       gap="xs"
@@ -24,10 +23,7 @@ export function NewDraftFaction({ faction, onCheck }: Props) {
         flexWrap: "nowrap",
         cursor: "pointer",
       }}
-      onMouseDown={() => {
-        onCheck(!checked);
-        setChecked((c) => !c);
-      }}
+      onMouseDown={() => onCheck(!checked)}
     >
       <FactionIcon faction={faction.id} style={{ width: 30 }} />
       <Text flex={1} lh={1}>
@@ -37,10 +33,7 @@ export function NewDraftFaction({ faction, onCheck }: Props) {
         radius="xl"
         size="md"
         checked={checked}
-        onChange={() => {
-          onCheck(!checked);
-          setChecked((c) => !c);
-        }}
+        onChange={() => onCheck(!checked)}
       />
     </Group>
   );
