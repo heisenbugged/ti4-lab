@@ -20,7 +20,7 @@ export function DraftableFactionsSection({
   return (
     <Section>
       <SectionTitle title="Available Factions" />
-      <SimpleGrid cols={{ base: 3, md: 4, lg: 3, xl: 4 }}>
+      <SimpleGrid cols={{ base: 2, sm: 3, md: 4, lg: 3, xl: 4 }}>
         {factions.map((factionId) => (
           <DraftableFaction
             key={factionId}

@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Group,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Button, SimpleGrid, Stack, Text } from "@mantine/core";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
@@ -24,12 +15,11 @@ import { MapSection } from "../draft/MapSection";
 import { Section, SectionTitle } from "~/components/Section";
 import { playerSpeakerOrder } from "~/utils/map";
 import { PlayerChip } from "./components/PlayerChip";
-import { playerColors } from "~/data/factionData";
 import { CurrentPickBanner } from "./components/CurrentPickBanner";
 import { DraftOrder } from "./components/DraftOrder";
 
 export default function RunningDraft() {
-  // Example of socket, to be put on actual draft page.
+  // Real-time socket connection to push and receive state updates.
   const socket = useSocket();
   useEffect(() => {
     if (!socket) return;
@@ -69,7 +59,6 @@ export default function RunningDraft() {
   if (draftFinalized) {
     return <FinalizedDraft />;
   }
-  console.log("test");
 
   return (
     <>
@@ -110,7 +99,7 @@ export default function RunningDraft() {
         <Stack flex={1} gap="xl">
           <Section>
             <SectionTitle title="Speaker Order" />
-            <SimpleGrid cols={{ base: 8, sm: 6, md: 6, lg: 6 }}>
+            <SimpleGrid cols={{ base: 3, sm: 6, md: 6, lg: 3, xl: 6 }}>
               {playerSpeakerOrder.map((so, idx) => {
                 const player = draft.players.find(
                   (p) => p.speakerOrder === idx,

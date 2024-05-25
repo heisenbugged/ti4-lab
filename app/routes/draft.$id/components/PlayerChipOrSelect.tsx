@@ -12,7 +12,7 @@ export function PlayerChipOrSelect({ player, onSelect }: Props) {
     <div
       style={{
         position: "absolute",
-        top: -10,
+        top: -15,
         right: -10,
       }}
     >

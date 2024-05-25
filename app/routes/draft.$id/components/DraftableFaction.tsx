@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text, Title } from "@mantine/core";
+import { Box, Button, Flex, Group, Stack, Text, Title } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction, Player } from "~/types";
 import { PlayerChip } from "./PlayerChip";
@@ -8,24 +8,18 @@ type Props = {
   faction: Faction;
   player?: Player;
   onSelect?: () => void;
-  applyGreyscale?: boolean;
 };
 
-export function DraftableFaction({
-  faction,
-  player,
-  applyGreyscale = true,
-  onSelect,
-}: Props) {
+export function DraftableFaction({ faction, player, onSelect }: Props) {
   return (
     <Stack
       gap="md"
       bg="gray.1"
-      p="sm"
+      px="sm"
+      py={8}
       style={{
         borderRadius: 8,
         border: "1px solid rgba(0,0,0,0.1)",
-        flexWrap: "nowrap",
         cursor: "pointer",
         position: "relative",
       }}
@@ -33,13 +27,23 @@ export function DraftableFaction({
       <Group
         align="center"
         flex={1}
-        style={{ filter: player && applyGreyscale ? "grayscale(1)" : "none" }}
-        pt={10}
+        style={{
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          flexWrap: "nowrap",
+        }}
+        pt={5}
       >
-        <FactionIcon faction={faction.id} style={{ width: 30 }} />
-        <Title order={6} flex={1} size={14} lh={1}>
+        <Flex visibleFrom="sm" align="center" w="25px" h="25px">
+          <FactionIcon
+            faction={faction.id}
+            style={{ maxWidth: 25, maxHeight: 25 }}
+          />
+        </Flex>
+        <Text flex={1} size="14px" ff="heading" fw="bold">
           {faction.name}
-        </Title>
+        </Text>
       </Group>
 
       <PlayerChipOrSelect player={player} onSelect={onSelect} />
