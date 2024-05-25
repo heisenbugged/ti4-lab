@@ -244,7 +244,10 @@ export default function DraftNew() {
 export async function action({ request }: ActionFunctionArgs) {
   const body = (await request.json()) as CreateDraftInput;
 
-  const playerIds = body.players.map((p) => p.id);
+  const playerIds = fisherYatesShuffle(
+    body.players.map((p) => p.id),
+    body.players.length,
+  );
   const reversedPlayerIds = [...playerIds].reverse();
 
   // TODO: Make 'speaker order' pick dynamic. shouldn't be assumed.
@@ -259,8 +262,6 @@ export async function action({ request }: ActionFunctionArgs) {
   const factions = body.numFactionsToDraft
     ? fisherYatesShuffle(body.availableFactions, body.numFactionsToDraft)
     : body.availableFactions;
-
-  console.log("the factions are", factions);
 
   const draft: PersistedDraft = {
     factions,
