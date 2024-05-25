@@ -31,7 +31,7 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
             />
           )}
           {!tile.player.faction && (
-            <img src={`/avatar/avatar${tile.player.id - 1}.png`} />
+            <img src={`/avatar/avatar${tile.player.id}.png`} />
           )}
           <Text
             ta="center"

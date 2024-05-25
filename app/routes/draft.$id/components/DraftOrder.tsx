@@ -18,18 +18,18 @@ export function DraftOrder({ pickOrder, currentPick, players }: Props) {
         return (
           <Box
             key={idx}
-            bg={active ? `${playerColors[player.id - 1]}.2` : "gray.2"}
+            bg={active ? `${playerColors[player.id]}.2` : "gray.2"}
             p="xs"
             style={{
               border: active
-                ? `4px solid var(--mantine-color-${playerColors[player.id - 1]}-8)`
+                ? `4px solid var(--mantine-color-${playerColors[player.id]}-8)`
                 : "none",
             }}
           >
             <Text
               ff="heading"
               size="sm"
-              c={alreadyPassed ? "gray.8" : `${playerColors[player.id - 1]}.9`}
+              c={alreadyPassed ? "gray.8" : `${playerColors[player.id]}.9`}
               fw={"bold"}
               lh={1}
             >

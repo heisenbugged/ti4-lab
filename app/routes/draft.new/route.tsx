@@ -227,7 +227,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // Pre-fill in player names if they don't exist.
     players: body.players.map((p: Player) => ({
       ...p,
-      name: p.name.length > 0 ? p.name : `Player ${p.id}`,
+      name: p.name.length > 0 ? p.name : `Player ${p.id + 1}`,
     })),
     currentPick: 0,
     pickOrder,

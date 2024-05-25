@@ -1,10 +1,11 @@
-import { Group, Table, Text } from "@mantine/core";
+import { Badge, Group, Table, Text } from "@mantine/core";
 import { useSlice } from "~/components/Slice";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
 import { Player } from "~/types";
+import { PlayerChip } from "./PlayerChip";
 
 type Props = {
   player: Player;
@@ -15,7 +16,9 @@ export function SummaryRow({ player, systems }: Props) {
   const { total, optimal, specialties } = useSlice(systems);
   return (
     <Table.Tr>
-      <Table.Td>{player?.name}</Table.Td>
+      <Table.Td>
+        <PlayerChip player={player} />
+      </Table.Td>
       <Table.Td>
         <Group>
           <FactionIcon faction={player.faction!!} style={{ height: 36 }} />

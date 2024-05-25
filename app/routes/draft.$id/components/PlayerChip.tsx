@@ -7,5 +7,5 @@ type Props = {
 };
 
 export function PlayerChip({ player }: Props) {
-  return <Badge color={playerColors[player.id - 1]}>{player.name}</Badge>;
+  return <Badge color={playerColors[player.id]}>{player.name}</Badge>;
 }

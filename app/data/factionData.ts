@@ -132,10 +132,10 @@ export type FactionId = keyof typeof factions;
 export const factionIds = Object.keys(factions) as FactionId[];
 
 export const playerColors = [
-  "red",
   "blue",
+  "red",
   "green",
   "yellow",
-  "purple",
+  "violet",
   "orange",
 ];

@@ -11,7 +11,7 @@ type Props = {
 export function CurrentPickBanner({ player, lastEvent }: Props) {
   const { colors } = useMantineTheme();
 
-  const playerColor = colors[playerColors[player.id - 1]];
+  const playerColor = colors[playerColors[player.id]];
   return (
     <Stack
       gap={8}

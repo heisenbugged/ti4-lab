@@ -191,7 +191,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   ],
   availableFactions: [...factionIds],
   players: [
-    ...[1, 2, 3, 4, 5, 6].map((i) => ({
+    ...[0, 1, 2, 3, 4, 5].map((i) => ({
       id: i,
       name: "",
     })),

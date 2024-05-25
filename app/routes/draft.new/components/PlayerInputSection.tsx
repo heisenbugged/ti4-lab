@@ -1,5 +1,6 @@
-import { Group, Input, Stack } from "@mantine/core";
+import { Group, Indicator, Input, Stack } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
+import { playerColors } from "~/data/factionData";
 import { Player } from "~/types";
 
 type Props = {
@@ -14,7 +15,6 @@ export function PlayerInputSection({ players, onChangeName }: Props) {
       <Stack gap="xs">
         {players.map((player, idx) => (
           <Group key={idx}>
-            <img src={`/avatar/avatar${idx}.png`} style={{ width: 45 }} />
             <Input
               key={idx}
               flex={1}
@@ -23,6 +23,7 @@ export function PlayerInputSection({ players, onChangeName }: Props) {
               placeholder={`Player ${idx + 1}`}
               onChange={(e) => onChangeName(idx, e.currentTarget.value)}
             />
+            <Indicator color={playerColors[player.id]} size={18} />
           </Group>
         ))}
       </Stack>
