@@ -8,6 +8,7 @@ import { Player, Tile } from "~/types";
 import { useSlice } from "./useSlice";
 import { TechIcon } from "../icons/TechIcon";
 import { SliceFeatures } from "./SliceFeatures";
+import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
 
 type Props = {
   id: string;
@@ -77,11 +78,10 @@ export function Slice({
           </Group>
         }
       >
-        {player ? (
-          <PlayerLabel faction={player.faction} name={player.name} />
-        ) : (
+        <Group>
           <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>
-        )}
+          {player ? <PlayerChip player={player} /> : undefined}
+        </Group>
       </SliceHeader>
       <div style={{ filter: selected ? "grayscale(70%)" : "none" }}>
         <SliceMap
