@@ -156,13 +156,12 @@ export function GenerateSlicesModal({
           />
         </Stack>
       </SimpleGrid>
-      {variance.value === "extreme" ||
-        (variance.value === "high" && (
-          <Text size="xs" mt="sm">
-            NOTE: High and Yee-Haw variances will likely overpower whatever
-            'opulence' value you have set
-          </Text>
-        ))}
+      {(variance.value === "extreme" || variance.value === "high") && (
+        <Text size="xs" mt="sm">
+          NOTE: High and Yee-Haw variances will likely overpower whatever
+          'opulence' value you have set
+        </Text>
+      )}
 
       <Stack mt="lg" gap={2}>
         <Switch
