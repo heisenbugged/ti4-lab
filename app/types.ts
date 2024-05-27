@@ -29,6 +29,9 @@ export type System = {
   home?: boolean;
   anomaly?: Anomaly;
   wormhole?: Wormhole;
+
+  totalSpend: { resources: number; influence: number };
+  optimalSpend: { resources: number; influence: number; flex: number };
 };
 
 export type MapSpaceType = "SYSTEM" | "HOME" | "OPEN" | "CLOSED" | "WARP";
@@ -146,3 +149,6 @@ export type MapStats = {
   greenTraits: number;
   blueTraits: number;
 };
+
+export type Variance = "low" | "medium" | "high" | "extreme";
+export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";

@@ -1,13 +1,13 @@
-import { Button, SimpleGrid, Table, Tabs } from "@mantine/core";
+import { Button, Group, SimpleGrid, Table, Tabs } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
 import { Slice } from "~/components/Slice";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
+import { valueSlice, valueSystem } from "~/stats";
 import { Player } from "~/types";
 import {
   optimalStatsForSystems,
   systemsInSlice,
-  totalStats,
   totalStatsForSystems,
 } from "~/utils/map";
 
@@ -16,6 +16,7 @@ type Props = {
   slices: string[][];
   allowSliceSelection?: boolean;
   players?: Player[];
+  onRandomizeSlices?: () => void;
   onAddNewSlice?: () => void;
   onSelectSlice?: (sliceIdx: number) => void;
   onSelectTile?: (sliceIdx: number, tileIdx: number) => void;
@@ -27,6 +28,7 @@ export function SlicesSection({
   players,
   mode = "create",
   allowSliceSelection = true,
+  onRandomizeSlices,
   onAddNewSlice,
   onSelectTile,
   onDeleteTile,
@@ -37,12 +39,17 @@ export function SlicesSection({
       <div style={{ position: "sticky", top: 60, zIndex: 5 }}>
         <SectionTitle title="Slices">
           {mode === "create" && (
-            <Button onMouseDown={onAddNewSlice}>Add New Slice</Button>
+            <Group gap={4}>
+              <Button onMouseDown={onRandomizeSlices} variant="light">
+                Generate Random Slices
+              </Button>
+              <Button onMouseDown={onAddNewSlice}>Add New Slice</Button>
+            </Group>
           )}
         </SectionTitle>
       </div>
-      <Tabs defaultValue="detailed">
-        <Tabs.List mb="sm">
+      <Tabs defaultValue="detailed" variant="outline">
+        <Tabs.List mb="sm" style={{ marginTop: -24 }}>
           <Tabs.Tab value="detailed">Detailed</Tabs.Tab>
           <Tabs.Tab value="summary">Summary</Tabs.Tab>
         </Tabs.List>
@@ -75,6 +82,7 @@ export function SlicesSection({
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Name</Table.Th>
+                <Table.Th>Value</Table.Th>
                 <Table.Th>Optimal</Table.Th>
                 <Table.Th>Total</Table.Th>
                 <Table.Th visibleFrom="xs">Features</Table.Th>
@@ -88,20 +96,33 @@ export function SlicesSection({
                 return (
                   <Table.Tr key={idx}>
                     <Table.Td>{`Slice ${idx + 1}`}</Table.Td>
+                    <Table.Td>{valueSlice(systems)}</Table.Td>
                     <Table.Td>
-                      <PlanetStatsPill
-                        size="sm"
-                        resources={optimal.resources}
-                        influence={optimal.influence}
-                        flex={optimal.flex}
-                      />
+                      <Group gap={2}>
+                        <PlanetStatsPill
+                          size="sm"
+                          resources={optimal.resources}
+                          influence={optimal.influence}
+                          flex={optimal.flex}
+                        />
+                        (
+                        {(
+                          optimal.resources +
+                          optimal.influence +
+                          optimal.flex
+                        ).toString()}
+                        )
+                      </Group>
                     </Table.Td>
                     <Table.Td>
-                      <PlanetStatsPill
-                        size="sm"
-                        resources={total.resources}
-                        influence={total.influence}
-                      />
+                      <Group gap={2}>
+                        <PlanetStatsPill
+                          size="sm"
+                          resources={total.resources}
+                          influence={total.influence}
+                        />
+                        ({(total.resources + total.influence).toString()})
+                      </Group>
                     </Table.Td>
                     <Table.Td visibleFrom="xs">
                       <SliceFeatures slice={slice} />

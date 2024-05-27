@@ -5,9 +5,13 @@ import {
   Group,
   List,
   Menu,
+  Modal,
   Popover,
+  SegmentedControl,
   SimpleGrid,
+  Slider,
   Stack,
+  Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
@@ -26,6 +30,8 @@ import { SlicesSection } from "../draft/SlicesSection";
 import { PlayerInputSection } from "./components/PlayerInputSection";
 import { MapSection } from "../draft/MapSection";
 import { ExportMapModal } from "./components/ExportMapModal";
+import { fisherYatesShuffle } from "~/stats";
+import { GenerateSlicesModal } from "./components/GenerateSlicesModal";
 
 export default function DraftNew() {
   const createDraft = useCreateDraft();
@@ -69,8 +75,13 @@ export default function DraftNew() {
   const draftIsValid = validationErrors.length === 0;
 
   const [
-    openedValidationErrors,
+    validationErrorsOpened,
     { close: closeValidationErrors, open: openValidationErrors },
+  ] = useDisclosure(false);
+
+  const [
+    generateSlicesOpened,
+    { open: openGenerateSlices, close: closeGenerateSlices },
   ] = useDisclosure(false);
 
   return (
@@ -101,7 +112,7 @@ export default function DraftNew() {
         <Popover
           shadow="md"
           width={300}
-          opened={openedValidationErrors && !draftIsValid}
+          opened={validationErrorsOpened && !draftIsValid}
         >
           <Popover.Target>
             <Button
@@ -128,6 +139,12 @@ export default function DraftNew() {
           </Popover.Dropdown>
         </Popover>
       </Group>
+
+      <GenerateSlicesModal
+        onClose={closeGenerateSlices}
+        onGenerateSlices={draft.randomizeSlices}
+        opened={generateSlicesOpened}
+      />
 
       <ExportMapModal
         mapString={draft.exportableMapString()}
@@ -186,6 +203,7 @@ export default function DraftNew() {
           <SlicesSection
             mode="create"
             slices={draft.slices}
+            onRandomizeSlices={openGenerateSlices}
             onAddNewSlice={draft.addNewSlice}
             onDeleteTile={(sliceIdx, tileIdx) => {
               draft.removeSystemFromSlice(sliceIdx, tileIdx);
@@ -282,20 +300,6 @@ export async function action({ request }: ActionFunctionArgs) {
     .run();
 
   return redirect(`/draft/${result.lastInsertRowid}`);
-}
-
-function fisherYatesShuffle<T>(array: T[], x: number) {
-  // Copy the original array to avoid modifying it
-  let copiedArray = array.slice();
-
-  // Fisher-Yates Shuffle
-  for (let i = copiedArray.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1));
-    [copiedArray[i], copiedArray[j]] = [copiedArray[j], copiedArray[i]]; // Swap elements
-  }
-
-  // Return the first x elements of the shuffled array
-  return copiedArray.slice(0, x);
 }
 
 export const meta: MetaFunction = () => {

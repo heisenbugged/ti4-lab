@@ -253,11 +253,28 @@ export const systemData: Record<number, System> = Object.entries(
       (name) => planetData.find((planet) => planet.name === name)!!,
     );
 
+    let totalSpend = { resources: 0, influence: 0 };
+    let optimalSpend = { resources: 0, influence: 0, flex: 0 };
+    planets.forEach((planet) => {
+      totalSpend.resources += planet.resources;
+      totalSpend.influence += planet.influence;
+
+      if (planet.resources > planet.influence) {
+        optimalSpend.resources += planet.resources;
+      } else if (planet.resources < planet.influence) {
+        optimalSpend.influence += planet.influence;
+      } else if (planet.resources === planet.influence) {
+        optimalSpend.flex += planet.resources;
+      }
+    });
+
     acc[parseInt(id)] = {
       id: parseInt(id),
       planets,
       anomaly: system.anomaly,
       wormhole: system.wormhole,
+      totalSpend,
+      optimalSpend,
     };
 
     return acc;

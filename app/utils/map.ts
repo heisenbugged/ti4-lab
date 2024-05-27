@@ -210,10 +210,9 @@ export const parseMapString = (
 export const totalStatsForSystems = (systems: System[]) =>
   systems.reduce(
     (acc, s) => {
-      s.planets.forEach((p) => {
-        acc.resources += p.resources;
-        acc.influence += p.influence;
-      });
+      acc.resources += s.totalSpend.resources;
+      acc.influence += s.totalSpend.influence;
+
       return acc;
     },
     { resources: 0, influence: 0 },
@@ -222,15 +221,9 @@ export const totalStatsForSystems = (systems: System[]) =>
 export const optimalStatsForSystems = (systems: System[]) =>
   systems.reduce(
     (acc, s) => {
-      s.planets.forEach((p) => {
-        if (p.resources > p.influence) {
-          acc.resources += p.resources;
-        } else if (p.resources < p.influence) {
-          acc.influence += p.influence;
-        } else if (p.resources === p.influence) {
-          acc.flex += p.resources;
-        }
-      });
+      acc.resources += s.optimalSpend.resources;
+      acc.influence += s.optimalSpend.influence;
+      acc.flex += s.optimalSpend.flex;
       return acc;
     },
     { resources: 0, influence: 0, flex: 0 },

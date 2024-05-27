@@ -3,10 +3,12 @@ import {
   FactionId,
   Map,
   MapStats,
+  Opulence,
   PersistedDraft,
   Player,
   System,
   SystemStats,
+  Variance,
 } from "./types";
 import {
   hydrateMap,
@@ -17,6 +19,7 @@ import {
 import { mapStringOrder } from "./data/mapStringOrder";
 import { systemData } from "./data/systemData";
 import { factionIds, factions } from "./data/factionData";
+import { randomizeSlices } from "./stats";
 
 const MECATOL_REX_ID = 18;
 
@@ -165,9 +168,14 @@ type NewDraftState = {
   availableFactions: FactionId[];
   players: Player[];
 
-  validationErrors: () => string[];
-  exportableMapString: () => string;
-  mapStats: () => MapStats;
+  randomizeSlices: (
+    varianceValue: Variance,
+    opulenceValue: Opulence,
+    excludeMapTiles: boolean,
+  ) => void;
+  validationErrors: () => string[]; // TODO: Move derived data to hook.
+  exportableMapString: () => string; // TODO: Move derived data to hook.
+  mapStats: () => MapStats; // TODO: Move derived data to hook.
   setNumFactionsToDraft: (num: number | undefined) => void;
   updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
   importMap: (mapString: string) => void;
@@ -198,6 +206,29 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     })),
   ],
   numFactionsToDraft: undefined,
+
+  randomizeSlices: (
+    varianceValue: Variance,
+    opulenceValue: Opulence,
+    excludeMapTiles: boolean,
+  ) => {
+    const systemIdsOnMap = get()
+      .map.map((tile) => tile.system?.id)
+      .filter(Boolean);
+
+    let systems = Object.values(systemData).filter(
+      (s) => s.id !== MECATOL_REX_ID,
+    );
+    if (excludeMapTiles) {
+      systems = systems.filter((s) => !systemIdsOnMap.includes(s.id));
+    }
+
+    const slices = randomizeSlices(systems, varianceValue, opulenceValue)
+      .map((s) => s.systems.map((sys) => sys.id.toString()))
+      .map((s) => ["-1", ...s]);
+
+    set({ slices });
+  },
 
   validationErrors: () => {
     const errors = [];

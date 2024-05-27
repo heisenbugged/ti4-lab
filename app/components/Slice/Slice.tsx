@@ -31,7 +31,7 @@ export function Slice({
   onDeleteTile,
   onSelectSlice,
 }: Props) {
-  const { tiles, total, optimal, specialties } = useSlice(systems);
+  const { tiles, total, optimal } = useSlice(systems);
   const selected = !!player;
 
   return (
