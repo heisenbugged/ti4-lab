@@ -55,7 +55,7 @@ const variances = [
     label: "Low",
     color: "blue.8",
     description:
-      "All slice values are close to the average, no one slice is significantly better or worse.",
+      "All slice values are close to the chosen opulence, no one slice is significantly better or worse.",
   },
   {
     value: "medium" as const,
