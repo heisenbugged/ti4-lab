@@ -1,23 +1,16 @@
 import {
   Box,
   Button,
-  Flex,
   Group,
   List,
-  Menu,
-  Modal,
   Popover,
-  SegmentedControl,
   SimpleGrid,
-  Slider,
   Stack,
-  Text,
-  darken,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
-import { redirect, useLocation, useNavigate } from "@remix-run/react";
-import { useEffect, useRef, useState } from "react";
+import { redirect, useLocation } from "@remix-run/react";
+import { useEffect, useRef } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { serializeMap } from "~/data/serialize";
 import { useNewDraft } from "~/draftStore";
@@ -33,8 +26,8 @@ import { MapSection } from "../draft/MapSection";
 import { ExportMapModal } from "./components/ExportMapModal";
 import { fisherYatesShuffle } from "~/stats";
 import { GenerateSlicesModal } from "./components/GenerateSlicesModal";
-import { Commet } from "react-loading-indicators";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
+import { v4 as uuidv4 } from "uuid";
 
 export default function DraftNew() {
   const createDraft = useCreateDraft();
@@ -310,12 +303,16 @@ export async function action({ request }: ActionFunctionArgs) {
     pickOrder,
   };
 
+  const id = uuidv4().toString();
   const result = db
     .insert(drafts)
-    .values({ data: JSON.stringify(draft) })
+    .values({
+      id,
+      data: JSON.stringify(draft),
+    })
     .run();
 
-  return redirect(`/draft/${result.lastInsertRowid}`);
+  return redirect(`/draft/${id}`);
 }
 
 export const meta: MetaFunction = () => {
