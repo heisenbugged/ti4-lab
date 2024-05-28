@@ -3,14 +3,14 @@ import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
-import { PlayerLabel } from "../PlayerLabel";
 import { Player, Tile } from "~/types";
 import { useSlice } from "./useSlice";
-import { TechIcon } from "../icons/TechIcon";
 import { SliceFeatures } from "./SliceFeatures";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
+import { MapConfig } from "~/utils/map";
 
 type Props = {
+  config: MapConfig;
   id: string;
   name: string;
   systems: string[];
@@ -22,6 +22,7 @@ type Props = {
 };
 
 export function Slice({
+  config,
   id,
   name,
   systems,
@@ -31,7 +32,7 @@ export function Slice({
   onDeleteTile,
   onSelectSlice,
 }: Props) {
-  const { tiles, total, optimal } = useSlice(systems);
+  const { tiles, total, optimal } = useSlice(config, systems);
   const selected = !!player;
 
   return (
@@ -86,6 +87,7 @@ export function Slice({
       <div style={{ filter: selected ? "grayscale(70%)" : "none" }}>
         <SliceMap
           id={id}
+          sliceHeight={config.sliceHeight}
           tiles={tiles}
           onSelectTile={onSelectTile}
           onDeleteTile={onDeleteTile}

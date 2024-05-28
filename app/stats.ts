@@ -10,8 +10,8 @@ export function randomizeSlices(
   systems: System[],
   varianceLevel: "low" | "medium" | "high" | "extreme",
   opulence: "poverty" | "low" | "medium" | "high" | "wealthy",
+  sliceSize: number,
 ) {
-  const sliceSize = 3;
   const numSlices = 6;
   const maxAttempts = 10000;
 

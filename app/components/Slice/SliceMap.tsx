@@ -7,6 +7,7 @@ import { MapContext } from "~/contexts/MapContext";
 type Props = {
   id: string;
   tiles: Tile[];
+  sliceHeight: number;
   mode: "create" | "draft";
   onSelectTile?: (tile: Tile) => void;
   onDeleteTile?: (tile: Tile) => void;
@@ -15,6 +16,7 @@ type Props = {
 export function SliceMap({
   id,
   tiles,
+  sliceHeight,
   mode = "create",
   onSelectTile,
   onDeleteTile,
@@ -22,7 +24,7 @@ export function SliceMap({
   const { ref, width } = useDimensions<HTMLDivElement>();
   const gap = 6;
   const radius = calculateMaxHexWidthRadius(1, width, gap);
-  const height = calcHexHeight(radius) * 2 + gap;
+  const height = calcHexHeight(radius) * sliceHeight + gap;
 
   return (
     <MapContext.Provider
@@ -31,7 +33,7 @@ export function SliceMap({
         height,
         radius,
         gap,
-        hOffset: calcHexHeight(radius), // + gap for 2 row offset
+        hOffset: height - calcHexHeight(radius) - 10, //padding
         wOffset: width * 0.5 - radius,
       }}
     >

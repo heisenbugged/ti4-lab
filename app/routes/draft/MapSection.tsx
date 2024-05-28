@@ -9,8 +9,10 @@ import { HomeTile, MapStats, Map as TMap } from "~/types";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 import { Map } from "~/components/Map";
 import { SectionTitle } from "~/components/Section";
+import { MapConfig } from "~/utils/map";
 
 type Props = {
+  config: MapConfig;
   map: TMap;
   mode: "create" | "draft";
   stats?: MapStats;
@@ -21,6 +23,7 @@ type Props = {
 };
 
 export function MapSection({
+  config,
   map,
   stats,
   mode = "create",
@@ -74,6 +77,7 @@ export function MapSection({
           </Stack>
         )}
         <Map
+          config={config}
           id="full-map"
           map={map}
           mode={mode}

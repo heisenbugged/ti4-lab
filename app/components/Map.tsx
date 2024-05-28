@@ -3,11 +3,12 @@ import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
-import { isTileModifiable } from "~/utils/map";
+import { MapConfig, isTileModifiable } from "~/utils/map";
 import { MapContext } from "~/contexts/MapContext";
 
 type Props = {
   id: string;
+  config: MapConfig;
   map: MapType;
   padding: number;
   mode: "create" | "draft";
@@ -18,6 +19,7 @@ type Props = {
 
 export function Map({
   id,
+  config,
   map,
   padding,
   mode,
@@ -57,7 +59,7 @@ export function Map({
               onDelete={() => {
                 if (tile.type === "SYSTEM") onDeleteSystemTile?.(idx);
               }}
-              modifiable={mode === "create" && isTileModifiable(idx)}
+              modifiable={mode === "create" && isTileModifiable(config, idx)}
               homeSelectable={onSelectHomeTile && mode === "draft"}
             />
           ))}

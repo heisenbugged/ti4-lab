@@ -11,7 +11,9 @@ import {
   Variance,
 } from "./types";
 import {
+  MapConfig,
   hydrateMap,
+  mapConfig,
   parseMapString,
   playerSpeakerOrder,
   sliceMap,
@@ -27,9 +29,10 @@ const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
     " ",
   );
-const EMPTY_MAP = parseMapString(EMPTY_MAP_STRING);
+const EMPTY_MAP = parseMapString(mapConfig.standard, EMPTY_MAP_STRING);
 
 type DraftsState = {
+  config: MapConfig;
   mapString: string[];
   hydratedMap: Map;
   players: Player[];
@@ -47,6 +50,7 @@ type DraftsState = {
 };
 
 export const useDraft = create<DraftsState>((set, get) => ({
+  config: mapConfig.milty,
   mapString: EMPTY_MAP_STRING,
   hydratedMap: EMPTY_MAP,
   players: [],
@@ -69,7 +73,12 @@ export const useDraft = create<DraftsState>((set, get) => ({
       const players = state.players.map((p) =>
         p.id === playerId ? { ...p, faction: factionId } : p,
       );
-      const hydratedMap = hydrateMap(state.hydratedMap, players, state.slices);
+      const hydratedMap = hydrateMap(
+        state.config,
+        state.hydratedMap,
+        players,
+        state.slices,
+      );
       const activePlayerName = state.players.find(
         (p) => p.id === playerId,
       )?.name;
@@ -88,7 +97,12 @@ export const useDraft = create<DraftsState>((set, get) => ({
       const players = state.players.map((p) =>
         p.id === playerId ? { ...p, sliceIdx } : p,
       );
-      const hydratedMap = hydrateMap(state.hydratedMap, players, state.slices);
+      const hydratedMap = hydrateMap(
+        state.config,
+        state.hydratedMap,
+        players,
+        state.slices,
+      );
       const activePlayerName = state.players.find(
         (p) => p.id === playerId,
       )?.name;
@@ -108,8 +122,18 @@ export const useDraft = create<DraftsState>((set, get) => ({
         p.id === playerId ? { ...p, seatIdx: seatIdx } : p,
       );
 
-      const parsedMap = parseMapString(state.mapString, mapStringOrder, false);
-      const hydratedMap = hydrateMap(parsedMap, players, state.slices);
+      const parsedMap = parseMapString(
+        state.config,
+        state.mapString,
+        mapStringOrder,
+        false,
+      );
+      const hydratedMap = hydrateMap(
+        state.config,
+        parsedMap,
+        players,
+        state.slices,
+      );
       const activePlayerName = state.players.find(
         (p) => p.id === playerId,
       )?.name;
@@ -140,13 +164,19 @@ export const useDraft = create<DraftsState>((set, get) => ({
       };
     }),
   hydrate: (draft: PersistedDraft) =>
-    set(() => {
+    set((state) => {
       const parsedMap = parseMapString(
+        state.config,
         draft.mapString.split(" "),
         mapStringOrder,
         false,
       );
-      const hydratedMap = hydrateMap(parsedMap, draft.players, draft.slices);
+      const hydratedMap = hydrateMap(
+        state.config,
+        parsedMap,
+        draft.players,
+        draft.slices,
+      );
 
       return {
         hydratedMap: hydratedMap,
@@ -162,12 +192,12 @@ export const useDraft = create<DraftsState>((set, get) => ({
 }));
 
 type NewDraftState = {
+  config: MapConfig;
   map: Map;
   slices: string[][];
   numFactionsToDraft: number | undefined;
   availableFactions: FactionId[];
   players: Player[];
-
   randomizeSlices: (
     varianceValue: Variance,
     opulenceValue: Opulence,
@@ -189,14 +219,15 @@ type NewDraftState = {
 };
 
 export const useNewDraft = create<NewDraftState>((set, get) => ({
+  config: mapConfig.milty,
   map: EMPTY_MAP,
   slices: [
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
+    "-1 0 0 0 0 0".split(" "),
+    "-1 0 0 0 0 0".split(" "),
+    "-1 0 0 0 0 0".split(" "),
+    "-1 0 0 0 0 0".split(" "),
+    "-1 0 0 0 0 0".split(" "),
+    "-1 0 0 0 0 0".split(" "),
   ],
   availableFactions: [...factionIds],
   players: [
@@ -223,7 +254,12 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       systems = systems.filter((s) => !systemIdsOnMap.includes(s.id));
     }
 
-    const slices = randomizeSlices(systems, varianceValue, opulenceValue)
+    const slices = randomizeSlices(
+      systems,
+      varianceValue,
+      opulenceValue,
+      get().config.numSystemsInSlice,
+    )
       .map((s) => s.systems.map((sys) => sys.id.toString()))
       .map((s) => ["-1", ...s]);
 
@@ -248,6 +284,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
     // we pretend as if all players have seated.
     const hydratedMap = hydrateMap(
+      get().config,
       get().map,
       get().players.map((p, idx) => ({ ...p, seatIdx: idx, sliceIdx: idx })),
       get().slices,
@@ -263,6 +300,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   exportableMapString: () => {
     // we pretend as if all players have seated.
     const hydratedMap = hydrateMap(
+      get().config,
       get().map,
       get().players.map((p, idx) => ({ ...p, seatIdx: idx, sliceIdx: idx })),
       get().slices,
@@ -319,9 +357,9 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       ),
     })),
   importMap: (mapString: string) =>
-    set(() => {
-      const rawMap = parseMapString(mapString.split(" "));
-      const { slices, map: slicedMap } = sliceMap(rawMap);
+    set((state) => {
+      const rawMap = parseMapString(state.config, mapString.split(" "));
+      const { slices, map: slicedMap } = sliceMap(state.config, rawMap);
       return {
         map: slicedMap,
         slices,

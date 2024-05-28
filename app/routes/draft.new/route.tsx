@@ -201,6 +201,7 @@ export default function DraftNew() {
             }}
           />
           <SlicesSection
+            config={draft.config}
             mode="create"
             slices={draft.slices}
             onRandomizeSlices={openGenerateSlices}
@@ -228,6 +229,7 @@ export default function DraftNew() {
 
           <MapSection
             mode="create"
+            config={draft.config}
             map={draft.map}
             stats={draft.mapStats()}
             onDeleteSystemTile={(tileIdx) => {

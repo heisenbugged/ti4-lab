@@ -6,14 +6,16 @@ import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
 import { Player } from "~/types";
 import { PlayerChip } from "./PlayerChip";
+import { MapConfig } from "~/utils/map";
 
 type Props = {
+  config: MapConfig;
   player: Player;
   systems: string[];
 };
-export function SummaryRow({ player, systems }: Props) {
+export function SummaryRow({ config, player, systems }: Props) {
   const faction = factions[player.faction!!];
-  const { total, optimal, specialties } = useSlice(systems);
+  const { total, optimal, specialties } = useSlice(config, systems);
   return (
     <Table.Tr>
       <Table.Td>

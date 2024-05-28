@@ -37,6 +37,7 @@ export function FinalizedDraft() {
               <Table.Tbody>
                 {sortedPlayers.map((p) => (
                   <SummaryRow
+                    config={draft.config}
                     key={p.id}
                     player={p}
                     systems={slices[p.sliceIdx!!]}
@@ -48,6 +49,7 @@ export function FinalizedDraft() {
         </Stack>
         <Stack flex={1} gap="xl">
           <MapSection
+            config={draft.config}
             map={draft.hydratedMap}
             allowSeatSelection={false}
             mode="draft"

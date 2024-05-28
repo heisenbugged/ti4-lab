@@ -6,12 +6,15 @@ import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { valueSlice, valueSystem } from "~/stats";
 import { Player } from "~/types";
 import {
+  MapConfig,
+  mapConfig,
   optimalStatsForSystems,
   systemsInSlice,
   totalStatsForSystems,
 } from "~/utils/map";
 
 type Props = {
+  config: MapConfig;
   mode: "create" | "draft";
   slices: string[][];
   allowSliceSelection?: boolean;
@@ -24,6 +27,7 @@ type Props = {
 };
 
 export function SlicesSection({
+  config,
   slices,
   players,
   mode = "create",
@@ -63,6 +67,7 @@ export function SlicesSection({
             {slices.map((slice, idx) => (
               <Slice
                 key={idx}
+                config={config}
                 id={`slice-${idx}`}
                 name={`Slice ${idx + 1}`}
                 mode={mode}

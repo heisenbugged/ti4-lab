@@ -139,6 +139,7 @@ export default function RunningDraft() {
             }}
           />
           <SlicesSection
+            config={draft.config}
             mode="draft"
             allowSliceSelection={canSelectSlice}
             slices={draft.slices}
@@ -193,6 +194,7 @@ export default function RunningDraft() {
             </SimpleGrid>
           </Section>
           <MapSection
+            config={draft.config}
             map={draft.hydratedMap}
             allowSeatSelection={canSelectSeat}
             mode="draft"
