@@ -16,7 +16,7 @@ type PrechoiceMap = {
 
 const MAPS: Record<MapType, PrechoiceMap> = {
   heisen: {
-    title: "Heisen",
+    title: "Nucleus",
     description:
       "Players draft the systems immediately adjacent to their home system. Speaker order and seat selection are separate parts of the draft.",
     map: parseDemoMapString(
