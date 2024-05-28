@@ -207,6 +207,7 @@ type NewDraftState = {
   availableFactions: FactionId[];
   players: Player[];
   randomizeSlices: (
+    numSlices: number,
     varianceValue: Variance,
     opulenceValue: Opulence,
     excludeMapTiles: boolean,
@@ -258,6 +259,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     set({ config, map, slices, initialized: true });
   },
   randomizeSlices: (
+    numSlices: number,
     varianceValue: Variance,
     opulenceValue: Opulence,
     excludeMapTiles: boolean,
@@ -274,6 +276,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     }
 
     const slices = randomizeSlices(
+      numSlices,
       systems,
       varianceValue,
       opulenceValue,
@@ -427,7 +430,13 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
   addNewSlice: () =>
     set((state) => ({
-      slices: [["-1", "0", "0", "0"], ...state.slices],
+      slices: [
+        [
+          "-1",
+          ...Array.from({ length: state.config.numSystemsInSlice }, () => "0"),
+        ],
+        ...state.slices,
+      ],
     })),
 
   addFaction: (id: FactionId) =>

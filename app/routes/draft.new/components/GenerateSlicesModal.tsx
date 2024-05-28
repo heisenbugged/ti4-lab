@@ -84,6 +84,7 @@ type Props = {
   opened: boolean;
   onClose: () => void;
   onGenerateSlices: (
+    numSlices: number,
     variance: Variance,
     opulence: Opulence,
     excludeMapTiles: boolean,
@@ -101,6 +102,8 @@ export function GenerateSlicesModal({
 
   const [varianceValue, setVarianceValue] = useState(33);
   const variance = variances[Math.floor(varianceValue / 33)];
+
+  const [numSlices, setNumSlices] = useState(6);
 
   return (
     <Modal
@@ -163,6 +166,29 @@ export function GenerateSlicesModal({
         </Text>
       )}
 
+      <Group mt="lg">
+        <Text size="sm">Number of slices: {numSlices}</Text>
+        <Group gap={2}>
+          <Button
+            size="compact-md"
+            color="red"
+            variant="filled"
+            disabled={numSlices <= 6}
+            onMouseDown={() => setNumSlices(numSlices - 1)}
+          >
+            -
+          </Button>
+          <Button
+            size="compact-md"
+            color="green"
+            variant="filled"
+            onMouseDown={() => setNumSlices(numSlices + 1)}
+          >
+            +
+          </Button>
+        </Group>
+      </Group>
+
       <Stack mt="lg" gap={2}>
         <Switch
           label="Exclude map tiles"
@@ -177,7 +203,12 @@ export function GenerateSlicesModal({
         w="100%"
         mt="lg"
         onMouseDown={() => {
-          onGenerateSlices(variance.value, opulence.value, excludeMapTiles);
+          onGenerateSlices(
+            numSlices,
+            variance.value,
+            opulence.value,
+            excludeMapTiles,
+          );
           onClose();
         }}
       >

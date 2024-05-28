@@ -7,12 +7,12 @@ type GeneratedSlice = {
 };
 
 export function randomizeSlices(
+  numSlices: number,
   systems: System[],
   varianceLevel: "low" | "medium" | "high" | "extreme",
   opulence: "poverty" | "low" | "medium" | "high" | "wealthy",
   sliceSize: number,
 ) {
-  const numSlices = 6;
   const maxAttempts = 10000;
 
   // Generate random slices and filter them
