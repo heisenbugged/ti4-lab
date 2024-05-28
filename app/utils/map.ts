@@ -110,6 +110,70 @@ export const mapConfig: Record<MapType, MapConfig> = {
       ],
     } as Record<number, [number, number][]>,
   },
+  miltyeqless: {
+    type: "miltyeqless",
+    numSystemsInSlice: 4,
+    sliceHeight: 3,
+
+    // Represents the location of each home system (or 'seat') in the map string (w/ mecatol included)
+    // ordered from 12 o'clock going clockwise
+    homeIdxInMapString: [19, 22, 25, 28, 31, 34],
+
+    // tiles that are directly modifiable on the map (i.e. not part of a slice)
+    modifiableMapTiles: [],
+
+    seatTilePlacement: [
+      { x: 0, y: 0 },
+      { x: -1, y: 0 },
+      { x: 0, y: -1 },
+      { x: 1, y: -1 },
+      // additional two slices for full milty draft
+      // { x: -1, y: -1 },
+      { x: 0, y: -2 },
+    ],
+
+    // For a given seat number (in clockwise order, from 0 to 5),
+    // contains the relative positions to modify around the home system
+    // to insert the player's slice.
+    seatTilePositions: {
+      0: [
+        [1, 0],
+        [0, 1],
+        [-1, 1],
+        [0, 2],
+      ],
+      1: [
+        [0, 1],
+        [-1, 1],
+        [-1, 0],
+        [-2, 2],
+      ],
+      2: [
+        [-1, 1],
+        [-1, 0],
+        [0, -1],
+        [-2, 0],
+      ],
+      3: [
+        [-1, 0],
+        [0, -1],
+        [1, -1],
+        [0, -2],
+      ],
+      4: [
+        [0, -1],
+        [1, -1],
+        [1, 0],
+        [2, -2],
+      ],
+      5: [
+        [1, -1],
+        [1, 0],
+        [0, 1],
+        [2, 0],
+      ],
+    } as Record<number, [number, number][]>,
+  },
   milty: {
     type: "milty",
     numSystemsInSlice: 5,

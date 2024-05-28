@@ -158,4 +158,4 @@ export type MapStats = {
 export type Variance = "low" | "medium" | "high" | "extreme";
 export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
 
-export type MapType = "heisen" | "miltyeq" | "milty";
+export type MapType = "heisen" | "miltyeq" | "miltyeqless" | "milty";

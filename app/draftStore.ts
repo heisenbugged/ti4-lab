@@ -313,7 +313,11 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     );
 
     // if there are any zeroes on the map, return false.
-    if (hydratedMap.some((tile) => tile.type === "OPEN")) {
+    const mapType = get().config.type;
+    if (
+      hydratedMap.some((tile) => tile.type === "OPEN") &&
+      mapType !== "miltyeqless"
+    ) {
       errors.push("Map has empty tiles");
     }
 
