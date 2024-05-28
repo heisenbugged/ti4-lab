@@ -45,7 +45,7 @@ const MAPS: Record<MapType, PrechoiceMap> = {
         " ",
       ),
     ),
-    titles: ["5th", "6th", "Speaker", "2nd", "3rd", "4th"],
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     colors: [
       "var(--mantine-color-blue-2)",
       "var(--mantine-color-green-2)",
@@ -65,7 +65,7 @@ const MAPS: Record<MapType, PrechoiceMap> = {
         " ",
       ),
     ),
-    titles: ["5th", "6th", "Speaker", "2nd", "3rd", "4th"],
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     colors: [
       "var(--mantine-color-blue-2)",
       "var(--mantine-color-green-2)",
@@ -85,7 +85,7 @@ const MAPS: Record<MapType, PrechoiceMap> = {
         " ",
       ),
     ),
-    titles: ["6th", "Speaker", "2nd", "3rd", "4th", "5th"],
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     colors: [
       "var(--mantine-color-blue-2)",
       "var(--mantine-color-green-2)",
@@ -157,7 +157,7 @@ export default function Prechoice() {
             />
           )}
         </Box>
-        <Text size="xl" m="xl" maw="500px" ta="center">
+        <Text size="xl" m="xl" maw="900px" ta="center">
           {MAPS[mapType].description}
         </Text>
       </Stack>
