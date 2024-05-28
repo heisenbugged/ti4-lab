@@ -29,6 +29,7 @@ import { GenerateSlicesModal } from "./components/GenerateSlicesModal";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { v4 as uuidv4 } from "uuid";
 import DraftSetup from "./components/DraftSetup";
+import { SectionTitle } from "~/components/Section";
 
 export default function DraftNew() {
   const createDraft = useCreateDraft();
@@ -97,27 +98,6 @@ export default function DraftNew() {
     );
 
   const showFullMap = draft.config.modifiableMapTiles.length > 0;
-  const slicesSection = (
-    <SlicesSection
-      fullView={!showFullMap}
-      config={draft.config}
-      mode="create"
-      slices={draft.slices}
-      onRandomizeSlices={openGenerateSlices}
-      onAddNewSlice={draft.addNewSlice}
-      onDeleteTile={(sliceIdx, tileIdx) => {
-        draft.removeSystemFromSlice(sliceIdx, tileIdx);
-      }}
-      onSelectTile={(sliceIdx, tileIdx) => {
-        openTile.current = {
-          mode: "slice",
-          sliceIdx,
-          tileIdx,
-        };
-        openPlanetFinder();
-      }}
-    />
-  );
 
   return (
     <Box p="lg">
@@ -211,16 +191,6 @@ export default function DraftNew() {
         usedSystemIds={usedSystemIds}
       />
 
-      <Box
-        w={{
-          base: "100%",
-          sm: "calc(100vw - 320px)",
-          md: "calc(50vw - 60px)",
-        }}
-      >
-        <ImportMapInput onImport={draft.importMap} />
-      </Box>
-
       <AvailableFactionsSection
         numFactions={draft.numFactionsToDraft}
         onChangeNumFactions={draft.setNumFactionsToDraft}
@@ -233,11 +203,33 @@ export default function DraftNew() {
           }
         }}
       />
+      <Box mt="lg">
+        <SlicesSection
+          fullView
+          config={draft.config}
+          mode="create"
+          slices={draft.slices}
+          onRandomizeSlices={openGenerateSlices}
+          onAddNewSlice={draft.addNewSlice}
+          onDeleteTile={(sliceIdx, tileIdx) => {
+            draft.removeSystemFromSlice(sliceIdx, tileIdx);
+          }}
+          onSelectTile={(sliceIdx, tileIdx) => {
+            openTile.current = {
+              mode: "slice",
+              sliceIdx,
+              tileIdx,
+            };
+            openPlanetFinder();
+          }}
+        />
+      </Box>
 
-      <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
-        <Stack flex={1} gap="xl">
-          {showFullMap && slicesSection}
-        </Stack>
+      <SimpleGrid
+        cols={{ base: 1, sm: 1, md: 1, lg: 2 }}
+        style={{ gap: 30 }}
+        mt="50px"
+      >
         <Stack flex={1} gap="xl">
           {showFullMap && (
             <MapSection
@@ -259,8 +251,12 @@ export default function DraftNew() {
             />
           )}
         </Stack>
+        <Stack flex={1} gap="xs">
+          <SectionTitle title="Options" />
+          <ImportMapInput onImport={draft.importMap} />
+        </Stack>
       </SimpleGrid>
-      {!showFullMap && <Box mt="lg">{slicesSection}</Box>}
+
       <Box hiddenFrom="sm">
         <Button
           mt="lg"

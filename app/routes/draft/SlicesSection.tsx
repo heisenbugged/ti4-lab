@@ -58,7 +58,7 @@ export function SlicesSection({
         </SectionTitle>
       </div>
       <Tabs defaultValue="detailed" variant="outline">
-        <Tabs.List mb="sm" style={{ marginTop: -24 }}>
+        <Tabs.List mb="sm">
           <Tabs.Tab value="detailed">Detailed</Tabs.Tab>
           <Tabs.Tab value="summary">Summary</Tabs.Tab>
         </Tabs.List>
