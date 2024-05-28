@@ -104,7 +104,7 @@ export default function Prechoice() {
   const navigate = useNavigate();
 
   const handleContinue = () => {
-    navigate(`/draft/new?mapType=${mapType}`);
+    navigate(`/draft/new?mapType=${selectedMapType}`);
   };
 
   return (
