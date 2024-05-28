@@ -39,17 +39,18 @@ export function DemoMap({ id, map, padding, titles, colors }: Props) {
       }}
     >
       <Box ref={ref} w="100%" h={height}>
-        {map
-          .filter((t) => !!t.position)
-          .map((tile, idx) => (
-            <DemoMapTile
-              key={idx}
-              mapId={id}
-              tile={tile}
-              titles={titles}
-              colors={colors}
-            />
-          ))}
+        {width > 0 &&
+          map
+            .filter((t) => !!t.position)
+            .map((tile, idx) => (
+              <DemoMapTile
+                key={idx}
+                mapId={id}
+                tile={tile}
+                titles={titles}
+                colors={colors}
+              />
+            ))}
       </Box>
     </MapContext.Provider>
   );

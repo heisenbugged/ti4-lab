@@ -28,17 +28,11 @@ import { fisherYatesShuffle } from "~/stats";
 import { GenerateSlicesModal } from "./components/GenerateSlicesModal";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { v4 as uuidv4 } from "uuid";
+import DraftSetup from "./components/DraftSetup";
 
 export default function DraftNew() {
   const createDraft = useCreateDraft();
   const draft = useNewDraft();
-  const location = useLocation();
-  const mapType =
-    (new URLSearchParams(location.search).get("mapType") as MapType) ??
-    "heisen";
-  useEffect(() => {
-    if (mapType) draft.initializeMap(mapType);
-  }, [mapType]);
 
   const openTile = useRef<{
     mode: "map" | "slice";
@@ -68,7 +62,7 @@ export default function DraftNew() {
 
   const handleCreate = () =>
     createDraft({
-      mapType,
+      mapType: draft.config.type,
       availableFactions: draft.availableFactions,
       mapString: serializeMap(draft.map).join(" "),
       players: draft.players,
@@ -89,7 +83,18 @@ export default function DraftNew() {
     { open: openGenerateSlices, close: closeGenerateSlices },
   ] = useDisclosure(false);
 
-  if (!draft.initialized) return <LoadingOverlay />;
+  if (!draft.initialized)
+    return (
+      <DraftSetup
+        players={draft.players}
+        onChangeName={(playerIdx, name) => {
+          draft.updatePlayer(playerIdx, { name });
+        }}
+        onSetupComplete={(mapType) => {
+          draft.initializeMap(mapType);
+        }}
+      />
+    );
 
   const showFullMap = draft.config.modifiableMapTiles.length > 0;
   const slicesSection = (
@@ -216,29 +221,24 @@ export default function DraftNew() {
         <ImportMapInput onImport={draft.importMap} />
       </Box>
 
+      <AvailableFactionsSection
+        numFactions={draft.numFactionsToDraft}
+        onChangeNumFactions={draft.setNumFactionsToDraft}
+        selectedFactions={draft.availableFactions}
+        onToggleFaction={(factionId, checked) => {
+          if (checked) {
+            draft.addFaction(factionId);
+          } else {
+            draft.removeFaction(factionId);
+          }
+        }}
+      />
+
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <Stack flex={1} gap="xl">
-          <AvailableFactionsSection
-            numFactions={draft.numFactionsToDraft}
-            onChangeNumFactions={draft.setNumFactionsToDraft}
-            selectedFactions={draft.availableFactions}
-            onToggleFaction={(factionId, checked) => {
-              if (checked) {
-                draft.addFaction(factionId);
-              } else {
-                draft.removeFaction(factionId);
-              }
-            }}
-          />
           {showFullMap && slicesSection}
         </Stack>
         <Stack flex={1} gap="xl">
-          <PlayerInputSection
-            players={draft.players}
-            onChangeName={(playerIdx, name) => {
-              draft.updatePlayer(playerIdx, { name });
-            }}
-          />
           {showFullMap && (
             <MapSection
               mode="create"
