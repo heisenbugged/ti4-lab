@@ -5647,6 +5647,13 @@ react-is@^16.13.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
+react-loading-indicators@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/react-loading-indicators/-/react-loading-indicators-0.2.3.tgz#4af8b75ab12bd9a3671d73c3adfcec976cf0deec"
+  integrity sha512-nIgzS+e0eWXTWSzi9t66a8i5NokKHti+CpK/tzlk4bqpIngUfB5GgcRLUV2mQSgT47LoY9jJQAS4D+PDUFXTRg==
+  dependencies:
+    tinycolor2 "^1.6.0"
+
 react-number-format@^5.3.1:
   version "5.3.4"
   resolved "https://registry.yarnpkg.com/react-number-format/-/react-number-format-5.3.4.tgz#4780522ba1fdaff20aaa0732716490c6758b8557"
@@ -6446,6 +6453,11 @@ timers-ext@^0.1.7:
   dependencies:
     es5-ext "~0.10.46"
     next-tick "1"
+
+tinycolor2@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/tinycolor2/-/tinycolor2-1.6.0.tgz#f98007460169b0263b97072c5ae92484ce02d09e"
+  integrity sha512-XPaBkWQJdsf3pLKJV9p4qN/S+fm2Oj8AIPo1BTUhg5oxkvm9+SVEGFdhyOz7tTdUTfvxMiAs4sp6/eZO2Ew+pw==
 
 to-fast-properties@^2.0.0:
   version "2.0.0"

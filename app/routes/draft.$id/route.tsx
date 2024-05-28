@@ -23,6 +23,7 @@ import {
   requestNotificationPermission,
   showNotification,
 } from "~/utils/notifications";
+import { LoadingOverlay } from "~/components/LoadingOverlay";
 
 export default function RunningDraft() {
   const { adminMode } = useOutletContext<{ adminMode: boolean }>();
@@ -86,12 +87,13 @@ export default function RunningDraft() {
   const canSelectSpeakerOrder = currentlyPicking && !activePlayer?.speakerOrder;
 
   useEffect(() => {
+    if (activePlayerId === undefined || selectedPlayer === undefined) return;
     if (activePlayerId === selectedPlayer) {
       handleNotify();
     }
   }, [activePlayerId === selectedPlayer]);
 
-  if (!draft.hydratedMap) return <></>;
+  if (!draft.initialized || !draft.hydratedMap) return <LoadingOverlay />;
 
   if (draftFinalized) {
     return <FinalizedDraft />;

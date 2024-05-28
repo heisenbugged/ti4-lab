@@ -12,17 +12,18 @@ import {
   Slider,
   Stack,
   Text,
+  darken,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
-import { redirect } from "@remix-run/react";
-import { useRef, useState } from "react";
+import { redirect, useLocation, useNavigate } from "@remix-run/react";
+import { useEffect, useRef, useState } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { serializeMap } from "~/data/serialize";
 import { useNewDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
-import { PersistedDraft, Player } from "~/types";
+import { MapType, PersistedDraft, Player } from "~/types";
 import { CreateDraftInput, useCreateDraft } from "./useCreateDraft";
 import { ImportMapInput } from "~/components/ImportMapInput";
 import { AvailableFactionsSection } from "./components/AvailableFactionsSection";
@@ -32,10 +33,20 @@ import { MapSection } from "../draft/MapSection";
 import { ExportMapModal } from "./components/ExportMapModal";
 import { fisherYatesShuffle } from "~/stats";
 import { GenerateSlicesModal } from "./components/GenerateSlicesModal";
+import { Commet } from "react-loading-indicators";
+import { LoadingOverlay } from "~/components/LoadingOverlay";
 
 export default function DraftNew() {
   const createDraft = useCreateDraft();
   const draft = useNewDraft();
+  const location = useLocation();
+  const mapType =
+    (new URLSearchParams(location.search).get("mapType") as MapType) ??
+    "heisen";
+  useEffect(() => {
+    if (mapType) draft.initializeMap(mapType);
+  }, [mapType]);
+
   const openTile = useRef<{
     mode: "map" | "slice";
     sliceIdx: number;
@@ -64,6 +75,7 @@ export default function DraftNew() {
 
   const handleCreate = () =>
     createDraft({
+      mapType,
       availableFactions: draft.availableFactions,
       mapString: serializeMap(draft.map).join(" "),
       players: draft.players,
@@ -84,6 +96,7 @@ export default function DraftNew() {
     { open: openGenerateSlices, close: closeGenerateSlices },
   ] = useDisclosure(false);
 
+  if (!draft.initialized) return <LoadingOverlay />;
   return (
     <Box p="lg">
       <Group
@@ -284,6 +297,7 @@ export async function action({ request }: ActionFunctionArgs) {
     : body.availableFactions;
 
   const draft: PersistedDraft = {
+    mapType: body.mapType,
     factions,
     mapString: body.mapString,
     slices: body.slices,

@@ -23,6 +23,7 @@
     "isbot": "^4.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-loading-indicators": "^0.2.3",
     "react-transition-group": "^4.4.5",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",

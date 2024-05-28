@@ -1,7 +1,7 @@
-import { System, SystemTile as SystemTileType, Tile } from "~/types";
+import { SystemTile as SystemTileType, Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
-import { ReactNode, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
@@ -10,7 +10,6 @@ import { Hex } from "./Hex";
 
 import "./MapTile.css";
 import { MapContext } from "~/contexts/MapContext";
-import { PlayerDemoTile } from "./tiles/PlayerDemoTile";
 
 type Props = {
   mapId: string;
@@ -48,9 +47,6 @@ export function MapTile(props: Props) {
 
   let Tile: JSX.Element;
   switch (tile.type) {
-    case "PLAYER_DEMO":
-      Tile = <PlayerDemoTile tile={tile} />;
-      break;
     case "HOME":
       Tile = (
         <HomeTile

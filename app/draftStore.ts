@@ -3,6 +3,7 @@ import {
   FactionId,
   Map,
   MapStats,
+  MapType,
   Opulence,
   PersistedDraft,
   Player,
@@ -29,9 +30,10 @@ const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
     " ",
   );
-const EMPTY_MAP = parseMapString(mapConfig.standard, EMPTY_MAP_STRING);
+const EMPTY_MAP = parseMapString(mapConfig.heisen, EMPTY_MAP_STRING);
 
 type DraftsState = {
+  initialized: boolean;
   config: MapConfig;
   mapString: string[];
   hydratedMap: Map;
@@ -50,6 +52,7 @@ type DraftsState = {
 };
 
 export const useDraft = create<DraftsState>((set, get) => ({
+  initialized: false,
   config: mapConfig.milty,
   mapString: EMPTY_MAP_STRING,
   hydratedMap: EMPTY_MAP,
@@ -60,6 +63,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
   pickOrder: [],
   lastEvent: "",
   getPersisted: () => ({
+    mapType: get().config.type,
     mapString: get().mapString.join(" "),
     players: get().players,
     slices: get().slices,
@@ -164,21 +168,24 @@ export const useDraft = create<DraftsState>((set, get) => ({
       };
     }),
   hydrate: (draft: PersistedDraft) =>
-    set((state) => {
+    set(() => {
+      const config = mapConfig[draft.mapType];
       const parsedMap = parseMapString(
-        state.config,
+        config,
         draft.mapString.split(" "),
         mapStringOrder,
         false,
       );
       const hydratedMap = hydrateMap(
-        state.config,
+        config,
         parsedMap,
         draft.players,
         draft.slices,
       );
 
       return {
+        initialized: true,
+        config,
         hydratedMap: hydratedMap,
         mapString: draft.mapString.split(" "),
         players: draft.players,
@@ -192,6 +199,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
 }));
 
 type NewDraftState = {
+  initialized: boolean;
   config: MapConfig;
   map: Map;
   slices: string[][];
@@ -203,6 +211,7 @@ type NewDraftState = {
     opulenceValue: Opulence,
     excludeMapTiles: boolean,
   ) => void;
+  initializeMap: (type: MapType) => void;
   validationErrors: () => string[]; // TODO: Move derived data to hook.
   exportableMapString: () => string; // TODO: Move derived data to hook.
   mapStats: () => MapStats; // TODO: Move derived data to hook.
@@ -219,15 +228,16 @@ type NewDraftState = {
 };
 
 export const useNewDraft = create<NewDraftState>((set, get) => ({
-  config: mapConfig.milty,
+  initialized: false,
+  config: mapConfig.heisen,
   map: EMPTY_MAP,
   slices: [
-    "-1 0 0 0 0 0".split(" "),
-    "-1 0 0 0 0 0".split(" "),
-    "-1 0 0 0 0 0".split(" "),
-    "-1 0 0 0 0 0".split(" "),
-    "-1 0 0 0 0 0".split(" "),
-    "-1 0 0 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
+    "-1 0 0 0".split(" "),
   ],
   availableFactions: [...factionIds],
   players: [
@@ -238,6 +248,15 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   ],
   numFactionsToDraft: undefined,
 
+  initializeMap: (type: MapType) => {
+    const config = mapConfig[type];
+    const map = parseMapString(config, EMPTY_MAP_STRING);
+    const slices = [0, 1, 2, 3, 4, 5].map(() => [
+      "-1",
+      ...Array.from({ length: config.numSystemsInSlice }, () => "0"),
+    ]);
+    set({ config, map, slices, initialized: true });
+  },
   randomizeSlices: (
     varianceValue: Variance,
     opulenceValue: Opulence,

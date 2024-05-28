@@ -66,9 +66,13 @@ export type PlayerDemoTile = BaseTile & {
   isHomeSystem: boolean;
 };
 
+export type OpenTile = BaseTile & {
+  type: "OPEN";
+};
+
 export type Tile =
   | HomeTile
-  | ({ type: "OPEN" } & BaseTile)
+  | OpenTile
   | ({ type: "CLOSED" } & BaseTile)
   | ({ type: "WARP" } & BaseTile)
   | PlayerDemoTile
@@ -120,6 +124,7 @@ export type Player = {
 };
 
 export type PersistedDraft = {
+  mapType: MapType;
   factions: FactionId[];
   players: Player[];
   slices: string[][];
@@ -152,3 +157,5 @@ export type MapStats = {
 
 export type Variance = "low" | "medium" | "high" | "extreme";
 export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
+
+export type MapType = "heisen" | "miltyeq" | "milty";

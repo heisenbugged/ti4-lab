@@ -1,5 +1,5 @@
 import { AppShell, Group, Switch, Title } from "@mantine/core";
-import { Outlet } from "@remix-run/react";
+import { Link, Outlet } from "@remix-run/react";
 import { useState } from "react";
 
 export default function Draft() {
@@ -8,10 +8,18 @@ export default function Draft() {
     <AppShell header={{ height: 60 }} px="md">
       <AppShell.Header>
         <Group align="center" h="100%" px="sm" gap="sm">
-          <img src="/logo.webp" style={{ width: 40 }} />
-          <Title fw="bolder" order={3} c="purple.8">
-            TI4 Lab
-          </Title>
+          <Link
+            to="/draft/prechoice"
+            className="logo"
+            style={{ textDecoration: "none" }}
+          >
+            <Group align="center" gap="xs">
+              <img src="/logo.webp" style={{ width: 40 }} />
+              <Title fw="bolder" order={3} c="purple.8">
+                TI4 Lab
+              </Title>
+            </Group>
+          </Link>
           <div style={{ flex: 1 }} />
           <Switch
             label="Admin Mode"

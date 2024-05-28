@@ -3,6 +3,7 @@ import { systemData } from "~/data/systemData";
 import {
   HomeTile,
   Map,
+  MapType,
   Player,
   System,
   TechSpecialty,
@@ -15,6 +16,7 @@ import {
  * during the drafting process.
  */
 export type MapConfig = {
+  type: MapType;
   homeIdxInMapString: number[];
   modifiableMapTiles: number[];
   seatTilePlacement: TilePosition[];
@@ -22,6 +24,16 @@ export type MapConfig = {
   numSystemsInSlice: number;
   sliceHeight: number;
 };
+
+export const playerSpeakerOrder = [
+  "Speaker",
+  "2nd",
+  "3rd",
+  "4th",
+  "5th",
+  "6th",
+];
+export const playerLetters = ["a", "b", "c", "d", "e", "f"];
 
 // const slicePositionOrder = [
 //   { x: 0, y: 0, z: 0 },
@@ -33,9 +45,9 @@ export type MapConfig = {
 //   // { x: 0, y: -2, z: 0 },
 // ];
 
-type MapConfigType = "standard" | "miltyeq" | "milty";
-export const mapConfig: Record<MapConfigType, MapConfig> = {
+export const mapConfig: Record<MapType, MapConfig> = {
   miltyeq: {
+    type: "miltyeq",
     numSystemsInSlice: 4,
     sliceHeight: 3,
 
@@ -99,6 +111,7 @@ export const mapConfig: Record<MapConfigType, MapConfig> = {
     } as Record<number, [number, number][]>,
   },
   milty: {
+    type: "milty",
     numSystemsInSlice: 5,
     sliceHeight: 3,
 
@@ -166,7 +179,8 @@ export const mapConfig: Record<MapConfigType, MapConfig> = {
       ],
     } as Record<number, [number, number][]>,
   },
-  standard: {
+  heisen: {
+    type: "heisen",
     numSystemsInSlice: 3,
     sliceHeight: 2,
     // Represents the location of each home system (or 'seat') in the map string (w/ mecatol included)
@@ -309,7 +323,6 @@ export const sliceMap = (
       } else {
         slice.push("0");
       }
-      console.log("the slice is", slice);
 
       tiles[tileToModify.idx] = {
         position: tileToModify.position,
@@ -321,23 +334,11 @@ export const sliceMap = (
     slices.push(slice);
   });
 
-  console.log("the slices are", slices);
-
   return {
     map: tiles,
     slices,
   };
 };
-
-export const playerLetters = ["a", "b", "c", "d", "e", "f", "g"];
-export const playerSpeakerOrder = [
-  "Speaker",
-  "2nd",
-  "3rd",
-  "4th",
-  "5th",
-  "6th",
-];
 
 export const parseMapString = (
   config: MapConfig,
