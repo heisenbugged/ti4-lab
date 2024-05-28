@@ -11,7 +11,7 @@ type Props = {
 export function PlayerInputSection({ players, onChangeName }: Props) {
   return (
     <Section>
-      <SectionTitle title="Player Names" />
+      <SectionTitle title="Players" />
       <Stack gap="xs">
         {players.map((player, idx) => (
           <Group key={idx}>

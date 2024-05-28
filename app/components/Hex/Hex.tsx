@@ -11,6 +11,7 @@ interface Props {
   image?: JSX.Element;
   anomaly?: boolean;
   showBorder?: boolean;
+  borderRadius?: number;
 }
 
 export function Hex({
@@ -21,6 +22,7 @@ export function Hex({
   image,
   anomaly,
   showBorder = false,
+  borderRadius,
 }: Props) {
   const points = hexVertices(radius);
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
@@ -33,7 +35,9 @@ export function Hex({
           viewBox={`-${radius} -${radius} ${2 * radius} ${2 * radius}`}
         >
           <polygon points={pointsString} fill={color} />
-          {showBorder && <HexBorder radius={radius} />}
+          {showBorder && (
+            <HexBorder radius={radius} borderRadius={borderRadius} />
+          )}
           <defs>
             <clipPath id={`hexClip-${id}`}>
               <polygon points={pointsString} />
