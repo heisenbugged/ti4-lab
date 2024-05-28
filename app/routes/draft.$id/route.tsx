@@ -213,7 +213,7 @@ export default function RunningDraft() {
 
 function useSyncDraft() {
   const fetcher = useFetcher();
-  return async (id: number, draft: PersistedDraft) =>
+  return async (id: string, draft: PersistedDraft) =>
     fetcher.submit(
       { id, draft },
       { method: "POST", encType: "application/json" },
@@ -222,7 +222,7 @@ function useSyncDraft() {
 
 export async function action({ request }: ActionFunctionArgs) {
   const { id, draft } = (await request.json()) as {
-    id: number;
+    id: string;
     draft: PersistedDraft;
   };
 
@@ -236,7 +236,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return { success: true };
 }
 
-export const loader = async ({ params }: { params: { id: number } }) => {
+export const loader = async ({ params }: { params: { id: string } }) => {
   const draftId = params.id;
   const results = await db
     .select()
