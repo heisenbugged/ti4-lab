@@ -14,6 +14,7 @@ import {
 } from "~/utils/map";
 
 type Props = {
+  fullView?: boolean;
   config: MapConfig;
   mode: "create" | "draft";
   slices: string[][];
@@ -27,6 +28,7 @@ type Props = {
 };
 
 export function SlicesSection({
+  fullView = false,
   config,
   slices,
   players,
@@ -38,6 +40,9 @@ export function SlicesSection({
   onDeleteTile,
   onSelectSlice,
 }: Props) {
+  const cols = fullView
+    ? { base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: 6 }
+    : { base: 1, sm: 2, md: 2, lg: 2 };
   return (
     <Section>
       <div style={{ position: "sticky", top: 60, zIndex: 5 }}>
@@ -60,7 +65,7 @@ export function SlicesSection({
         <Tabs.Panel value="detailed">
           <SimpleGrid
             flex={1}
-            cols={{ base: 1, sm: 2, md: 2, lg: 2 }}
+            cols={cols}
             spacing="lg"
             style={{ alignItems: "flex-start" }}
           >

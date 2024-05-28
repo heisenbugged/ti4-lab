@@ -90,6 +90,30 @@ export default function DraftNew() {
   ] = useDisclosure(false);
 
   if (!draft.initialized) return <LoadingOverlay />;
+
+  const showFullMap = draft.config.modifiableMapTiles.length > 0;
+  const slicesSection = (
+    <SlicesSection
+      fullView={!showFullMap}
+      config={draft.config}
+      mode="create"
+      slices={draft.slices}
+      onRandomizeSlices={openGenerateSlices}
+      onAddNewSlice={draft.addNewSlice}
+      onDeleteTile={(sliceIdx, tileIdx) => {
+        draft.removeSystemFromSlice(sliceIdx, tileIdx);
+      }}
+      onSelectTile={(sliceIdx, tileIdx) => {
+        openTile.current = {
+          mode: "slice",
+          sliceIdx,
+          tileIdx,
+        };
+        openPlanetFinder();
+      }}
+    />
+  );
+
   return (
     <Box p="lg">
       <Group
@@ -206,24 +230,7 @@ export default function DraftNew() {
               }
             }}
           />
-          <SlicesSection
-            config={draft.config}
-            mode="create"
-            slices={draft.slices}
-            onRandomizeSlices={openGenerateSlices}
-            onAddNewSlice={draft.addNewSlice}
-            onDeleteTile={(sliceIdx, tileIdx) => {
-              draft.removeSystemFromSlice(sliceIdx, tileIdx);
-            }}
-            onSelectTile={(sliceIdx, tileIdx) => {
-              openTile.current = {
-                mode: "slice",
-                sliceIdx,
-                tileIdx,
-              };
-              openPlanetFinder();
-            }}
-          />
+          {showFullMap && slicesSection}
         </Stack>
         <Stack flex={1} gap="xl">
           <PlayerInputSection
@@ -232,26 +239,28 @@ export default function DraftNew() {
               draft.updatePlayer(playerIdx, { name });
             }}
           />
-
-          <MapSection
-            mode="create"
-            config={draft.config}
-            map={draft.map}
-            stats={draft.mapStats()}
-            onDeleteSystemTile={(tileIdx) => {
-              draft.removeSystemFromMap(tileIdx);
-            }}
-            onSelectSystemTile={(tileIdx) => {
-              openTile.current = {
-                mode: "map",
-                sliceIdx: -1,
-                tileIdx,
-              };
-              openPlanetFinder();
-            }}
-          />
+          {showFullMap && (
+            <MapSection
+              mode="create"
+              config={draft.config}
+              map={draft.map}
+              stats={draft.mapStats()}
+              onDeleteSystemTile={(tileIdx) => {
+                draft.removeSystemFromMap(tileIdx);
+              }}
+              onSelectSystemTile={(tileIdx) => {
+                openTile.current = {
+                  mode: "map",
+                  sliceIdx: -1,
+                  tileIdx,
+                };
+                openPlanetFinder();
+              }}
+            />
+          )}
         </Stack>
       </SimpleGrid>
+      {!showFullMap && slicesSection}
       <Box hiddenFrom="sm">
         <Button
           mt="lg"
