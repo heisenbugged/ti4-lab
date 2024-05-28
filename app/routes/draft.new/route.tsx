@@ -260,7 +260,7 @@ export default function DraftNew() {
           )}
         </Stack>
       </SimpleGrid>
-      {!showFullMap && slicesSection}
+      {!showFullMap && <Box mt="lg">{slicesSection}</Box>}
       <Box hiddenFrom="sm">
         <Button
           mt="lg"

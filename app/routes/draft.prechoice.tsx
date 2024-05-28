@@ -18,7 +18,7 @@ const MAPS: Record<MapType, PrechoiceMap> = {
   heisen: {
     title: "Nucleus",
     description:
-      "Players draft the systems immediately adjacent to their home system. Speaker order and seat selection are separate parts of the draft.",
+      "A new draft format featuring a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order.",
     map: parseDemoMapString(
       mapConfig.heisen,
       "1 -1 -1 -1 -1 -1 -1 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
