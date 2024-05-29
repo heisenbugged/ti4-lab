@@ -1,4 +1,4 @@
-import { SimpleGrid, Stack, Table, Title } from "@mantine/core";
+import { SimpleGrid, Stack, Table, Textarea, Title } from "@mantine/core";
 import { useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
 import { MapSection } from "~/routes/draft/MapSection";
@@ -14,6 +14,11 @@ export function FinalizedDraft() {
     () => players.sort((a, b) => a.speakerOrder!! - b.speakerOrder!!),
     [players],
   );
+
+  const mapString = draft.hydratedMap
+    .slice(1, draft.hydratedMap.length - 1)
+    .map((t) => t.system?.id ?? "0")
+    .join(" ");
 
   return (
     <Stack mt="lg" gap={30}>
@@ -45,6 +50,10 @@ export function FinalizedDraft() {
                 ))}
               </Table.Tbody>
             </Table>
+          </Section>
+          <Section>
+            <SectionTitle title="Map String" />
+            <Textarea>{mapString}</Textarea>
           </Section>
         </Stack>
         <Stack flex={1} gap="xl">
