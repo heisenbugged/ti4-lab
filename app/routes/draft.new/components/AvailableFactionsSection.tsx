@@ -40,6 +40,7 @@ export function AvailableFactionsSection({
               size="compact-md"
               color="green"
               variant="filled"
+              disabled={numFactions >= factionIds.length}
               onMouseDown={onAddFaction}
             >
               +
