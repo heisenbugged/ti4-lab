@@ -16,7 +16,7 @@ export function FinalizedDraft() {
   );
 
   const mapString = draft.hydratedMap
-    .slice(1, draft.hydratedMap.length - 1)
+    .slice(1, draft.hydratedMap.length)
     .map((t) => t.system?.id ?? "0")
     .join(" ");
 
