@@ -114,6 +114,8 @@ export function Slice({
         <SliceMap
           id={id}
           sliceHeight={config.sliceHeight}
+          sliceConcentricCircles={config.sliceConcentricCircles}
+          wOffsetMultiplier={config.wOffsetMultiplier}
           tiles={tiles}
           onSelectTile={onSelectTile}
           onDeleteTile={onDeleteTile}

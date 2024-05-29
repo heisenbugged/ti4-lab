@@ -53,8 +53,10 @@ export function SlicesSection({
       ? sortedSlices
       : rawSlices.map((slice, idx) => ({ slice, idx }));
 
+  const xxlCols = config.type !== "wekker" ? 6 : 4;
+
   const cols = fullView
-    ? { base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: 6 }
+    ? { base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: xxlCols }
     : { base: 1, xl: 2, xxl: 3 };
   return (
     <Section>

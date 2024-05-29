@@ -49,6 +49,7 @@ const MAPS: Record<MapType, PrechoiceMap> = {
       "var(--mantine-color-orange-2)",
     ],
   },
+
   miltyeq: {
     title: "Milty EQ",
     description:
@@ -96,6 +97,25 @@ const MAPS: Record<MapType, PrechoiceMap> = {
     map: parseDemoMapString(
       mapConfig.milty,
       "-2 1 2 3 4 5 6 1 1 2 2 3 3 4 4 5 5 6 6 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
+        " ",
+      ),
+    ),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
+    colors: [
+      "var(--mantine-color-blue-2)",
+      "var(--mantine-color-green-2)",
+      "var(--mantine-color-red-2)",
+      "var(--mantine-color-purple-2)",
+      "var(--mantine-color-yellow-2)",
+      "var(--mantine-color-orange-2)",
+    ],
+  },
+  wekker: {
+    title: "Wekker",
+    description: "Chaotic but strategic.",
+    map: parseDemoMapString(
+      mapConfig.miltyeq,
+      "-2 6 1 2 3 4 5 1 1 2 2 3 3 4 4 5 5 6 6 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1 1".split(
         " ",
       ),
     ),

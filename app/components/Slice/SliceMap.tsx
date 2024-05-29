@@ -8,6 +8,8 @@ type Props = {
   id: string;
   tiles: Tile[];
   sliceHeight: number;
+  sliceConcentricCircles?: number;
+  wOffsetMultiplier?: number;
   mode: "create" | "draft";
   onSelectTile?: (tile: Tile) => void;
   onDeleteTile?: (tile: Tile) => void;
@@ -17,15 +19,16 @@ export function SliceMap({
   id,
   tiles,
   sliceHeight,
+  sliceConcentricCircles = 1,
+  wOffsetMultiplier = 0,
   mode = "create",
   onSelectTile,
   onDeleteTile,
 }: Props) {
   const { ref, width } = useDimensions<HTMLDivElement>();
   const gap = 6;
-  const radius = calculateMaxHexWidthRadius(1, width, gap);
+  const radius = calculateMaxHexWidthRadius(sliceConcentricCircles, width, gap);
   const height = calcHexHeight(radius) * sliceHeight + gap;
-
   return (
     <MapContext.Provider
       value={{
@@ -34,7 +37,7 @@ export function SliceMap({
         radius,
         gap,
         hOffset: height - calcHexHeight(radius) - 10, //padding
-        wOffset: width * 0.5 - radius,
+        wOffset: width * 0.5 - radius + radius * wOffsetMultiplier,
       }}
     >
       <div
