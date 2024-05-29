@@ -149,7 +149,7 @@ export default function DraftNew() {
                   : undefined,
               }}
             >
-              Create Draft
+              Create
             </Button>
           </Popover.Target>
           <Popover.Dropdown>
