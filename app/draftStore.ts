@@ -296,6 +296,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     randomizeMap: boolean;
   }) => {
     const config = mapConfig[mapType];
+    set({ config });
+
     let slices = [];
     for (let i = 0; i < numSlices; i++) {
       slices.push([
