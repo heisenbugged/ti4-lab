@@ -540,7 +540,9 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     const numMapTiles = config.modifiableMapTiles.length;
     const usedSystemIds = slices.flat(1).filter((i) => i !== "-1");
     const availableSystemIds = fisherYatesShuffle(
-      Object.keys(systemData).filter((id) => !usedSystemIds.includes(id)),
+      Object.keys(systemData).filter(
+        (id) => !usedSystemIds.includes(id) && id !== MECATOL_REX_ID,
+      ),
       numMapTiles,
     );
 
