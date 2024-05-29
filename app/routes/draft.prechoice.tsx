@@ -158,7 +158,7 @@ export default function DraftPrechoice() {
 
   return (
     <Grid mt="lg">
-      <Grid.Col span={7}>
+      <Grid.Col span={{ base: 12, sm: 7 }}>
         <Flex align="center" justify="center" direction="column">
           <Box w="100%">
             <SectionTitle title="Draft style" />
@@ -202,7 +202,7 @@ export default function DraftPrechoice() {
           </Text>
         </Flex>
       </Grid.Col>
-      <Grid.Col span={5}>
+      <Grid.Col span={{ base: 12, sm: 5 }}>
         <Stack gap="xl">
           <PlayerInputSection
             players={players}

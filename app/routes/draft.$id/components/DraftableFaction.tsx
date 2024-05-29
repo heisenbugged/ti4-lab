@@ -36,10 +36,7 @@ export function DraftableFaction({ faction, player, onSelect }: Props) {
         pt={5}
       >
         <Flex visibleFrom="sm" align="center" w="25px" h="25px">
-          <FactionIcon
-            faction={faction.id}
-            style={{ maxWidth: 25, maxHeight: 25 }}
-          />
+          <FactionIcon faction={faction.id} style={{ width: 25, height: 25 }} />
         </Flex>
         <Text flex={1} size="14px" ff="heading" fw="bold">
           {faction.name}

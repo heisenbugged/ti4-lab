@@ -1,4 +1,12 @@
-import { Button, SimpleGrid, Stack, Tabs, Text } from "@mantine/core";
+import {
+  Button,
+  Flex,
+  Grid,
+  SimpleGrid,
+  Stack,
+  Tabs,
+  Text,
+} from "@mantine/core";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
 import { eq } from "drizzle-orm";
@@ -128,55 +136,12 @@ export default function RunningDraft() {
           player={activePlayer!!}
           lastEvent={draft.lastEvent}
         />
-        <div style={{ height: 65 }} />
-        <DraftOrder
-          players={draft.players}
-          pickOrder={draft.pickOrder}
-          currentPick={draft.currentPick}
-        />
+        <div style={{ height: 15 }} />
       </Stack>
-      <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
-        <Stack flex={1} gap="xl">
-          <DraftableFactionsSection
-            allowFactionSelection={canSelectFaction}
-            factions={draft.factions}
-            players={draft.players}
-            onSelectFaction={(factionId) => {
-              draft.selectFaction(activePlayerId, factionId);
-              handleSync();
-            }}
-          />
-          <SlicesSection
-            config={draft.config}
-            mode="draft"
-            allowSliceSelection={canSelectSlice}
-            slices={draft.slices}
-            players={draft.players}
-            draftedSlices={draftedSlices}
-            onSelectSlice={(sliceIdx) => {
-              draft.selectSlice(activePlayerId, sliceIdx);
-              handleSync();
-            }}
-          />
-        </Stack>
-        <Stack flex={1} gap="xl">
-          <Tabs defaultValue="draft" style={{ marginTop: -14 }}>
-            <Tabs.List>
-              <Tabs.Tab value="draft">Draft Summary</Tabs.Tab>
-              <Tabs.Tab value="slice">Slice Summary</Tabs.Tab>
-            </Tabs.List>
-            <Tabs.Panel value="draft">
-              <MidDraftSummary />
-            </Tabs.Panel>
-            <Tabs.Panel value="slice">
-              <SlicesTable
-                slices={draft.slices}
-                draftedSlices={draftedSlices}
-              />
-            </Tabs.Panel>
-          </Tabs>
 
-          {draft.draftSpeaker && (
+      <Grid gutter="xl">
+        {draft.draftSpeaker && (
+          <Grid.Col span={{ base: 12, sm: 6 }}>
             <Section>
               <SectionTitle title="Speaker Order" />
               <SimpleGrid cols={{ base: 3, sm: 6, md: 6, lg: 3, xl: 6 }}>
@@ -219,8 +184,65 @@ export default function RunningDraft() {
                 })}
               </SimpleGrid>
             </Section>
-          )}
+          </Grid.Col>
+        )}
+        <Grid.Col span={draft.draftSpeaker ? { base: 12, sm: 6 } : 12}>
+          <Stack>
+            <SectionTitle title="Draft Order" />
+            <DraftOrder
+              players={draft.players}
+              pickOrder={draft.pickOrder}
+              currentPick={draft.currentPick}
+            />
+          </Stack>
+        </Grid.Col>
 
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <DraftableFactionsSection
+            allowFactionSelection={canSelectFaction}
+            factions={draft.factions}
+            players={draft.players}
+            onSelectFaction={(factionId) => {
+              draft.selectFaction(activePlayerId, factionId);
+              handleSync();
+            }}
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <Tabs defaultValue="draft" variant="pills">
+            <SectionTitle title="Summary">
+              <Tabs.List>
+                <Tabs.Tab value="draft">Draft</Tabs.Tab>
+                <Tabs.Tab value="slice">Slice </Tabs.Tab>
+              </Tabs.List>
+            </SectionTitle>
+            <Tabs.Panel value="draft">
+              <MidDraftSummary />
+            </Tabs.Panel>
+            <Tabs.Panel value="slice">
+              <SlicesTable
+                slices={draft.slices}
+                draftedSlices={draftedSlices}
+              />
+            </Tabs.Panel>
+          </Tabs>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <SlicesSection
+            config={draft.config}
+            mode="draft"
+            allowSliceSelection={canSelectSlice}
+            slices={draft.slices}
+            players={draft.players}
+            draftedSlices={draftedSlices}
+            onSelectSlice={(sliceIdx) => {
+              draft.selectSlice(activePlayerId, sliceIdx);
+              handleSync();
+            }}
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, lg: 6 }}>
           <MapSection
             config={draft.config}
             map={draft.hydratedMap}
@@ -231,8 +253,8 @@ export default function RunningDraft() {
               handleSync();
             }}
           />
-        </Stack>
-      </SimpleGrid>
+        </Grid.Col>
+      </Grid>
     </>
   );
 }

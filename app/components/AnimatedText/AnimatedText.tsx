@@ -26,7 +26,7 @@ export function AnimatedText({ text, color }: Props) {
           className="fading-text"
           c={color}
           fw={600}
-          size="22px"
+          size="xl"
           ff="heading"
           tt="uppercase"
         >

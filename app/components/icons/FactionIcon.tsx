@@ -16,8 +16,15 @@ export function FactionIcon({
   hiddenFrom,
 }: Props) {
   return (
-    <Box visibleFrom={visibleFrom} hiddenFrom={hiddenFrom}>
-      <img src={factions[faction].iconPath} style={style} />
+    <Box visibleFrom={visibleFrom} hiddenFrom={hiddenFrom} style={style}>
+      <img
+        src={factions[faction].iconPath}
+        style={{
+          objectFit: "contain",
+          width: "100%",
+          height: "100%",
+        }}
+      />
     </Box>
   );
 }

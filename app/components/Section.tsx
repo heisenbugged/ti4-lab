@@ -28,7 +28,7 @@ export function SectionTitle({
         borderTopLeftRadius: 8,
       }}
     >
-      <Title order={2}>{title}</Title>
+      <Title order={3}>{title}</Title>
       {children}
     </Group>
   );
