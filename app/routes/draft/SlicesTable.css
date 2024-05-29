@@ -1,0 +1,15 @@
+.cross-out {
+    position: relative;
+  }
+
+  .cross-out::before {
+    content: '';
+    position: absolute;
+    top: 18px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #ddd;
+    pointer-events: none;
+    z-index: 1;
+  }

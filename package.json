@@ -17,6 +17,7 @@
     "@remix-run/node": "^2.9.2",
     "@remix-run/react": "^2.9.2",
     "@remix-run/serve": "^2.9.2",
+    "@tabler/icons-react": "^3.5.0",
     "better-sqlite3": "^10.0.0",
     "cross-env": "^7.0.3",
     "drizzle-orm": "^0.30.10",

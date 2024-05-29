@@ -1,4 +1,4 @@
-import { Button, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Button, SimpleGrid, Stack, Tabs, Text } from "@mantine/core";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
 import { eq } from "drizzle-orm";
@@ -24,6 +24,8 @@ import {
   showNotification,
 } from "~/utils/notifications";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
+import { MidDraftSummary } from "./components/MidDraftSummary";
+import { SlicesTable } from "../draft/SlicesTable";
 
 export default function RunningDraft() {
   const { adminMode } = useOutletContext<{ adminMode: boolean }>();
@@ -86,6 +88,10 @@ export default function RunningDraft() {
   const canSelectFaction = currentlyPicking && !activePlayer?.faction;
   const canSelectSpeakerOrder = currentlyPicking && !activePlayer?.speakerOrder;
 
+  const draftedSlices = draft.players
+    .filter((p) => p.sliceIdx !== undefined)
+    .map((p) => p.sliceIdx!!);
+
   useEffect(() => {
     if (activePlayerId === undefined || selectedPlayer === undefined) return;
     if (activePlayerId === selectedPlayer) {
@@ -146,6 +152,7 @@ export default function RunningDraft() {
             allowSliceSelection={canSelectSlice}
             slices={draft.slices}
             players={draft.players}
+            draftedSlices={draftedSlices}
             onSelectSlice={(sliceIdx) => {
               draft.selectSlice(activePlayerId, sliceIdx);
               handleSync();
@@ -153,48 +160,67 @@ export default function RunningDraft() {
           />
         </Stack>
         <Stack flex={1} gap="xl">
-          <Section>
-            <SectionTitle title="Speaker Order" />
-            <SimpleGrid cols={{ base: 3, sm: 6, md: 6, lg: 3, xl: 6 }}>
-              {playerSpeakerOrder.map((so, idx) => {
-                const player = draft.players.find(
-                  (p) => p.speakerOrder === idx,
-                );
-                return (
-                  <Stack
-                    key={so}
-                    bg="gray.1"
-                    align="center"
-                    p="sm"
-                    style={{
-                      borderRadius: 8,
-                      border: "1px solid rgba(0,0,0,0.1)",
-                    }}
-                    pos="relative"
-                    gap={6}
-                    justify="stretch"
-                  >
-                    <Text ff="heading" fw="bold">
-                      {so}
-                    </Text>
-                    {!player && canSelectSpeakerOrder && (
-                      <Button
-                        size="compact-sm"
-                        px="lg"
-                        onMouseDown={() => {
-                          draft.selectSpeakerOrder(activePlayerId, idx);
-                          handleSync();
-                        }}
-                      >
-                        Select
-                      </Button>
-                    )}
-                    {player && <PlayerChip player={player} />}
-                  </Stack>
-                );
-              })}
-            </SimpleGrid>
-          </Section>
+          <Tabs defaultValue="draft" style={{ marginTop: -14 }}>
+            <Tabs.List>
+              <Tabs.Tab value="draft">Draft Summary</Tabs.Tab>
+              <Tabs.Tab value="slice">Slice Summary</Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel value="draft">
+              <MidDraftSummary />
+            </Tabs.Panel>
+            <Tabs.Panel value="slice">
+              <SlicesTable
+                slices={draft.slices}
+                draftedSlices={draftedSlices}
+              />
+            </Tabs.Panel>
+          </Tabs>
+
+          {draft.draftSpeaker && (
+            <Section>
+              <SectionTitle title="Speaker Order" />
+              <SimpleGrid cols={{ base: 3, sm: 6, md: 6, lg: 3, xl: 6 }}>
+                {playerSpeakerOrder.map((so, idx) => {
+                  const player = draft.players.find(
+                    (p) => p.speakerOrder === idx,
+                  );
+                  return (
+                    <Stack
+                      key={so}
+                      bg="gray.1"
+                      align="center"
+                      p="sm"
+                      style={{
+                        borderRadius: 8,
+                        border: "1px solid rgba(0,0,0,0.1)",
+                      }}
+                      pos="relative"
+                      gap={6}
+                      justify="stretch"
+                    >
+                      <Text ff="heading" fw="bold">
+                        {so}
+                      </Text>
+                      {!player && canSelectSpeakerOrder && (
+                        <Button
+                          size="compact-sm"
+                          px="lg"
+                          onMouseDown={() => {
+                            draft.selectSpeakerOrder(activePlayerId, idx);
+                            handleSync();
+                          }}
+                        >
+                          Select
+                        </Button>
+                      )}
+                      {player && <PlayerChip player={player} />}
+                    </Stack>
+                  );
+                })}
+              </SimpleGrid>
+            </Section>
+          )}
+
           <MapSection
             config={draft.config}
             map={draft.hydratedMap}

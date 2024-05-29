@@ -1,4 +1,4 @@
-import { Box, Stack, Text } from "@mantine/core";
+import { Box, Button, Group, Stack, Text } from "@mantine/core";
 import { useDimensions } from "~/hooks/useDimensions";
 import {
   calcHexHeight,
@@ -10,6 +10,7 @@ import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 import { Map } from "~/components/Map";
 import { SectionTitle } from "~/components/Section";
 import { MapConfig } from "~/utils/map";
+import { IconDice6Filled } from "@tabler/icons-react";
 
 type Props = {
   config: MapConfig;
@@ -20,6 +21,8 @@ type Props = {
   onSelectSystemTile?: (tileIdx: number) => void;
   onDeleteSystemTile?: (tileIdx: number) => void;
   onSelectHomeTile?: (homeTile: HomeTile) => void;
+  onRandomizeMap?: () => void;
+  onClearMap?: () => void;
 };
 
 export function MapSection({
@@ -31,6 +34,8 @@ export function MapSection({
   onDeleteSystemTile,
   onSelectSystemTile,
   onSelectHomeTile,
+  onRandomizeMap,
+  onClearMap,
 }: Props) {
   const { ref, width } = useDimensions<HTMLDivElement>();
   const { height: windowHeight } = useWindowDimensions();
@@ -49,7 +54,18 @@ export function MapSection({
 
   return (
     <div style={{ position: "sticky", width: "auto", top: 60 }}>
-      <SectionTitle title="Full Map" />
+      <SectionTitle title="Full Map">
+        {mode === "create" ? (
+          <Group gap={2}>
+            <Button size="xs" onMouseDown={onRandomizeMap} bg="gray">
+              <IconDice6Filled size={24} />
+            </Button>
+            <Button size="xs" onMouseDown={onClearMap} bg="red">
+              Clear
+            </Button>
+          </Group>
+        ) : undefined}
+      </SectionTitle>
       <Box
         ref={ref}
         style={{

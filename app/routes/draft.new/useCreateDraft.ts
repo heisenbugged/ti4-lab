@@ -8,6 +8,7 @@ export type CreateDraftInput = {
   mapString: string;
   slices: string[][];
   numFactionsToDraft: number | null;
+  draftSpeaker: boolean;
 };
 
 export function useCreateDraft() {

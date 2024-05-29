@@ -10,21 +10,18 @@ export function ImportMapInput({ onImport }: Props) {
   return (
     <Group align="flex-end">
       <Input.Wrapper
+        size="md"
         label="Map String"
         description="Copy paste in a map string, and we will populate the relevant slices. Alternatively, you can click on a tile to add a system to either a map or a slice."
+        flex={1}
       >
         <Input
-          flex={1}
           size="md"
           placeholder="Map String to Import"
           onChange={(e) => setImportableMap(e.currentTarget.value)}
         />
       </Input.Wrapper>
-      <Button
-        onClick={() => {
-          onImport(importableMap);
-        }}
-      >
+      <Button mb={3} onClick={() => onImport(importableMap)}>
         Import
       </Button>
     </Group>

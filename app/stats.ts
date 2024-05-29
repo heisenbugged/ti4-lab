@@ -46,11 +46,6 @@ export function randomizeSlices(
     );
   }
 
-  console.log(
-    "the slices values are",
-    selectedSlices.map((s) => s.value),
-  );
-
   return selectedSlices;
 }
 

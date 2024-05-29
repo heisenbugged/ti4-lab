@@ -8,6 +8,7 @@ import { useSlice } from "./useSlice";
 import { SliceFeatures } from "./SliceFeatures";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
 import { MapConfig } from "~/utils/map";
+import { IconDice6Filled } from "@tabler/icons-react";
 
 type Props = {
   config: MapConfig;
@@ -19,6 +20,8 @@ type Props = {
   onSelectTile?: (tile: Tile) => void;
   onDeleteTile?: (tile: Tile) => void;
   onSelectSlice?: () => void;
+  onRandomizeSlice?: () => void;
+  onClearSlize?: () => void;
 };
 
 export function Slice({
@@ -31,6 +34,8 @@ export function Slice({
   onSelectTile,
   onDeleteTile,
   onSelectSlice,
+  onRandomizeSlice,
+  onClearSlize,
 }: Props) {
   const { tiles, total, optimal } = useSlice(config, systems);
   const selected = !!player;
@@ -48,22 +53,26 @@ export function Slice({
         selected={selected}
         right={
           <Group>
-            <Group align="center" gap="xs">
-              <PlanetStatsPill
-                resources={optimal.resources}
-                influence={optimal.influence}
-                flex={optimal.flex}
-              />
-              <Text fw={600} size="sm" c="white">
-                /
-              </Text>
-              <PlanetStatsPill
-                size="xs"
-                resources={total.resources}
-                influence={total.influence}
-              />
-            </Group>
-
+            {mode === "create" && (
+              <Group gap={2}>
+                <Button
+                  size="xs"
+                  onMouseDown={onRandomizeSlice}
+                  color="gray.7"
+                  variant="filled"
+                >
+                  <IconDice6Filled size={24} />
+                </Button>
+                <Button
+                  size="xs"
+                  onMouseDown={onClearSlize}
+                  variant="filled"
+                  color="red.9"
+                >
+                  Clear
+                </Button>
+              </Group>
+            )}
             {mode === "draft" && !selected && onSelectSlice && (
               <Button
                 lh={1}
@@ -84,6 +93,23 @@ export function Slice({
           {player ? <PlayerChip player={player} /> : undefined}
         </Group>
       </SliceHeader>
+
+      <Group align="center" gap="xs" px="sm" py="xs" mb="sm" bg="gray.1">
+        <PlanetStatsPill
+          resources={optimal.resources}
+          influence={optimal.influence}
+          flex={optimal.flex}
+        />
+        <Text fw={600} size="sm">
+          /
+        </Text>
+        <PlanetStatsPill
+          size="xs"
+          resources={total.resources}
+          influence={total.influence}
+        />
+      </Group>
+
       <div style={{ filter: selected ? "grayscale(70%)" : "none" }}>
         <SliceMap
           id={id}

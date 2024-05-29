@@ -1,4 +1,8 @@
-import { OpenTile, PlayerDemoTile as TPlayerDemoTile } from "~/types";
+import {
+  EmptyTile,
+  OpenTile,
+  PlayerDemoTile as TPlayerDemoTile,
+} from "~/types";
 import {
   calcHexHeight,
   calculateMaxHexRadius,
@@ -14,7 +18,7 @@ import { Hex } from "./Hex";
 
 type Props = {
   id: string;
-  map: (TPlayerDemoTile | OpenTile)[];
+  map: (TPlayerDemoTile | OpenTile | EmptyTile)[];
   padding: number;
   titles: string[];
   colors: string[];
@@ -58,7 +62,7 @@ export function DemoMap({ id, map, padding, titles, colors }: Props) {
 
 type DemoMapTileProps = {
   mapId: string;
-  tile: TPlayerDemoTile | OpenTile;
+  tile: TPlayerDemoTile | OpenTile | EmptyTile;
   titles: string[];
   colors: string[];
 };

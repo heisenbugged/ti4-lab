@@ -15,7 +15,6 @@ export function SliceHeader({ children, right, selected = false }: Props) {
       bg={selected ? "gray.3" : "spaceBlue"}
       py="xs"
       px="lg"
-      mb="xs"
       style={{
         borderTopRightRadius: 10,
         borderTopLeftRadius: 10,

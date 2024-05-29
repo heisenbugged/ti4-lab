@@ -70,6 +70,10 @@ export type OpenTile = BaseTile & {
   type: "OPEN";
 };
 
+export type EmptyTile = BaseTile & {
+  type: "EMPTY";
+};
+
 export type Tile =
   | HomeTile
   | OpenTile
@@ -132,6 +136,7 @@ export type PersistedDraft = {
   currentPick: number;
   pickOrder: number[];
   lastEvent?: string;
+  draftSpeaker: boolean;
 };
 
 export type SystemStats = {

@@ -82,6 +82,7 @@ const variances = [
 
 type Props = {
   opened: boolean;
+  defaultNumSlices: number;
   onClose: () => void;
   onGenerateSlices: (
     numSlices: number,
@@ -93,6 +94,7 @@ type Props = {
 
 export function GenerateSlicesModal({
   opened,
+  defaultNumSlices,
   onClose,
   onGenerateSlices,
 }: Props) {
@@ -102,8 +104,7 @@ export function GenerateSlicesModal({
 
   const [varianceValue, setVarianceValue] = useState(33);
   const variance = variances[Math.floor(varianceValue / 33)];
-
-  const [numSlices, setNumSlices] = useState(6);
+  const [numSlices, setNumSlices] = useState(defaultNumSlices);
 
   return (
     <Modal

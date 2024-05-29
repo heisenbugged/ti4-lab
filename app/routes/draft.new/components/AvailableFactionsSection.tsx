@@ -1,12 +1,14 @@
-import { Group, Input, SimpleGrid, Text } from "@mantine/core";
+import { Button, Group, Input, SimpleGrid, Text } from "@mantine/core";
 import { FactionId } from "~/types";
 import { factionIds, factions } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
 import { NewDraftFaction } from "./NewDraftFaction";
 
 type Props = {
-  numFactions?: number;
+  numFactions: number;
   selectedFactions: FactionId[];
+  onAddFaction: () => void;
+  onRemoveFaction: () => void;
   onChangeNumFactions: (num: number | undefined) => void;
   onToggleFaction: (factionId: FactionId, checked: boolean) => void;
 };
@@ -14,39 +16,47 @@ type Props = {
 export function AvailableFactionsSection({
   numFactions,
   selectedFactions,
+  onRemoveFaction,
+  onAddFaction,
   onChangeNumFactions,
   onToggleFaction,
 }: Props) {
-  const needsMoreFactions = numFactions !== undefined && numFactions < 6;
   return (
     <Section>
       <SectionTitle title="Faction Pool">
         <Group>
-          <Text># of factions in draft (min 6):</Text>
-          <Input
-            placeholder="6 or 9 or 12 etc"
-            size="sm"
-            type="number"
-            min={6}
-            value={numFactions ?? ""}
-            onChange={(e) => {
-              if (e.currentTarget.value.length === 0) {
-                onChangeNumFactions(undefined);
-                return;
-              }
-              onChangeNumFactions(parseInt(e.currentTarget.value, 10));
-            }}
-            error={needsMoreFactions ? "Must be at least 6" : null}
-          />
+          <Text># of factions in draft: {numFactions}</Text>
+          <Group gap={2}>
+            <Button
+              size="compact-md"
+              color="red"
+              variant="filled"
+              disabled={numFactions <= 6}
+              onMouseDown={onRemoveFaction}
+            >
+              -
+            </Button>
+            <Button
+              size="compact-md"
+              color="green"
+              variant="filled"
+              onMouseDown={onAddFaction}
+            >
+              +
+            </Button>
+          </Group>
         </Group>
       </SectionTitle>
-      <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }}>
-        {factionIds.map((factionId) => (
+      <SimpleGrid
+        cols={{ base: 1, xs: 2, sm: 3, md: 6, xl: 8, xxl: 8 }}
+        spacing="xs"
+      >
+        {selectedFactions.map((factionId) => (
           <NewDraftFaction
             key={factionId}
             faction={factions[factionId]}
-            checked={selectedFactions.includes(factionId)}
-            onCheck={(checked) => onToggleFaction(factionId, checked)}
+            onRemove={() => onToggleFaction(factionId, false)}
+            removeEnabled={selectedFactions.length > 6}
           />
         ))}
       </SimpleGrid>
