@@ -116,6 +116,13 @@ function sampleSlice(
     ) {
       invalidCandidate = true;
     }
+
+    // do not allow systems with two supernovas (for now ... need a more robust solution later)
+    if (
+      sliceCandidate.systems.filter((s) => s.anomaly === "SUPERNOVA").length > 1
+    ) {
+      invalidCandidate = true;
+    }
   } while (invalidCandidate && attempt < maxAttempts);
 
   sliceCandidate.systems.forEach((s) => (usedSystems[s.id] = true));

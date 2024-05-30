@@ -541,7 +541,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     const usedSystemIds = slices.flat(1).filter((i) => i !== "-1");
     const availableSystemIds = fisherYatesShuffle(
       Object.keys(systemData).filter(
-        (id) => !usedSystemIds.includes(id) && id !== MECATOL_REX_ID,
+        (id) => !usedSystemIds.includes(id) && id !== MECATOL_REX_ID.toString(),
       ),
       numMapTiles,
     );
