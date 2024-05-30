@@ -306,7 +306,10 @@ export const searchableSystemData = Object.values(systemData).reduce(
   (acc, system) => {
     const nameParts: string[] = [system.id.toString()];
     if (system.anomaly) nameParts.push(searchableAnomaly[system.anomaly]);
-    if (system.wormhole) nameParts.push(system.wormhole.toLowerCase());
+    if (system.wormhole) {
+      nameParts.push(system.wormhole.toLowerCase());
+      nameParts.push("wormhole");
+    }
 
     if (!system.anomaly && !system.wormhole && system.planets.length === 0) {
       nameParts.push("empty");
