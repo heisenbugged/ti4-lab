@@ -36,17 +36,19 @@ export function randomizeSlices(
   let usedIndices = {};
   const selectedSlices = [];
   for (let i = 0; i < numSlices; i++) {
-    selectedSlices.push(
-      sampleSlice(
-        slices,
-        varianceLevel,
-        opulence,
-        meanValue,
-        stdDev,
-        usedIndices,
-        mapType,
-      ),
+    const sample = sampleSlice(
+      slices,
+      varianceLevel,
+      opulence,
+      meanValue,
+      stdDev,
+      usedIndices,
+      mapType,
     );
+    if (sample) selectedSlices.push(sample);
+    // currently if sample failed it just doesn't return a slice
+    // which is not great, but is just a stopgap until we
+    // replace this with a more robust solution
   }
 
   return selectedSlices;
@@ -128,12 +130,8 @@ function sampleSlice(
       invalidCandidate = true;
     }
 
-    // reject if more than 2 red or 2 blue
-    if (
-      mapType === "miltyeq" ||
-      mapType === "miltyeqless" ||
-      mapType === "milty"
-    ) {
+    // reject if more than 2 red or 2 blue on milty-eq
+    if (mapType === "miltyeq" || mapType === "miltyeqless") {
       const numRed = sliceCandidate.systems.reduce((acc, s) => {
         acc = tileColor(s) === "RED" ? acc + 1 : acc;
         return acc;
@@ -151,6 +149,7 @@ function sampleSlice(
 
   if (attempt >= maxAttempts) {
     console.log("Failed to find a valid slice after 10000 attempts.");
+    return null;
   }
 
   sliceCandidate.systems.forEach((s) => (usedSystems[s.id] = true));

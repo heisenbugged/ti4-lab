@@ -174,7 +174,7 @@ export default function DraftPrechoice() {
   };
 
   const hasValidFactions = Number(numFactions) >= 6;
-  const hasValidSlices = Number(numSlices) >= 6;
+  const hasValidSlices = Number(numSlices) >= 6 && Number(numSlices) <= 9;
 
   return (
     <Grid mt="lg">
@@ -235,7 +235,7 @@ export default function DraftPrechoice() {
               description="The number factions available for the draft. Recommended is player count + 3. Can be changed during draft building."
               error={
                 numFactions.length > 0 && !hasValidFactions
-                  ? "Must be at least 6"
+                  ? "Must be at least 6 and not greater than 9"
                   : null
               }
             >
