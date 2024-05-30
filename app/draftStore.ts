@@ -18,6 +18,7 @@ import {
   parseMapString,
   playerSpeakerOrder,
   sliceMap,
+  tileColor,
 } from "./utils/map";
 import { mapStringOrder } from "./data/mapStringOrder";
 import { systemData } from "./data/systemData";
@@ -364,6 +365,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         state.varianceValue,
         state.opulenceValue,
         state.config.numSystemsInSlice,
+        state.config.type,
       )[0].systems.map((sys) => sys.id.toString());
 
       // update slice in array
@@ -406,6 +408,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       varianceValue,
       opulenceValue,
       get().config.numSystemsInSlice,
+      get().config.type,
     )
       .map((s) => s.systems.map((sys) => sys.id.toString()))
       .map((s) => ["-1", ...s]);
@@ -638,13 +641,6 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       availableFactions: availableFactions.filter((f) => f !== id),
     })),
 }));
-
-function tileColor(system: System): "RED" | "BLUE" | undefined {
-  if (system.id == MECATOL_REX_ID) return undefined;
-  if (system.planets.length === 0) return "RED";
-  if (system.anomaly) return "RED";
-  return "BLUE";
-}
 
 function systemStats(system: System): SystemStats {
   const techSpecialtyMap = {

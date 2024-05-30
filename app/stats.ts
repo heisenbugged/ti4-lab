@@ -1,5 +1,6 @@
 import { systemData } from "./data/systemData";
-import { System } from "./types";
+import { MapType, System } from "./types";
+import { tileColor } from "./utils/map";
 
 type GeneratedSlice = {
   systems: System[];
@@ -12,8 +13,9 @@ export function randomizeSlices(
   varianceLevel: "low" | "medium" | "high" | "extreme",
   opulence: "poverty" | "low" | "medium" | "high" | "wealthy",
   sliceSize: number,
+  mapType: MapType,
 ) {
-  const maxAttempts = 10000;
+  const maxAttempts = 100000;
 
   // Generate random slices and filter them
   let slices = [];
@@ -42,6 +44,7 @@ export function randomizeSlices(
         meanValue,
         stdDev,
         usedIndices,
+        mapType,
       ),
     );
   }
@@ -84,7 +87,8 @@ function sampleSlice(
   meanValue: number,
   stdDev: number,
   usedSystems: Record<number, boolean>,
-  maxAttempts: number = 10000,
+  mapType: MapType,
+  maxAttempts: number = 100000,
 ): GeneratedSlice {
   // Adjust the mean value based on the skew
   let adjustedMeanValue = meanValue;
@@ -123,7 +127,31 @@ function sampleSlice(
     ) {
       invalidCandidate = true;
     }
+
+    // reject if more than 2 red or 2 blue
+    if (
+      mapType === "miltyeq" ||
+      mapType === "miltyeqless" ||
+      mapType === "milty"
+    ) {
+      const numRed = sliceCandidate.systems.reduce((acc, s) => {
+        acc = tileColor(s) === "RED" ? acc + 1 : acc;
+        return acc;
+      }, 0);
+      const numBlue = sliceCandidate.systems.reduce((acc, s) => {
+        acc = tileColor(s) === "BLUE" ? acc + 1 : acc;
+        return acc;
+      }, 0);
+
+      if (numRed > 2 || numBlue > 2) {
+        invalidCandidate = true;
+      }
+    }
   } while (invalidCandidate && attempt < maxAttempts);
+
+  if (attempt >= maxAttempts) {
+    console.log("Failed to find a valid slice after 10000 attempts.");
+  }
 
   sliceCandidate.systems.forEach((s) => (usedSystems[s.id] = true));
   return sliceCandidate;

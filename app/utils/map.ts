@@ -544,3 +544,11 @@ export const systemsInSlice = (slice: string[]): System[] =>
     acc.push(system);
     return acc;
   }, [] as System[]);
+
+const MECATOL_REX_ID = 18;
+export function tileColor(system: System): "RED" | "BLUE" | undefined {
+  if (system.id == MECATOL_REX_ID) return undefined;
+  if (system.planets.length === 0) return "RED";
+  if (system.anomaly) return "RED";
+  return "BLUE";
+}
