@@ -27,7 +27,15 @@ app.all("*", createRequestHandler({ build }));
 // You need to create the HTTP server from the Express app
 const httpServer = createServer(app);
 // And then attach the socket.io server to the HTTP server
-const io = new Server(httpServer);
+const io = new Server(httpServer, {
+  connectionStateRecovery: {
+    // the backup duration of the sessions and the packets
+    maxDisconnectionDuration: 2 * 60 * 1000,
+    // whether to skip middlewares upon successful recovery
+    skipMiddlewares: true,
+  }
+}
+);
 io.on("connection", (socket) => {
   // from this point you are on the WS connection with a specific client
   // console.log(socket.id, "connected");

@@ -63,11 +63,15 @@ export default function RunningDraft() {
   const socket = useSocket();
   useEffect(() => {
     if (!socket) return;
+    // join draft on every connect
+    // this way if there's a disconnection, a reconnection will rejoin the draft
+    socket.on("connect", () => {
+      socket.emit("joinDraft", result.id);
+    });
     socket.on("syncDraft", (data) => {
       const draft = JSON.parse(data) as PersistedDraft;
       useDraft.getState().hydrate(draft);
     });
-    socket.emit("joinDraft", result.id);
   }, [socket]);
 
   const result = useLoaderData<typeof loader>();
