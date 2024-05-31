@@ -21,9 +21,10 @@ import {
   tileColor,
 } from "./utils/map";
 import { mapStringOrder } from "./data/mapStringOrder";
-import { systemData } from "./data/systemData";
+import { systemData, systemIds } from "./data/systemData";
 import { factionIds, factions } from "./data/factionData";
 import { fisherYatesShuffle, randomizeSlices } from "./stats";
+import { run } from "./draft/miltyeq/sliceGenerator";
 
 const MECATOL_REX_ID = 18;
 
@@ -299,24 +300,31 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     const config = mapConfig[mapType];
     set({ config });
 
-    let slices = [];
-    for (let i = 0; i < numSlices; i++) {
-      slices.push([
-        "-1",
-        ...Array.from({ length: config.numSystemsInSlice }, () => "0"),
-      ]);
-    }
-
     // randomly pull factions from the list of all factions
     const availableFactions: FactionId[] = fisherYatesShuffle(
       factionIds,
       numFactions,
     );
 
+    let slices = [];
     // if randomize slices, do a randomized draft of slices!
     if (randomizeSlices) {
-      get().randomizeSlices(numSlices, "medium", "medium", false);
-      slices = get().slices;
+      // just a quick patch
+      slices = run(numSlices, systemIds).map((s) => [
+        "-1",
+        ...s.map((id) => id.toString()),
+      ]);
+
+      // This is for nucleum/
+      // get().randomizeSlices(numSlices, "medium", "medium", false);
+      // slices = get().slices;
+    } else {
+      for (let i = 0; i < numSlices; i++) {
+        slices.push([
+          "-1",
+          ...Array.from({ length: config.numSystemsInSlice }, () => "0"),
+        ]);
+      }
     }
     if (randomizeMap) {
       get().randomizeMap();
@@ -350,27 +358,32 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
           usedMapSystems.push(system.id.toString());
         }
       });
-      const usedSystemIds = [...usedSliceSystems, ...usedMapSystems];
 
-      const availableSystems = Object.values(systemData).filter(
-        (s) =>
-          s.id !== MECATOL_REX_ID && !usedSystemIds.includes(s.id.toString()),
+      const usedSystemIds = [...usedSliceSystems, ...usedMapSystems];
+      const availableSystems = systemIds.filter(
+        (s) => s !== MECATOL_REX_ID && !usedSystemIds.includes(s.toString()),
       );
 
+      // TTPG algorithm
+      const generatedSlice = run(1, availableSystems)[0].map((id) =>
+        id.toString(),
+      );
+
+      // If Nucleum
       // now generate a single slice with the saved variance/opulence,
       // excluding systems used by other slices and the map
-      const slice = randomizeSlices(
-        1,
-        availableSystems,
-        state.varianceValue,
-        state.opulenceValue,
-        state.config.numSystemsInSlice,
-        state.config.type,
-      )[0].systems.map((sys) => sys.id.toString());
+      // const slice = randomizeSlices(
+      //   1,
+      //   availableSystems,
+      //   state.varianceValue,
+      //   state.opulenceValue,
+      //   state.config.numSystemsInSlice,
+      //   state.config.type,
+      // )[0].systems.map((sys) => sys.id.toString());
 
       // update slice in array
       const slices = [...state.slices];
-      slices[sliceIdx] = ["-1", ...slice];
+      slices[sliceIdx] = ["-1", ...generatedSlice];
 
       return { slices };
     }),

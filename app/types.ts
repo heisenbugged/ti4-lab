@@ -5,6 +5,7 @@ export type RawSystem = {
   home?: boolean;
   anomaly?: Anomaly;
   wormhole?: Wormhole;
+  hyperlane?: boolean;
 };
 
 export type TechSpecialty = "BIOTIC" | "WARFARE" | "PROPULSION" | "CYBERNETIC";
@@ -22,13 +23,18 @@ export type Anomaly =
   | "GRAVITY_RIFT"
   | "ASTEROID_FIELD"
   | "SUPERNOVA";
-export type Wormhole = "ALPHA" | "BETA" | "DELTA";
+export type Wormhole = "ALPHA" | "BETA" | "DELTA" | "GAMMA";
 export type System = {
   id: number;
   planets: Planet[];
+
+  isRed: boolean;
+  isBlue: boolean;
+
   home?: boolean;
   anomaly?: Anomaly;
   wormhole?: Wormhole;
+  hyperlane?: boolean;
 
   totalSpend: { resources: number; influence: number };
   optimalSpend: { resources: number; influence: number; flex: number };

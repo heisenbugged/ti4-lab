@@ -35,7 +35,6 @@ import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { MidDraftSummary } from "./components/MidDraftSummary";
 import { SlicesTable } from "../draft/SlicesTable";
 import { validate as validateUUID } from "uuid";
-import { generatePrettyUrlName } from "~/data/urlWords.server";
 import {
   findDraftById,
   findDraftByPrettyUrl,

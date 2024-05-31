@@ -253,6 +253,22 @@ export const systemData: Record<number, System> = Object.entries(
       (name) => planetData.find((planet) => planet.name === name)!!,
     );
 
+    // Determine if system is red or blue
+    const isRed =
+      (system.planets.length === 0 || system.anomaly !== undefined) &&
+      system.id > 0 &&
+      system.id !== 18 &&
+      !system.home &&
+      !system.hyperlane;
+    const isBlue =
+      system.planets.length > 0 &&
+      system.anomaly === undefined &&
+      system.id > 0 &&
+      system.id !== 18 &&
+      !system.home &&
+      !system.hyperlane;
+
+    // Calculate total and optimal spend
     let totalSpend = { resources: 0, influence: 0 };
     let optimalSpend = { resources: 0, influence: 0, flex: 0 };
     planets.forEach((planet) => {
@@ -275,12 +291,15 @@ export const systemData: Record<number, System> = Object.entries(
       wormhole: system.wormhole,
       totalSpend,
       optimalSpend,
+      isRed,
+      isBlue,
     };
 
     return acc;
   },
   {} as Record<number, System>,
 );
+export const systemIds = Object.keys(systemData).map((id) => parseInt(id));
 
 const searchableTech: Record<TechSpecialty, string> = {
   BIOTIC: "green tech",

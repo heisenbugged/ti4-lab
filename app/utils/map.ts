@@ -56,8 +56,6 @@ export const mapConfig: Record<MapType, MapConfig> = {
       { x: -1, y: 0 },
       { x: 0, y: -1 },
       { x: 1, y: -1 },
-      // additional two slices for full milty draft
-      // { x: -1, y: -1 },
       { x: 0, y: -2 },
     ],
 

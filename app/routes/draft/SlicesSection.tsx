@@ -57,7 +57,7 @@ export function SlicesSection({
 
   const cols = fullView
     ? { base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: xxlCols }
-    : { base: 1, xl: 2, xxl: 3 };
+    : { base: 1, sm: 2, md: 3, lg: 2, xxl: 3 };
   return (
     <Section>
       <div style={{ position: "sticky", top: 60, zIndex: 5 }}>
