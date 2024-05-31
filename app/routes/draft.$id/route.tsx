@@ -7,7 +7,7 @@ import {
   Tabs,
   Text,
 } from "@mantine/core";
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
 import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
@@ -34,6 +34,13 @@ import {
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { MidDraftSummary } from "./components/MidDraftSummary";
 import { SlicesTable } from "../draft/SlicesTable";
+import { validate as validateUUID } from "uuid";
+import { generatePrettyUrlName } from "~/data/urlWords.server";
+import {
+  findDraftById,
+  findDraftByPrettyUrl,
+  generateUniquePrettyUrl,
+} from "~/drizzle/draft.server";
 
 export default function RunningDraft() {
   const { adminMode } = useOutletContext<{ adminMode: boolean }>();
@@ -286,13 +293,29 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export const loader = async ({ params }: { params: { id: string } }) => {
   const draftId = params.id;
-  const results = await db
-    .select()
-    .from(drafts)
-    .where(eq(drafts.id, draftId))
-    .limit(1);
 
-  const result = results[0];
+  // If using a legacy "UUID url", generate a pretty URL
+  // and then redirect to it.
+  console.log("UUID url detected, generating pretty url");
+  if (validateUUID(draftId)) {
+    const draft = await findDraftById(draftId);
+    if (!!draft.urlName) {
+      console.log(`redirecting to pretty url ${draft.urlName}`);
+      return redirect(`/draft/${draft.urlName}`);
+    }
+
+    const prettyUrl = await generateUniquePrettyUrl();
+    await db
+      .update(drafts)
+      .set({ urlName: prettyUrl })
+      .where(eq(drafts.id, draftId))
+      .run();
+
+    console.log(`redirecting to pretty url ${prettyUrl}`);
+    return redirect(`/draft/${prettyUrl}`);
+  }
+
+  const result = await findDraftByPrettyUrl(draftId);
   return json({
     ...result,
     data: JSON.parse(result.data as string) as PersistedDraft,

@@ -34,6 +34,8 @@ import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { v4 as uuidv4 } from "uuid";
 import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
+import { generatePrettyUrlName } from "~/data/urlWords.server";
+import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -326,15 +328,17 @@ export async function action({ request }: ActionFunctionArgs) {
   };
 
   const id = uuidv4().toString();
-  const result = db
-    .insert(drafts)
+  const prettyUrl = await generateUniquePrettyUrl();
+  // TODO: Handle error if insert fails
+  db.insert(drafts)
     .values({
       id,
+      urlName: prettyUrl,
       data: JSON.stringify(draft),
     })
     .run();
 
-  return redirect(`/draft/${id}`);
+  return redirect(`/draft/${prettyUrl}`);
 }
 
 export const meta: MetaFunction = () => {

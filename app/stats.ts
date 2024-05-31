@@ -91,7 +91,7 @@ function sampleSlice(
   usedSystems: Record<number, boolean>,
   mapType: MapType,
   maxAttempts: number = 100000,
-): GeneratedSlice {
+): GeneratedSlice | undefined {
   // Adjust the mean value based on the skew
   let adjustedMeanValue = meanValue;
   if (opulence === "wealthy") {
@@ -149,7 +149,7 @@ function sampleSlice(
 
   if (attempt >= maxAttempts) {
     console.log("Failed to find a valid slice after 10000 attempts.");
-    return null;
+    return undefined;
   }
 
   sliceCandidate.systems.forEach((s) => (usedSystems[s.id] = true));
