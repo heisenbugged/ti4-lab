@@ -15,9 +15,14 @@ export function FinalizedDraft() {
     [players],
   );
 
+  // TODO: Move this to an actual reusable function
   const mapString = draft.hydratedMap
     .slice(1, draft.hydratedMap.length)
-    .map((t) => t.system?.id ?? "0")
+    .map((t) => {
+      if (t.type === "HOME") return "0";
+      if (t.system) return t.system.id;
+      return "-1";
+    })
     .join(" ");
 
   return (
