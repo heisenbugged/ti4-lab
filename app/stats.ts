@@ -18,9 +18,9 @@ export function randomizeSlices(
   const maxAttempts = 100000;
 
   // Generate random slices and filter them
-  let slices = [];
+  const slices = [];
   for (let i = 0; i < maxAttempts; i++) {
-    let slice = generateSlice(systems, sliceSize);
+    const slice = generateSlice(systems, sliceSize);
     slices.push(slice);
   }
 
@@ -33,7 +33,7 @@ export function randomizeSlices(
   // Sample the slices based on variance level
   // usedIndices is a dictionary of system ids that have been used
   // to make sure we skip over systems that have already been used
-  let usedIndices = {};
+  const usedIndices = {};
   const selectedSlices = [];
   for (let i = 0; i < numSlices; i++) {
     const sample = sampleSlice(
@@ -55,9 +55,9 @@ export function randomizeSlices(
 }
 
 function generateSlice(systems: System[], sliceSize: number) {
-  let indices: number[] = [];
+  const indices: number[] = [];
   while (indices.length < sliceSize) {
-    let index = Math.floor(Math.random() * systems.length);
+    const index = Math.floor(Math.random() * systems.length);
     if (!indices.includes(index)) {
       indices.push(index);
     }
@@ -192,11 +192,11 @@ export const valueSystem = (
 
 export function fisherYatesShuffle<T>(array: T[], x: number) {
   // Copy the original array to avoid modifying it
-  let copiedArray = array.slice();
+  const copiedArray = array.slice();
 
   // Fisher-Yates Shuffle
   for (let i = copiedArray.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(Math.random() * (i + 1));
     [copiedArray[i], copiedArray[j]] = [copiedArray[j], copiedArray[i]]; // Swap elements
   }
 

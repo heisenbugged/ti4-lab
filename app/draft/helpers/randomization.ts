@@ -33,11 +33,11 @@ export function weightedChoice<T>(options: Option<T>[]) {
  */
 export function shuffle<T>(array: T[]) {
   // Copy the original array to avoid modifying it
-  let copiedArray = array.slice();
+  const copiedArray = array.slice();
 
   // Fisher-Yates Shuffle
   for (let i = copiedArray.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(Math.random() * (i + 1));
     [copiedArray[i], copiedArray[j]] = [copiedArray[j], copiedArray[i]]; // Swap elements
   }
 

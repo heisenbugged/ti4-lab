@@ -552,7 +552,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     const slices = get().slices;
     const config = get().config;
 
-    let mapString = [...EMPTY_MAP_STRING];
+    const mapString = [...EMPTY_MAP_STRING];
     const numMapTiles = config.modifiableMapTiles.length;
     const usedSystemIds = slices.flat(1).filter((i) => i !== "-1");
     const availableSystemIds = fisherYatesShuffle(
@@ -564,7 +564,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
     config.modifiableMapTiles.forEach((idx) => {
       // idx - 1 to account for mecatol
-      mapString[idx - 1] = availableSystemIds.pop()!!;
+      mapString[idx - 1] = availableSystemIds.pop()!;
     });
 
     return set({ map: parseMapString(config, mapString) });

@@ -12,7 +12,7 @@ export function DraftOrder({ pickOrder, currentPick, players }: Props) {
   return (
     <Group gap={1}>
       {pickOrder.map((playerId, idx) => {
-        const player = players.find(({ id }) => id === playerId)!!;
+        const player = players.find(({ id }) => id === playerId)!;
         const alreadyPassed = idx < currentPick;
         const active = idx === currentPick;
         return (

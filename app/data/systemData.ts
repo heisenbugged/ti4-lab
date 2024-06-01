@@ -250,7 +250,7 @@ export const systemData: Record<number, System> = Object.entries(
 ).reduce(
   (acc, [id, system]) => {
     const planets = system.planets.map(
-      (name) => planetData.find((planet) => planet.name === name)!!,
+      (name) => planetData.find((planet) => planet.name === name)!,
     );
 
     // Determine if system is red or blue
@@ -269,8 +269,8 @@ export const systemData: Record<number, System> = Object.entries(
       !system.hyperlane;
 
     // Calculate total and optimal spend
-    let totalSpend = { resources: 0, influence: 0 };
-    let optimalSpend = { resources: 0, influence: 0, flex: 0 };
+    const totalSpend = { resources: 0, influence: 0 };
+    const optimalSpend = { resources: 0, influence: 0, flex: 0 };
     planets.forEach((planet) => {
       totalSpend.resources += planet.resources;
       totalSpend.influence += planet.influence;

@@ -14,7 +14,7 @@ type Props = {
   systems: string[];
 };
 export function SummaryRow({ config, player, systems }: Props) {
-  const faction = factions[player.faction!!];
+  const faction = factions[player.faction!];
   const { total, optimal, specialties } = useSlice(config, systems);
   return (
     <Table.Tr>
@@ -23,12 +23,12 @@ export function SummaryRow({ config, player, systems }: Props) {
       </Table.Td>
       <Table.Td>
         <Group>
-          <FactionIcon faction={player.faction!!} style={{ height: 36 }} />
+          <FactionIcon faction={player.faction!} style={{ height: 36 }} />
           <Text>{faction.name}</Text>
         </Group>
       </Table.Td>
-      <Table.Td>{player.speakerOrder!! + 1}</Table.Td>
-      <Table.Td>{player.seatIdx!! + 1}</Table.Td>
+      <Table.Td>{player.speakerOrder! + 1}</Table.Td>
+      <Table.Td>{player.seatIdx! + 1}</Table.Td>
       <Table.Td>
         <PlanetStatsPill
           size="sm"

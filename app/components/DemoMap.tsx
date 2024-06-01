@@ -7,11 +7,11 @@ import {
   calcHexHeight,
   calculateMaxHexRadius,
   calculateMaxHexWidthRadius,
+  getHexPosition,
 } from "~/utils/positioning";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Box, useMantineTheme } from "@mantine/core";
 import { useContext } from "react";
-import { getHexPosition } from "~/utils/positioning";
 import { MapContext } from "~/contexts/MapContext";
 import { PlayerDemoTile } from "./tiles/PlayerDemoTile";
 import { Hex } from "./Hex";

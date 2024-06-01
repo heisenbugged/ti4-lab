@@ -108,7 +108,7 @@ export default function RunningDraft() {
 
   const draftedSlices = draft.players
     .filter((p) => p.sliceIdx !== undefined)
-    .map((p) => p.sliceIdx!!);
+    .map((p) => p.sliceIdx!);
 
   useEffect(() => {
     if (activePlayerId === undefined || selectedPlayer === undefined) return;
@@ -143,7 +143,7 @@ export default function RunningDraft() {
       <audio id="notificationSound" src="/chime.mp3" preload="auto"></audio>
       <Stack gap="sm" mb="60" mt="lg">
         <CurrentPickBanner
-          player={activePlayer!!}
+          player={activePlayer!}
           lastEvent={draft.lastEvent}
         />
         <div style={{ height: 15 }} />
@@ -302,7 +302,7 @@ export const loader = async ({ params }: { params: { id: string } }) => {
   console.log("UUID url detected, generating pretty url");
   if (validateUUID(draftId)) {
     const draft = await findDraftById(draftId);
-    if (!!draft.urlName) {
+    if (draft.urlName) {
       console.log(`redirecting to pretty url ${draft.urlName}`);
       return redirect(`/draft/${draft.urlName}`);
     }

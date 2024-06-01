@@ -11,7 +11,7 @@ export function FinalizedDraft() {
   const players = draft.players;
 
   const sortedPlayers = useMemo(
-    () => players.sort((a, b) => a.speakerOrder!! - b.speakerOrder!!),
+    () => players.sort((a, b) => a.speakerOrder! - b.speakerOrder!),
     [players],
   );
 
@@ -50,7 +50,7 @@ export function FinalizedDraft() {
                     config={draft.config}
                     key={p.id}
                     player={p}
-                    systems={slices[p.sliceIdx!!]}
+                    systems={slices[p.sliceIdx!]}
                   />
                 ))}
               </Table.Tbody>

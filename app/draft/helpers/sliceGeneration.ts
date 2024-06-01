@@ -70,7 +70,7 @@ function sampleAndPromoteSystems(
   let remainingTiles = filterTieredSystems(remainingSystems, filter);
   remainingTiles = shuffle(remainingTiles);
   while (chosenCount < sampleCount && remainingTiles.length > 0) {
-    const system = remainingTiles.pop()!!;
+    const system = remainingTiles.pop()!;
     promote(system, chosenSystems, remainingSystems);
     chosenCount += 1;
   }
@@ -163,7 +163,7 @@ export function fillSlicesWithRequiredTiles(
 
     if (bestCandidate && bestCandidate.tileTier === tierToAdd) {
       const { sliceIndex, tileIndex } = bestCandidate;
-      const system = chosenSystems[tierToAdd].pop()!!;
+      const system = chosenSystems[tierToAdd].pop()!;
       slices[sliceIndex].push(system);
       tieredSlices[sliceIndex][tileIndex] = "resolved";
       return true;
@@ -204,7 +204,7 @@ export function fillSlicesWithRemainingTiles(
 
       if (!takeFrom) throw new Error("no tiles remain???");
 
-      const system = takeFrom.pop()!!;
+      const system = takeFrom.pop()!;
       slices[sliceIdx].push(system);
       tieredSlice[tileIdx] = "resolved";
     });
@@ -298,10 +298,10 @@ function summarizeRaw(systems: number[]) {
   let optRes = 0;
   let inf = 0;
   let optInf = 0;
-  let tech = [];
-  let traits = [];
-  let wormholes = [];
-  let legendaries = [];
+  const tech = [];
+  const traits = [];
+  const wormholes = [];
+  const legendaries = [];
 
   for (const id of systems) {
     const system = systemData[id];
@@ -425,8 +425,8 @@ function permutator<T>(array: T[], inspector: (arg: T[]) => boolean) {
       }
     } else {
       for (let i = 0; i < arr.length; i++) {
-        let curr = arr.slice();
-        let next = curr.splice(i, 1);
+        const curr = arr.slice();
+        const next = curr.splice(i, 1);
         permute(curr.slice(), m.concat(next));
         // Stop after first success.
         if (result) {

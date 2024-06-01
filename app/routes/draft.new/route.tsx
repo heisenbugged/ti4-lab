@@ -88,7 +88,7 @@ export default function DraftNew() {
     draft.slices,
     draft.map
       .filter((t) => t.type === "SYSTEM")
-      .map((t) => t.system!!.id.toString()),
+      .map((t) => t.system!.id.toString()),
   ]
     .flat(2)
     .filter((t) => t !== "-1" && t !== "0");

@@ -166,7 +166,7 @@ function SummaryRow({ player, slice, showSeat }: Props) {
       <Table.Td>
         {faction ? (
           <Group>
-            <FactionIcon faction={player.faction!!} style={{ height: 18 }} />
+            <FactionIcon faction={player.faction!} style={{ height: 18 }} />
             <Text size="sm" lh={1}>
               {faction.name}
             </Text>

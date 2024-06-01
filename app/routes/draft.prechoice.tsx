@@ -341,7 +341,7 @@ function parseDemoMapString(config: DraftConfig, mapString: string[]) {
   return tiles;
 }
 
-export let loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async () => {
   // return redirect("/draft/new");
   return null;
 };

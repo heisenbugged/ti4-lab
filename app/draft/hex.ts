@@ -12,9 +12,9 @@ export function neighbors(hex: string) {
 
 function hexFromString(hex: string) {
   const m = hex.match(/^<(-?\d+),(-?\d+),(-?\d+)>$/);
-  const q = parseFloat(m!![1]);
-  const r = parseFloat(m!![2]);
-  const s = parseFloat(m!![3]);
+  const q = parseFloat(m![1]);
+  const r = parseFloat(m![2]);
+  const s = parseFloat(m![3]);
   if (Math.round(q + r + s) !== 0) {
     throw new Error(`q + r + s must be 0 ("${hex}")`);
   }

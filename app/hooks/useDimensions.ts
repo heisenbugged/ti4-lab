@@ -5,7 +5,7 @@ export function useDimensions<T extends HTMLElement>() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   useEffect(() => {
     const handleResize = (entries: ResizeObserverEntry[]) => {
-      for (let entry of entries) {
+      for (const entry of entries) {
         if (entry.target === ref.current) {
           const { width, height } = entry.contentRect;
           setDimensions({ width, height });

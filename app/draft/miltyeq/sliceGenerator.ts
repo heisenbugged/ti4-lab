@@ -44,7 +44,7 @@ const MIN_LEGENDARY_CHOICES = [
 export function generateSlices(sliceCount: number, availableSystems: number[]) {
   const tieredSlices: TieredSlice[] = [];
   for (let i = 0; i < sliceCount; i++) {
-    let tierValues = shuffle(weightedChoice(SLICE_CHOICES));
+    const tierValues = shuffle(weightedChoice(SLICE_CHOICES));
     tieredSlices.push(tierValues);
   }
 

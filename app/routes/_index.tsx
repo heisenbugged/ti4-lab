@@ -12,7 +12,7 @@ export const meta: MetaFunction = () => {
 };
 
 // Define the loader function to handle the redirect
-export let loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async () => {
   return redirect("/draft/prechoice"); // Specify the path you want to redirect to
 };
 
