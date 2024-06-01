@@ -1,20 +1,19 @@
 import { DraftType } from "./draft";
 import { System } from "./types";
-import { tileColor } from "./utils/map";
 
 type GeneratedSlice = {
   systems: System[];
   value: number;
 };
 
-export function randomizeSlices(
+export function generateSlices(
   numSlices: number,
   systems: System[],
   varianceLevel: "low" | "medium" | "high" | "extreme",
   opulence: "poverty" | "low" | "medium" | "high" | "wealthy",
   sliceSize: number,
   mapType: DraftType,
-) {
+): GeneratedSlice[] {
   const maxAttempts = 100000;
 
   // Generate random slices and filter them

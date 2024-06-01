@@ -51,7 +51,7 @@ export default function DraftNew() {
       randomizeMap,
     } = location.state;
 
-    draft.initializeMap({
+    draft.actions.initializeMap({
       mapType,
       numFactions,
       numSlices,
@@ -121,13 +121,13 @@ export default function DraftNew() {
       <SectionTitle title="Advanced Options" />
       <Switch
         checked={draft.draftSpeaker}
-        onChange={() => draft.setDraftSpeaker(!draft.draftSpeaker)}
+        onChange={() => draft.actions.setDraftSpeaker(!draft.draftSpeaker)}
         size="md"
         label="Draft Speaker order separately"
         description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
       />
 
-      <ImportMapInput onImport={draft.importMap} />
+      <ImportMapInput onImport={draft.actions.importMap} />
 
       <Divider mt="md" mb="md" />
       <Group gap="sm">
@@ -170,7 +170,7 @@ export default function DraftNew() {
       <GenerateSlicesModal
         defaultNumSlices={draft.slices.length}
         onClose={closeGenerateSlices}
-        onGenerateSlices={draft.randomizeSlices}
+        onGenerateSlices={draft.actions.randomizeSlices}
         opened={generateSlicesOpened}
       />
 
@@ -194,9 +194,9 @@ export default function DraftNew() {
           if (!openTile.current) return;
           const { mode, sliceIdx, tileIdx } = openTile.current;
 
-          if (mode === "map") draft.addSystemToMap(tileIdx, system);
+          if (mode === "map") draft.actions.addSystemToMap(tileIdx, system);
           if (mode === "slice" && sliceIdx > -1) {
-            draft.addSystemToSlice(sliceIdx, tileIdx, system);
+            draft.actions.addSystemToSlice(sliceIdx, tileIdx, system);
           }
 
           closePlanetFinder();
@@ -206,17 +206,17 @@ export default function DraftNew() {
 
       <AvailableFactionsSection
         numFactions={draft.numFactionsToDraft}
-        onChangeNumFactions={draft.setNumFactionsToDraft}
+        onChangeNumFactions={draft.actions.setNumFactionsToDraft}
         selectedFactions={draft.availableFactions}
         onToggleFaction={(factionId, checked) => {
           if (checked) {
-            draft.addFaction(factionId);
+            draft.actions.addFaction(factionId);
           } else {
-            draft.removeFaction(factionId);
+            draft.actions.removeFaction(factionId);
           }
         }}
-        onRemoveFaction={draft.removeLastFaction}
-        onAddFaction={draft.addRandomFaction}
+        onRemoveFaction={draft.actions.removeLastFaction}
+        onAddFaction={draft.actions.addRandomFaction}
       />
       <Box mt="lg">
         <SlicesSection
@@ -224,10 +224,16 @@ export default function DraftNew() {
           config={draft.config}
           mode="create"
           slices={draft.slices}
-          onRandomizeSlices={openGenerateSlices}
-          onAddNewSlice={draft.addNewSlice}
+          onRandomizeSlices={() => {
+            if (draft.config.generateSlices) {
+              draft.actions.randomizeSlices();
+            } else {
+              openGenerateSlices();
+            }
+          }}
+          onAddNewSlice={draft.actions.addNewSlice}
           onDeleteTile={(sliceIdx, tileIdx) => {
-            draft.removeSystemFromSlice(sliceIdx, tileIdx);
+            draft.actions.removeSystemFromSlice(sliceIdx, tileIdx);
           }}
           onSelectTile={(sliceIdx, tileIdx) => {
             openTile.current = {
@@ -237,8 +243,8 @@ export default function DraftNew() {
             };
             openPlanetFinder();
           }}
-          onClearSlice={draft.clearSlice}
-          onRandomizeSlice={draft.randomizeSlice}
+          onClearSlice={draft.actions.clearSlice}
+          onRandomizeSlice={draft.actions.randomizeSlice}
         />
       </Box>
 
@@ -266,7 +272,7 @@ export default function DraftNew() {
               map={draft.map}
               stats={draft.mapStats()}
               onDeleteSystemTile={(tileIdx) => {
-                draft.removeSystemFromMap(tileIdx);
+                draft.actions.removeSystemFromMap(tileIdx);
               }}
               onSelectSystemTile={(tileIdx) => {
                 openTile.current = {
@@ -276,8 +282,8 @@ export default function DraftNew() {
                 };
                 openPlanetFinder();
               }}
-              onClearMap={draft.clearMap}
-              onRandomizeMap={draft.randomizeMap}
+              onClearMap={draft.actions.clearMap}
+              onRandomizeMap={draft.actions.randomizeMap}
             />
           )}
           {!showFullMap && advancedOptions}

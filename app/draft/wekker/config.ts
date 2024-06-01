@@ -1,4 +1,5 @@
 import { DraftConfig } from "../types";
+import { generateSlices } from "./sliceGenerator";
 
 export const wekker: DraftConfig = {
   type: "wekker",
@@ -60,4 +61,5 @@ export const wekker: DraftConfig = {
       [3, -1],
     ],
   } as Record<number, [number, number][]>,
+  generateSlices,
 };

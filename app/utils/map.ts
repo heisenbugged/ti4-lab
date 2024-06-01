@@ -204,3 +204,11 @@ export function tileColor(system: System): "RED" | "BLUE" | undefined {
   if (system.anomaly) return "RED";
   return "BLUE";
 }
+
+export const emptySlice = (numSystems: number): Slice => [
+  -1,
+  ...Array.from({ length: numSystems }, () => 0),
+];
+
+export const emptySlices = (numSlices: number, numSystems: number): Slice[] =>
+  Array.from({ length: numSlices }, () => emptySlice(numSystems));

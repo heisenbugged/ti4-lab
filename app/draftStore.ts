@@ -12,6 +12,8 @@ import {
   Variance,
 } from "./types";
 import {
+  emptySlice,
+  emptySlices,
   hydrateMap,
   parseMapString,
   playerSpeakerOrder,
@@ -21,11 +23,9 @@ import {
 import { mapStringOrder } from "./data/mapStringOrder";
 import { systemData, systemIds } from "./data/systemData";
 import { factionIds, factions } from "./data/factionData";
-import { fisherYatesShuffle, randomizeSlices } from "./stats";
-
+import { fisherYatesShuffle, generateSlices } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig, DraftType } from "./draft/types";
-import { generateSlices } from "./draft/miltyeq/sliceGenerator";
 
 const MECATOL_REX_ID = 18;
 
@@ -224,40 +224,58 @@ type NewDraftState = {
   players: Player[];
   varianceValue: Variance;
   opulenceValue: Opulence;
-  setDraftSpeaker: (draftSpeaker: boolean) => void;
-  randomizeSlices: (
-    numSlices: number,
-    varianceValue: Variance,
-    opulenceValue: Opulence,
-    excludeMapTiles: boolean,
-  ) => void;
-  randomizeSlice: (sliceIdx: number) => void;
-  clearSlice: (sliceIdx: number) => void;
-  initializeMap: (args: {
-    mapType: DraftType;
-    numFactions: number;
-    numSlices: number;
-    players: Player[];
-    randomizeSlices: boolean;
-    randomizeMap: boolean;
-  }) => void;
+
   validationErrors: () => string[]; // TODO: Move derived data to hook.
   exportableMapString: () => string; // TODO: Move derived data to hook.
   mapStats: () => MapStats; // TODO: Move derived data to hook.
-  setNumFactionsToDraft: (num: number | undefined) => void;
-  updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
-  clearMap: () => void;
-  randomizeMap: () => void;
-  importMap: (mapString: string) => void;
-  addSystemToMap: (tileIdx: number, system: System) => void;
-  removeSystemFromMap: (tileIdx: number) => void;
-  addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) => void;
-  removeSystemFromSlice: (sliceIdx: number, tileIdx: number) => void;
-  addNewSlice: () => void;
-  addFaction: (id: FactionId) => void;
-  addRandomFaction: () => void;
-  removeLastFaction: () => void;
-  removeFaction: (id: FactionId) => void;
+
+  actions: {
+    setDraftSpeaker: (draftSpeaker: boolean) => void;
+    updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
+
+    // faction actions
+    setNumFactionsToDraft: (num: number | undefined) => void;
+    addFaction: (id: FactionId) => void;
+    addRandomFaction: () => void;
+    removeLastFaction: () => void;
+    removeFaction: (id: FactionId) => void;
+
+    // system actions
+    // setRandomMap: () => void;
+    addSystemToMap: (tileIdx: number, system: System) => void;
+    removeSystemFromMap: (tileIdx: number) => void;
+    addSystemToSlice: (
+      sliceIdx: number,
+      tileIdx: number,
+      system: System,
+    ) => void;
+    removeSystemFromSlice: (sliceIdx: number, tileIdx: number) => void;
+
+    // slice actions
+    addNewSlice: () => void;
+    clearSlice: (sliceIdx: number) => void;
+
+    // map actions
+    initializeMap: (args: {
+      mapType: DraftType;
+      numFactions: number;
+      numSlices: number;
+      players: Player[];
+      randomizeSlices: boolean;
+      randomizeMap: boolean;
+    }) => void;
+    clearMap: () => void;
+    importMap: (mapString: string) => void;
+
+    // randomization
+    randomizeMap: () => void;
+    randomizeSlice: (sliceIdx: number) => void;
+    randomizeSlices: (
+      numSlices?: number,
+      varianceValue?: Variance,
+      opulenceValue?: Opulence,
+    ) => void;
+  };
 };
 
 export const useNewDraft = create<NewDraftState>((set, get) => ({
@@ -283,150 +301,6 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   draftSpeaker: false,
   varianceValue: "medium",
   opulenceValue: "medium",
-
-  initializeMap: ({
-    mapType,
-    numFactions,
-    numSlices,
-    players,
-    randomizeSlices,
-    randomizeMap,
-  }: {
-    mapType: DraftType;
-    numFactions: number;
-    numSlices: number;
-    players: Player[];
-    randomizeSlices: boolean;
-    randomizeMap: boolean;
-  }) => {
-    const config = draftConfig[mapType];
-    set({ config });
-
-    // randomly pull factions from the list of all factions
-    const availableFactions: FactionId[] = fisherYatesShuffle(
-      factionIds,
-      numFactions,
-    );
-
-    let slices: Slice[] = [];
-    // if randomize slices, do a randomized draft of slices!
-    if (randomizeSlices) {
-      // Use draft-specific randomization algorithm/
-      if (config.generateSlices !== undefined) {
-        slices = generateSlices(numSlices, systemIds).map((s) => [-1, ...s]);
-      } else {
-        // If not defined, used our 'standard' statistics sampling randomization,
-        get().randomizeSlices(numSlices, "medium", "medium", false);
-        slices = get().slices;
-      }
-    } else {
-      for (let i = 0; i < numSlices; i++) {
-        slices.push([
-          -1,
-          ...Array.from({ length: config.numSystemsInSlice }, () => 0),
-        ]);
-      }
-    }
-    if (randomizeMap) {
-      get().randomizeMap();
-    }
-
-    set({
-      config,
-      map: randomizeMap ? get().map : [...EMPTY_MAP],
-      slices,
-      players,
-      initialized: true,
-      availableFactions,
-      numFactionsToDraft: numFactions,
-    });
-  },
-
-  setDraftSpeaker: (draftSpeaker: boolean) => set({ draftSpeaker }),
-
-  randomizeSlice: (sliceIdx: number) =>
-    set((state) => {
-      // get all used system ids of other tiles to exclude from the random pull.
-      const usedSliceSystems = state.slices
-        .filter((_, idx) => idx !== sliceIdx)
-        .flat(1)
-        .filter((i) => i !== -1);
-
-      const usedMapSystems: number[] = [];
-      state.config.modifiableMapTiles.forEach((idx) => {
-        const system = state.map[idx].system;
-        if (system) {
-          usedMapSystems.push(system.id);
-        }
-      });
-
-      const usedSystemIds = [...usedSliceSystems, ...usedMapSystems];
-      const availableSystems = systemIds.filter(
-        (s) => s !== MECATOL_REX_ID && !usedSystemIds.includes(s),
-      );
-
-      // TTPG algorithm
-      const generatedSlice = generateSlices(1, availableSystems)[0];
-
-      // If Nucleum
-      // now generate a single slice with the saved variance/opulence,
-      // excluding systems used by other slices and the map
-      // const slice = randomizeSlices(
-      //   1,
-      //   availableSystems,
-      //   state.varianceValue,
-      //   state.opulenceValue,
-      //   state.config.numSystemsInSlice,
-      //   state.config.type,
-      // )[0].systems.map((sys) => sys.id.toString());
-
-      // update slice in array
-      const slices = [...state.slices];
-      slices[sliceIdx] = [-1, ...generatedSlice];
-
-      return { slices };
-    }),
-
-  clearSlice: (sliceIdx: number) =>
-    set((state) => {
-      const slices = [...state.slices];
-      slices[sliceIdx] = [
-        -1,
-        ...Array.from({ length: state.config.numSystemsInSlice }, () => 0),
-      ];
-      return { slices };
-    }),
-
-  randomizeSlices: (
-    numSlices: number,
-    varianceValue: Variance,
-    opulenceValue: Opulence,
-    excludeMapTiles: boolean,
-  ) => {
-    const systemIdsOnMap = get()
-      .map.map((tile) => tile.system?.id)
-      .filter(Boolean);
-
-    let systems = Object.values(systemData).filter(
-      (s) => s.id !== MECATOL_REX_ID,
-    );
-    if (excludeMapTiles) {
-      systems = systems.filter((s) => !systemIdsOnMap.includes(s.id));
-    }
-
-    const slices = randomizeSlices(
-      numSlices,
-      systems,
-      varianceValue,
-      opulenceValue,
-      get().config.numSystemsInSlice,
-      get().config.type,
-    )
-      .map((s) => s.systems.map((sys) => sys.id))
-      .map((s) => [-1, ...s]);
-
-    set({ slices, varianceValue, opulenceValue });
-  },
 
   validationErrors: () => {
     const errors = [];
@@ -463,6 +337,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
     return errors;
   },
+
   exportableMapString: () => {
     // we pretend as if all players have seated.
     const hydratedMap = hydrateMap(
@@ -515,151 +390,225 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       },
     );
   },
-  setNumFactionsToDraft: (num) => set({ numFactionsToDraft: num }),
-  updatePlayer: (playerIdx: number, player: Partial<Player>) =>
-    set(({ players }) => ({
-      players: players.map((p, idx) =>
-        idx === playerIdx ? { ...p, ...player } : p,
-      ),
-    })),
-  importMap: (mapString: string) =>
-    set((state) => {
-      const rawMap = parseMapString(
-        state.config,
-        mapString.split(" ").map(Number),
-      );
-      const { slices, map: slicedMap } = sliceMap(state.config, rawMap);
-      return {
-        map: slicedMap,
-        slices,
-      };
-    }),
 
-  clearMap: () =>
-    set((state) => {
-      const map = [...state.map];
-      state.config.modifiableMapTiles.forEach((idx) => {
-        map[idx] = {
-          position: state.map[idx].position,
-          idx: state.map[idx].idx,
+  actions: {
+    initializeMap: ({
+      mapType,
+      numFactions,
+      numSlices,
+      players,
+      randomizeSlices: shouldRandomizeSlices,
+      randomizeMap: shouldRandomizeMap,
+    }) => {
+      const config = draftConfig[mapType];
+
+      // randomly pull factions from the list of all factions
+      const availableFactions: FactionId[] = fisherYatesShuffle(
+        factionIds,
+        numFactions,
+      );
+
+      const slices: Slice[] = shouldRandomizeSlices
+        ? randomizeSlices(config, numSlices)
+        : emptySlices(numSlices, config.numSystemsInSlice);
+
+      const map = shouldRandomizeMap ? randomizeMap(config, slices) : EMPTY_MAP;
+
+      set({
+        config,
+        map,
+        slices,
+        players,
+        initialized: true,
+        availableFactions,
+        numFactionsToDraft: numFactions,
+      });
+    },
+
+    setDraftSpeaker: (draftSpeaker: boolean) => set({ draftSpeaker }),
+
+    clearSlice: (sliceIdx: number) =>
+      set((state) => {
+        const slices = [...state.slices];
+        slices[sliceIdx] = emptySlice(state.config.numSystemsInSlice);
+        return { slices };
+      }),
+
+    setNumFactionsToDraft: (num) => set({ numFactionsToDraft: num }),
+    updatePlayer: (playerIdx: number, player: Partial<Player>) =>
+      set(({ players }) => ({
+        players: players.map((p, idx) =>
+          idx === playerIdx ? { ...p, ...player } : p,
+        ),
+      })),
+    importMap: (mapString: string) =>
+      set((state) => {
+        const rawMap = parseMapString(
+          state.config,
+          mapString.split(" ").map(Number),
+        );
+        const { slices, map: slicedMap } = sliceMap(state.config, rawMap);
+        return {
+          map: slicedMap,
+          slices,
+        };
+      }),
+
+    clearMap: () =>
+      set((state) => {
+        const map = [...state.map];
+        state.config.modifiableMapTiles.forEach((idx) => {
+          map[idx] = {
+            position: state.map[idx].position,
+            idx: state.map[idx].idx,
+            system: undefined,
+            type: "OPEN",
+          };
+        });
+        return { map };
+      }),
+
+    addSystemToMap: (tileIdx: number, system: System) =>
+      set((state) => {
+        const map = [...state.map];
+        map[tileIdx] = {
+          ...state.map[tileIdx],
+          type: "SYSTEM",
+          system,
+        };
+
+        return { map };
+      }),
+
+    removeSystemFromMap: (tileIdx: number) =>
+      set((state) => {
+        const map = [...state.map];
+        map[tileIdx] = {
+          position: state.map[tileIdx].position,
+          idx: state.map[tileIdx].idx,
           system: undefined,
           type: "OPEN",
         };
-      });
-      return { map };
-    }),
+        return { map };
+      }),
 
-  randomizeMap: () => {
-    // updated slices.
-    const slices = get().slices;
-    const config = get().config;
+    addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
+      set((state) => {
+        const slices = [...state.slices];
+        slices[sliceIdx] = [...slices[sliceIdx]];
+        slices[sliceIdx][tileIdx] = system.id;
+        return { slices };
+      }),
 
-    const mapString = [...EMPTY_MAP_STRING];
-    const numMapTiles = config.modifiableMapTiles.length;
-    const usedSystemIds = slices.flat(1).filter((i) => i !== -1);
-    const availableSystemIds = fisherYatesShuffle(
-      Object.keys(systemData)
-        .filter(
-          (id) =>
-            !usedSystemIds.includes(Number(id)) &&
-            Number(id) !== MECATOL_REX_ID,
-        )
-        .map(Number),
-      numMapTiles,
-    );
+    removeSystemFromSlice: (sliceIdx: number, tileIdx: number) =>
+      set((state) => {
+        const slices = [...state.slices];
+        slices[sliceIdx] = [...slices[sliceIdx]];
+        slices[sliceIdx][tileIdx] = 0;
+        return { slices };
+      }),
 
-    config.modifiableMapTiles.forEach((idx) => {
-      // idx - 1 to account for mecatol
-      mapString[idx - 1] = availableSystemIds.pop()!;
-    });
+    addNewSlice: () =>
+      set((state) => ({
+        slices: [emptySlice(state.config.numSystemsInSlice), ...state.slices],
+      })),
 
-    return set({ map: parseMapString(config, mapString) });
+    addFaction: (id: FactionId) =>
+      set(({ availableFactions }) => ({
+        availableFactions: [...availableFactions, id],
+      })),
+
+    addRandomFaction: () =>
+      set((state) => {
+        const availableFactions = factionIds.filter(
+          (f) => !state.availableFactions.includes(f),
+        );
+        const idx = Math.floor(Math.random() * availableFactions.length);
+        const faction = availableFactions[idx];
+        return {
+          availableFactions: [...state.availableFactions, faction],
+          numFactionsToDraft: state.numFactionsToDraft + 1,
+        };
+      }),
+
+    removeLastFaction: () =>
+      set((state) => {
+        const availableFactions = state.availableFactions.slice(0, -1);
+        return {
+          availableFactions,
+          numFactionsToDraft: availableFactions.length,
+        };
+      }),
+
+    removeFaction: (id: FactionId) =>
+      set(({ availableFactions }) => ({
+        numFactionsToDraft: availableFactions.length - 1,
+        availableFactions: availableFactions.filter((f) => f !== id),
+      })),
+
+    // randomization actions
+    randomizeMap: () =>
+      set((state) => {
+        const map = randomizeMap(state.config, state.slices);
+        return { map };
+      }),
+    randomizeSlices: (numSlices, varianceValue, opulenceValue) =>
+      set((state) => {
+        const availableSystems = systemIds.filter((s) => s !== MECATOL_REX_ID);
+        const slices = randomizeSlices(
+          state.config,
+          numSlices ?? state.slices.length,
+          availableSystems,
+          opulenceValue,
+          varianceValue,
+        );
+
+        return { slices, varianceValue, opulenceValue };
+      }),
+    randomizeSlice: (sliceIdx: number) =>
+      set((state) => {
+        // get all used system ids of other tiles to exclude from the random pull.
+        const usedSliceSystems = state.slices
+          .filter((_, idx) => idx !== sliceIdx)
+          .flat(1)
+          .filter((i) => i !== -1);
+
+        const usedMapSystems: number[] = [];
+        state.config.modifiableMapTiles.forEach((idx) => {
+          const system = state.map[idx].system;
+          if (system) {
+            usedMapSystems.push(system.id);
+          }
+        });
+
+        const usedSystemIds = [...usedSliceSystems, ...usedMapSystems];
+        const availableSystems = systemIds.filter(
+          (s) => s !== MECATOL_REX_ID && !usedSystemIds.includes(s),
+        );
+
+        const generatedSlice = randomizeSlices(
+          state.config,
+          1,
+          availableSystems,
+          state.opulenceValue,
+          state.varianceValue,
+        )[0];
+
+        // update slice in array
+        const slices = [...state.slices];
+        slices[sliceIdx] = generatedSlice;
+
+        debugger;
+
+        return { slices };
+      }),
   },
-
-  addSystemToMap: (tileIdx: number, system: System) =>
-    set((state) => {
-      const map = [...state.map];
-      map[tileIdx] = {
-        ...state.map[tileIdx],
-        type: "SYSTEM",
-        system,
-      };
-
-      return { map };
-    }),
-
-  removeSystemFromMap: (tileIdx: number) =>
-    set((state) => {
-      const map = [...state.map];
-      map[tileIdx] = {
-        position: state.map[tileIdx].position,
-        idx: state.map[tileIdx].idx,
-        system: undefined,
-        type: "OPEN",
-      };
-      return { map };
-    }),
-
-  addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
-    set((state) => {
-      const slices = [...state.slices];
-      slices[sliceIdx] = [...slices[sliceIdx]];
-      slices[sliceIdx][tileIdx] = system.id;
-      return { slices };
-    }),
-
-  removeSystemFromSlice: (sliceIdx: number, tileIdx: number) =>
-    set((state) => {
-      const slices = [...state.slices];
-      slices[sliceIdx] = [...slices[sliceIdx]];
-      slices[sliceIdx][tileIdx] = 0;
-      return { slices };
-    }),
-
-  addNewSlice: () =>
-    set((state) => ({
-      // TODO: Check if this code is duplicate.
-      slices: [
-        [
-          -1,
-          ...Array.from({ length: state.config.numSystemsInSlice }, () => 0),
-        ],
-        ...state.slices,
-      ],
-    })),
-
-  addFaction: (id: FactionId) =>
-    set(({ availableFactions }) => ({
-      availableFactions: [...availableFactions, id],
-    })),
-
-  addRandomFaction: () =>
-    set((state) => {
-      const availableFactions = factionIds.filter(
-        (f) => !state.availableFactions.includes(f),
-      );
-      const idx = Math.floor(Math.random() * availableFactions.length);
-      const faction = availableFactions[idx];
-      return {
-        availableFactions: [...state.availableFactions, faction],
-        numFactionsToDraft: state.numFactionsToDraft + 1,
-      };
-    }),
-
-  removeLastFaction: () =>
-    set((state) => {
-      const availableFactions = state.availableFactions.slice(0, -1);
-      return {
-        availableFactions,
-        numFactionsToDraft: availableFactions.length,
-      };
-    }),
-
-  removeFaction: (id: FactionId) =>
-    set(({ availableFactions }) => ({
-      numFactionsToDraft: availableFactions.length - 1,
-      availableFactions: availableFactions.filter((f) => f !== id),
-    })),
+  // randomizeSlices: (
+  //   numSlices: number,
+  //   varianceValue: Variance,
+  //   opulenceValue: Opulence,
+  //   excludeMapTiles: boolean,
+  // ) => void;
 }));
 
 function systemStats(system: System): SystemStats {
@@ -701,4 +650,51 @@ function systemStats(system: System): SystemStats {
       blueTraits: 0,
     },
   );
+}
+
+function randomizeMap(config: DraftConfig, slices: Slice[]) {
+  const mapString = [...EMPTY_MAP_STRING];
+  const numMapTiles = config.modifiableMapTiles.length;
+  const usedSystemIds = slices.flat(1).filter((i) => i !== -1);
+  const availableSystemIds = fisherYatesShuffle(
+    systemIds.filter(
+      (id) => !usedSystemIds.includes(id) && id !== MECATOL_REX_ID,
+    ),
+    numMapTiles,
+  );
+
+  config.modifiableMapTiles.forEach((idx) => {
+    // idx - 1 to account for mecatol
+    mapString[idx - 1] = availableSystemIds.pop()!;
+  });
+
+  return parseMapString(config, mapString);
+}
+
+function randomizeSlices(
+  config: DraftConfig,
+  numSlices: number,
+  availableSystems: number[] = systemIds,
+  opulence: Opulence = "medium",
+  variance: Variance = "medium",
+) {
+  let slices: Slice[] = [];
+  if (config.generateSlices !== undefined) {
+    // Use draft-specific randomization algorithm.
+    slices = config
+      .generateSlices(numSlices, availableSystems)
+      .map((s) => [-1, ...s]);
+  } else {
+    // If not defined, used our 'standard' statistics sampling randomization,
+    slices = generateSlices(
+      numSlices,
+      availableSystems.map((id) => systemData[id]),
+      variance,
+      opulence,
+      config.numSystemsInSlice,
+      config.type,
+    ).map((s) => [-1, ...s.systems.map((sys) => sys.id)]);
+  }
+
+  return slices;
 }

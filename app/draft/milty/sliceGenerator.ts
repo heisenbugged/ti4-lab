@@ -56,7 +56,7 @@ export function generateSlices(sliceCount: number, availableSystems: number[]) {
   // finally, we separate anomalies
   for (let sliceIndex = 0; sliceIndex < slices.length; sliceIndex++) {
     let slice = slices[sliceIndex];
-    slice = separateAnomalies(slice, SLICE_SHAPES.milty_eq);
+    slice = separateAnomalies(slice, SLICE_SHAPES.milty);
     slices[sliceIndex] = slice;
   }
 
