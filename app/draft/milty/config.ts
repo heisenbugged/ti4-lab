@@ -1,4 +1,5 @@
 import { DraftConfig } from "../types";
+import { generateSlices } from "./sliceGenerator";
 
 export const milty: DraftConfig = {
   type: "milty",
@@ -59,4 +60,5 @@ export const milty: DraftConfig = {
       [2, 0],
     ],
   } as Record<number, [number, number][]>,
+  generateSlices,
 };
