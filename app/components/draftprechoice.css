@@ -1,0 +1,10 @@
+
+.withBottomLabel {
+    padding-top: 12px;
+    margin-bottom: calc(2.25rem * var(--mantine-scale));
+}
+
+.withBottomLabel .mantine-Slider-label {
+    top: auto;
+    bottom: calc(-2.25rem * var(--mantine-scale));
+}

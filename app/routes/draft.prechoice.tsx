@@ -6,6 +6,7 @@ import {
   Grid,
   Group,
   Input,
+  Slider,
   Stack,
   Switch,
   Text,
@@ -18,6 +19,8 @@ import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "./draft.new/components/PlayerInputSection";
 import { useNavigate } from "@remix-run/react";
 import { DraftConfig, DraftType, draftConfig } from "~/draft";
+
+import "../components/draftprechoice.css";
 
 type PrechoiceMap = {
   title: string;
@@ -134,8 +137,8 @@ export default function DraftPrechoice() {
   const navigate = useNavigate();
   const [hoveredMapType, setHoveredMapType] = useState<DraftType | undefined>();
   const [selectedMapType, setSelectedMapType] = useState<DraftType>("heisen");
-  const [numFactions, setNumFactions] = useState<string>("");
-  const [numSlices, setNumSlices] = useState<string>("");
+  const [numFactions, setNumFactions] = useState(6);
+  const [numSlices, setNumSlices] = useState(6);
   const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
   const [randomizeMap, setRandomizeMap] = useState<boolean>(true);
   const [players, setPlayers] = useState<Player[]>([
@@ -171,9 +174,6 @@ export default function DraftPrechoice() {
       },
     });
   };
-
-  const hasValidFactions = Number(numFactions) >= 6;
-  const hasValidSlices = Number(numSlices) >= 6 && Number(numSlices) <= 9;
 
   return (
     <Grid mt="lg">
@@ -232,50 +232,30 @@ export default function DraftPrechoice() {
             <Input.Wrapper
               label="# of Factions"
               description="The number factions available for the draft. Recommended is player count + 3. Can be changed during draft building."
-              error={
-                numFactions.length > 0 && !hasValidFactions
-                  ? "Must be at least 6 and not greater than 9"
-                  : null
-              }
             >
-              <Input
-                placeholder="9"
+              <Slider
+                min={6}
+                max={25}
+                step={1}
+                labelAlwaysOn
+                className="withBottomLabel"
+                onChange={(value) => setNumFactions(value)}
                 value={numFactions}
-                type="number"
-                onChange={(e) => {
-                  if (e.currentTarget.value.length === 0) {
-                    setNumFactions("");
-                    return;
-                  }
-                  setNumFactions(e.currentTarget.value);
-                }}
-                error={numFactions.length > 0 && !hasValidFactions}
-                onWheel={(e) => e.currentTarget.blur()}
               />
             </Input.Wrapper>
 
             <Input.Wrapper
               label="# of Slices"
               description="The number of slices that will be available for the draft. Can be changed during draft building."
-              error={
-                numSlices.length > 0 && !hasValidSlices
-                  ? "Must be at least 6"
-                  : null
-              }
             >
-              <Input
-                placeholder="9"
+              <Slider
+                min={6}
+                max={9}
+                step={1}
+                labelAlwaysOn
+                className="withBottomLabel"
+                onChange={(value) => setNumSlices(value)}
                 value={numSlices}
-                type="number"
-                onChange={(e) => {
-                  if (e.currentTarget.value.length === 0) {
-                    setNumSlices("");
-                    return;
-                  }
-                  setNumSlices(e.currentTarget.value);
-                }}
-                error={numSlices.length > 0 && !hasValidSlices}
-                onWheel={(e) => e.currentTarget.blur()}
               />
             </Input.Wrapper>
 
@@ -294,12 +274,7 @@ export default function DraftPrechoice() {
               disabled={!showRandomizeMapTiles}
             />
           </Stack>
-          <Button
-            size="lg"
-            w="100%"
-            onMouseDown={handleContinue}
-            disabled={!hasValidFactions || !hasValidSlices}
-          >
+          <Button size="lg" w="100%" onMouseDown={handleContinue}>
             Continue
           </Button>
         </Stack>
