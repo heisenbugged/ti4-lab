@@ -23,7 +23,7 @@ export function PlayerInputSection({ players, onChangeName }: Props) {
               placeholder={`Player ${idx + 1}`}
               onChange={(e) => onChangeName(idx, e.currentTarget.value)}
             />
-            <Indicator color={playerColors[player.id]} size={18} />
+            <Indicator color={playerColors[player.id]} size={18} zIndex={0} />
           </Group>
         ))}
       </Stack>

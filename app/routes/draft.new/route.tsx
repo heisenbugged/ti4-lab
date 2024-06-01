@@ -49,6 +49,7 @@ export default function DraftNew() {
       players,
       randomizeSlices,
       randomizeMap,
+      draftSpeaker,
     } = location.state;
 
     draft.actions.initializeMap({
@@ -58,6 +59,7 @@ export default function DraftNew() {
       players,
       randomizeSlices,
       randomizeMap,
+      draftSpeaker,
     });
 
     // a bit hacky, but once we 'consume' the state, we remove it from the history

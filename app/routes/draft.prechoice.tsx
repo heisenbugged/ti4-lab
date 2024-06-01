@@ -162,7 +162,6 @@ export default function DraftPrechoice() {
     );
   };
   const handleContinue = () => {
-    console.log("randomizeMap is", randomizeMap);
     navigate("/draft/new", {
       state: {
         mapType: selectedMapType,
@@ -171,6 +170,7 @@ export default function DraftPrechoice() {
         randomizeSlices,
         randomizeMap,
         players,
+        draftSpeaker: config?.type === "heisen",
       },
     });
   };

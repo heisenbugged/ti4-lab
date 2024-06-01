@@ -267,6 +267,7 @@ type NewDraftState = {
       players: Player[];
       randomizeSlices: boolean;
       randomizeMap: boolean;
+      draftSpeaker?: boolean;
     }) => void;
     clearMap: () => void;
     importMap: (mapString: string) => void;
@@ -403,6 +404,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       players,
       randomizeSlices: shouldRandomizeSlices,
       randomizeMap: shouldRandomizeMap,
+      draftSpeaker,
     }) => {
       const config = draftConfig[mapType];
 
@@ -426,6 +428,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         initialized: true,
         availableFactions,
         numFactionsToDraft: numFactions,
+        draftSpeaker: draftSpeaker ?? false,
       });
     },
 
