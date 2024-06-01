@@ -49,7 +49,7 @@ export const hydrateMap = (
     if (!player || player.sliceIdx === undefined) return;
     const slice = slices[player.sliceIdx];
 
-    config.seatTilePositions[homeIdx]?.forEach(([x, y], sliceIdx) => {
+    config.seatTilePlacement[homeIdx]?.forEach(([x, y], sliceIdx) => {
       const pos = { x: tile.position.x + x, y: tile.position.y + y };
       // find tile the matches the hexagonal coordinate position to modify
       const idxToModify = hydrated.findIndex(
@@ -103,7 +103,7 @@ export const sliceMap = (
   config.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
     const homeTile = tiles[tileIdx];
     const slice: string[] = ["-1"];
-    config.seatTilePositions[seatIdx]?.forEach(([x, y]) => {
+    config.seatTilePlacement[seatIdx]?.forEach(([x, y]) => {
       const pos = { x: homeTile.position.x + x, y: homeTile.position.y + y };
       // find tile the matches the hexagonal coordinate position to modify
       const tileToModify = tiles.find(

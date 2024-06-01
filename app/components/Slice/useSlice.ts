@@ -10,7 +10,7 @@ import {
 
 export function useSlice(config: DraftConfig, slice: string[]) {
   const tiles = useMemo(
-    () => parseMapString(config, slice, config.seatTilePlacement, false),
+    () => parseMapString(config, slice, config.seatTilePositions, false),
     [slice],
   );
   const systems = systemsInSlice(slice);

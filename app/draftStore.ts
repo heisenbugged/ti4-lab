@@ -309,15 +309,17 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     let slices = [];
     // if randomize slices, do a randomized draft of slices!
     if (randomizeSlices) {
-      // just a quick patch
-      slices = generateSlices(numSlices, systemIds).map((s) => [
-        "-1",
-        ...s.map((id) => id.toString()),
-      ]);
-
-      // This is for nucleum/
-      // get().randomizeSlices(numSlices, "medium", "medium", false);
-      // slices = get().slices;
+      // Use draft-specific randomization algorithm/
+      if (config.generateSlices !== undefined) {
+        slices = generateSlices(numSlices, systemIds).map((s) => [
+          "-1",
+          ...s.map((id) => id.toString()),
+        ]);
+      } else {
+        // If not defined, used our 'standard' statistics sampling randomization,
+        get().randomizeSlices(numSlices, "medium", "medium", false);
+        slices = get().slices;
+      }
     } else {
       for (let i = 0; i < numSlices; i++) {
         slices.push([

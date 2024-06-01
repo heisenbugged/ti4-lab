@@ -46,7 +46,7 @@ export function randomizeSlices(
       mapType,
     );
     if (sample) selectedSlices.push(sample);
-    // currently if sample failed it just doesn't return a slice
+    // TODO: currently if sample failed it just doesn't return a slice
     // which is not great, but is just a stopgap until we
     // replace this with a more robust solution
   }
@@ -121,29 +121,6 @@ function sampleSlice(
       stdDev * varianceMultiplier
     ) {
       invalidCandidate = true;
-    }
-
-    // do not allow systems with two supernovas (for now ... need a more robust solution later)
-    if (
-      sliceCandidate.systems.filter((s) => s.anomaly === "SUPERNOVA").length > 1
-    ) {
-      invalidCandidate = true;
-    }
-
-    // reject if more than 2 red or 2 blue on milty-eq
-    if (mapType === "miltyeq" || mapType === "miltyeqless") {
-      const numRed = sliceCandidate.systems.reduce((acc, s) => {
-        acc = tileColor(s) === "RED" ? acc + 1 : acc;
-        return acc;
-      }, 0);
-      const numBlue = sliceCandidate.systems.reduce((acc, s) => {
-        acc = tileColor(s) === "BLUE" ? acc + 1 : acc;
-        return acc;
-      }, 0);
-
-      if (numRed > 2 || numBlue > 2) {
-        invalidCandidate = true;
-      }
     }
   } while (invalidCandidate && attempt < maxAttempts);
 
