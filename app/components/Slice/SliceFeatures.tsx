@@ -3,9 +3,10 @@ import { systemsInSlice, techSpecialtiesForSystems } from "~/utils/map";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
 import { Wormhole } from "../features/Wormhole";
+import { Slice } from "~/types";
 
 type Props = {
-  slice: string[];
+  slice: Slice;
 };
 
 export function SliceFeatures({ slice }: Props) {

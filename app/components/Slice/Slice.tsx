@@ -3,7 +3,7 @@ import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
-import { Player, Tile } from "~/types";
+import { Player, Slice as TSlice, Tile } from "~/types";
 import { useSlice } from "./useSlice";
 import { SliceFeatures } from "./SliceFeatures";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
@@ -14,7 +14,7 @@ type Props = {
   config: DraftConfig;
   id: string;
   name: string;
-  systems: string[];
+  slice: TSlice;
   player?: Player;
   mode: "create" | "draft";
   onSelectTile?: (tile: Tile) => void;
@@ -28,7 +28,7 @@ export function Slice({
   config,
   id,
   name,
-  systems,
+  slice,
   player,
   mode,
   onSelectTile,
@@ -37,7 +37,7 @@ export function Slice({
   onRandomizeSlice,
   onClearSlize,
 }: Props) {
-  const { tiles, total, optimal } = useSlice(config, systems);
+  const { tiles, total, optimal } = useSlice(config, slice);
   const selected = !!player;
 
   return (
@@ -135,7 +135,7 @@ export function Slice({
         px="md"
         py="sm"
       >
-        <SliceFeatures slice={systems} />
+        <SliceFeatures slice={slice} />
       </Box>
     </Stack>
   );

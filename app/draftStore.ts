@@ -6,6 +6,7 @@ import {
   Opulence,
   PersistedDraft,
   Player,
+  Slice,
   System,
   SystemStats,
   Variance,
@@ -29,18 +30,18 @@ import { generateSlices } from "./draft/miltyeq/sliceGenerator";
 const MECATOL_REX_ID = 18;
 
 const EMPTY_MAP_STRING =
-  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
-    " ",
-  );
+  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+    .split(" ")
+    .map(Number);
 const EMPTY_MAP = parseMapString(draftConfig.heisen, EMPTY_MAP_STRING);
 
 type DraftsState = {
   initialized: boolean;
   config: DraftConfig;
-  mapString: string[];
+  mapString: number[];
   hydratedMap: Map;
   players: Player[];
-  slices: string[][];
+  slices: Slice[];
   factions: FactionId[];
   currentPick: number;
   pickOrder: number[];
@@ -181,10 +182,11 @@ export const useDraft = create<DraftsState>((set, get) => ({
     }),
   hydrate: (draft: PersistedDraft) =>
     set(() => {
+      const mapString = draft.mapString.split(" ").map(Number);
       const config = draftConfig[draft.mapType];
       const parsedMap = parseMapString(
         config,
-        draft.mapString.split(" "),
+        mapString,
         mapStringOrder,
         false,
       );
@@ -199,7 +201,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
         initialized: true,
         config,
         hydratedMap: hydratedMap,
-        mapString: draft.mapString.split(" "),
+        mapString,
         players: draft.players,
         slices: draft.slices,
         factions: draft.factions,
@@ -215,7 +217,7 @@ type NewDraftState = {
   initialized: boolean;
   config: DraftConfig;
   map: Map;
-  slices: string[][];
+  slices: Slice[];
   numFactionsToDraft: number;
   draftSpeaker: boolean;
   availableFactions: FactionId[];
@@ -263,12 +265,12 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   config: draftConfig.heisen,
   map: EMPTY_MAP,
   slices: [
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
-    "-1 0 0 0".split(" "),
+    [-1, 0, 0, 0],
+    [-1, 0, 0, 0],
+    [-1, 0, 0, 0],
+    [-1, 0, 0, 0],
+    [-1, 0, 0, 0],
+    [-1, 0, 0, 0],
   ],
   availableFactions: [...factionIds],
   players: [
@@ -306,15 +308,12 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       numFactions,
     );
 
-    let slices = [];
+    let slices: Slice[] = [];
     // if randomize slices, do a randomized draft of slices!
     if (randomizeSlices) {
       // Use draft-specific randomization algorithm/
       if (config.generateSlices !== undefined) {
-        slices = generateSlices(numSlices, systemIds).map((s) => [
-          "-1",
-          ...s.map((id) => id.toString()),
-        ]);
+        slices = generateSlices(numSlices, systemIds).map((s) => [-1, ...s]);
       } else {
         // If not defined, used our 'standard' statistics sampling randomization,
         get().randomizeSlices(numSlices, "medium", "medium", false);
@@ -323,8 +322,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     } else {
       for (let i = 0; i < numSlices; i++) {
         slices.push([
-          "-1",
-          ...Array.from({ length: config.numSystemsInSlice }, () => "0"),
+          -1,
+          ...Array.from({ length: config.numSystemsInSlice }, () => 0),
         ]);
       }
     }
@@ -351,25 +350,23 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       const usedSliceSystems = state.slices
         .filter((_, idx) => idx !== sliceIdx)
         .flat(1)
-        .filter((i) => i !== "-1");
+        .filter((i) => i !== -1);
 
-      const usedMapSystems: string[] = [];
+      const usedMapSystems: number[] = [];
       state.config.modifiableMapTiles.forEach((idx) => {
         const system = state.map[idx].system;
         if (system) {
-          usedMapSystems.push(system.id.toString());
+          usedMapSystems.push(system.id);
         }
       });
 
       const usedSystemIds = [...usedSliceSystems, ...usedMapSystems];
       const availableSystems = systemIds.filter(
-        (s) => s !== MECATOL_REX_ID && !usedSystemIds.includes(s.toString()),
+        (s) => s !== MECATOL_REX_ID && !usedSystemIds.includes(s),
       );
 
       // TTPG algorithm
-      const generatedSlice = generateSlices(1, availableSystems)[0].map((id) =>
-        id.toString(),
-      );
+      const generatedSlice = generateSlices(1, availableSystems)[0];
 
       // If Nucleum
       // now generate a single slice with the saved variance/opulence,
@@ -385,7 +382,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
       // update slice in array
       const slices = [...state.slices];
-      slices[sliceIdx] = ["-1", ...generatedSlice];
+      slices[sliceIdx] = [-1, ...generatedSlice];
 
       return { slices };
     }),
@@ -394,8 +391,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     set((state) => {
       const slices = [...state.slices];
       slices[sliceIdx] = [
-        "-1",
-        ...Array.from({ length: state.config.numSystemsInSlice }, () => "0"),
+        -1,
+        ...Array.from({ length: state.config.numSystemsInSlice }, () => 0),
       ];
       return { slices };
     }),
@@ -425,8 +422,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       get().config.numSystemsInSlice,
       get().config.type,
     )
-      .map((s) => s.systems.map((sys) => sys.id.toString()))
-      .map((s) => ["-1", ...s]);
+      .map((s) => s.systems.map((sys) => sys.id))
+      .map((s) => [-1, ...s]);
 
     set({ slices, varianceValue, opulenceValue });
   },
@@ -442,7 +439,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     // if there are any zeroes in slices except for the first value in the slice, return false
     const slices = get().slices.map((slice) => slice.slice(1));
     slices.forEach((slice, idx) => {
-      if (slice.some((tile) => tile === "0")) {
+      if (slice.some((tile) => tile === 0)) {
         errors.push(`Slice ${idx} has empty tiles`);
       }
     });
@@ -484,7 +481,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     const stats: SystemStats[] = [];
     get().slices.forEach((slice) => {
       slice.forEach((t) => {
-        const system = systemData[parseInt(t)];
+        const system = systemData[t];
         if (!system) return;
         stats.push(systemStats(system));
       });
@@ -527,7 +524,10 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     })),
   importMap: (mapString: string) =>
     set((state) => {
-      const rawMap = parseMapString(state.config, mapString.split(" "));
+      const rawMap = parseMapString(
+        state.config,
+        mapString.split(" ").map(Number),
+      );
       const { slices, map: slicedMap } = sliceMap(state.config, rawMap);
       return {
         map: slicedMap,
@@ -556,11 +556,15 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
     const mapString = [...EMPTY_MAP_STRING];
     const numMapTiles = config.modifiableMapTiles.length;
-    const usedSystemIds = slices.flat(1).filter((i) => i !== "-1");
+    const usedSystemIds = slices.flat(1).filter((i) => i !== -1);
     const availableSystemIds = fisherYatesShuffle(
-      Object.keys(systemData).filter(
-        (id) => !usedSystemIds.includes(id) && id !== MECATOL_REX_ID.toString(),
-      ),
+      Object.keys(systemData)
+        .filter(
+          (id) =>
+            !usedSystemIds.includes(Number(id)) &&
+            Number(id) !== MECATOL_REX_ID,
+        )
+        .map(Number),
       numMapTiles,
     );
 
@@ -600,7 +604,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     set((state) => {
       const slices = [...state.slices];
       slices[sliceIdx] = [...slices[sliceIdx]];
-      slices[sliceIdx][tileIdx] = system.id.toString();
+      slices[sliceIdx][tileIdx] = system.id;
       return { slices };
     }),
 
@@ -608,16 +612,17 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     set((state) => {
       const slices = [...state.slices];
       slices[sliceIdx] = [...slices[sliceIdx]];
-      slices[sliceIdx][tileIdx] = "0";
+      slices[sliceIdx][tileIdx] = 0;
       return { slices };
     }),
 
   addNewSlice: () =>
     set((state) => ({
+      // TODO: Check if this code is duplicate.
       slices: [
         [
-          "-1",
-          ...Array.from({ length: state.config.numSystemsInSlice }, () => "0"),
+          -1,
+          ...Array.from({ length: state.config.numSystemsInSlice }, () => 0),
         ],
         ...state.slices,
       ],

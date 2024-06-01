@@ -5,6 +5,7 @@ import {
   HomeTile,
   Map,
   Player,
+  Slice,
   System,
   TechSpecialty,
   Tile,
@@ -33,7 +34,7 @@ export const hydrateMap = (
   config: DraftConfig,
   map: Map,
   players: Player[],
-  slices: string[][],
+  slices: Slice[],
 ): Map => {
   const hydrated: Map = [...map];
 
@@ -61,7 +62,7 @@ export const hydrateMap = (
         idx: idxToModify,
         position: pos,
         type: "SYSTEM",
-        system: systemData[parseInt(slice[sliceIdx + 1])],
+        system: systemData[slice[sliceIdx + 1]],
       };
     });
   });
@@ -97,12 +98,12 @@ const hydrateHomeTile = (
 export const sliceMap = (
   config: DraftConfig,
   map: Map,
-): { map: Map; slices: string[][] } => {
+): { map: Map; slices: Slice[] } => {
   const tiles = [...map];
-  const slices: string[][] = [];
+  const slices: Slice[] = [];
   config.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
     const homeTile = tiles[tileIdx];
-    const slice: string[] = ["-1"];
+    const slice: Slice = [-1];
     config.seatTilePlacement[seatIdx]?.forEach(([x, y]) => {
       const pos = { x: homeTile.position.x + x, y: homeTile.position.y + y };
       // find tile the matches the hexagonal coordinate position to modify
@@ -110,9 +111,9 @@ export const sliceMap = (
         (t) => t.position.x === pos.x && t.position.y === pos.y,
       )!;
       if (tileToModify.system) {
-        slice.push(tileToModify.system?.id.toString());
+        slice.push(tileToModify.system?.id);
       } else {
-        slice.push("0");
+        slice.push(0);
       }
 
       tiles[tileToModify.idx] = {
@@ -133,28 +134,20 @@ export const sliceMap = (
 
 export const parseMapString = (
   config: DraftConfig,
-  systems: string[],
+  systems: number[],
   positionOrder: TilePosition[] = mapStringOrder,
   includeMecatol = true,
 ): Map => {
-  const rawSystems = includeMecatol ? ["18", ...systems] : systems;
+  const rawSystems = includeMecatol ? [18, ...systems] : systems;
   const map: Map = rawSystems
-    .map((n) => [n, systemData[parseInt(n)]] as const)
+    .map((n) => [n, systemData[n]] as const)
     .map(([id, system], idx) => {
       const position = positionOrder[idx];
       const seatIdx = config.homeIdxInMapString.indexOf(idx);
       const baseAttrs = { id, idx, seatIdx, position, system };
-      const playerNo = playerLetters.findIndex((l) => id.includes(l));
-      const isHomeSystem = seatIdx >= 0 || id === "-1";
-
-      if (playerNo >= 0) {
-        return {
-          ...baseAttrs,
-          type: "PLAYER_DEMO" as const,
-          playerNumber: playerNo,
-          isHomeSystem,
-        };
-      } else if (seatIdx >= 0 || id === "-1") {
+      // TODO: -1 is generally interpreted as 'empty' by other tools.
+      // FIX THIS.
+      if (seatIdx >= 0 || id === -1) {
         return { ...baseAttrs, type: "HOME" as const };
       } else if (system) {
         return { ...baseAttrs, type: "SYSTEM" };
@@ -196,9 +189,9 @@ export const techSpecialtiesForSystems = (systems: System[]) =>
     return acc;
   }, [] as TechSpecialty[]);
 
-export const systemsInSlice = (slice: string[]): System[] =>
+export const systemsInSlice = (slice: Slice): System[] =>
   slice.reduce((acc, t) => {
-    const system = systemData[parseInt(t)];
+    const system = systemData[t];
     if (!system) return acc;
     acc.push(system);
     return acc;

@@ -139,7 +139,7 @@ export type PersistedDraft = {
   mapType: DraftType;
   factions: FactionId[];
   players: Player[];
-  slices: string[][];
+  slices: Slice[];
   mapString: string;
   currentPick: number;
   pickOrder: number[];
@@ -170,3 +170,5 @@ export type MapStats = {
 
 export type Variance = "low" | "medium" | "high" | "extreme";
 export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
+
+export type Slice = number[];

@@ -11,7 +11,7 @@ import "./PlanetFinder.css";
 
 type Props = {
   opened?: boolean;
-  usedSystemIds: string[];
+  usedSystemIds: number[];
   onClose: () => void;
   onSelectSystem: (system: System) => void;
 };
@@ -131,7 +131,7 @@ export function PlanetFinder({
                 </Text>
               )}
             </Group>
-            {usedSystemIds.includes(system.id.toString()) && (
+            {usedSystemIds.includes(system.id) && (
               <Text c="violet">In Use</Text>
             )}
           </Group>

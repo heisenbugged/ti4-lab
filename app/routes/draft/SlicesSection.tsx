@@ -1,7 +1,7 @@
 import { Button, Group, SimpleGrid } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
 import { Slice } from "~/components/Slice";
-import { Player } from "~/types";
+import { Player, Slice as TSlice } from "~/types";
 import { useSortedSlices } from "./useSortedSlices";
 import { DraftConfig } from "~/draft";
 
@@ -9,7 +9,7 @@ type Props = {
   fullView?: boolean;
   config: DraftConfig;
   mode: "create" | "draft";
-  slices: string[][];
+  slices: TSlice[];
   allowSliceSelection?: boolean;
   players?: Player[];
   draftedSlices?: number[];
@@ -77,7 +77,7 @@ export function SlicesSection({
             id={`slice-${idx}`}
             name={`Slice ${idx + 1}`}
             mode={mode}
-            systems={slice}
+            slice={slice}
             player={players?.find((p) => p.sliceIdx === idx)}
             onSelectTile={(tile) => onSelectTile?.(idx, tile.idx)}
             onDeleteTile={(tile) => onDeleteTile?.(idx, tile.idx)}

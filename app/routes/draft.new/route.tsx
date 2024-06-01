@@ -83,12 +83,10 @@ export default function DraftNew() {
 
   const usedSystemIds = [
     draft.slices,
-    draft.map
-      .filter((t) => t.type === "SYSTEM")
-      .map((t) => t.system!.id.toString()),
+    draft.map.filter((t) => t.type === "SYSTEM").map((t) => t.system!.id),
   ]
     .flat(2)
-    .filter((t) => t !== "-1" && t !== "0");
+    .filter((t) => t !== -1 && t !== 0);
 
   const handleCreate = () =>
     createDraft({

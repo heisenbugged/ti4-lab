@@ -10,9 +10,10 @@ import {
 import { useSortedSlices } from "./useSortedSlices";
 
 import "./SlicesTable.css";
+import { Slice } from "~/types";
 
 type Props = {
-  slices: string[][];
+  slices: Slice[];
   draftedSlices?: number[];
 };
 

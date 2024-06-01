@@ -8,7 +8,7 @@ import {
   techSpecialtiesForSystems,
   totalStatsForSystems,
 } from "~/utils/map";
-import { Faction, Player, System } from "~/types";
+import { Faction, Player, Slice, System } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
@@ -64,7 +64,7 @@ export function MidDraftSummary() {
 type Props = {
   config: DraftConfig;
   player: Player;
-  slice?: string[];
+  slice?: Slice;
   showSeat: boolean;
 };
 

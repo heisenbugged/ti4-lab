@@ -34,9 +34,9 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
       "A new draft format featuring a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order.",
     map: parseDemoMapString(
       draftConfig.heisen,
-      "-2 -1 -1 -1 -1 -1 -1 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
-        " ",
-      ),
+      "-2 -1 -1 -1 -1 -1 -1 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
+        .split(" ")
+        .map(Number),
     ),
     titles: ["P1", "P2", "P3", "P4", "P5", "P6"],
     colors: [
@@ -55,9 +55,9 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
       "The classic, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board.",
     map: parseDemoMapString(
       draftConfig.miltyeq,
-      "-2 1 2 3 4 5 6 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
-        " ",
-      ),
+      "-2 1 2 3 4 5 6 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
+        .split(" ")
+        .map(Number),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     colors: [
@@ -75,9 +75,9 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
       "Milty-EQ, but with empty equidistant systems. Sandbox for new TI4 content",
     map: parseDemoMapString(
       draftConfig.miltyeq,
-      "-2 1 2 3 4 5 6 1 -2 2 -2 3 -2 4 -2 5 -2 6 -2 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
-        " ",
-      ),
+      "-2 1 2 3 4 5 6 1 -2 2 -2 3 -2 4 -2 5 -2 6 -2 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
+        .split(" ")
+        .map(Number),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     colors: [
@@ -95,9 +95,9 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
       "The O.G. draft format. Slices include the left equidistant system, and no preset tiles are on the board.",
     map: parseDemoMapString(
       draftConfig.milty,
-      "-2 1 2 3 4 5 6 1 1 2 2 3 3 4 4 5 5 6 6 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
-        " ",
-      ),
+      "-2 1 2 3 4 5 6 1 1 2 2 3 3 4 4 5 5 6 6 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
+        .split(" ")
+        .map(Number),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     colors: [
@@ -114,9 +114,9 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
     description: "Chaotic but strategic.",
     map: parseDemoMapString(
       draftConfig.miltyeq,
-      "-2 6 1 2 3 4 5 1 1 2 2 3 3 4 4 5 5 6 6 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1 1".split(
-        " ",
-      ),
+      "-2 6 1 2 3 4 5 1 1 2 2 3 3 4 4 5 5 6 6 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1 1"
+        .split(" ")
+        .map(Number),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     colors: [
@@ -308,12 +308,12 @@ export default function DraftPrechoice() {
   );
 }
 
-function parseDemoMapString(config: DraftConfig, mapString: string[]) {
+function parseDemoMapString(config: DraftConfig, mapString: number[]) {
   const tiles = mapString.map((player, idx) => {
     const position = mapStringOrder[idx];
     const isHomeSystem = config.homeIdxInMapString.includes(idx);
 
-    if (player === "-1") {
+    if (player === -1) {
       return {
         idx,
         position,
@@ -321,7 +321,7 @@ function parseDemoMapString(config: DraftConfig, mapString: string[]) {
       } as OpenTile;
     }
 
-    if (player === "-2") {
+    if (player === -2) {
       return {
         idx,
         position,
@@ -333,7 +333,7 @@ function parseDemoMapString(config: DraftConfig, mapString: string[]) {
       idx,
       position,
       isHomeSystem,
-      playerNumber: parseInt(player) - 1,
+      playerNumber: player - 1,
       type: "PLAYER_DEMO",
       system: undefined,
     } as PlayerDemoTile;

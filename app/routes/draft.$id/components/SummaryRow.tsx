@@ -11,7 +11,7 @@ import { DraftConfig } from "~/draft";
 type Props = {
   config: DraftConfig;
   player: Player;
-  systems: string[];
+  systems: number[];
 };
 export function SummaryRow({ config, player, systems }: Props) {
   const faction = factions[player.faction!];

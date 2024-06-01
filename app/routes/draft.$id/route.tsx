@@ -1,11 +1,4 @@
-import {
-  Button,
-  Grid,
-  SimpleGrid,
-  Stack,
-  Tabs,
-  Text,
-} from "@mantine/core";
+import { Button, Grid, SimpleGrid, Stack, Tabs, Text } from "@mantine/core";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
 import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
 import { eq } from "drizzle-orm";
@@ -141,10 +134,7 @@ export default function RunningDraft() {
     <>
       <audio id="notificationSound" src="/chime.mp3" preload="auto"></audio>
       <Stack gap="sm" mb="60" mt="lg">
-        <CurrentPickBanner
-          player={activePlayer!}
-          lastEvent={draft.lastEvent}
-        />
+        <CurrentPickBanner player={activePlayer!} lastEvent={draft.lastEvent} />
         <div style={{ height: 15 }} />
       </Stack>
 
@@ -320,6 +310,14 @@ export const loader = async ({ params }: { params: { id: string } }) => {
   const result = await findDraftByPrettyUrl(draftId);
   return json({
     ...result,
-    data: JSON.parse(result.data as string) as PersistedDraft,
+    data: translatePersistedDraft(JSON.parse(result.data as string)),
   });
 };
+
+/**
+ * Convert old drafts that stored slices as an array of strings instead array of numbers
+ */
+const translatePersistedDraft = (data: any): PersistedDraft => ({
+  ...data,
+  slices: data.slices.map((slice: any) => slice.map(Number)),
+});
