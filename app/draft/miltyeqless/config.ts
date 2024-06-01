@@ -1,3 +1,4 @@
+import { generateSlices } from "../miltyeq/sliceGenerator";
 import { DraftConfig } from "../types";
 
 export const miltyeqless: DraftConfig = {
@@ -52,4 +53,5 @@ export const miltyeqless: DraftConfig = {
       [2, 0],
     ],
   } as Record<number, [number, number][]>,
+  generateSlices,
 };

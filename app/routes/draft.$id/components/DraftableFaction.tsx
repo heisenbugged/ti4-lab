@@ -1,7 +1,18 @@
-import { Flex, Group, Stack, Text } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Flex,
+  Group,
+  Modal,
+  Popover,
+  Stack,
+  Text,
+} from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction, Player } from "~/types";
 import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
+import { IconEye } from "@tabler/icons-react";
+import { useDisclosure } from "@mantine/hooks";
 
 type Props = {
   faction: Faction;
@@ -10,12 +21,14 @@ type Props = {
 };
 
 export function DraftableFaction({ faction, player, onSelect }: Props) {
+  const [opened, { open, close }] = useDisclosure();
   return (
     <Stack
-      gap="md"
+      gap={4}
       bg="gray.1"
       px="sm"
       py={8}
+      pb={4}
       style={{
         borderRadius: 8,
         border: "1px solid rgba(0,0,0,0.1)",
@@ -23,6 +36,24 @@ export function DraftableFaction({ faction, player, onSelect }: Props) {
         position: "relative",
       }}
     >
+      <Modal
+        opened={opened}
+        onClose={close}
+        size="100%"
+        title={faction.name}
+        centered
+      >
+        <img
+          src={`/factioncards/${faction.id}.png`}
+          style={{
+            objectFit: "contain",
+            maxHeight: 500,
+            maxWidth: "100%",
+            margin: "auto",
+            display: "block",
+          }}
+        />
+      </Modal>
       <Group
         align="center"
         flex={1}
@@ -42,6 +73,17 @@ export function DraftableFaction({ faction, player, onSelect }: Props) {
         </Text>
       </Group>
 
+      <Box style={{ alignSelf: "flex-end" }}>
+        <Button
+          size="compact-xs"
+          w="auto"
+          variant="subtle"
+          leftSection={<IconEye size={16} />}
+          onMouseDown={open}
+        >
+          Info
+        </Button>
+      </Box>
       <PlayerChipOrSelect player={player} onSelect={onSelect} />
     </Stack>
   );
