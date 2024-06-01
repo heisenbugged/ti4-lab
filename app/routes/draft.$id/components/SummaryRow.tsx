@@ -6,10 +6,10 @@ import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
 import { Player } from "~/types";
 import { PlayerChip } from "./PlayerChip";
-import { MapConfig } from "~/utils/map";
+import { DraftConfig } from "~/draft";
 
 type Props = {
-  config: MapConfig;
+  config: DraftConfig;
   player: Player;
   systems: string[];
 };

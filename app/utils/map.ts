@@ -1,9 +1,9 @@
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { systemData } from "~/data/systemData";
+import { DraftConfig } from "~/draft/types";
 import {
   HomeTile,
   Map,
-  MapType,
   Player,
   System,
   TechSpecialty,
@@ -15,17 +15,6 @@ import {
  * Represents the pre-computed values required to manipulate the map
  * during the drafting process.
  */
-export type MapConfig = {
-  type: MapType;
-  homeIdxInMapString: number[];
-  modifiableMapTiles: number[];
-  seatTilePlacement: TilePosition[];
-  seatTilePositions: Record<number, [number, number][]>;
-  numSystemsInSlice: number;
-  sliceHeight: number;
-  sliceConcentricCircles: number;
-  wOffsetMultiplier?: number;
-};
 
 export const playerSpeakerOrder = [
   "Speaker",
@@ -37,339 +26,11 @@ export const playerSpeakerOrder = [
 ];
 export const playerLetters = ["a", "b", "c", "d", "e", "f"];
 
-export const mapConfig: Record<MapType, MapConfig> = {
-  miltyeq: {
-    type: "miltyeq",
-    numSystemsInSlice: 4,
-    sliceHeight: 3,
-    sliceConcentricCircles: 1,
-
-    // Represents the location of each home system (or 'seat') in the map string (w/ mecatol included)
-    // ordered from 12 o'clock going clockwise
-    homeIdxInMapString: [19, 22, 25, 28, 31, 34],
-
-    // tiles that are directly modifiable on the map (i.e. not part of a slice)
-    modifiableMapTiles: [8, 10, 12, 14, 16, 18],
-
-    seatTilePlacement: [
-      { x: 0, y: 0 },
-      { x: -1, y: 0 },
-      { x: 0, y: -1 },
-      { x: 1, y: -1 },
-      { x: 0, y: -2 },
-    ],
-
-    // For a given seat number (in clockwise order, from 0 to 5),
-    // contains the relative positions to modify around the home system
-    // to insert the player's slice.
-    seatTilePositions: {
-      0: [
-        [1, 0],
-        [0, 1],
-        [-1, 1],
-        [0, 2],
-      ],
-      1: [
-        [0, 1],
-        [-1, 1],
-        [-1, 0],
-        [-2, 2],
-      ],
-      2: [
-        [-1, 1],
-        [-1, 0],
-        [0, -1],
-        [-2, 0],
-      ],
-      3: [
-        [-1, 0],
-        [0, -1],
-        [1, -1],
-        [0, -2],
-      ],
-      4: [
-        [0, -1],
-        [1, -1],
-        [1, 0],
-        [2, -2],
-      ],
-      5: [
-        [1, -1],
-        [1, 0],
-        [0, 1],
-        [2, 0],
-      ],
-    } as Record<number, [number, number][]>,
-  },
-
-  wekker: {
-    type: "wekker",
-    numSystemsInSlice: 5,
-    sliceHeight: 3.5,
-    sliceConcentricCircles: 1.5,
-    wOffsetMultiplier: -0.75,
-
-    // Represents the location of each home system (or 'seat') in the map string (w/ mecatol included)
-    // ordered from 12 o'clock going clockwise
-    homeIdxInMapString: [19, 22, 25, 28, 31, 34],
-
-    // tiles that are directly modifiable on the map (i.e. not part of a slice)
-    modifiableMapTiles: [],
-
-    seatTilePlacement: [
-      { x: 0, y: 0 },
-      { x: 1, y: -1 },
-      { x: 2, y: -2 },
-      { x: 0, y: -1 },
-      { x: -1, y: -1 },
-      { x: -1, y: -2 },
-    ],
-
-    // For a given seat number (in clockwise order, from 0 to 5),
-    // contains the relative positions to modify around the home system
-    // to insert the player's slice.
-    seatTilePositions: {
-      0: [
-        [-1, 1],
-        [-2, 2],
-        [0, 1],
-        [1, 1],
-        [1, 2],
-      ],
-      1: [
-        [-1, 0],
-        [-2, 0],
-        [-1, 1],
-        [-1, 2],
-        [-2, 3],
-      ],
-      2: [
-        [0, -1],
-        [0, -2],
-        [-1, 0],
-        [-2, 1],
-        [-3, 1],
-      ],
-      3: [
-        [1, -1],
-        [2, -2],
-        [0, -1],
-        [-1, -1],
-        [-1, -2],
-      ],
-      4: [
-        [1, 0],
-        [2, 0],
-        [1, -1],
-        [1, -2],
-        [2, -3],
-      ],
-      5: [
-        [0, 1],
-        [0, 2],
-        [1, 0],
-        [2, -1],
-        [3, -1],
-      ],
-    } as Record<number, [number, number][]>,
-  },
-  miltyeqless: {
-    type: "miltyeqless",
-    numSystemsInSlice: 4,
-    sliceHeight: 3,
-    sliceConcentricCircles: 1,
-
-    // Represents the location of each home system (or 'seat') in the map string (w/ mecatol included)
-    // ordered from 12 o'clock going clockwise
-    homeIdxInMapString: [19, 22, 25, 28, 31, 34],
-
-    // tiles that are directly modifiable on the map (i.e. not part of a slice)
-    modifiableMapTiles: [],
-
-    seatTilePlacement: [
-      { x: 0, y: 0 },
-      { x: -1, y: 0 },
-      { x: 0, y: -1 },
-      { x: 1, y: -1 },
-      // additional two slices for full milty draft
-      // { x: -1, y: -1 },
-      { x: 0, y: -2 },
-    ],
-
-    // For a given seat number (in clockwise order, from 0 to 5),
-    // contains the relative positions to modify around the home system
-    // to insert the player's slice.
-    seatTilePositions: {
-      0: [
-        [1, 0],
-        [0, 1],
-        [-1, 1],
-        [0, 2],
-      ],
-      1: [
-        [0, 1],
-        [-1, 1],
-        [-1, 0],
-        [-2, 2],
-      ],
-      2: [
-        [-1, 1],
-        [-1, 0],
-        [0, -1],
-        [-2, 0],
-      ],
-      3: [
-        [-1, 0],
-        [0, -1],
-        [1, -1],
-        [0, -2],
-      ],
-      4: [
-        [0, -1],
-        [1, -1],
-        [1, 0],
-        [2, -2],
-      ],
-      5: [
-        [1, -1],
-        [1, 0],
-        [0, 1],
-        [2, 0],
-      ],
-    } as Record<number, [number, number][]>,
-  },
-  milty: {
-    type: "milty",
-    numSystemsInSlice: 5,
-    sliceHeight: 3,
-    sliceConcentricCircles: 1,
-
-    // Represents the location of each home system (or 'seat') in the map string (w/ mecatol included)
-    // ordered from 12 o'clock going clockwise
-    homeIdxInMapString: [19, 22, 25, 28, 31, 34],
-
-    // tiles that are directly modifiable on the map (i.e. not part of a slice)
-    modifiableMapTiles: [],
-
-    seatTilePlacement: [
-      { x: 0, y: 0 },
-      { x: -1, y: 0 },
-      { x: 0, y: -1 },
-      { x: 1, y: -1 },
-      { x: -1, y: -1 },
-      { x: 0, y: -2 },
-    ],
-
-    // For a given seat number (in clockwise order, from 0 to 5),
-    // contains the relative positions to modify around the home system
-    // to insert the player's slice.
-    seatTilePositions: {
-      0: [
-        [1, 0],
-        [0, 1],
-        [-1, 1],
-        [1, 1],
-        [0, 2],
-      ],
-      1: [
-        [0, 1],
-        [-1, 1],
-        [-1, 0],
-        [-1, 2],
-        [-2, 2],
-      ],
-      2: [
-        [-1, 1],
-        [-1, 0],
-        [0, -1],
-        [-2, 1],
-        [-2, 0],
-      ],
-      3: [
-        [-1, 0],
-        [0, -1],
-        [1, -1],
-        [-1, -1],
-        [0, -2],
-      ],
-      4: [
-        [0, -1],
-        [1, -1],
-        [1, 0],
-        [1, -2],
-        [2, -2],
-      ],
-      5: [
-        [1, -1],
-        [1, 0],
-        [0, 1],
-        [2, -1],
-        [2, 0],
-      ],
-    } as Record<number, [number, number][]>,
-  },
-  heisen: {
-    type: "heisen",
-    numSystemsInSlice: 3,
-    sliceHeight: 2,
-    sliceConcentricCircles: 1,
-    // Represents the location of each home system (or 'seat') in the map string (w/ mecatol included)
-    // ordered from 12 o'clock going clockwise
-    homeIdxInMapString: [19, 22, 25, 28, 31, 34],
-
-    // tiles that are directly modifiable on the map (i.e. not part of a slice)
-    modifiableMapTiles: [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18],
-
-    seatTilePlacement: [
-      { x: 0, y: 0 },
-      { x: -1, y: 0 },
-      { x: 0, y: -1 },
-      { x: 1, y: -1 },
-    ],
-
-    // For a given seat number (in clockwise order, from 0 to 5),
-    // contains the relative positions to modify around the home system
-    // to insert the player's slice.
-    seatTilePositions: {
-      0: [
-        [1, 0],
-        [0, 1],
-        [-1, 1],
-      ],
-      1: [
-        [0, 1],
-        [-1, 1],
-        [-1, 0],
-      ],
-      2: [
-        [-1, 1],
-        [-1, 0],
-        [0, -1],
-      ],
-      3: [
-        [-1, 0],
-        [0, -1],
-        [1, -1],
-      ],
-      4: [
-        [0, -1],
-        [1, -1],
-        [1, 0],
-      ],
-      5: [
-        [1, -1],
-        [1, 0],
-        [0, 1],
-      ],
-    } as Record<number, [number, number][]>,
-  },
-};
-
-export const isTileModifiable = (config: MapConfig, tileIdx: number) =>
+export const isTileModifiable = (config: DraftConfig, tileIdx: number) =>
   config.modifiableMapTiles.includes(tileIdx);
 
 export const hydrateMap = (
-  config: MapConfig,
+  config: DraftConfig,
   map: Map,
   players: Player[],
   slices: string[][],
@@ -412,7 +73,7 @@ export const hydrateMap = (
  * Iterates over the home systems in the map, calling the provided function
  */
 const forHomeTiles = (
-  config: MapConfig,
+  config: DraftConfig,
   tiles: Tile[],
   fn: (tile: Tile, homeIdx: number) => void,
 ) => {
@@ -434,7 +95,7 @@ const hydrateHomeTile = (
 };
 
 export const sliceMap = (
-  config: MapConfig,
+  config: DraftConfig,
   map: Map,
 ): { map: Map; slices: string[][] } => {
   const tiles = [...map];
@@ -471,7 +132,7 @@ export const sliceMap = (
 };
 
 export const parseMapString = (
-  config: MapConfig,
+  config: DraftConfig,
   systems: string[],
   positionOrder: TilePosition[] = mapStringOrder,
   includeMecatol = true,

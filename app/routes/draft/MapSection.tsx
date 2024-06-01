@@ -9,11 +9,11 @@ import { HomeTile, MapStats, Map as TMap } from "~/types";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 import { Map } from "~/components/Map";
 import { SectionTitle } from "~/components/Section";
-import { MapConfig } from "~/utils/map";
 import { IconDice6Filled } from "@tabler/icons-react";
+import { DraftConfig } from "~/draft";
 
 type Props = {
-  config: MapConfig;
+  config: DraftConfig;
   map: TMap;
   mode: "create" | "draft";
   stats?: MapStats;

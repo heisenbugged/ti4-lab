@@ -1,5 +1,5 @@
-import { systemData } from "./data/systemData";
-import { MapType, System } from "./types";
+import { DraftType } from "./draft";
+import { System } from "./types";
 import { tileColor } from "./utils/map";
 
 type GeneratedSlice = {
@@ -13,7 +13,7 @@ export function randomizeSlices(
   varianceLevel: "low" | "medium" | "high" | "extreme",
   opulence: "poverty" | "low" | "medium" | "high" | "wealthy",
   sliceSize: number,
-  mapType: MapType,
+  mapType: DraftType,
 ) {
   const maxAttempts = 100000;
 
@@ -89,7 +89,7 @@ function sampleSlice(
   meanValue: number,
   stdDev: number,
   usedSystems: Record<number, boolean>,
-  mapType: MapType,
+  mapType: DraftType,
   maxAttempts: number = 100000,
 ): GeneratedSlice | undefined {
   // Adjust the mean value based on the skew

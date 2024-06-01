@@ -1,6 +1,6 @@
 import { useMemo } from "react";
+import { DraftConfig } from "~/draft";
 import {
-  MapConfig,
   optimalStatsForSystems,
   parseMapString,
   systemsInSlice,
@@ -8,7 +8,7 @@ import {
   totalStatsForSystems,
 } from "~/utils/map";
 
-export function useSlice(config: MapConfig, slice: string[]) {
+export function useSlice(config: DraftConfig, slice: string[]) {
   const tiles = useMemo(
     () => parseMapString(config, slice, config.seatTilePlacement, false),
     [slice],

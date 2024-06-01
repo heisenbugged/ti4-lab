@@ -3,12 +3,13 @@ import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
-import { MapConfig, isTileModifiable } from "~/utils/map";
+import { isTileModifiable } from "~/utils/map";
 import { MapContext } from "~/contexts/MapContext";
+import { DraftConfig } from "~/draft";
 
 type Props = {
   id: string;
-  config: MapConfig;
+  config: DraftConfig;
   map: MapType;
   padding: number;
   mode: "create" | "draft";

@@ -1,20 +1,24 @@
+import { shuffle, weightedChoice } from "../helpers/randomization";
 import {
   fillSlicesWithRemainingTiles,
   fillSlicesWithRequiredTiles,
-  randomTieredSystems,
+  chooseRequiredSystems,
   separateAnomalies,
-  shuffle,
-  weightedChoice,
-} from "../sliceGenerationHelpers";
+} from "../helpers/sliceGeneration";
 import { SLICE_SHAPES } from "../sliceShapes";
-import { TieredSlice } from "../types";
+import { ChoosableTier, TieredSlice } from "../types";
 
 const HIGH = "high";
 const MED = "med";
 const LOW = "low";
 const RED = "red";
 
-const SLICE_CHOICES = [
+type SliceChoice = {
+  weight: number;
+  value: ChoosableTier[];
+};
+
+const SLICE_CHOICES: SliceChoice[] = [
   // 2 red
   { weight: 2, value: [RED, RED, HIGH, HIGH] }, // 6
   { weight: 3, value: [RED, RED, HIGH, MED] }, // 5
@@ -37,7 +41,7 @@ const MIN_LEGENDARY_CHOICES = [
   { weight: 1, value: 2 },
 ];
 
-export function run(sliceCount: number, availableSystems: number[]) {
+export function generateSlices(sliceCount: number, availableSystems: number[]) {
   const tieredSlices: TieredSlice[] = [];
   for (let i = 0; i < sliceCount; i++) {
     let tierValues = shuffle(weightedChoice(SLICE_CHOICES));
@@ -48,7 +52,7 @@ export function run(sliceCount: number, availableSystems: number[]) {
   const minAlphaWormholes = weightedChoice(MIN_WORMHOLE_CHOICES);
   const minBetaWormholes = weightedChoice(MIN_WORMHOLE_CHOICES);
   const minLegendary = weightedChoice(MIN_LEGENDARY_CHOICES);
-  const { chosenTiles, remainingTiles } = randomTieredSystems(
+  const { chosenTiles, remainingTiles } = chooseRequiredSystems(
     availableSystems,
     {
       minAlphaWormholes,
@@ -77,5 +81,3 @@ export function run(sliceCount: number, availableSystems: number[]) {
 
   return slices;
 }
-
-export default { run };

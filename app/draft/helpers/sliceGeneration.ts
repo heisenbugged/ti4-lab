@@ -6,53 +6,18 @@
  */
 import { System } from "~/types";
 import { systemData } from "~/data/systemData";
-import { ChoosableTier, TieredSlice, TieredSystems } from "./types";
-import { neighbors } from "./hex";
-import { getTieredSystems } from "./tieredSystems";
+import { ChoosableTier, TieredSlice, TieredSystems } from "../types";
+import { neighbors } from "../hex";
+import { getTieredSystems } from "../tieredSystems";
+import { shuffle, weightedChoice } from "./randomization";
 
 const DEBUG_SLICE_SCORING = false;
 
 /**
- * Given an array of options, each with a weight, randomly choose one of the options
- * based on the weights. Internally uses a cumulative distribution function.
+ * Gives shuffled systems, and then promotes systems to the chosenSystems
+ * array based on the minimums provided.
  */
-export function weightedChoice(options) {
-  let total = 0;
-  for (const option of options) {
-    total += option.weight;
-  }
-  let target = Math.random() * total;
-  for (const option of options) {
-    if (target <= option.weight) {
-      let result = option.value;
-      if (Array.isArray(result)) {
-        result = [...result]; // shallow copy
-      }
-      return result;
-    }
-    target -= option.weight;
-  }
-  throw new Error("unreachable");
-}
-
-/**
- * Performs a Fisher-Yates shuffle on the given array and returns the shuffled array.
- * Makes an internal copy of the array to avoid modifying the original.
- */
-export function shuffle<T>(array: T[]) {
-  // Copy the original array to avoid modifying it
-  let copiedArray = array.slice();
-
-  // Fisher-Yates Shuffle
-  for (let i = copiedArray.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1));
-    [copiedArray[i], copiedArray[j]] = [copiedArray[j], copiedArray[i]]; // Swap elements
-  }
-
-  return copiedArray;
-}
-
-export function randomTieredSystems(
+export function chooseRequiredSystems(
   availableSystems: number[],
   { minAlphaWormholes = 0, minBetaWormholes = 0, minLegendary = 0 },
 ) {
@@ -173,62 +138,44 @@ export function fillSlicesWithRequiredTiles(
   chosenSystems: TieredSystems,
   slices: number[][],
 ) {
-  const numSlices = tieredSlices.length;
-  const sliceLength = tieredSlices[0].length;
-
   // Spread already chosen tiles around.
   const tryAdd = (tierToAdd: ChoosableTier) => {
-    // Find the slice with the fewest entries that will take this tier.
-    let bestSliceIndex = undefined;
-    let bestTileIndex = undefined;
-    let bestCount = undefined;
-    for (let sliceIndex = 0; sliceIndex < numSlices; sliceIndex++) {
-      const tieredSlice = tieredSlices[sliceIndex];
-      for (let tileIndex = 0; tileIndex < sliceLength; tileIndex++) {
-        const tileTier = tieredSlice[tileIndex];
-        // TODO: Understand when this would be added.
-        if (tileTier !== tierToAdd) continue;
+    const candidates = tieredSlices.flatMap((tieredSlice, sliceIndex) =>
+      tieredSlice.map((tileTier, tileIndex) => ({
+        sliceIndex,
+        tileIndex,
+        count: slices[sliceIndex].length,
+        tileTier,
+      })),
+    );
+    type Candidate = (typeof candidates)[number];
 
-        const slice = slices[sliceIndex];
-        const count = slice.length;
-        if (bestCount === undefined || count < bestCount) {
-          bestSliceIndex = sliceIndex;
-          bestTileIndex = tileIndex;
-          bestCount = count;
-        }
-      }
-    }
-    if (bestCount !== undefined) {
-      const tieredSlice = tieredSlices[bestSliceIndex!!];
-      const slice = slices[bestSliceIndex!!];
+    const bestCandidate = candidates
+      .filter((candidate) => candidate.tileTier === tierToAdd)
+      .reduce(
+        (best, candidate) => {
+          if (best === undefined || candidate.count < best.count)
+            return candidate;
+          return best;
+        },
+        undefined as Candidate | undefined,
+      );
 
-      // TODO: But WHY double-check....
-      // Double check correct tier.
-      const tileTier = tieredSlice[bestTileIndex!!];
-      if (tileTier !== tierToAdd) return false;
-
-      // Move tile to slice.
+    if (bestCandidate && bestCandidate.tileTier === tierToAdd) {
+      const { sliceIndex, tileIndex } = bestCandidate;
       const system = chosenSystems[tierToAdd].pop()!!;
-
-      slice.push(system);
-      tieredSlice[bestTileIndex!!] = "resolved";
+      slices[sliceIndex].push(system);
+      tieredSlices[sliceIndex][tileIndex] = "resolved";
       return true;
     }
     return false;
   };
 
-  while (chosenSystems.high.length > 0) {
-    if (!tryAdd("high")) break;
-  }
-  while (chosenSystems.med.length > 0) {
-    if (!tryAdd("med")) break;
-  }
-  while (chosenSystems.low.length > 0) {
-    if (!tryAdd("low")) break;
-  }
-  while (chosenSystems.red.length > 0) {
-    if (!tryAdd("red")) break;
-  }
+  (["high", "med", "low", "red"] as const).forEach((tier) => {
+    while (chosenSystems[tier].length > 0) {
+      if (!tryAdd(tier)) break;
+    }
+  });
 }
 
 export function fillSlicesWithRemainingTiles(
@@ -236,84 +183,59 @@ export function fillSlicesWithRemainingTiles(
   remainingSystems: TieredSystems,
   slices: number[][],
 ) {
-  const sliceLength = tieredSlices[0].length;
+  const remainingTiers = [
+    remainingSystems.low,
+    remainingSystems.med,
+    remainingSystems.high,
+  ];
 
   // Fill red tiles randomly, do not account for res/inf (otherwise would
-  // pull in those systems more frequencly than others).
-  for (let tileIdx = 0; tileIdx < sliceLength; tileIdx++) {
-    for (let sliceIdx = 0; sliceIdx < tieredSlices.length; sliceIdx++) {
-      const tieredSlice = tieredSlices[sliceIdx];
-      const tier = tieredSlice[tileIdx];
-      if (tier !== "red") continue;
+  // pull in those systems more frequently than others).
+  tieredSlices.forEach((tieredSlice, sliceIdx) => {
+    tieredSlice.forEach((tier, tileIdx) => {
+      if (tier !== "red") return;
 
-      let takeFrom = remainingSystems.red;
-      if (takeFrom.length === 0) {
-        if (remainingSystems.low.length > 0) {
-          takeFrom = remainingSystems.low;
-        } else if (remainingSystems.med.length > 0) {
-          takeFrom = remainingSystems.med;
-        } else if (remainingSystems.high.length > 0) {
-          takeFrom = remainingSystems.high;
-        } else if (remainingSystems.red.length > 0) {
-          takeFrom = remainingSystems.red;
-        } else {
-          throw new Error("no tiles remain???");
-        }
-      }
+      // Find a tile to take.
+      // Prefer red tiles, then low/med/high if no red available..
+      const takeFrom =
+        remainingSystems.red.length > 0
+          ? remainingSystems.red
+          : remainingTiers.find((arr) => arr.length > 0);
+
+      if (!takeFrom) throw new Error("no tiles remain???");
+
       const system = takeFrom.pop()!!;
-      const slice = slices[sliceIdx];
-      slice.push(system);
+      slices[sliceIdx].push(system);
       tieredSlice[tileIdx] = "resolved";
-    }
-  }
+    });
+  });
 
   // Fill rest with remaining tiles.
   // Use weighted selection to try to balance things.
-  for (let tileIdx = 0; tileIdx < sliceLength; tileIdx++) {
-    for (let sliceIdx = 0; sliceIdx < tieredSlices.length; sliceIdx++) {
-      const tieredSlice = tieredSlices[sliceIdx];
-      const tier = tieredSlice[tileIdx];
-      if (tier === "resolved") continue;
+  tieredSlices.forEach((tieredSlice, sliceIdx) => {
+    tieredSlice.forEach((tier, tileIdx) => {
+      if (tier === "resolved") return;
 
-      // We need to fill the slice.  If no tiles remain in the desired
-      // tier, select a different one with availability.
-      let takeFrom = remainingSystems[tier];
-      if (!takeFrom)
-        throw new Error(`no takeFrom for "${tier}" (tile index ${tileIdx})`);
-      if (takeFrom.length === 0) {
-        if (remainingSystems.low.length > 0) {
-          takeFrom = remainingSystems.low;
-        } else if (remainingSystems.med.length > 0) {
-          takeFrom = remainingSystems.med;
-        } else if (remainingSystems.high.length > 0) {
-          takeFrom = remainingSystems.high;
-        } else if (remainingSystems.red.length > 0) {
-          takeFrom = remainingSystems.red;
-        } else {
-          throw new Error("no tiles remain???");
-        }
-      }
+      const takeFrom =
+        remainingSystems[tier].length > 0
+          ? remainingSystems[tier]
+          : remainingTiers.find((arr) => arr.length > 0);
+
+      if (!takeFrom) throw new Error("no tiles remain???");
 
       const slice = slices[sliceIdx];
-
-      const choices = [];
-      for (
-        let takeFromIndex = 0;
-        takeFromIndex < takeFrom.length;
-        takeFromIndex++
-      ) {
-        const system = takeFrom[takeFromIndex];
-        const weight = calculateSliceScore(slice, system);
-        choices.push({ weight, value: { system, takeFromIndex } });
-      }
+      const choices = takeFrom.map((system, takeFromIndex) => ({
+        weight: calculateSliceScore(slice, system),
+        value: { system, takeFromIndex },
+      }));
 
       // Move the chosen tile to the slice.
       const { system, takeFromIndex } = weightedChoice(choices);
       takeFrom.splice(takeFromIndex, 1);
       slice.push(system);
       tieredSlice[tileIdx] = "resolved";
-    }
-  }
+    });
+  });
 }
 
 function calculateSliceScore(sliceSoFar: number[], withNewSystem: number) {
@@ -347,37 +269,22 @@ function calculateSliceScore(sliceSoFar: number[], withNewSystem: number) {
   const targetOptInf = 1.354; // 4/(4+2.5)*11/5
   const targetOptRes = 0.846; // 2.5/(4+2.5)*11/5
 
-  const weightMinInf = Math.min(1, avgOptInf / minAvgOptInf);
-  const weightMinRes = Math.min(1, avgOptRes / minAvgOptRes);
-  const weightMinTot = Math.min(1, (avgOptInf + avgOptRes) / minAvgTot);
-
-  const weightMaxTot = avgOptInf + avgOptRes > maxAvgTot ? 0.001 : 1;
-
-  const weightTargetInf = 1 / (Math.abs(avgOptInf - targetOptInf) + 1);
-  const weightTargetRes = 1 / (Math.abs(avgOptRes - targetOptRes) + 1);
-
-  const score =
-    100 *
-    weightMinInf *
-    weightMinRes *
-    weightMinTot *
-    weightMaxTot *
-    weightTargetInf *
-    weightTargetRes;
+  const weights = [
+    Math.min(1, avgOptInf / minAvgOptInf), // minInf
+    Math.min(1, avgOptRes / minAvgOptRes), // minRes
+    Math.min(1, (avgOptInf + avgOptRes) / minAvgTot), // minTot
+    avgOptInf + avgOptRes > maxAvgTot ? 0.001 : 1, // maxTot
+    1 / (Math.abs(avgOptInf - targetOptInf) + 1), // targetInf
+    1 / (Math.abs(avgOptRes - targetOptRes) + 1), // targetRes
+  ];
+  const score = 100 * weights.reduce((acc, w) => acc * w, 1);
 
   if (DEBUG_SLICE_SCORING) {
     console.log(
       JSON.stringify({
         avgOptInf,
         avgOptRes,
-
-        weightMinInf,
-        weightMinRes,
-        weightMinTot,
-
-        weightTargetInf,
-        weightTargetRes,
-
+        weights,
         score,
       }),
     );

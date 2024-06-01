@@ -1,22 +1,13 @@
-import { Button, Group, SimpleGrid, Table, Tabs } from "@mantine/core";
+import { Button, Group, SimpleGrid } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
 import { Slice } from "~/components/Slice";
-import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
-import { SliceFeatures } from "~/components/Slice/SliceFeatures";
-import { valueSlice, valueSystem } from "~/stats";
 import { Player } from "~/types";
-import {
-  MapConfig,
-  mapConfig,
-  optimalStatsForSystems,
-  systemsInSlice,
-  totalStatsForSystems,
-} from "~/utils/map";
 import { useSortedSlices } from "./useSortedSlices";
+import { DraftConfig } from "~/draft";
 
 type Props = {
   fullView?: boolean;
-  config: MapConfig;
+  config: DraftConfig;
   mode: "create" | "draft";
   slices: string[][];
   allowSliceSelection?: boolean;

@@ -3,7 +3,6 @@ import {
   FactionId,
   Map,
   MapStats,
-  MapType,
   Opulence,
   PersistedDraft,
   Player,
@@ -12,9 +11,7 @@ import {
   Variance,
 } from "./types";
 import {
-  MapConfig,
   hydrateMap,
-  mapConfig,
   parseMapString,
   playerSpeakerOrder,
   sliceMap,
@@ -24,7 +21,10 @@ import { mapStringOrder } from "./data/mapStringOrder";
 import { systemData, systemIds } from "./data/systemData";
 import { factionIds, factions } from "./data/factionData";
 import { fisherYatesShuffle, randomizeSlices } from "./stats";
-import { run } from "./draft/miltyeq/sliceGenerator";
+
+import { draftConfig } from "./draft/draftConfig";
+import { DraftConfig, DraftType } from "./draft/types";
+import { generateSlices } from "./draft/miltyeq/sliceGenerator";
 
 const MECATOL_REX_ID = 18;
 
@@ -32,11 +32,11 @@ const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
     " ",
   );
-const EMPTY_MAP = parseMapString(mapConfig.heisen, EMPTY_MAP_STRING);
+const EMPTY_MAP = parseMapString(draftConfig.heisen, EMPTY_MAP_STRING);
 
 type DraftsState = {
   initialized: boolean;
-  config: MapConfig;
+  config: DraftConfig;
   mapString: string[];
   hydratedMap: Map;
   players: Player[];
@@ -56,7 +56,7 @@ type DraftsState = {
 
 export const useDraft = create<DraftsState>((set, get) => ({
   initialized: false,
-  config: mapConfig.milty,
+  config: draftConfig.milty,
   mapString: EMPTY_MAP_STRING,
   hydratedMap: EMPTY_MAP,
   players: [],
@@ -181,7 +181,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
     }),
   hydrate: (draft: PersistedDraft) =>
     set(() => {
-      const config = mapConfig[draft.mapType];
+      const config = draftConfig[draft.mapType];
       const parsedMap = parseMapString(
         config,
         draft.mapString.split(" "),
@@ -213,7 +213,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
 
 type NewDraftState = {
   initialized: boolean;
-  config: MapConfig;
+  config: DraftConfig;
   map: Map;
   slices: string[][];
   numFactionsToDraft: number;
@@ -232,7 +232,7 @@ type NewDraftState = {
   randomizeSlice: (sliceIdx: number) => void;
   clearSlice: (sliceIdx: number) => void;
   initializeMap: (args: {
-    mapType: MapType;
+    mapType: DraftType;
     numFactions: number;
     numSlices: number;
     players: Player[];
@@ -260,7 +260,7 @@ type NewDraftState = {
 
 export const useNewDraft = create<NewDraftState>((set, get) => ({
   initialized: false,
-  config: mapConfig.heisen,
+  config: draftConfig.heisen,
   map: EMPTY_MAP,
   slices: [
     "-1 0 0 0".split(" "),
@@ -290,14 +290,14 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     randomizeSlices,
     randomizeMap,
   }: {
-    mapType: MapType;
+    mapType: DraftType;
     numFactions: number;
     numSlices: number;
     players: Player[];
     randomizeSlices: boolean;
     randomizeMap: boolean;
   }) => {
-    const config = mapConfig[mapType];
+    const config = draftConfig[mapType];
     set({ config });
 
     // randomly pull factions from the list of all factions
@@ -310,7 +310,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     // if randomize slices, do a randomized draft of slices!
     if (randomizeSlices) {
       // just a quick patch
-      slices = run(numSlices, systemIds).map((s) => [
+      slices = generateSlices(numSlices, systemIds).map((s) => [
         "-1",
         ...s.map((id) => id.toString()),
       ]);
@@ -365,7 +365,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       );
 
       // TTPG algorithm
-      const generatedSlice = run(1, availableSystems)[0].map((id) =>
+      const generatedSlice = generateSlices(1, availableSystems)[0].map((id) =>
         id.toString(),
       );
 

@@ -1,10 +1,8 @@
 import { Badge, Card, Group, Stack, Table, Text } from "@mantine/core";
-import { useMemo } from "react";
 import { useDraft } from "~/draftStore";
 import { PlayerChip } from "./PlayerChip";
 import { factions } from "~/data/factionData";
 import {
-  MapConfig,
   optimalStatsForSystems,
   systemsInSlice,
   techSpecialtiesForSystems,
@@ -14,6 +12,7 @@ import { Faction, Player, System } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
+import { DraftConfig } from "~/draft";
 
 export function MidDraftSummary() {
   const draft = useDraft();
@@ -63,7 +62,7 @@ export function MidDraftSummary() {
 }
 
 type Props = {
-  config: MapConfig;
+  config: DraftConfig;
   player: Player;
   slice?: string[];
   showSeat: boolean;

@@ -1,3 +1,5 @@
+import { DraftType } from "./draft";
+
 // System from data. To be processed into a proper 'System' object.
 export type RawSystem = {
   id: number;
@@ -134,7 +136,7 @@ export type Player = {
 };
 
 export type PersistedDraft = {
-  mapType: MapType;
+  mapType: DraftType;
   factions: FactionId[];
   players: Player[];
   slices: string[][];
@@ -168,4 +170,3 @@ export type MapStats = {
 
 export type Variance = "low" | "medium" | "high" | "extreme";
 export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
-export type MapType = "heisen" | "miltyeq" | "miltyeqless" | "milty" | "wekker";

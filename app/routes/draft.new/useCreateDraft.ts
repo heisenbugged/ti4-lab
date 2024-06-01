@@ -1,8 +1,9 @@
 import { useFetcher } from "@remix-run/react";
-import { FactionId, MapType, Player } from "~/types";
+import { DraftType } from "~/draft";
+import { FactionId, Player } from "~/types";
 
 export type CreateDraftInput = {
-  mapType: MapType;
+  mapType: DraftType;
   players: Player[];
   availableFactions: FactionId[];
   mapString: string;

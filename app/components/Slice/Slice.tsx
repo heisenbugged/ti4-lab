@@ -7,11 +7,11 @@ import { Player, Tile } from "~/types";
 import { useSlice } from "./useSlice";
 import { SliceFeatures } from "./SliceFeatures";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
-import { MapConfig } from "~/utils/map";
 import { IconDice6Filled } from "@tabler/icons-react";
+import { DraftConfig } from "~/draft";
 
 type Props = {
-  config: MapConfig;
+  config: DraftConfig;
   id: string;
   name: string;
   systems: string[];

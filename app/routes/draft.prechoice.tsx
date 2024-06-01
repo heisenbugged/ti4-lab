@@ -7,18 +7,17 @@ import {
   Group,
   Input,
   Stack,
-  Stepper,
   Switch,
   Text,
 } from "@mantine/core";
-import { MapConfig, mapConfig } from "~/utils/map";
-import { EmptyTile, MapType, OpenTile, Player, PlayerDemoTile } from "~/types";
+import { EmptyTile, OpenTile, Player, PlayerDemoTile } from "~/types";
 import { useState } from "react";
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "./draft.new/components/PlayerInputSection";
 import { useNavigate } from "@remix-run/react";
+import { DraftConfig, DraftType, draftConfig } from "~/draft";
 
 type PrechoiceMap = {
   title: string;
@@ -28,13 +27,13 @@ type PrechoiceMap = {
   colors: string[];
 };
 
-const MAPS: Record<MapType, PrechoiceMap> = {
+const MAPS: Record<DraftType, PrechoiceMap> = {
   heisen: {
     title: "Nucleus",
     description:
       "A new draft format featuring a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order.",
     map: parseDemoMapString(
-      mapConfig.heisen,
+      draftConfig.heisen,
       "-2 -1 -1 -1 -1 -1 -1 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
         " ",
       ),
@@ -55,7 +54,7 @@ const MAPS: Record<MapType, PrechoiceMap> = {
     description:
       "The classic, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board.",
     map: parseDemoMapString(
-      mapConfig.miltyeq,
+      draftConfig.miltyeq,
       "-2 1 2 3 4 5 6 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
         " ",
       ),
@@ -75,7 +74,7 @@ const MAPS: Record<MapType, PrechoiceMap> = {
     description:
       "Milty-EQ, but with empty equidistant systems. Sandbox for new TI4 content",
     map: parseDemoMapString(
-      mapConfig.miltyeq,
+      draftConfig.miltyeq,
       "-2 1 2 3 4 5 6 1 -2 2 -2 3 -2 4 -2 5 -2 6 -2 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
         " ",
       ),
@@ -95,7 +94,7 @@ const MAPS: Record<MapType, PrechoiceMap> = {
     description:
       "The O.G. draft format. Slices include the left equidistant system, and no preset tiles are on the board.",
     map: parseDemoMapString(
-      mapConfig.milty,
+      draftConfig.milty,
       "-2 1 2 3 4 5 6 1 1 2 2 3 3 4 4 5 5 6 6 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
         " ",
       ),
@@ -114,7 +113,7 @@ const MAPS: Record<MapType, PrechoiceMap> = {
     title: "Wekker",
     description: "Chaotic but strategic.",
     map: parseDemoMapString(
-      mapConfig.miltyeq,
+      draftConfig.miltyeq,
       "-2 6 1 2 3 4 5 1 1 2 2 3 3 4 4 5 5 6 6 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1 1".split(
         " ",
       ),
@@ -133,8 +132,8 @@ const MAPS: Record<MapType, PrechoiceMap> = {
 
 export default function DraftPrechoice() {
   const navigate = useNavigate();
-  const [hoveredMapType, setHoveredMapType] = useState<MapType | undefined>();
-  const [selectedMapType, setSelectedMapType] = useState<MapType>("heisen");
+  const [hoveredMapType, setHoveredMapType] = useState<DraftType | undefined>();
+  const [selectedMapType, setSelectedMapType] = useState<DraftType>("heisen");
   const [numFactions, setNumFactions] = useState<string>("");
   const [numSlices, setNumSlices] = useState<string>("");
   const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
@@ -147,7 +146,7 @@ export default function DraftPrechoice() {
   ]);
 
   const mapType = hoveredMapType ?? selectedMapType;
-  const config = selectedMapType ? mapConfig[selectedMapType] : undefined;
+  const config = selectedMapType ? draftConfig[selectedMapType] : undefined;
   const showRandomizeMapTiles = config
     ? config.modifiableMapTiles.length > 0
     : true;
@@ -199,8 +198,8 @@ export default function DraftPrechoice() {
                 size="xl"
                 variant={selectedMapType === type ? "filled" : "outline"}
                 ff="heading"
-                onMouseOver={() => setHoveredMapType(type as MapType)}
-                onMouseDown={() => setSelectedMapType(type as MapType)}
+                onMouseOver={() => setHoveredMapType(type as DraftType)}
+                onMouseDown={() => setSelectedMapType(type as DraftType)}
               >
                 {title}
               </Button>
@@ -251,6 +250,7 @@ export default function DraftPrechoice() {
                   setNumFactions(e.currentTarget.value);
                 }}
                 error={numFactions.length > 0 && !hasValidFactions}
+                onWheel={(e) => e.currentTarget.blur()}
               />
             </Input.Wrapper>
 
@@ -275,6 +275,7 @@ export default function DraftPrechoice() {
                   setNumSlices(e.currentTarget.value);
                 }}
                 error={numSlices.length > 0 && !hasValidSlices}
+                onWheel={(e) => e.currentTarget.blur()}
               />
             </Input.Wrapper>
 
@@ -307,7 +308,7 @@ export default function DraftPrechoice() {
   );
 }
 
-function parseDemoMapString(config: MapConfig, mapString: string[]) {
+function parseDemoMapString(config: DraftConfig, mapString: string[]) {
   const tiles = mapString.map((player, idx) => {
     const position = mapStringOrder[idx];
     const isHomeSystem = config.homeIdxInMapString.includes(idx);
