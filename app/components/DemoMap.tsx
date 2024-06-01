@@ -5,7 +5,6 @@ import {
 } from "~/types";
 import {
   calcHexHeight,
-  calculateMaxHexRadius,
   calculateMaxHexWidthRadius,
   getHexPosition,
 } from "~/utils/positioning";

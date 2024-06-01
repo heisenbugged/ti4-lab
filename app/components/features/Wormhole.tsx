@@ -1,4 +1,4 @@
-import { Text, Title, alpha, darken, lighten } from "@mantine/core";
+import { Text, lighten } from "@mantine/core";
 import { Wormhole as TWormhole } from "~/types";
 
 const wormholeColor: Record<TWormhole, string> = {

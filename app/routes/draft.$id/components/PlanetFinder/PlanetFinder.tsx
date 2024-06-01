@@ -1,5 +1,5 @@
 import { Box, Group, Input, Modal, Stack, Text } from "@mantine/core";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { searchableSystemData, systemData } from "~/data/systemData";
 import { PlanetStatsPill } from "../../../../components/Slice/PlanetStatsPill";
 import { System } from "~/types";

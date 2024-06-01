@@ -1,4 +1,4 @@
-import { Planet, RawSystem } from "~/types";
+import { Planet } from "~/types";
 
 export const planetData: Planet[] = [
   {

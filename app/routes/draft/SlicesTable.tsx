@@ -1,5 +1,4 @@
 import { Box, Group, Table } from "@mantine/core";
-import { useMemo } from "react";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { valueSlice } from "~/stats";

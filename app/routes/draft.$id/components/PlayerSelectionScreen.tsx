@@ -1,4 +1,4 @@
-import { Button, Grid, SimpleGrid, Stack, Title } from "@mantine/core";
+import { Button, Grid, Stack, Title } from "@mantine/core";
 import { useState } from "react";
 import { playerColors } from "~/data/factionData";
 import { Player } from "~/types";

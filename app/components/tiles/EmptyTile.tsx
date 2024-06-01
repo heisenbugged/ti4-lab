@@ -1,7 +1,7 @@
 import { Hex } from "../Hex";
 import { Tile } from "~/types";
 import { useContext } from "react";
-import { Button, darken, lighten } from "@mantine/core";
+import { lighten } from "@mantine/core";
 import { MapContext } from "~/contexts/MapContext";
 
 type Props = {

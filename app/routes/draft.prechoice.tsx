@@ -1,4 +1,4 @@
-import { LoaderFunction, redirect } from "@remix-run/node";
+import { LoaderFunction } from "@remix-run/node";
 import {
   Box,
   Button,

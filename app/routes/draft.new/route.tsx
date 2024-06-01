@@ -7,10 +7,8 @@ import {
   Group,
   List,
   Popover,
-  SimpleGrid,
   Stack,
   Switch,
-  Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
@@ -34,7 +32,6 @@ import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { v4 as uuidv4 } from "uuid";
 import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
-import { generatePrettyUrlName } from "~/data/urlWords.server";
 import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
 
 export default function DraftNew() {

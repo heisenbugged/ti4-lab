@@ -1,4 +1,4 @@
-import { Badge, Card, Group, Stack, Table, Text } from "@mantine/core";
+import { Card, Group, Stack, Table, Text } from "@mantine/core";
 import { useDraft } from "~/draftStore";
 import { PlayerChip } from "./PlayerChip";
 import { factions } from "~/data/factionData";

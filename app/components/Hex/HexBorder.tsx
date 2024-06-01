@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import { hexVertices } from "./hexUtils";
 
 type Props = {

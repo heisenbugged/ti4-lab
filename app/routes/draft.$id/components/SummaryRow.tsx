@@ -1,4 +1,4 @@
-import { Badge, Group, Table, Text } from "@mantine/core";
+import { Group, Table, Text } from "@mantine/core";
 import { useSlice } from "~/components/Slice";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";

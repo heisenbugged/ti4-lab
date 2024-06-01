@@ -1,4 +1,4 @@
-import { Button, Group, Input, Text } from "@mantine/core";
+import { Button, Group, Input } from "@mantine/core";
 import { useState } from "react";
 
 type Props = {

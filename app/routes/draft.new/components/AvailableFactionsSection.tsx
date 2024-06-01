@@ -1,4 +1,4 @@
-import { Button, Group, Input, SimpleGrid, Text } from "@mantine/core";
+import { Button, Group, SimpleGrid, Text } from "@mantine/core";
 import { FactionId } from "~/types";
 import { factionIds, factions } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";

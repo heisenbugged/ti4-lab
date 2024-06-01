@@ -1,4 +1,4 @@
-import { Button, Checkbox, Group, Text, Title } from "@mantine/core";
+import { Button, Checkbox, Group, Text } from "@mantine/core";
 import { Faction } from "~/types";
 
 import { FactionIcon } from "~/components/icons/FactionIcon";

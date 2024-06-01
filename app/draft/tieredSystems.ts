@@ -1,4 +1,4 @@
-import { systemData, systemIds } from "~/data/systemData";
+import { systemData } from "~/data/systemData";
 import { System } from "~/types";
 
 const SYSTEM_TIER = {
