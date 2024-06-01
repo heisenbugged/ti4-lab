@@ -21,7 +21,11 @@ import {
   tileColor,
 } from "./utils/map";
 import { mapStringOrder } from "./data/mapStringOrder";
-import { systemData, systemIds } from "./data/systemData";
+import {
+  systemData,
+  systemIds,
+  systemIdsWithoutMecatol,
+} from "./data/systemData";
 import { factionIds, factions } from "./data/factionData";
 import { fisherYatesShuffle, generateSlices } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
@@ -598,17 +602,9 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         const slices = [...state.slices];
         slices[sliceIdx] = generatedSlice;
 
-        debugger;
-
         return { slices };
       }),
   },
-  // randomizeSlices: (
-  //   numSlices: number,
-  //   varianceValue: Variance,
-  //   opulenceValue: Opulence,
-  //   excludeMapTiles: boolean,
-  // ) => void;
 }));
 
 function systemStats(system: System): SystemStats {
@@ -674,7 +670,7 @@ function randomizeMap(config: DraftConfig, slices: Slice[]) {
 function randomizeSlices(
   config: DraftConfig,
   numSlices: number,
-  availableSystems: number[] = systemIds,
+  availableSystems: number[] = systemIdsWithoutMecatol,
   opulence: Opulence = "medium",
   variance: Variance = "medium",
 ) {

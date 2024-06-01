@@ -300,6 +300,7 @@ export const systemData: Record<number, System> = Object.entries(
   {} as Record<number, System>,
 );
 export const systemIds = Object.keys(systemData).map((id) => parseInt(id));
+export const systemIdsWithoutMecatol = systemIds.filter((id) => id !== 18);
 
 const searchableTech: Record<TechSpecialty, string> = {
   BIOTIC: "green tech",

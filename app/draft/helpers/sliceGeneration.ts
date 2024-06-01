@@ -404,6 +404,7 @@ function hasAdjacentAnomalies(slice: number[], shape: string[]) {
       }
     }
   }
+  return false;
 }
 
 /**

@@ -25,7 +25,11 @@ const MIN_LEGENDARY_CHOICES = [
   { weight: 1, value: 2 },
 ];
 
-export function generateSlices(sliceCount: number, availableSystems: number[]) {
+export function generateSlices(
+  sliceCount: number,
+  availableSystems: number[],
+  sliceShape: string[] = SLICE_SHAPES.milty,
+) {
   // miltydraft only has one slice choice
   const tieredSlices: TieredSlice[] = Array.from({ length: sliceCount }, () => [
     ...SLICE_TIERS,
@@ -56,7 +60,7 @@ export function generateSlices(sliceCount: number, availableSystems: number[]) {
   // finally, we separate anomalies
   for (let sliceIndex = 0; sliceIndex < slices.length; sliceIndex++) {
     let slice = slices[sliceIndex];
-    slice = separateAnomalies(slice, SLICE_SHAPES.milty);
+    slice = separateAnomalies(slice, sliceShape);
     slices[sliceIndex] = slice;
   }
 
