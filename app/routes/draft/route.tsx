@@ -22,7 +22,7 @@ export default function Draft() {
           </Link>
           <div style={{ flex: 1 }} />
           <Switch
-            label="Admin Mode"
+            label="Pick for anyone"
             checked={adminMode}
             onChange={(e) => setAdminMode(e.currentTarget.checked)}
           />
