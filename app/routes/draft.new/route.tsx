@@ -160,7 +160,12 @@ export default function DraftNew() {
           </Popover.Dropdown>
         </Popover>
 
-        <Button onClick={openMapExport} variant="outline" size="xl" c="blue">
+        <Button
+          onClick={openMapExport}
+          variant="outline"
+          size="xl"
+          color="blue"
+        >
           Export Map
         </Button>
       </Group>

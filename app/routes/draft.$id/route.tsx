@@ -32,6 +32,7 @@ import {
   findDraftByPrettyUrl,
   generateUniquePrettyUrl,
 } from "~/drizzle/draft.server";
+import { DraftableSpeakerOrder } from "./components/DraftableSpeakerOrder";
 
 export default function RunningDraft() {
   const { adminMode } = useOutletContext<{ adminMode: boolean }>();
@@ -143,42 +144,23 @@ export default function RunningDraft() {
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Section>
               <SectionTitle title="Speaker Order" />
-              <SimpleGrid cols={{ base: 3, sm: 6, md: 6, lg: 3, xl: 6 }}>
+              <SimpleGrid cols={{ base: 3, sm: 3, md: 3, lg: 3, xl: 6 }}>
                 {playerSpeakerOrder.map((so, idx) => {
                   const player = draft.players.find(
                     (p) => p.speakerOrder === idx,
                   );
+
                   return (
-                    <Stack
+                    <DraftableSpeakerOrder
                       key={so}
-                      bg="gray.1"
-                      align="center"
-                      p="sm"
-                      style={{
-                        borderRadius: 8,
-                        border: "1px solid rgba(0,0,0,0.1)",
+                      speakerOrder={so}
+                      player={player}
+                      onSelect={() => {
+                        draft.selectSpeakerOrder(activePlayerId, idx);
+                        handleSync();
                       }}
-                      pos="relative"
-                      gap={6}
-                      justify="stretch"
-                    >
-                      <Text ff="heading" fw="bold">
-                        {so}
-                      </Text>
-                      {!player && canSelectSpeakerOrder && (
-                        <Button
-                          size="compact-sm"
-                          px="lg"
-                          onMouseDown={() => {
-                            draft.selectSpeakerOrder(activePlayerId, idx);
-                            handleSync();
-                          }}
-                        >
-                          Select
-                        </Button>
-                      )}
-                      {player && <PlayerChip player={player} />}
-                    </Stack>
+                      canSelectSpeakerOrder={canSelectSpeakerOrder}
+                    />
                   );
                 })}
               </SimpleGrid>

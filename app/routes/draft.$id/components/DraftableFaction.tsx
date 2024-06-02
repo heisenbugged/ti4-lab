@@ -14,6 +14,8 @@ import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
 import { IconEye } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 
+import classes from "~/components/Surface.module.css";
+
 type Props = {
   faction: Faction;
   player?: Player;
@@ -25,13 +27,12 @@ export function DraftableFaction({ faction, player, onSelect }: Props) {
   return (
     <Stack
       gap={4}
-      bg="gray.1"
       px="sm"
       py={8}
       pb={4}
+      className={`${classes.surface} ${classes.withBorder}`}
       style={{
-        borderRadius: 8,
-        border: "1px solid rgba(0,0,0,0.1)",
+        borderRadius: "var(--mantine-radius-md)",
         cursor: "pointer",
         position: "relative",
       }}

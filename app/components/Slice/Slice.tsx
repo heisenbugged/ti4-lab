@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Group, Stack, Text } from "@mantine/core";
+import { Box, Button, Divider, Group, Paper, Stack, Text } from "@mantine/core";
 import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { Titles } from "../Titles";
@@ -9,6 +9,9 @@ import { SliceFeatures } from "./SliceFeatures";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
 import { IconDice6Filled } from "@tabler/icons-react";
 import { DraftConfig } from "~/draft";
+import { useIsLight } from "~/hooks/useIsLight";
+
+import classes from "./Slice.module.css";
 
 type Props = {
   config: DraftConfig;
@@ -41,102 +44,93 @@ export function Slice({
   const selected = !!player;
 
   return (
-    <Stack
-      flex={1}
-      gap={0}
-      style={{
-        borderRadius: 10,
-        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      <SliceHeader
-        selected={selected}
-        right={
+    <Paper shadow="sm">
+      <Stack flex={1} gap={0}>
+        <SliceHeader
+          selected={selected}
+          right={
+            <Group>
+              {mode === "create" && (
+                <Group gap={2}>
+                  <Button
+                    size="xs"
+                    onMouseDown={onRandomizeSlice}
+                    color="gray.7"
+                    variant="filled"
+                  >
+                    <IconDice6Filled size={24} />
+                  </Button>
+                  <Button
+                    size="xs"
+                    onMouseDown={onClearSlize}
+                    variant="filled"
+                    color="red.9"
+                  >
+                    Clear
+                  </Button>
+                </Group>
+              )}
+              {mode === "draft" && !selected && onSelectSlice && (
+                <Button
+                  lh={1}
+                  py={6}
+                  px={10}
+                  h="auto"
+                  onMouseDown={onSelectSlice}
+                  variant="filled"
+                >
+                  Select
+                </Button>
+              )}
+            </Group>
+          }
+        >
           <Group>
-            {mode === "create" && (
-              <Group gap={2}>
-                <Button
-                  size="xs"
-                  onMouseDown={onRandomizeSlice}
-                  color="gray.7"
-                  variant="filled"
-                >
-                  <IconDice6Filled size={24} />
-                </Button>
-                <Button
-                  size="xs"
-                  onMouseDown={onClearSlize}
-                  variant="filled"
-                  color="red.9"
-                >
-                  Clear
-                </Button>
-              </Group>
-            )}
-            {mode === "draft" && !selected && onSelectSlice && (
-              <Button
-                lh={1}
-                py={6}
-                px={10}
-                h="auto"
-                onMouseDown={onSelectSlice}
-                variant="filled"
-              >
-                Select
-              </Button>
-            )}
+            <Titles.Slice
+              className={`${classes["slice-text"]} ${selected ? classes.selected : ""}`}
+            >
+              {name}
+            </Titles.Slice>
+            {player ? <PlayerChip player={player} /> : undefined}
           </Group>
-        }
-      >
-        <Group>
-          <Titles.Slice c={selected ? "gray.8" : "white"}>{name}</Titles.Slice>
-          {player ? <PlayerChip player={player} /> : undefined}
+        </SliceHeader>
+
+        <Group className={classes.stats}>
+          <PlanetStatsPill
+            resources={optimal.resources}
+            influence={optimal.influence}
+            flex={optimal.flex}
+          />
+          <Text fw={600} size="sm">
+            /
+          </Text>
+          <PlanetStatsPill
+            size="xs"
+            resources={total.resources}
+            influence={total.influence}
+          />
         </Group>
-      </SliceHeader>
 
-      <Group align="center" gap="xs" px="sm" py="xs" mb="sm" bg="gray.1">
-        <PlanetStatsPill
-          resources={optimal.resources}
-          influence={optimal.influence}
-          flex={optimal.flex}
-        />
-        <Text fw={600} size="sm">
-          /
-        </Text>
-        <PlanetStatsPill
-          size="xs"
-          resources={total.resources}
-          influence={total.influence}
-        />
-      </Group>
+        <Box
+          style={{ filter: selected ? "grayscale(70%)" : "none" }}
+          className={classes.map}
+        >
+          <SliceMap
+            id={id}
+            sliceHeight={config.sliceHeight}
+            sliceConcentricCircles={config.sliceConcentricCircles}
+            wOffsetMultiplier={config.wOffsetMultiplier}
+            tiles={tiles}
+            onSelectTile={onSelectTile}
+            onDeleteTile={onDeleteTile}
+            mode={mode}
+          />
+        </Box>
 
-      <div style={{ filter: selected ? "grayscale(70%)" : "none" }}>
-        <SliceMap
-          id={id}
-          sliceHeight={config.sliceHeight}
-          sliceConcentricCircles={config.sliceConcentricCircles}
-          wOffsetMultiplier={config.wOffsetMultiplier}
-          tiles={tiles}
-          onSelectTile={onSelectTile}
-          onDeleteTile={onDeleteTile}
-          mode={mode}
-        />
-      </div>
-
-      <Divider mt="md" />
-      <Box
-        bg="rgba(222 226 230)"
-        style={{
-          boxShadow: "0 5px 7px rgba(0, 0, 0, 0.1) inset",
-          borderBottomLeftRadius: 10,
-          borderBottomRightRadius: 10,
-          minHeight: 50,
-        }}
-        px="md"
-        py="sm"
-      >
-        <SliceFeatures slice={slice} />
-      </Box>
-    </Stack>
+        <Box className={classes.features}>
+          <SliceFeatures slice={slice} />
+        </Box>
+      </Stack>
+    </Paper>
   );
 }

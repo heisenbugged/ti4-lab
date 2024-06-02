@@ -1,8 +1,10 @@
-import { Button, Checkbox, Group, Text } from "@mantine/core";
+import { Button, Checkbox, Group, Paper, Text } from "@mantine/core";
 import { Faction } from "~/types";
-
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { IconTrashFilled } from "@tabler/icons-react";
+
+import surfaceClasses from "~/components/Surface.module.css";
+import classes from "./NewDraftFaction.module.css";
 
 type Props = {
   faction: Faction;
@@ -22,15 +24,13 @@ export function NewDraftFaction({
   return (
     <Group
       gap="xs"
-      bg="gray.1"
+      className={`${surfaceClasses.surface} ${surfaceClasses.withBorder}`}
       align="center"
       px="sm"
       py={4}
       style={{
-        borderRadius: 8,
-        border: "1px solid rgba(0,0,0,0.1)",
+        borderRadius: "var(--mantine-radius-lg)",
         flexWrap: "nowrap",
-        cursor: "pointer",
       }}
       onMouseDown={() => onCheck?.(!checked)}
     >
@@ -42,7 +42,7 @@ export function NewDraftFaction({
         <Button
           size="compact-xs"
           variant="filled"
-          bg={removeEnabled ? "red.9" : "gray.3"}
+          className={`${classes["remove-button"]} ${removeEnabled ? "" : classes.withDisabled}`}
           onMouseDown={onRemove}
           disabled={!removeEnabled}
         >

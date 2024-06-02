@@ -13,11 +13,16 @@ import { FactionIcon } from "~/components/icons/FactionIcon";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { DraftConfig } from "~/draft";
+import { useIsLight } from "~/hooks/useIsLight";
+
+import classes from "./MidDraftSummary.module.css";
 
 export function MidDraftSummary() {
   const draft = useDraft();
   const slices = draft.slices;
   const players = draft.players;
+  const isLight = useIsLight();
+  const borderColor = isLight ? undefined : "var(--mantine-color-dark-5)";
 
   return (
     <>
@@ -32,7 +37,7 @@ export function MidDraftSummary() {
           />
         ))}
       </Stack>
-      <Table visibleFrom="sm">
+      <Table visibleFrom="sm" borderColor={borderColor}>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
@@ -109,7 +114,7 @@ function SummaryCard({ player, slice, showSeat }: Props) {
         </Group>
       </Group>
       <Group justify="space-between" mt="lg">
-        <Group bg="gray.1" px="xs" style={{ borderRadius: 8 }}>
+        <Group className={classes.chooseFaction} px="xs">
           {faction ? (
             <>
               <FactionIcon faction={faction.id} style={{ height: 24 }} />

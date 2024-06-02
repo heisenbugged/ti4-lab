@@ -1,0 +1,4 @@
+.border {
+    @mixin light { stroke: #e5e5e5;}
+    /* @mixin dark { stroke: var(--mantine-color-dark-3) } */
+}

@@ -1,0 +1,8 @@
+.chooseFaction {
+    padding: 4px var(--mantine-spacing-md);
+    border-radius: var(--mantine-radius-lg);
+    background-color: var(--mantine-color-gray-1);
+    @mixin dark {
+        background-color: var(--mantine-color-dark-7);
+    }
+}

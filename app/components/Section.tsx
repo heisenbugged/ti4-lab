@@ -1,5 +1,6 @@
 import { Group, Stack, Title } from "@mantine/core";
 import { ReactNode } from "react";
+import classes from "./Section.module.css";
 
 export function Section({ children }: { children: ReactNode }) {
   return (
@@ -17,17 +18,7 @@ export function SectionTitle({
   children?: ReactNode;
 }) {
   return (
-    <Group
-      justify="space-between"
-      px="sm"
-      py="sm"
-      style={{
-        borderBottom: "var(--mantine-color-spaceBlue-1) solid 1px",
-        background:
-          "linear-gradient(90deg, var(--mantine-color-spaceBlue-1) 0%, #ffffff 50%)",
-        borderTopLeftRadius: 8,
-      }}
-    >
+    <Group className={classes.section} justify="space-between" px="sm" py="sm">
       <Title order={3}>{title}</Title>
       {children}
     </Group>

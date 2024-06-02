@@ -10,13 +10,7 @@ type Props = {
 export function PlayerSelectionScreen({ players, onDraftJoined }: Props) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   return (
-    <Stack
-      flex={1}
-      mih="calc(100vh - 60px)"
-      align="center"
-      justify="center"
-      bg="white"
-    >
+    <Stack flex={1} mih="calc(100vh - 60px)" align="center" justify="center">
       <Title mb="xl">Identify Thyself!</Title>
       <Grid w="75vw" maw="1200px" gutter="xl">
         {players.map((player) => (

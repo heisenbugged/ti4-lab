@@ -22,28 +22,28 @@ const opulences = [
   {
     value: "low" as const,
     label: "Low",
-    color: "yellow.9",
+    color: "yellow",
     description:
       "Low value planets will push you to explore and expand. You'll need to fight for every resource.",
   },
   {
     value: "medium" as const,
     label: "Medium",
-    color: "green.8",
+    color: "green",
     description:
       "A balanced experience. You'll have enough resources to build a variety of units and tech.",
   },
   {
     value: "high" as const,
     label: "High",
-    color: "blue.8",
+    color: "blue",
     description:
       "You'll have a surplus of resources. You can afford to build big fleets and research advanced tech.",
   },
   {
     value: "wealthy" as const,
     label: "Jeff Bezos",
-    color: "purple.8",
+    color: "purple",
     description:
       "You'll have more resources than you know what to do with. The ultimate boat-float experience.",
   },
@@ -53,21 +53,21 @@ const variances = [
   {
     value: "low" as const,
     label: "Low",
-    color: "blue.8",
+    color: "blue",
     description:
       "All slice values are close to the chosen opulence, no one slice is significantly better or worse.",
   },
   {
     value: "medium" as const,
     label: "Medium",
-    color: "green.8",
+    color: "green",
     description:
       "Some slices are better than others, but the difference is not extreme.",
   },
   {
     value: "high" as const,
     label: "High",
-    color: "yellow.9",
+    color: "yellow",
     description:
       "There is a significant difference in value between the best and worst slices.",
   },

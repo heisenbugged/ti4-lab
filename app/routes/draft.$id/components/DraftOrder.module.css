@@ -1,0 +1,96 @@
+
+.blue {
+    color: var(--mantine-color-blue-6);
+    @mixin dark { color: var(--mantine-color-blue-4); }
+}
+
+.blue.active {
+    border: 4px solid var(--mantine-color-blue-8);
+    background-color: var(--mantine-color-blue-1);
+    @mixin dark {
+        color: white;
+        background-color: var(--mantine-color-blue-9);
+        border-color: var(--mantine-color-blue-5);
+    }
+}
+
+.red {
+    color: var(--mantine-color-red-6);
+}
+
+.red.active {
+    border: 4px solid var(--mantine-color-red-8);
+    background-color: var(--mantine-color-red-1);
+    @mixin dark {
+        color: white;
+        background-color: var(--mantine-color-red-9);
+        border-color: var(--mantine-color-red-5);
+    }
+}
+
+.green {
+    color: var(--mantine-color-green-8);
+    @mixin dark { color: var(--mantine-color-green-4); }
+}
+
+.green.active {
+    border: 4px solid var(--mantine-color-green-8);
+    background-color: var(--mantine-color-green-1);
+    @mixin dark {
+        color: white;
+        background-color: var(--mantine-color-green-9);
+        border-color: var(--mantine-color-green-5);
+    }
+}
+
+.magenta {
+    color: var(--mantine-color-magenta-6);
+    @mixin dark { color: var(--mantine-color-magenta-4); }
+}
+
+.magenta.active {
+    border: 4px solid var(--mantine-color-magenta-8);
+    background-color: var(--mantine-color-magenta-1);
+    @mixin dark {
+        color: white;
+        background-color: var(--mantine-color-magenta-9);
+        border-color: var(--mantine-color-magenta-5);
+    }
+}
+
+.violet {
+    color: var(--mantine-color-violet-8);
+    @mixin dark { color: var(--mantine-color-violet-4); }
+}
+
+.violet.active {
+    border: 4px solid var(--mantine-color-violet-8);
+    background-color: var(--mantine-color-violet-1);
+    @mixin dark {
+        color: white;
+        background-color: var(--mantine-color-violet-9);
+        border-color: var(--mantine-color-violet-5);
+    }
+}
+
+.orange {
+    color: var(--mantine-color-orange-6);
+    @mixin dark { color: var(--mantine-color-orange-4); }
+}
+
+.orange.active {
+    border: 4px solid var(--mantine-color-orange-8);
+    background-color: var(--mantine-color-orange-1);
+    @mixin dark {
+        color: white;
+        background-color: var(--mantine-color-orange-9);
+        border-color: var(--mantine-color-orange-5);
+    }
+}
+
+.passed {
+    color: var(--mantine-color-gray-6);
+    @mixin dark {
+        color: var(--mantine-color-dark-3);
+    }
+}

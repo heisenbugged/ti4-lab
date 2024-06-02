@@ -1,4 +1,5 @@
-import { Box, Group, Text } from "@mantine/core";
+import { Box, Group, Text, useMantineTheme } from "@mantine/core";
+import classes from "./PlanetStatsPill.module.css";
 
 type Props = {
   resources: number;
@@ -15,48 +16,22 @@ export function PlanetStatsPill({
 }: Props) {
   return (
     <Group gap={2}>
-      <Box
-        bg="yellow"
-        px="xs"
-        style={{
-          borderTopLeftRadius: 5,
-          borderBottomLeftRadius: 5,
-        }}
-      >
-        <Text fw={600} size={size}>
+      <Box className={classes.resources} px="xs">
+        <Text fw={600} size={size} className={classes.text}>
           {resources}
         </Text>
       </Box>
       <Box
-        bg="blue.4"
+        className={`${classes.influence} ${flex === undefined ? classes.withBorder : ""}`}
         px="xs"
-        style={
-          !(flex !== undefined)
-            ? {
-                borderTopRightRadius: 5,
-                borderBottomRightRadius: 5,
-              }
-            : undefined
-        }
       >
-        <Text fw={600} size={size}>
+        <Text fw={600} size={size} className={classes.text}>
           {influence}
         </Text>
       </Box>
       {flex !== undefined ? (
-        <Box
-          bg="purple.2"
-          px="xs"
-          style={
-            flex !== undefined
-              ? {
-                  borderTopRightRadius: 5,
-                  borderBottomRightRadius: 5,
-                }
-              : undefined
-          }
-        >
-          <Text fw={600} size={size}>
+        <Box className={classes.flex} px="xs">
+          <Text fw={600} size={size} className={classes.text}>
             {flex}
           </Text>
         </Box>

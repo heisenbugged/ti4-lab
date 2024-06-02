@@ -8,9 +8,9 @@ import {
   totalStatsForSystems,
 } from "~/utils/map";
 import { useSortedSlices } from "./useSortedSlices";
-
-import "./SlicesTable.css";
 import { Slice } from "~/types";
+
+import classes from "~/components/Table.module.css";
 
 type Props = {
   slices: Slice[];
@@ -20,7 +20,7 @@ type Props = {
 export function SlicesTable({ slices, draftedSlices = [] }: Props) {
   const sortedSlices = useSortedSlices(slices, draftedSlices);
   return (
-    <Table>
+    <Table className={classes.table}>
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Name</Table.Th>
@@ -39,7 +39,7 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
           return (
             <Table.Tr
               key={idx}
-              bg={isDrafted ? "gray.2" : undefined}
+              className={isDrafted ? classes.isDrafted : undefined}
               opacity={isDrafted ? 0.6 : 1}
             >
               <Table.Td>{`Slice ${idx + 1}`}</Table.Td>

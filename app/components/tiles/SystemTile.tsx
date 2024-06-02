@@ -9,12 +9,12 @@ import { GravityRift } from "../features/GravityRift";
 import { Wormhole } from "../features/Wormhole";
 import { MapContext } from "~/contexts/MapContext";
 
+import classes from "./Tiles.module.css";
+
 type Props = { mapId: string; tile: SystemTileType };
 
 export function SystemTile({ mapId, tile }: Props) {
   const { radius } = useContext(MapContext);
-  const { colors } = useMantineTheme();
-
   const scale = calcScale(radius);
   const system = tile.system;
   const image = tile.system.anomaly ? (
@@ -26,7 +26,7 @@ export function SystemTile({ mapId, tile }: Props) {
     <Hex
       id={`${mapId}-${tile.system.id}`}
       radius={radius}
-      color={colors.spaceBlue[8]}
+      colorClass={classes.system}
       image={image}
       anomaly={!!tile.system.anomaly}
     >

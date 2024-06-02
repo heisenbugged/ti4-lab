@@ -23,6 +23,32 @@ import { SocketProvider } from "./socketContext";
 
 const mantineTheme = createTheme({
   colors: {
+    // override dark colors here to change them for all components
+    dark: [
+      "#d5d7e0",
+      "#acaebf",
+      "#8c8fa3",
+      "#666980",
+      "#4d4f66",
+      "#34354a",
+      "#2b2c3d",
+      "#1d1e30",
+      "#0c0d21",
+      "#01010a",
+    ],
+    // used by dark theme
+    palePurple: [
+      "#f3f2f7",
+      "#e2e2e8",
+      "#c3c2d2",
+      "#a2a0bc",
+      "#8583aa",
+      "#73719e",
+      "#6a679a",
+      "#595787",
+      "#4f4c79",
+      "#44426c",
+    ],
     purple: [
       "#f3edff",
       "#e0d7fa",
@@ -79,7 +105,7 @@ const mantineTheme = createTheme({
     Button: Button.extend({
       defaultProps: {
         variant: "gradient",
-        gradient: { from: "purple", to: "indigo.7", deg: 90 },
+        gradient: { from: "purple", to: "indigo.9", deg: 90 },
       },
     }),
   },
@@ -157,10 +183,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Meta />
         <Links />
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
-        <MantineProvider theme={mantineTheme}>
+        <MantineProvider
+          theme={mantineTheme}
+          defaultColorScheme="auto"
+          // forceColorScheme="light"
+        >
           <SocketProvider socket={socket}>{children}</SocketProvider>
         </MantineProvider>
         <ScrollRestoration />

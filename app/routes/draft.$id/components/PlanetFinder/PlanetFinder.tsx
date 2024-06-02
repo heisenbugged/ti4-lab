@@ -86,12 +86,12 @@ export function PlanetFinder({
             onMouseDown={() => onSelectSystem(system)}
           >
             <Group gap="sm">
-              <Text size="xs" tt="uppercase" c="gray.8">
+              <Text size="xs" tt="uppercase" c="dimmed">
                 {system.id}
               </Text>
               {system.planets.map((planet, idx) => (
                 <Fragment key={planet.name}>
-                  <Group gap={2}>
+                  <Group gap="xs">
                     <Box
                       w="10"
                       h="10"
@@ -114,19 +114,19 @@ export function PlanetFinder({
                 </Fragment>
               ))}
               {system.anomaly && (
-                <Text size="sm" c="gray.7">
+                <Text size="sm" c="dimmed">
                   {system.anomaly.replace("_", " ")}
                 </Text>
               )}
               {system.planets.length === 0 &&
                 !system.anomaly &&
                 !system.wormhole && (
-                  <Text size="sm" c="gray.7">
+                  <Text size="sm" c="dimmed">
                     EMPTY
                   </Text>
                 )}
               {system.wormhole && (
-                <Text size="sm" c="gray.7">
+                <Text size="sm" c="dimmed">
                   {system.wormhole} wormhole
                 </Text>
               )}

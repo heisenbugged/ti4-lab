@@ -5,10 +5,9 @@ import "./AnimatedText.css";
 
 interface Props {
   text: string;
-  color: StyleProp<DefaultMantineColor> | undefined;
 }
 
-export function AnimatedText({ text, color }: Props) {
+export function AnimatedText({ text }: Props) {
   const [currentText, setCurrentText] = useState(text);
 
   useEffect(() => {
@@ -24,7 +23,6 @@ export function AnimatedText({ text, color }: Props) {
       >
         <Text
           className="fading-text"
-          c={color}
           fw={600}
           size="xl"
           ff="heading"

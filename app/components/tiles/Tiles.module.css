@@ -1,0 +1,65 @@
+.title {
+    @mixin dark { color: white; }
+}
+
+.empty {
+    @mixin light { fill: rgba(247, 247, 251, 1); }
+    @mixin dark { fill: var(--mantine-color-dark-6); }
+}
+
+.empty.modifiable {
+    @mixin light { fill: #d6d6ea; }
+    @mixin dark { fill: var(--mantine-color-dark-4) }
+}
+
+.demoEmpty {
+    @mixin light { fill: rgba(247, 247, 251, 1); }
+    @mixin dark { fill: var(--mantine-color-dark-7); }
+}
+
+.demoBorder {
+    @mixin dark { stroke: var(--mantine-color-dark-4) }
+
+}
+
+.home {
+    @mixin light { fill: #aed6b6; }
+    @mixin dark { fill: #5fa16d; }
+}
+
+.system {
+    @mixin light { fill: var(--mantine-color-spaceBlue-7); }
+    @mixin dark { fill: var(--mantine-color-spaceBlue-9); }
+}
+
+.blue {
+    @mixin light { fill: var(--mantine-color-blue-3); }
+    @mixin dark { fill: var(--mantine-color-blue-4);}
+}
+
+
+.red {
+    @mixin light { fill: var(--mantine-color-red-5); }
+    @mixin dark { fill: var(--mantine-color-red-9);}
+}
+
+.green {
+    @mixin light { fill: var(--mantine-color-green-3); }
+    @mixin dark { fill: var(--mantine-color-green-9);}
+}
+
+.magenta {
+    @mixin light { fill: var(--mantine-color-magenta-3); }
+    @mixin dark { fill: var(--mantine-color-magenta-9);}
+}
+
+.violet {
+    @mixin light { fill: var(--mantine-color-violet-3); }
+    @mixin dark { fill: var(--mantine-color-violet-9);}
+}
+
+.orange {
+    @mixin light { fill: var(--mantine-color-orange-3); }
+    @mixin dark { fill: var(--mantine-color-orange-6);}
+
+}

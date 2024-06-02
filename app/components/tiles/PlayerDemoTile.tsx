@@ -4,6 +4,8 @@ import { useContext } from "react";
 import { MapContext } from "~/contexts/MapContext";
 import { Title } from "@mantine/core";
 
+import classes from "./Tiles.module.css";
+
 type Props = {
   tile: TPlayerDemoTile;
   title: string;
@@ -16,11 +18,16 @@ export function PlayerDemoTile({ tile, title, color }: Props) {
     <Hex
       id={`player-demo-${tile.playerNumber}-${tile.idx}`}
       radius={radius}
-      color={tile.idx === 0 ? "var(--mantine-color-spaceBlue-5)" : color}
+      colorClass={classes[color]}
       showBorder={tile.playerNumber === 6}
     >
       {tile.isHomeSystem && (
-        <Title size={24} fw={600}>
+        <Title
+          size={24}
+          fw={600}
+          style={{ zIndex: 1 }}
+          className={classes.title}
+        >
           {title}
         </Title>
       )}

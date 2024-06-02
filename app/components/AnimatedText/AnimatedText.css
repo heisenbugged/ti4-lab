@@ -1,14 +1,11 @@
 .fading-text-wrapper {
   position: relative;
-  /* display: inline-block; */
-  /* height:90px; */
 }
 
 .fading-text {
-  /* position: absolute; */
-  /* top: 0; */
-  /* left: 0; */
   white-space: nowrap;
+  color: black;
+  @mixin dark { color: white;}
 }
 
 .fade-enter {

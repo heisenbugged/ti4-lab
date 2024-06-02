@@ -1,0 +1,11 @@
+.remove-button {
+    background-color: var(--mantine-color-red-9);
+}
+
+.withDisabled {
+    @mixin light { background-color: var(--mantine-color-gray-3); }
+    @mixin dark {
+        color: var(--mantine-color-dark-2);
+        background-color: var(--mantine-color-dark-7);
+    }
+}

@@ -9,11 +9,13 @@ import {
   getHexPosition,
 } from "~/utils/positioning";
 import { useDimensions } from "~/hooks/useDimensions";
-import { Box, useMantineTheme } from "@mantine/core";
+import { Box } from "@mantine/core";
 import { useContext } from "react";
 import { MapContext } from "~/contexts/MapContext";
 import { PlayerDemoTile } from "./tiles/PlayerDemoTile";
 import { Hex } from "./Hex";
+
+import classes from "./tiles/Tiles.module.css";
 
 type Props = {
   id: string;
@@ -75,7 +77,6 @@ export function DemoMapTile({
 }: DemoMapTileProps) {
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
-  const theme = useMantineTheme();
 
   let Tile: JSX.Element;
   if (tile.type === "PLAYER_DEMO") {
@@ -91,7 +92,8 @@ export function DemoMapTile({
       <Hex
         id={`${mapId}-empty`}
         radius={radius}
-        color={tile.type === "OPEN" ? theme.colors.spaceBlue[5] : "white"}
+        colorClass={tile.type === "OPEN" ? classes.system : classes.demoEmpty}
+        borderColorClass={classes.demoBorder}
         showBorder={tile.type !== "OPEN"}
         borderRadius={4}
       />

@@ -1,0 +1,11 @@
+.table tr {
+    @mixin dark { border-color: var(--mantine-color-dark-5); }
+}
+
+.table.isDrafted {
+    background-color: var(--mantine-color-gray-2);
+    @mixin dark { background-color: var(--mantine-color-dark-8); }
+}
+
+/* const borderColor = isLight ? undefined : "var(--mantine-color-dark-5)";
+  const isDraftedBg = isLight ? "gray.2" : "dark.8"; */

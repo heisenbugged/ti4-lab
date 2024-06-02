@@ -46,6 +46,7 @@ export function SliceMap({
           position: "relative",
           width: "100%",
           height,
+          zIndex: 10,
         }}
       >
         {radius > 0 &&

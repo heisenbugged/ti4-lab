@@ -1,0 +1,6 @@
+.logo {
+    color: var(--mantine-color-purple-8);
+    @mixin dark {
+        color: var(--mantine-color-purple-2);
+    }
+}

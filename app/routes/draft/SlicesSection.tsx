@@ -51,7 +51,7 @@ export function SlicesSection({
     : { base: 1, sm: 2, md: 3, lg: 2, xxl: 3 };
   return (
     <Section>
-      <div style={{ position: "sticky", top: 60, zIndex: 5 }}>
+      <div style={{ position: "sticky", top: 60, zIndex: 11 }}>
         <SectionTitle title="Slices">
           {mode === "create" && (
             <Group gap={4}>

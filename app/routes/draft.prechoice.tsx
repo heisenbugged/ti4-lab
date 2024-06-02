@@ -27,8 +27,10 @@ type PrechoiceMap = {
   description: string;
   map: (PlayerDemoTile | OpenTile | EmptyTile)[];
   titles: string[];
-  colors: string[];
 };
+
+// const colors = ["blue", "green", "red", "purple", "yellow", "orange"];
+const colors = ["blue", "red", "green", "magenta", "violet", "orange"];
 
 const MAPS: Record<DraftType, PrechoiceMap> = {
   heisen: {
@@ -42,14 +44,6 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
         .map(Number),
     ),
     titles: ["P1", "P2", "P3", "P4", "P5", "P6"],
-    colors: [
-      "var(--mantine-color-blue-2)",
-      "var(--mantine-color-green-2)",
-      "var(--mantine-color-red-2)",
-      "var(--mantine-color-purple-2)",
-      "var(--mantine-color-yellow-2)",
-      "var(--mantine-color-orange-2)",
-    ],
   },
 
   miltyeq: {
@@ -63,14 +57,6 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
         .map(Number),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
-    colors: [
-      "var(--mantine-color-blue-2)",
-      "var(--mantine-color-green-2)",
-      "var(--mantine-color-red-2)",
-      "var(--mantine-color-purple-2)",
-      "var(--mantine-color-yellow-2)",
-      "var(--mantine-color-orange-2)",
-    ],
   },
   miltyeqless: {
     title: "Milty xEQ",
@@ -83,14 +69,6 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
         .map(Number),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
-    colors: [
-      "var(--mantine-color-blue-2)",
-      "var(--mantine-color-green-2)",
-      "var(--mantine-color-red-2)",
-      "var(--mantine-color-purple-2)",
-      "var(--mantine-color-yellow-2)",
-      "var(--mantine-color-orange-2)",
-    ],
   },
   milty: {
     title: "Milty",
@@ -103,14 +81,6 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
         .map(Number),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
-    colors: [
-      "var(--mantine-color-blue-2)",
-      "var(--mantine-color-green-2)",
-      "var(--mantine-color-red-2)",
-      "var(--mantine-color-purple-2)",
-      "var(--mantine-color-yellow-2)",
-      "var(--mantine-color-orange-2)",
-    ],
   },
   wekker: {
     title: "Wekker",
@@ -122,14 +92,6 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
         .map(Number),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
-    colors: [
-      "var(--mantine-color-blue-2)",
-      "var(--mantine-color-green-2)",
-      "var(--mantine-color-red-2)",
-      "var(--mantine-color-purple-2)",
-      "var(--mantine-color-yellow-2)",
-      "var(--mantine-color-orange-2)",
-    ],
   },
 };
 
@@ -211,12 +173,12 @@ export default function DraftPrechoice() {
                 id="prechoice-map"
                 map={MAPS[mapType].map}
                 titles={MAPS[mapType].titles}
-                colors={MAPS[mapType].colors}
+                colors={colors}
                 padding={0}
               />
             )}
           </Box>
-          <Text size="md" mt="xl" maw="700px" ta="center" c="gray.7">
+          <Text size="md" mt="xl" maw="700px" ta="center" c="dimmed">
             {MAPS[mapType].description}
           </Text>
         </Flex>

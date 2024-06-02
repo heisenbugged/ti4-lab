@@ -1,9 +1,21 @@
-import { AppShell, Group, Switch, Title } from "@mantine/core";
+import {
+  AppShell,
+  Button,
+  Group,
+  Switch,
+  Title,
+  useComputedColorScheme,
+  useMantineColorScheme,
+} from "@mantine/core";
 import { Link, Outlet } from "@remix-run/react";
+import { IconMoon, IconSun } from "@tabler/icons-react";
 import { useState } from "react";
+import { Logo } from "~/components/Logo";
 
 export default function Draft() {
   const [adminMode, setAdminMode] = useState(false);
+  const { setColorScheme } = useMantineColorScheme();
+
   return (
     <AppShell header={{ height: 60 }} px="md">
       <AppShell.Header>
@@ -13,19 +25,34 @@ export default function Draft() {
             className="logo"
             style={{ textDecoration: "none" }}
           >
-            <Group align="center" gap="xs">
-              <img src="/logo.webp" style={{ width: 40 }} />
-              <Title fw="bolder" order={3} c="purple.8">
-                TI4 Lab
-              </Title>
-            </Group>
+            <Logo />
           </Link>
           <div style={{ flex: 1 }} />
-          <Switch
-            label="Pick for anyone"
-            checked={adminMode}
-            onChange={(e) => setAdminMode(e.currentTarget.checked)}
-          />
+          <Group>
+            <Button
+              variant="light"
+              color="gray"
+              onMouseDown={() => setColorScheme("dark")}
+              size="compact-xs"
+              darkHidden
+            >
+              <IconMoon />
+            </Button>
+            <Button
+              variant="light"
+              color="gray"
+              onMouseDown={() => setColorScheme("light")}
+              lightHidden
+              size="compact-xs"
+            >
+              <IconSun />
+            </Button>
+            <Switch
+              label="Pick for anyone"
+              checked={adminMode}
+              onChange={(e) => setAdminMode(e.currentTarget.checked)}
+            />
+          </Group>
         </Group>
       </AppShell.Header>
 

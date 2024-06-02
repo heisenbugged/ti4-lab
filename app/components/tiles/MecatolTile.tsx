@@ -7,6 +7,8 @@ import { calcScale } from "./calcScale";
 import { MapContext } from "~/contexts/MapContext";
 import { PlanetName, PlanetStats } from "../Planet";
 
+import classes from "./Tiles.module.css";
+
 type Props = { mapId: string; tile: SystemTileType };
 
 export function MecatolTile({ mapId, tile }: Props) {
@@ -16,7 +18,7 @@ export function MecatolTile({ mapId, tile }: Props) {
     <Hex
       id={`${mapId}-${tile.system.id}`}
       radius={radius}
-      color="#475e93"
+      colorClass={classes.system}
       image={<MecatolPlanet radius={radius} />}
     >
       <Box w="75" pos="relative" style={{ scale: scale.toString(), zIndex: 1 }}>
