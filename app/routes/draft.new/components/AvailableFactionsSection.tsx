@@ -49,7 +49,7 @@ export function AvailableFactionsSection({
         </Group>
       </SectionTitle>
       <SimpleGrid
-        cols={{ base: 1, xs: 2, sm: 3, md: 6, xl: 8, xxl: 8 }}
+        cols={{ base: 1, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }}
         spacing="xs"
       >
         {selectedFactions.map((factionId) => (

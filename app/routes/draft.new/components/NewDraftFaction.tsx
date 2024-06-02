@@ -34,7 +34,10 @@ export function NewDraftFaction({
       }}
       onMouseDown={() => onCheck?.(!checked)}
     >
-      <FactionIcon faction={faction.id} style={{ width: 30 }} />
+      <FactionIcon
+        faction={faction.id}
+        style={{ minWidth: 30, maxWidth: 30 }}
+      />
       <Text flex={1} lh={1}>
         {faction.name}
       </Text>

@@ -1,5 +1,6 @@
 .remove-button {
     background-color: var(--mantine-color-red-9);
+    min-width: 35px;
 }
 
 .withDisabled {
