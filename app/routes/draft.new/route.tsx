@@ -11,7 +11,7 @@ import {
   Switch,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
+import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect, useLocation, useNavigate } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
@@ -348,10 +348,3 @@ export async function action({ request }: ActionFunctionArgs) {
 
   return redirect(`/draft/${prettyUrl}`);
 }
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: "TI4 Lab Draft" },
-    { name: "description", content: "TI4 Lab, for drafting and map creation." },
-  ];
-};

@@ -186,11 +186,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
-        <MantineProvider
-          theme={mantineTheme}
-          defaultColorScheme="auto"
-          // forceColorScheme="light"
-        >
+        <MantineProvider theme={mantineTheme} defaultColorScheme="auto">
           <SocketProvider socket={socket}>{children}</SocketProvider>
         </MantineProvider>
         <ScrollRestoration />

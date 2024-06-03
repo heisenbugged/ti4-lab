@@ -28,8 +28,8 @@ import { MidDraftSummary } from "./components/MidDraftSummary";
 import { SlicesTable } from "../draft/SlicesTable";
 import { validate as validateUUID } from "uuid";
 import {
-  findDraftById,
-  findDraftByPrettyUrl,
+  draftById,
+  draftByPrettyUrl,
   generateUniquePrettyUrl,
 } from "~/drizzle/draft.server";
 import { DraftableSpeakerOrder } from "./components/DraftableSpeakerOrder";
@@ -272,7 +272,7 @@ export const loader = async ({ params }: { params: { id: string } }) => {
   // and then redirect to it.
   console.log("UUID url detected, generating pretty url");
   if (validateUUID(draftId)) {
-    const draft = await findDraftById(draftId);
+    const draft = await draftById(draftId);
     if (draft.urlName) {
       console.log(`redirecting to pretty url ${draft.urlName}`);
       return redirect(`/draft/${draft.urlName}`);
@@ -289,7 +289,7 @@ export const loader = async ({ params }: { params: { id: string } }) => {
     return redirect(`/draft/${prettyUrl}`);
   }
 
-  const result = await findDraftByPrettyUrl(draftId);
+  const result = await draftByPrettyUrl(draftId);
   return json({
     ...result,
     data: translatePersistedDraft(JSON.parse(result.data as string)),
