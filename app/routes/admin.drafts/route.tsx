@@ -97,7 +97,7 @@ export default function AdminDraftsIndex() {
                   {d.data.players.map((p) => p.name).join(", ")}
                 </Table.Td>
                 <Table.Td>
-                  <Link to={`/draft/${d.urlName}`}>
+                  <Link to={`/draft/${d.urlName ?? d.id}`}>
                     <Button size="compact-md">View</Button>
                   </Link>
                 </Table.Td>
