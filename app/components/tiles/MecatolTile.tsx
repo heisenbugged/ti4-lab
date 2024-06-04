@@ -22,10 +22,10 @@ export function MecatolTile({ mapId, tile }: Props) {
       image={<MecatolPlanet radius={radius} />}
     >
       <Box w="75" pos="relative" style={{ scale: scale.toString(), zIndex: 1 }}>
-        <Flex align="center" justify="center" bg="green">
-          <PlanetStats resources={1} influence={6} />
+        <Flex align="center" justify="center">
+          <PlanetStats resources={1} influence={6} legendary />
         </Flex>
-        <PlanetName>Mecatol Rex</PlanetName>
+        <PlanetName size={68}>Mecatol Rex</PlanetName>
       </Box>
     </Hex>
   );

@@ -3,6 +3,8 @@ import { Planet as PlanetType, PlanetTrait } from "~/types";
 import { PlanetName } from "./PlanetName";
 import { PlanetStats } from "./PlanetStats";
 import { TechIcon } from "../icons/TechIcon";
+import { LegendaryIcon } from "../icons/LegendaryIcon";
+import { hasLegendaryImage } from "../LegendaryImage";
 
 export type PlanetFormat =
   | "STREAMLINED"
@@ -14,6 +16,7 @@ type Props = {
   planet: PlanetType;
   showName?: boolean;
   largeFonts?: boolean;
+  hasLegendaryImage?: boolean;
 };
 
 export const bgColor: Record<PlanetTrait, string> = {
@@ -22,28 +25,46 @@ export const bgColor: Record<PlanetTrait, string> = {
   INDUSTRIAL: "green.5",
 };
 
-export function Planet({ planet, showName = true, largeFonts = false }: Props) {
+export function Planet({
+  planet,
+  hasLegendaryImage = false,
+  showName = true,
+  largeFonts = false,
+}: Props) {
   const { trait, tech: techSpecialty } = planet;
 
-  const fontSize = largeFonts ? "35" : "24";
-  const size = 50;
+  const fontSize = largeFonts ? "35px" : "24px";
+  const size = 50 + (planet.legendary ? 20 : 0);
+  const planetColor = trait ? bgColor[trait] : "gray.5";
 
   return (
     <Flex
-      bg={trait ? bgColor[trait] : "gray.5"}
+      bg={!hasLegendaryImage ? planetColor : undefined}
       style={{ borderRadius: size, width: size, height: size }}
       align="center"
       justify="center"
       pos="relative"
     >
       <PlanetStats
+        legendary={planet.legendary}
         resources={planet.resources}
         influence={planet.influence}
         fontSize={fontSize}
       />
 
-      {showName && (
-        <PlanetName legendary={planet.legendary}>{planet.name}</PlanetName>
+      {(showName || planet.legendary) && (
+        <PlanetName
+          size={size}
+          legendary={planet.legendary}
+          trait={planet.trait}
+        >
+          {planet.name}
+        </PlanetName>
+      )}
+      {planet.legendary && (
+        <Box pos="absolute" bottom={-4} left={-14}>
+          <LegendaryIcon />
+        </Box>
       )}
       {techSpecialty && (
         <Box pos="absolute" top={-6} right={-2}>

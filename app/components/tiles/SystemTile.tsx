@@ -10,6 +10,7 @@ import { Wormhole } from "../features/Wormhole";
 import { MapContext } from "~/contexts/MapContext";
 
 import classes from "./Tiles.module.css";
+import { LegendaryImage, hasLegendaryImage } from "../LegendaryImage";
 
 type Props = { mapId: string; tile: SystemTileType };
 
@@ -23,6 +24,9 @@ export function SystemTile({ mapId, tile }: Props) {
       {tile.system.anomalies.map((anomaly) => (
         <AnomalyImage key={anomaly} radius={radius} anomaly={anomaly} />
       ))}
+      {hasLegendaryImage(tile.system.id) && (
+        <LegendaryImage systemId={tile.system.id} radius={radius} />
+      )}
     </>
   );
 
@@ -60,6 +64,7 @@ export function SystemTile({ mapId, tile }: Props) {
             showName={radius >= 53}
             largeFonts={radius < 53}
             key={planet.name}
+            hasLegendaryImage={hasLegendaryImage(system.id)}
           />
         ))}
         {tile.system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}
