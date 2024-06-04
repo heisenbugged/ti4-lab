@@ -12,9 +12,9 @@ import { MapContext } from "~/contexts/MapContext";
 import classes from "./Tiles.module.css";
 import { LegendaryImage, hasLegendaryImage } from "../LegendaryImage";
 
-type Props = { mapId: string; tile: SystemTileType };
+type Props = { mapId: string; tile: SystemTileType; hideValues?: boolean };
 
-export function SystemTile({ mapId, tile }: Props) {
+export function SystemTile({ mapId, tile, hideValues = false }: Props) {
   const { radius } = useContext(MapContext);
   const scale = calcScale(radius);
   const system = tile.system;
@@ -30,7 +30,7 @@ export function SystemTile({ mapId, tile }: Props) {
     </>
   );
 
-  const showSystemId = radius >= 53;
+  const systemIdSize = radius >= 53 ? "10px" : "8px";
 
   return (
     <Hex
@@ -40,10 +40,9 @@ export function SystemTile({ mapId, tile }: Props) {
       image={image}
       anomaly={system.anomalies.length > 0}
     >
-      {showSystemId && (
+      {!hideValues && (
         <Text
-          size="10"
-          lh="1"
+          size={systemIdSize}
           c="white"
           pos="absolute"
           top={15 * scale}
@@ -65,6 +64,7 @@ export function SystemTile({ mapId, tile }: Props) {
             largeFonts={radius < 53}
             key={planet.name}
             hasLegendaryImage={hasLegendaryImage(system.id)}
+            hideValues={hideValues}
           />
         ))}
         {tile.system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}
