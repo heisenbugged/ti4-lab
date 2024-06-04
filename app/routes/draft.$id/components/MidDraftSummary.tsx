@@ -71,9 +71,15 @@ type Props = {
   player: Player;
   slice?: Slice;
   showSeat: boolean;
+  showSlice?: boolean;
 };
 
-function SummaryCard({ player, slice, showSeat }: Props) {
+export function SummaryCard({
+  player,
+  slice,
+  showSeat,
+  showSlice = true,
+}: Props) {
   let faction: Faction | undefined;
   let systems: System[] | undefined;
   let total: { resources: number; influence: number } | undefined;
@@ -136,10 +142,21 @@ function SummaryCard({ player, slice, showSeat }: Props) {
               ? player.speakerOrder + 1
               : "Not Chosen"}
           </Text>
-          <Text size="sm" lh={1}>
-            Slice #:{" "}
-            {player.sliceIdx !== undefined ? player.sliceIdx + 1 : "Not Chosen"}
-          </Text>
+          {showSeat && (
+            <Text size="sm" lh={1}>
+              Seat #:{" "}
+              {player.seatIdx !== undefined ? player.seatIdx + 1 : "Not Chosen"}
+            </Text>
+          )}
+
+          {showSlice && (
+            <Text size="sm" lh={1}>
+              Slice #:{" "}
+              {player.sliceIdx !== undefined
+                ? player.sliceIdx + 1
+                : "Not Chosen"}
+            </Text>
+          )}
         </Stack>
       </Group>
     </Card>

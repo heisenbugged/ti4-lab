@@ -4,6 +4,7 @@ import { Section, SectionTitle } from "~/components/Section";
 import { MapSection } from "~/routes/draft/MapSection";
 import { SummaryRow } from "./SummaryRow";
 import { useMemo } from "react";
+import { SummaryCard } from "./MidDraftSummary";
 
 export function FinalizedDraft() {
   const draft = useDraft();
@@ -32,7 +33,20 @@ export function FinalizedDraft() {
         <Stack flex={1} gap="xl">
           <Section>
             <SectionTitle title="Draft Summary" />
-            <Table>
+            <Stack mt="lg" gap="md" hiddenFrom="sm">
+              {players.map((p) => (
+                <SummaryCard
+                  config={draft.config}
+                  key={p.id}
+                  player={p}
+                  slice={
+                    p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined
+                  }
+                  showSeat={draft.draftSpeaker}
+                />
+              ))}
+            </Stack>
+            <Table visibleFrom="sm">
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Name</Table.Th>
