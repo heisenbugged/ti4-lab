@@ -18,20 +18,13 @@ import {
   parseMapString,
   playerSpeakerOrder,
   sliceMap,
-  tileColor,
 } from "./utils/map";
 import { mapStringOrder } from "./data/mapStringOrder";
-import {
-  systemData,
-  systemIds,
-  systemIdsWithoutMecatol,
-} from "./data/systemData";
+import { draftableSystemIds, systemData } from "./data/systemData";
 import { factionIds, factions } from "./data/factionData";
 import { fisherYatesShuffle, generateSlices } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig, DraftType } from "./draft/types";
-
-const MECATOL_REX_ID = 18;
 
 const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
@@ -379,8 +372,13 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         acc.redTraits += s.redTraits;
         acc.greenTraits += s.greenTraits;
         acc.blueTraits += s.blueTraits;
-        if (s.tileColor !== undefined)
-          s.tileColor === "RED" ? acc.redTiles++ : acc.blueTiles++;
+
+        if (s.systemType === "RED") {
+          acc.redTiles++;
+        } else if (s.systemType === "BLUE") {
+          acc.blueTiles++;
+        }
+
         return acc;
       },
       {
@@ -561,11 +559,10 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       }),
     randomizeSlices: (numSlices, varianceValue, opulenceValue) =>
       set((state) => {
-        const availableSystems = systemIds.filter((s) => s !== MECATOL_REX_ID);
         const slices = randomizeSlices(
           state.config,
           numSlices ?? state.slices.length,
-          availableSystems,
+          draftableSystemIds,
           opulenceValue,
           varianceValue,
         );
@@ -589,8 +586,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         });
 
         const usedSystemIds = [...usedSliceSystems, ...usedMapSystems];
-        const availableSystems = systemIds.filter(
-          (s) => s !== MECATOL_REX_ID && !usedSystemIds.includes(s),
+        const availableSystems = draftableSystemIds.filter(
+          (s) => !usedSystemIds.includes(s),
         );
 
         const generatedSlice = randomizeSlices(
@@ -629,8 +626,8 @@ function systemStats(system: System): SystemStats {
       stats.totalResources += p.resources;
       stats.totalInfluence += p.influence;
 
-      if (p.techSpecialty) {
-        stats.totalTech.push(techSpecialtyMap[p.techSpecialty]);
+      if (p.tech) {
+        stats.totalTech.push(techSpecialtyMap[p.tech]);
       }
 
       if (p.trait) {
@@ -640,7 +637,7 @@ function systemStats(system: System): SystemStats {
       return stats;
     },
     {
-      tileColor: tileColor(system),
+      systemType: system.type,
       totalResources: 0,
       totalInfluence: 0,
       totalTech: [] as string[],
@@ -656,9 +653,7 @@ function randomizeMap(config: DraftConfig, slices: Slice[]) {
   const numMapTiles = config.modifiableMapTiles.length;
   const usedSystemIds = slices.flat(1).filter((i) => i !== -1);
   const availableSystemIds = fisherYatesShuffle(
-    systemIds.filter(
-      (id) => !usedSystemIds.includes(id) && id !== MECATOL_REX_ID,
-    ),
+    draftableSystemIds.filter((id) => !usedSystemIds.includes(id)),
     numMapTiles,
   );
 
@@ -673,7 +668,7 @@ function randomizeMap(config: DraftConfig, slices: Slice[]) {
 function randomizeSlices(
   config: DraftConfig,
   numSlices: number,
-  availableSystems: number[] = systemIdsWithoutMecatol,
+  availableSystems: number[] = draftableSystemIds,
   opulence: Opulence = "medium",
   variance: Variance = "medium",
 ) {

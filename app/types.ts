@@ -1,13 +1,24 @@
 import { DraftType } from "./draft";
 
+// green = home
+// blue = planet tile
+// hyperlane = hyperlane
+// red = no planet tile / anomaly.
+export type SystemType = "GREEN" | "BLUE" | "RED" | "HYPERLANE";
+
 // System from data. To be processed into a proper 'System' object.
 export type RawSystem = {
   id: number;
-  planets: string[];
-  home?: boolean;
-  anomaly?: Anomaly;
-  wormhole?: Wormhole;
-  hyperlane?: boolean;
+  faction?: string; // TODO: Make 'faction' be FactionId
+  planets: Planet[];
+  type: SystemType;
+  anomalies: Anomaly[];
+  wormholes: Wormhole[];
+};
+
+export type System = RawSystem & {
+  totalSpend: { resources: number; influence: number };
+  optimalSpend: { resources: number; influence: number; flex: number };
 };
 
 export type TechSpecialty = "BIOTIC" | "WARFARE" | "PROPULSION" | "CYBERNETIC";
@@ -15,7 +26,7 @@ export type PlanetTrait = "INDUSTRIAL" | "HAZARDOUS" | "CULTURAL";
 export type Planet = {
   name: string;
   trait?: PlanetTrait;
-  techSpecialty?: TechSpecialty;
+  tech?: TechSpecialty;
   resources: number;
   influence: number;
   legendary?: boolean;
@@ -26,21 +37,6 @@ export type Anomaly =
   | "ASTEROID_FIELD"
   | "SUPERNOVA";
 export type Wormhole = "ALPHA" | "BETA" | "DELTA" | "GAMMA";
-export type System = {
-  id: number;
-  planets: Planet[];
-
-  isRed: boolean;
-  isBlue: boolean;
-
-  home?: boolean;
-  anomaly?: Anomaly;
-  wormhole?: Wormhole;
-  hyperlane?: boolean;
-
-  totalSpend: { resources: number; influence: number };
-  optimalSpend: { resources: number; influence: number; flex: number };
-};
 
 export type MapSpaceType = "SYSTEM" | "HOME" | "OPEN" | "CLOSED" | "WARP";
 
@@ -148,7 +144,7 @@ export type PersistedDraft = {
 };
 
 export type SystemStats = {
-  tileColor: "RED" | "BLUE" | undefined;
+  systemType: SystemType;
   totalResources: number;
   totalInfluence: number;
   totalTech: string[];

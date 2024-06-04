@@ -103,33 +103,31 @@ export function PlanetFinder({
                       resources={planet.resources}
                       influence={planet.influence}
                     />
-                    {planet.techSpecialty && (
-                      <TechIcon
-                        techSpecialty={planet.techSpecialty}
-                        size={16}
-                      />
+                    {planet.tech && (
+                      <TechIcon techSpecialty={planet.tech} size={16} />
                     )}
                   </Group>
                   {idx < system.planets.length - 1 && <Divider />}
                 </Fragment>
               ))}
-              {system.anomaly && (
-                <Text size="sm" c="dimmed">
-                  {system.anomaly.replace("_", " ")}
+              {system.anomalies.map((anomaly) => (
+                <Text size="sm" c="dimmed" key={anomaly}>
+                  {anomaly.replace("_", " ")}
                 </Text>
-              )}
+              ))}
               {system.planets.length === 0 &&
-                !system.anomaly &&
-                !system.wormhole && (
+                system.anomalies.length === 0 &&
+                system.wormholes.length === 0 && (
                   <Text size="sm" c="dimmed">
                     EMPTY
                   </Text>
                 )}
-              {system.wormhole && (
-                <Text size="sm" c="dimmed">
-                  {system.wormhole} wormhole
+
+              {system.wormholes.map((wormhole) => (
+                <Text size="sm" c="dimmed" key={wormhole}>
+                  {wormhole}
                 </Text>
-              )}
+              ))}
             </Group>
             {usedSystemIds.includes(system.id) && (
               <Text c="violet">In Use</Text>

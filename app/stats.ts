@@ -153,15 +153,20 @@ export const valueSystem = (
 
     if (planet.name === "Primor") score += 1;
     if (planet.name === "Hope's End") score += 2;
-    if (planet.techSpecialty) score += 1;
+    if (planet.tech) score += 1;
   });
 
-  if (isOnMecatolPath && system.anomaly === "SUPERNOVA") {
+  if (isOnMecatolPath && system.anomalies.includes("SUPERNOVA")) {
     score -= 2;
   }
-  if (isOnMecatolPath && system.anomaly && system.anomaly !== "SUPERNOVA")
+  if (
+    isOnMecatolPath &&
+    system.anomalies.length > 0 &&
+    !system.anomalies.includes("SUPERNOVA")
+  )
     score -= 1;
-  if (system.wormhole) score += 1;
+
+  if (system.wormholes.length > 0) score += 1;
 
   return score;
 };

@@ -23,7 +23,7 @@ export const bgColor: Record<PlanetTrait, string> = {
 };
 
 export function Planet({ planet, showName = true, largeFonts = false }: Props) {
-  const { trait, techSpecialty } = planet;
+  const { trait, tech: techSpecialty } = planet;
 
   // TODO: Come up with a better way of handling this lol.
   // should have it in the actual data.

@@ -29,7 +29,6 @@ type PrechoiceMap = {
   titles: string[];
 };
 
-// const colors = ["blue", "green", "red", "purple", "yellow", "orange"];
 const colors = ["blue", "red", "green", "magenta", "violet", "orange"];
 
 const MAPS: Record<DraftType, PrechoiceMap> = {

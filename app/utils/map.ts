@@ -184,7 +184,7 @@ export const optimalStatsForSystems = (systems: System[]) =>
 export const techSpecialtiesForSystems = (systems: System[]) =>
   systems.reduce((acc, s) => {
     s.planets.forEach((p) => {
-      if (p.techSpecialty) acc.push(p.techSpecialty);
+      if (p.tech) acc.push(p.tech);
     });
     return acc;
   }, [] as TechSpecialty[]);
@@ -196,14 +196,6 @@ export const systemsInSlice = (slice: Slice): System[] =>
     acc.push(system);
     return acc;
   }, [] as System[]);
-
-const MECATOL_REX_ID = 18;
-export function tileColor(system: System): "RED" | "BLUE" | undefined {
-  if (system.id == MECATOL_REX_ID) return undefined;
-  if (system.planets.length === 0) return "RED";
-  if (system.anomaly) return "RED";
-  return "BLUE";
-}
 
 export const emptySlice = (numSystems: number): Slice => [
   -1,

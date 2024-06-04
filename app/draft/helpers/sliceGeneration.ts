@@ -37,13 +37,13 @@ export function chooseRequiredSystems(
     minAlphaWormholes,
     remainingSystems,
     chosenSystems,
-    (system) => system.wormhole === "ALPHA",
+    (system) => system.wormholes.includes("ALPHA"),
   );
   sampleAndPromoteSystems(
     minBetaWormholes,
     remainingSystems,
     chosenSystems,
-    (system) => system.wormhole === "BETA",
+    (system) => system.wormholes.includes("BETA"),
   );
 
   sampleAndPromoteSystems(
@@ -318,9 +318,9 @@ function summarizeRaw(systems: number[]) {
         optRes += r / 2;
         optInf += i / 2;
       }
-      if (planet.techSpecialty) {
+      if (planet.tech) {
         // for (const planetTech of planet.raw.tech) {
-        tech.push(planet.techSpecialty.substring(0, 1).toUpperCase());
+        tech.push(planet.tech.substring(0, 1).toUpperCase());
         // }
       }
       if (planet.trait) {
@@ -332,22 +332,22 @@ function summarizeRaw(systems: number[]) {
         legendaries.push("L");
       }
     }
-    // for (const wormhole of system.wormholes) {
-    switch (system.wormhole) {
-      case "ALPHA":
-        wormholes.push("α");
-        break;
-      case "BETA":
-        wormholes.push("β");
-        break;
-      case "GAMMA":
-        wormholes.push("γ");
-        break;
-      case "DELTA":
-        wormholes.push("δ");
-        break;
+    for (const wormhole of system.wormholes) {
+      switch (wormhole) {
+        case "ALPHA":
+          wormholes.push("α");
+          break;
+        case "BETA":
+          wormholes.push("β");
+          break;
+        case "GAMMA":
+          wormholes.push("γ");
+          break;
+        case "DELTA":
+          wormholes.push("δ");
+          break;
+      }
     }
-    // }
   }
 
   return {
@@ -390,7 +390,7 @@ function hasAdjacentAnomalies(slice: number[], shape: string[]) {
   for (let i = 0; i < slice.length; i++) {
     const hex = shape[i + 1]; // first is home system
     const system = systemData[slice[i]];
-    if (system && !!system.anomaly) {
+    if (system && system.anomalies.length > 0) {
       hexIsAnomalySet.add(hex);
     }
   }

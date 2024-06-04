@@ -30,20 +30,18 @@ function calculateTier(system: System) {
     return SYSTEM_TIER.MECATOL;
   } else if (system.id === 81) {
     return SYSTEM_TIER.OTHER; // muaat hero supernova.id
-  } else if (system.home) {
+  } else if (system.type === "GREEN") {
     return SYSTEM_TIER.HOME;
-  } else if (system.isRed) {
+  } else if (system.type === "RED") {
     return SYSTEM_TIER.RED;
-  } else if (system.hyperlane) {
+  } else if (system.type === "HYPERLANE") {
     return SYSTEM_TIER.HYPERLANE;
   } else if (system.id <= 0) {
     return SYSTEM_TIER.OTHER;
   }
 
   const planetCount = system.planets.length;
-  const techCount = system.planets.filter(
-    (planet) => !!planet.techSpecialty,
-  ).length;
+  const techCount = system.planets.filter((planet) => !!planet.tech).length;
   const hasLegendary =
     system.planets.filter((planet) => planet.legendary).length > 0;
 

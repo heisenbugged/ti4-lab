@@ -15,7 +15,10 @@ export function SliceFeatures({ slice }: Props) {
   const legendarySystems = systems.filter(
     (s) => s.planets.filter((p) => p.legendary).length > 0,
   );
-  const wormholes = systems.filter((s) => s.wormhole).map((s) => s.wormhole!);
+  const wormholes = systems
+    .filter((s) => s.wormholes.length > 0)
+    .map((s) => s.wormholes)
+    .flat(1);
 
   return (
     <Group gap="sm" align="center">
