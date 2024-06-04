@@ -17,6 +17,29 @@ export function LegendaryImage({ systemId, radius }: Props) {
         />
       );
 
+    case 65:
+      return (
+        <image
+          href="/primor.png"
+          x={-radius * 0.5}
+          y={-radius * 0.5}
+          width={radius}
+          height={radius}
+          style={{ imageRendering: "pixelated" }}
+        />
+      );
+
+    case 237:
+      return (
+        <image
+          href="/silence.webp"
+          x={-radius * 0.5}
+          y={-radius * 0.5}
+          width={radius}
+          height={radius}
+          style={{ imageRendering: "pixelated" }}
+        />
+      );
     case 240:
       return (
         <image
@@ -28,11 +51,32 @@ export function LegendaryImage({ systemId, radius }: Props) {
           style={{ imageRendering: "pixelated" }}
         />
       );
-
-    case 65:
+    case 253:
       return (
         <image
-          href="/primor.png"
+          href="/domna.webp"
+          x={-radius * 0.5}
+          y={-radius * 0.5}
+          width={radius}
+          height={radius}
+          style={{ imageRendering: "pixelated" }}
+        />
+      );
+    case 239:
+      return (
+        <image
+          href="/tarrock.webp"
+          x={-radius * 0.5}
+          y={-radius * 0.5}
+          width={radius}
+          height={radius}
+          style={{ imageRendering: "pixelated" }}
+        />
+      );
+    case 238:
+      return (
+        <image
+          href="/echo.webp"
           x={-radius * 0.5}
           y={-radius * 0.5}
           width={radius}
@@ -46,5 +90,5 @@ export function LegendaryImage({ systemId, radius }: Props) {
 }
 
 export function hasLegendaryImage(systemId: number): boolean {
-  return [66, 240, 65].includes(systemId);
+  return [66, 240, 65, 237, 253, 239, 238].includes(systemId);
 }
