@@ -13,6 +13,7 @@ export function LegendaryImage({ systemId, radius }: Props) {
           y={-radius * 0.85}
           width={radius * 1.75}
           height={radius * 1.75}
+          style={{ imageRendering: "pixelated" }}
         />
       );
 
@@ -24,6 +25,7 @@ export function LegendaryImage({ systemId, radius }: Props) {
           y={-radius * 0.5}
           width={radius}
           height={radius}
+          style={{ imageRendering: "pixelated" }}
         />
       );
 
@@ -35,6 +37,7 @@ export function LegendaryImage({ systemId, radius }: Props) {
           y={-radius * 0.5}
           width={radius}
           height={radius}
+          style={{ imageRendering: "pixelated" }}
         />
       );
     default:
