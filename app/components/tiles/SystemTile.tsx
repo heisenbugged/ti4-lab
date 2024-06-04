@@ -14,12 +14,6 @@ import classes from "./Tiles.module.css";
 type Props = { mapId: string; tile: SystemTileType };
 
 export function SystemTile({ mapId, tile }: Props) {
-  // TODO: Make system tiles support multiple anomalies (for Discordant Stars)
-  // currently only support one
-  const anomaly = tile.system.anomalies[0];
-  // TODO: Make system tiles support multiple wormholes (for Discordant Stars)
-  const wormhole = tile.system.wormholes[0];
-
   const { radius } = useContext(MapContext);
   const scale = calcScale(radius);
   const system = tile.system;
@@ -27,7 +21,7 @@ export function SystemTile({ mapId, tile }: Props) {
   const image = (
     <>
       {tile.system.anomalies.map((anomaly) => (
-        <AnomalyImage radius={radius} anomaly={anomaly} />
+        <AnomalyImage key={anomaly} radius={radius} anomaly={anomaly} />
       ))}
     </>
   );
@@ -40,7 +34,7 @@ export function SystemTile({ mapId, tile }: Props) {
       radius={radius}
       colorClass={classes.system}
       image={image}
-      anomaly={!!anomaly}
+      anomaly={system.anomalies.length > 0}
     >
       {showSystemId && (
         <Text
@@ -70,7 +64,7 @@ export function SystemTile({ mapId, tile }: Props) {
         ))}
         {tile.system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}
         {tile.system.wormholes.map((wormhole) => (
-          <Wormhole wormhole={wormhole} />
+          <Wormhole key={wormhole} wormhole={wormhole} />
         ))}
       </Group>
     </Hex>

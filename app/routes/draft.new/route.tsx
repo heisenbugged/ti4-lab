@@ -35,6 +35,7 @@ import { SlicesTable } from "../draft/SlicesTable";
 import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
 
 export default function DraftNew() {
+  console.log("rendered");
   const location = useLocation();
   const navigate = useNavigate();
   const createDraft = useCreateDraft();
