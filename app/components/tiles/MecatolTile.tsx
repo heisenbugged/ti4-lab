@@ -9,9 +9,9 @@ import { PlanetName, PlanetStats } from "../Planet";
 
 import classes from "./Tiles.module.css";
 
-type Props = { mapId: string; tile: SystemTileType };
+type Props = { mapId: string; tile: SystemTileType; hideValues?: boolean };
 
-export function MecatolTile({ mapId, tile }: Props) {
+export function MecatolTile({ mapId, tile, hideValues = false }: Props) {
   const { radius } = useContext(MapContext);
   const scale = calcScale(radius);
   return (
@@ -21,12 +21,18 @@ export function MecatolTile({ mapId, tile }: Props) {
       colorClass={classes.system}
       image={<MecatolPlanet radius={radius} />}
     >
-      <Box w="75" pos="relative" style={{ scale: scale.toString(), zIndex: 1 }}>
-        <Flex align="center" justify="center">
-          <PlanetStats resources={1} influence={6} legendary />
-        </Flex>
-        <PlanetName size={68}>Mecatol Rex</PlanetName>
-      </Box>
+      {!hideValues && (
+        <Box
+          w="75"
+          pos="relative"
+          style={{ scale: scale.toString(), zIndex: 1 }}
+        >
+          <Flex align="center" justify="center">
+            <PlanetStats resources={1} influence={6} legendary />
+          </Flex>
+          <PlanetName size={68}>Mecatol Rex</PlanetName>
+        </Box>
+      )}
     </Hex>
   );
 }

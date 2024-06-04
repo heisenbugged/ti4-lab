@@ -1,6 +1,7 @@
 import {
   EmptyTile,
   OpenTile,
+  SystemTile,
   PlayerDemoTile as TPlayerDemoTile,
 } from "~/types";
 import {
@@ -16,10 +17,11 @@ import { PlayerDemoTile } from "./tiles/PlayerDemoTile";
 import { Hex } from "./Hex";
 
 import classes from "./tiles/Tiles.module.css";
+import { MecatolTile } from "./tiles/MecatolTile";
 
 type Props = {
   id: string;
-  map: (TPlayerDemoTile | OpenTile | EmptyTile)[];
+  map: (TPlayerDemoTile | OpenTile | EmptyTile | SystemTile)[];
   padding: number;
   titles: string[];
   colors: string[];
@@ -63,7 +65,7 @@ export function DemoMap({ id, map, padding, titles, colors }: Props) {
 
 type DemoMapTileProps = {
   mapId: string;
-  tile: TPlayerDemoTile | OpenTile | EmptyTile;
+  tile: TPlayerDemoTile | OpenTile | EmptyTile | SystemTile;
   titles: string[];
   colors: string[];
 };
@@ -87,6 +89,8 @@ export function DemoMapTile({
         color={colors[tile.playerNumber]}
       />
     );
+  } else if (tile.type === "SYSTEM" && tile.system?.id === 18) {
+    Tile = <MecatolTile mapId={`${mapId}-mecatol`} tile={tile} hideValues />;
   } else {
     Tile = (
       <Hex
