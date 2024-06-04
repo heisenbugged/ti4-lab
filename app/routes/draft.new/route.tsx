@@ -43,6 +43,7 @@ export default function DraftNew() {
   useEffect(() => {
     if (location.state == null) return navigate("/draft/prechoice");
     const {
+      gameSets,
       mapType,
       numFactions,
       numSlices,
@@ -53,6 +54,7 @@ export default function DraftNew() {
     } = location.state;
 
     draft.actions.initializeMap({
+      gameSets,
       mapType,
       numFactions,
       numSlices,
@@ -188,6 +190,7 @@ export default function DraftNew() {
       />
 
       <PlanetFinder
+        availableSystemIds={draft.systemPool}
         opened={planetFinderOpened}
         onClose={() => {
           openTile.current = {
@@ -213,7 +216,6 @@ export default function DraftNew() {
 
       <AvailableFactionsSection
         numFactions={draft.numFactionsToDraft}
-        onChangeNumFactions={draft.actions.setNumFactionsToDraft}
         selectedFactions={draft.availableFactions}
         onToggleFaction={(factionId, checked) => {
           if (checked) {

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   FactionId,
+  GameSet,
   Map,
   MapStats,
   Opulence,
@@ -20,8 +21,18 @@ import {
   sliceMap,
 } from "./utils/map";
 import { mapStringOrder } from "./data/mapStringOrder";
-import { draftableSystemIds, systemData } from "./data/systemData";
-import { factionIds, factions } from "./data/factionData";
+import {
+  draftableDiscordantSystemIds,
+  draftableSystemIds,
+  systemData,
+} from "./data/systemData";
+import {
+  allFactionIds,
+  baseFactionIds,
+  factionDiscordantExpIds,
+  factionDiscordantIds,
+  factions,
+} from "./data/factionData";
 import { fisherYatesShuffle, generateSlices } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig, DraftType } from "./draft/types";
@@ -213,6 +224,8 @@ export const useDraft = create<DraftsState>((set, get) => ({
 type NewDraftState = {
   initialized: boolean;
   config: DraftConfig;
+  systemPool: number[];
+  factionPool: FactionId[];
   map: Map;
   slices: Slice[];
   numFactionsToDraft: number;
@@ -254,6 +267,7 @@ type NewDraftState = {
 
     // map actions
     initializeMap: (args: {
+      gameSets: GameSet[];
       mapType: DraftType;
       numFactions: number;
       numSlices: number;
@@ -280,6 +294,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   initialized: false,
   config: draftConfig.heisen,
   map: EMPTY_MAP,
+  systemPool: draftableSystemIds,
+  factionPool: allFactionIds,
   slices: [
     [-1, 0, 0, 0],
     [-1, 0, 0, 0],
@@ -288,7 +304,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     [-1, 0, 0, 0],
     [-1, 0, 0, 0],
   ],
-  availableFactions: [...factionIds],
+  availableFactions: [...allFactionIds],
   players: [
     ...[0, 1, 2, 3, 4, 5].map((i) => ({
       id: i,
@@ -396,6 +412,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
   actions: {
     initializeMap: ({
+      gameSets,
       mapType,
       numFactions,
       numSlices,
@@ -405,18 +422,34 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       draftSpeaker,
     }) => {
       const config = draftConfig[mapType];
+      let systemPool = [...draftableSystemIds];
+      if (gameSets.includes("discordant")) {
+        systemPool.push(...draftableDiscordantSystemIds);
+      }
+      systemPool = systemPool.flat(1);
+
+      let factionPool = [...baseFactionIds];
+      if (gameSets.includes("discordant")) {
+        factionPool.push(...factionDiscordantIds);
+      }
+      if (gameSets.includes("discordantexp")) {
+        factionPool.push(...factionDiscordantExpIds);
+      }
+      factionPool = factionPool.flat(1);
 
       // randomly pull factions from the list of all factions
       const availableFactions: FactionId[] = fisherYatesShuffle(
-        factionIds,
+        factionPool,
         numFactions,
       );
 
       const slices: Slice[] = shouldRandomizeSlices
-        ? randomizeSlices(config, numSlices)
+        ? randomizeSlices(config, numSlices, systemPool)
         : emptySlices(numSlices, config.numSystemsInSlice);
 
-      const map = shouldRandomizeMap ? randomizeMap(config, slices) : EMPTY_MAP;
+      const map = shouldRandomizeMap
+        ? randomizeMap(config, slices, systemPool)
+        : EMPTY_MAP;
 
       set({
         config,
@@ -427,6 +460,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         availableFactions,
         numFactionsToDraft: numFactions,
         draftSpeaker: draftSpeaker ?? false,
+        systemPool,
+        factionPool,
       });
     },
 
@@ -525,7 +560,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
     addRandomFaction: () =>
       set((state) => {
-        const availableFactions = factionIds.filter(
+        const availableFactions = allFactionIds.filter(
           (f) => !state.availableFactions.includes(f),
         );
         const idx = Math.floor(Math.random() * availableFactions.length);
@@ -554,7 +589,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     // randomization actions
     randomizeMap: () =>
       set((state) => {
-        const map = randomizeMap(state.config, state.slices);
+        const map = randomizeMap(state.config, state.slices, state.systemPool);
         return { map };
       }),
     randomizeSlices: (numSlices, varianceValue, opulenceValue) =>
@@ -648,18 +683,22 @@ function systemStats(system: System): SystemStats {
   );
 }
 
-function randomizeMap(config: DraftConfig, slices: Slice[]) {
+function randomizeMap(
+  config: DraftConfig,
+  slices: Slice[],
+  systemPool: number[],
+) {
   const mapString = [...EMPTY_MAP_STRING];
   const numMapTiles = config.modifiableMapTiles.length;
   const usedSystemIds = slices.flat(1).filter((i) => i !== -1);
-  const availableSystemIds = fisherYatesShuffle(
-    draftableSystemIds.filter((id) => !usedSystemIds.includes(id)),
+  const filteredSystemIds = fisherYatesShuffle(
+    systemPool.filter((id) => !usedSystemIds.includes(id)),
     numMapTiles,
   );
 
   config.modifiableMapTiles.forEach((idx) => {
     // idx - 1 to account for mecatol
-    mapString[idx - 1] = availableSystemIds.pop()!;
+    mapString[idx - 1] = filteredSystemIds.pop()!;
   });
 
   return parseMapString(config, mapString);
@@ -668,7 +707,7 @@ function randomizeMap(config: DraftConfig, slices: Slice[]) {
 function randomizeSlices(
   config: DraftConfig,
   numSlices: number,
-  availableSystems: number[] = draftableSystemIds,
+  systemPool: number[],
   opulence: Opulence = "medium",
   variance: Variance = "medium",
 ) {
@@ -676,13 +715,13 @@ function randomizeSlices(
   if (config.generateSlices !== undefined) {
     // Use draft-specific randomization algorithm.
     slices = config
-      .generateSlices(numSlices, availableSystems)
+      .generateSlices(numSlices, systemPool)
       .map((s) => [-1, ...s]);
   } else {
     // If not defined, used our 'standard' statistics sampling randomization,
     slices = generateSlices(
       numSlices,
-      availableSystems.map((id) => systemData[id]),
+      systemPool.map((id) => systemData[id]),
       variance,
       opulence,
       config.numSystemsInSlice,

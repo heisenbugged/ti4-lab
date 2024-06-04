@@ -36,9 +36,16 @@ export const draftableSystemIds = Object.values(systemData)
   .filter(
     (system) =>
       (system.type === "BLUE" || system.type === "RED") &&
-      // not ready for DS yet.
       system.id < 100 &&
-      system.id !== 18, // cannot draft mecatol
+      system.id !== 18 && // cannot draft mecatol
+      system.id !== 82, // cannot draft mallice
+  )
+  .map((system) => system.id);
+
+export const draftableDiscordantSystemIds = Object.values(systemData)
+  .filter(
+    (system) =>
+      (system.type === "BLUE" || system.type === "RED") && system.id >= 100,
   )
   .map((system) => system.id);
 

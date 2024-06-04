@@ -1,15 +1,15 @@
 import { Button, Group, SimpleGrid, Text } from "@mantine/core";
 import { FactionId } from "~/types";
-import { factionIds, factions } from "~/data/factionData";
+import { allFactionIds, factions } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
 import { NewDraftFaction } from "./NewDraftFaction";
+import { NumberStepper } from "~/components/NumberStepper";
 
 type Props = {
   numFactions: number;
   selectedFactions: FactionId[];
   onAddFaction: () => void;
   onRemoveFaction: () => void;
-  onChangeNumFactions: (num: number | undefined) => void;
   onToggleFaction: (factionId: FactionId, checked: boolean) => void;
 };
 
@@ -18,34 +18,19 @@ export function AvailableFactionsSection({
   selectedFactions,
   onRemoveFaction,
   onAddFaction,
-  onChangeNumFactions,
   onToggleFaction,
 }: Props) {
   return (
     <Section>
       <SectionTitle title="Faction Pool">
         <Group>
-          <Text># of factions in draft: {numFactions}</Text>
-          <Group gap={2}>
-            <Button
-              size="compact-md"
-              color="red"
-              variant="filled"
-              disabled={numFactions <= 6}
-              onMouseDown={onRemoveFaction}
-            >
-              -
-            </Button>
-            <Button
-              size="compact-md"
-              color="green"
-              variant="filled"
-              disabled={numFactions >= factionIds.length}
-              onMouseDown={onAddFaction}
-            >
-              +
-            </Button>
-          </Group>
+          <Text># factions: {numFactions}</Text>
+          <NumberStepper
+            decrease={onRemoveFaction}
+            increase={onAddFaction}
+            decreaseDisabled={numFactions <= 6}
+            increaseDisabled={numFactions >= allFactionIds.length}
+          />
         </Group>
       </SectionTitle>
       <SimpleGrid

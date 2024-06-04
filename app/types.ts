@@ -1,5 +1,7 @@
 import { DraftType } from "./draft";
 
+export type GameSet = "base" | "pok" | "discordant" | "discordantexp";
+
 // green = home
 // blue = planet tile
 // hyperlane = hyperlane
@@ -114,12 +116,49 @@ export type FactionId =
   | "nomad"
   | "titans"
   | "vulraith"
-  | "keleres";
+  | "keleres"
+  | "axis"
+  | "bentor"
+  | "celdauri"
+  | "cheiran"
+  | "cymiae"
+  | "dihmohn"
+  | "edyn"
+  | "florzen"
+  | "freesystems"
+  | "ghemina"
+  | "ghoti"
+  | "gledge"
+  | "ilyxum"
+  | "khrask"
+  | "kjalengard"
+  | "kollecc"
+  | "kolume"
+  | "kortali"
+  | "kyro"
+  | "lanefir"
+  | "lizho"
+  | "mahact"
+  | "mirveda"
+  | "mortheus"
+  | "myko"
+  | "nivyn"
+  | "nokar"
+  | "olradin"
+  | "rhodun"
+  | "rohdina"
+  | "tnelis"
+  | "vaden"
+  | "vaylerian"
+  | "veldyr"
+  | "zelian";
 
 export type Faction = {
   id: FactionId;
   iconPath: string;
   name: string;
+  wiki?: string;
+  set: GameSet;
 };
 
 export type Player = {

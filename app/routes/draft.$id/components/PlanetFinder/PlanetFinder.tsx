@@ -11,12 +11,14 @@ import "./PlanetFinder.css";
 
 type Props = {
   opened?: boolean;
+  availableSystemIds: number[];
   usedSystemIds: number[];
   onClose: () => void;
   onSelectSystem: (system: System) => void;
 };
 
 export function PlanetFinder({
+  availableSystemIds,
   usedSystemIds,
   opened,
   onClose,
@@ -26,9 +28,20 @@ export function PlanetFinder({
   const systems =
     searchString.length > 0
       ? searchableSystemData
-          .filter(([name]) => name.includes(searchString))
+          .filter(
+            ([name, id]) =>
+              name.includes(searchString) && availableSystemIds.includes(id),
+          )
           .map(([, system]) => systemData[system])
-          .slice(0, 8)
+          .sort((a, b) => {
+            if (usedSystemIds.includes(a.id) && !usedSystemIds.includes(b.id))
+              return 1;
+            if (!usedSystemIds.includes(a.id) && usedSystemIds.includes(b.id))
+              return -1;
+            return 0;
+          })
+
+          .slice(0, 15)
       : [];
 
   const { itemRefs, resetFocus } = useArrowFocus(systems, (idx) => {

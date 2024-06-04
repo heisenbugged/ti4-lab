@@ -2,6 +2,7 @@ import { LoaderFunction } from "@remix-run/node";
 import {
   Box,
   Button,
+  Checkbox,
   Flex,
   Grid,
   Group,
@@ -12,7 +13,7 @@ import {
   Text,
 } from "@mantine/core";
 import { EmptyTile, OpenTile, Player, PlayerDemoTile } from "~/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
@@ -21,6 +22,8 @@ import { useNavigate } from "@remix-run/react";
 import { DraftConfig, DraftType, draftConfig } from "~/draft";
 
 import "../components/draftprechoice.css";
+import { NumberStepper } from "~/components/NumberStepper";
+import { getFactionCount } from "~/data/factionData";
 
 type PrechoiceMap = {
   title: string;
@@ -108,6 +111,19 @@ export default function DraftPrechoice() {
       name: "",
     })),
   ]);
+  const [withDiscordant, setWithDiscordant] = useState<boolean>(false);
+  const [withDiscordantExp, setWithDiscordantExp] = useState<boolean>(false);
+
+  let gameSets = ["base", "pok"];
+  if (withDiscordant) gameSets.push("discordant");
+  if (withDiscordantExp) gameSets.push("discordantexp");
+
+  const maxFactionCount = getFactionCount(gameSets);
+  useEffect(() => {
+    if (numFactions > maxFactionCount) {
+      setNumFactions(maxFactionCount);
+    }
+  }, [maxFactionCount]);
 
   const mapType = hoveredMapType ?? selectedMapType;
   const config = selectedMapType ? draftConfig[selectedMapType] : undefined;
@@ -125,6 +141,7 @@ export default function DraftPrechoice() {
   const handleContinue = () => {
     navigate("/draft/new", {
       state: {
+        gameSets,
         mapType: selectedMapType,
         numFactions: Number(numFactions),
         numSlices: Number(numSlices),
@@ -190,34 +207,35 @@ export default function DraftPrechoice() {
           />
           <Stack>
             <SectionTitle title="Configuration" />
+
             <Input.Wrapper
               label="# of Factions"
               description="The number factions available for the draft. Recommended is player count + 3. Can be changed during draft building."
             >
-              <Slider
-                min={6}
-                max={25}
-                step={1}
-                labelAlwaysOn
-                className="withBottomLabel"
-                onChange={(value) => setNumFactions(value)}
-                value={numFactions}
-              />
+              <Box mt="xs">
+                <NumberStepper
+                  value={numFactions}
+                  decrease={() => setNumFactions((v) => v - 1)}
+                  increase={() => setNumFactions((v) => v + 1)}
+                  decreaseDisabled={numFactions <= 6}
+                  increaseDisabled={numFactions >= maxFactionCount}
+                />
+              </Box>
             </Input.Wrapper>
 
             <Input.Wrapper
               label="# of Slices"
               description="The number of slices that will be available for the draft. Can be changed during draft building."
             >
-              <Slider
-                min={6}
-                max={9}
-                step={1}
-                labelAlwaysOn
-                className="withBottomLabel"
-                onChange={(value) => setNumSlices(value)}
-                value={numSlices}
-              />
+              <Box mt="xs">
+                <NumberStepper
+                  value={numSlices}
+                  decrease={() => setNumSlices((v) => v - 1)}
+                  increase={() => setNumSlices((v) => v + 1)}
+                  decreaseDisabled={numSlices <= 6}
+                  increaseDisabled={numSlices >= 9}
+                />
+              </Box>
             </Input.Wrapper>
 
             <Switch
@@ -234,6 +252,19 @@ export default function DraftPrechoice() {
               onChange={() => setRandomizeMap((v) => !v)}
               disabled={!showRandomizeMapTiles}
             />
+
+            <Group>
+              <Checkbox
+                label="Discordant Stars"
+                checked={withDiscordant}
+                onChange={() => setWithDiscordant((v) => !v)}
+              />
+              <Checkbox
+                label="Discordant Stars Exp"
+                checked={withDiscordantExp}
+                onChange={() => setWithDiscordantExp((v) => !v)}
+              />
+            </Group>
           </Stack>
           <Button size="lg" w="100%" onMouseDown={handleContinue}>
             Continue

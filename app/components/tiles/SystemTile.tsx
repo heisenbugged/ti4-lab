@@ -23,9 +23,15 @@ export function SystemTile({ mapId, tile }: Props) {
   const { radius } = useContext(MapContext);
   const scale = calcScale(radius);
   const system = tile.system;
-  const image = anomaly ? (
-    <AnomalyImage radius={radius} anomaly={anomaly} />
-  ) : undefined;
+
+  const image = (
+    <>
+      {tile.system.anomalies.map((anomaly) => (
+        <AnomalyImage radius={radius} anomaly={anomaly} />
+      ))}
+    </>
+  );
+
   const showSystemId = radius >= 53;
 
   return (
@@ -62,8 +68,10 @@ export function SystemTile({ mapId, tile }: Props) {
             key={planet.name}
           />
         ))}
-        {anomaly === "GRAVITY_RIFT" && <GravityRift />}
-        {wormhole && <Wormhole wormhole={wormhole} />}
+        {tile.system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}
+        {tile.system.wormholes.map((wormhole) => (
+          <Wormhole wormhole={wormhole} />
+        ))}
       </Group>
     </Hex>
   );

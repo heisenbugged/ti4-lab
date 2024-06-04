@@ -25,11 +25,6 @@ export const bgColor: Record<PlanetTrait, string> = {
 export function Planet({ planet, showName = true, largeFonts = false }: Props) {
   const { trait, tech: techSpecialty } = planet;
 
-  // TODO: Come up with a better way of handling this lol.
-  // should have it in the actual data.
-  const isLegendary = planet.name === "Primor" || planet.name === "Hope's End";
-  // const legendaryClass = isLegendary ? " legendary" : "";
-
   const fontSize = largeFonts ? "35" : "24";
   const size = 50;
 
@@ -48,7 +43,7 @@ export function Planet({ planet, showName = true, largeFonts = false }: Props) {
       />
 
       {showName && (
-        <PlanetName legendary={isLegendary}>{planet.name}</PlanetName>
+        <PlanetName legendary={planet.legendary}>{planet.name}</PlanetName>
       )}
       {techSpecialty && (
         <Box pos="absolute" top={-6} right={-2}>
