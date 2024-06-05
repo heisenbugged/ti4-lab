@@ -64,7 +64,6 @@ export function SystemTile({ mapId, tile, hideValues = false }: Props) {
             largeFonts={radius < 53}
             key={planet.name}
             hasLegendaryImage={hasLegendaryImage(system.id)}
-            hideValues={hideValues}
           />
         ))}
         {tile.system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}

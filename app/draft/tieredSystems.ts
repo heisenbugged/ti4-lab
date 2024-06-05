@@ -24,7 +24,7 @@ const SYSTEM_TIER = {
  *
  * - LOW is the single planet systems + Quann.
  */
-function calculateTier(system: System) {
+export function calculateTier(system: System) {
   // Handle some special cases before looking at blue systems.
   if (system.id === 18) {
     return SYSTEM_TIER.MECATOL;

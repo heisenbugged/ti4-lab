@@ -35,7 +35,6 @@ import { SlicesTable } from "../draft/SlicesTable";
 import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
 
 export default function DraftNew() {
-  console.log("rendered");
   const location = useLocation();
   const navigate = useNavigate();
   const createDraft = useCreateDraft();
@@ -235,6 +234,9 @@ export default function DraftNew() {
           mode="create"
           slices={draft.slices}
           onRandomizeSlices={() => {
+            if (draft.config.type === "heisen")
+              return draft.actions.randomizeAll();
+
             if (draft.config.generateSlices) {
               draft.actions.randomizeSlices();
             } else {
@@ -293,7 +295,14 @@ export default function DraftNew() {
                 openPlanetFinder();
               }}
               onClearMap={draft.actions.clearMap}
-              onRandomizeMap={draft.actions.randomizeMap}
+              // do not allow map randomization with heisen
+              // as the map is carefully constructed in tandem with slices
+              // and we do not want to upset that balance.
+              onRandomizeMap={
+                draft.config.type !== "heisen"
+                  ? draft.actions.randomizeMap
+                  : undefined
+              }
             />
           )}
           {!showFullMap && advancedOptions}

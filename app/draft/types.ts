@@ -8,6 +8,10 @@ export type TieredSystems = {
   low: number[];
   red: number[];
 };
+export type SliceChoice = {
+  weight: number;
+  value: ChoosableTier[];
+};
 
 export type TieredSlice = Tier[];
 

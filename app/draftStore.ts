@@ -36,6 +36,7 @@ import {
 import { fisherYatesShuffle, generateSlices } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig, DraftType } from "./draft/types";
+import { generateMap as generateHeisenMap } from "./draft/heisen/generateMap";
 
 const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
@@ -280,6 +281,7 @@ type NewDraftState = {
     importMap: (mapString: string) => void;
 
     // randomization
+    randomizeAll: () => void;
     randomizeMap: () => void;
     randomizeSlice: (sliceIdx: number) => void;
     randomizeSlices: (
@@ -443,13 +445,30 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         numFactions,
       );
 
-      const slices: Slice[] = shouldRandomizeSlices
-        ? randomizeSlices(config, numSlices, systemPool)
-        : emptySlices(numSlices, config.numSystemsInSlice);
+      let slices: Slice[];
+      let map: Map;
 
-      const map = shouldRandomizeMap
-        ? randomizeMap(config, slices, systemPool)
-        : EMPTY_MAP;
+      if (mapType !== "heisen") {
+        slices = shouldRandomizeSlices
+          ? randomizeSlices(config, numSlices, systemPool)
+          : emptySlices(numSlices, config.numSystemsInSlice);
+
+        map = shouldRandomizeMap
+          ? randomizeMap(config, slices, systemPool)
+          : EMPTY_MAP;
+      } else {
+        // nucleum has a very special draft format.
+        const { chosenSpots, slices: rawSlices } = generateHeisenMap(
+          numSlices,
+          systemPool,
+        );
+        slices = rawSlices.map((s) => [-1, ...s]);
+        const mapIds = [...EMPTY_MAP_STRING];
+        Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
+          mapIds[Number(mapIdx)] = system;
+        });
+        map = parseMapString(config, mapIds);
+      }
 
       set({
         config,
@@ -587,6 +606,25 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       })),
 
     // randomization actions
+    randomizeAll: () =>
+      set((state) => {
+        if (state.config.type !== "heisen") return {};
+
+        // nucleum has a very special draft format.
+        const { chosenSpots, slices: rawSlices } = generateHeisenMap(
+          state.slices.length,
+          state.systemPool,
+        );
+        const slices = rawSlices.map((s) => [-1, ...s]);
+        const mapIds = [...EMPTY_MAP_STRING];
+        Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
+          mapIds[Number(mapIdx)] = system;
+        });
+        const map = parseMapString(state.config, mapIds);
+
+        return { map, slices };
+      }),
+
     randomizeMap: () =>
       set((state) => {
         const map = randomizeMap(state.config, state.slices, state.systemPool);

@@ -12,7 +12,13 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
-import { EmptyTile, OpenTile, Player, PlayerDemoTile } from "~/types";
+import {
+  EmptyTile,
+  OpenTile,
+  Player,
+  PlayerDemoTile,
+  SystemTile,
+} from "~/types";
 import { useEffect, useState } from "react";
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { DemoMap } from "~/components/DemoMap";
@@ -29,7 +35,7 @@ import { systemData } from "~/data/systemData";
 type PrechoiceMap = {
   title: string;
   description: string;
-  map: (PlayerDemoTile | OpenTile | EmptyTile)[];
+  map: (PlayerDemoTile | OpenTile | EmptyTile | SystemTile)[];
   titles: string[];
 };
 
@@ -287,7 +293,7 @@ function parseDemoMapString(config: DraftConfig, mapString: number[]) {
         position,
         system: systemData[18],
         type: "SYSTEM",
-      };
+      } as SystemTile;
     }
 
     if (player === -1) {

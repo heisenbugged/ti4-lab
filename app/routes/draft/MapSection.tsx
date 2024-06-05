@@ -57,9 +57,11 @@ export function MapSection({
       <SectionTitle title="Full Map">
         {mode === "create" ? (
           <Group gap={2}>
-            <Button size="xs" onMouseDown={onRandomizeMap} bg="gray">
-              <IconDice6Filled size={24} />
-            </Button>
+            {onRandomizeMap && (
+              <Button size="xs" onMouseDown={onRandomizeMap} bg="gray">
+                <IconDice6Filled size={24} />
+              </Button>
+            )}
             <Button size="xs" onMouseDown={onClearMap} bg="red">
               Clear
             </Button>

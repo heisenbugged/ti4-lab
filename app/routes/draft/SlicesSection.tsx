@@ -31,7 +31,6 @@ export function SlicesSection({
   allowSliceSelection = true,
   draftedSlices = [],
   onRandomizeSlices,
-  onAddNewSlice,
   onSelectTile,
   onDeleteTile,
   onSelectSlice,
@@ -56,7 +55,7 @@ export function SlicesSection({
           {mode === "create" && (
             <Group gap={4}>
               <Button onMouseDown={onRandomizeSlices} variant="light">
-                Randomize All Slices
+                Randomize All
               </Button>
               {/* <Button onMouseDown={onAddNewSlice}>Add New Slice</Button> */}
             </Group>
