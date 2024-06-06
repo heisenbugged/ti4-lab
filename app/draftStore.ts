@@ -579,7 +579,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
     addRandomFaction: () =>
       set((state) => {
-        const availableFactions = allFactionIds.filter(
+        const availableFactions = state.factionPool.filter(
           (f) => !state.availableFactions.includes(f),
         );
         const idx = Math.floor(Math.random() * availableFactions.length);

@@ -215,6 +215,7 @@ export default function DraftNew() {
       />
 
       <AvailableFactionsSection
+        factionPool={draft.factionPool}
         numFactions={draft.numFactionsToDraft}
         selectedFactions={draft.availableFactions}
         onToggleFaction={(factionId, checked) => {

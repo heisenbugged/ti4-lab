@@ -8,6 +8,7 @@ import { NumberStepper } from "~/components/NumberStepper";
 type Props = {
   numFactions: number;
   selectedFactions: FactionId[];
+  factionPool: FactionId[];
   onAddFaction: () => void;
   onRemoveFaction: () => void;
   onToggleFaction: (factionId: FactionId, checked: boolean) => void;
@@ -16,6 +17,7 @@ type Props = {
 export function AvailableFactionsSection({
   numFactions,
   selectedFactions,
+  factionPool,
   onRemoveFaction,
   onAddFaction,
   onToggleFaction,
@@ -29,7 +31,7 @@ export function AvailableFactionsSection({
             decrease={onRemoveFaction}
             increase={onAddFaction}
             decreaseDisabled={numFactions <= 6}
-            increaseDisabled={numFactions >= allFactionIds.length}
+            increaseDisabled={numFactions >= factionPool.length}
           />
         </Group>
       </SectionTitle>
