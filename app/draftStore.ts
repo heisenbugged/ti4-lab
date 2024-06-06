@@ -635,7 +635,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         const slices = randomizeSlices(
           state.config,
           numSlices ?? state.slices.length,
-          draftableSystemIds,
+          state.systemPool,
           opulenceValue,
           varianceValue,
         );
@@ -659,7 +659,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         });
 
         const usedSystemIds = [...usedSliceSystems, ...usedMapSystems];
-        const availableSystems = draftableSystemIds.filter(
+        const availableSystems = state.systemPool.filter(
           (s) => !usedSystemIds.includes(s),
         );
 
