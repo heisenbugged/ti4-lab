@@ -4,7 +4,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "node ./server.mjs",
+    "dev": "tsx ./server.ts",
     "build": "remix vite:build",
     "start": "cross-env NODE_ENV=production node ./server.mjs",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
@@ -20,6 +20,7 @@
     "@tabler/icons-react": "^3.5.0",
     "better-sqlite3": "^10.0.0",
     "cross-env": "^7.0.3",
+    "discord.js": "^14.15.3",
     "drizzle-orm": "^0.30.10",
     "isbot": "^4.1.0",
     "puppeteer": "^22.10.0",
@@ -55,6 +56,7 @@
     "postcss-preset-mantine": "^1.15.0",
     "postcss-simple-vars": "^7.0.1",
     "prettier": "^3.2.5",
+    "tsx": "^4.12.0",
     "typescript": "^5.1.6",
     "vite": "^5.1.0",
     "vite-tsconfig-paths": "^4.2.1"
