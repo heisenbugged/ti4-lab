@@ -2,16 +2,19 @@ import { Box, Group, Input, Modal, Stack, Text } from "@mantine/core";
 import { Fragment, useEffect, useState } from "react";
 import { searchableSystemData, systemData } from "~/data/systemData";
 import { PlanetStatsPill } from "../../../../components/Slice/PlanetStatsPill";
-import { System } from "~/types";
+import { FactionId, System } from "~/types";
 import { bgColor } from "../../../../components/Planet";
 import { useArrowFocus } from "~/hooks/useArrowFocus";
 import { TechIcon } from "~/components/icons/TechIcon";
 
 import "./PlanetFinder.css";
+import { factions } from "~/data/factionData";
 
 type Props = {
   opened?: boolean;
+  allowHomePlanetSearch?: boolean;
   availableSystemIds: number[];
+  factionPool: FactionId[];
   usedSystemIds: number[];
   onClose: () => void;
   onSelectSystem: (system: System) => void;
@@ -19,18 +22,28 @@ type Props = {
 
 export function PlanetFinder({
   availableSystemIds,
+  allowHomePlanetSearch = false,
   usedSystemIds,
+  factionPool,
   opened,
   onClose,
   onSelectSystem,
 }: Props) {
   const [searchString, setSearchString] = useState<string>("");
+
+  const isValidSystem = (system: System) =>
+    availableSystemIds.includes(system.id) ||
+    (allowHomePlanetSearch &&
+      system.faction &&
+      system.type === "GREEN" &&
+      factionPool.includes(system.faction));
+
   const systems =
     searchString.length > 0
       ? searchableSystemData
           .filter(
             ([name, id]) =>
-              name.includes(searchString) && availableSystemIds.includes(id),
+              name.includes(searchString) && isValidSystem(systemData[id]),
           )
           .map(([, system]) => systemData[system])
           .sort((a, b) => {
@@ -141,6 +154,12 @@ export function PlanetFinder({
                   {wormhole}
                 </Text>
               ))}
+
+              {system.faction && (
+                <Text size="sm" c="dimmed">
+                  {factions[system.faction].name}
+                </Text>
+              )}
             </Group>
             {usedSystemIds.includes(system.id) && (
               <Text c="violet">In Use</Text>

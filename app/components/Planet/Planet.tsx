@@ -35,7 +35,7 @@ export function Planet({
 
   const fontSize = largeFonts ? "35px" : "24px";
   const size = 50 + (planet.legendary ? 20 : 0);
-  const planetColor = trait ? bgColor[trait] : "gray.5";
+  const planetColor = trait ? bgColor[trait] : "gray.6";
 
   return (
     <Flex

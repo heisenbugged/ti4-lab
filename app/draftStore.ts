@@ -230,6 +230,7 @@ type NewDraftState = {
   config: DraftConfig;
   systemPool: number[];
   factionPool: FactionId[];
+  allowHomePlanetSearch: boolean;
   map: Map;
   slices: Slice[];
   numFactionsToDraft: number;
@@ -279,6 +280,7 @@ type NewDraftState = {
       randomizeSlices: boolean;
       randomizeMap: boolean;
       draftSpeaker?: boolean;
+      allowHomePlanetSearch: boolean;
     }) => void;
     clearMap: () => void;
     importMap: (mapString: string) => void;
@@ -301,6 +303,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   map: EMPTY_MAP,
   systemPool: draftableSystemIds,
   factionPool: allFactionIds,
+  allowHomePlanetSearch: false,
   slices: [
     [-1, 0, 0, 0],
     [-1, 0, 0, 0],
@@ -425,6 +428,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       randomizeSlices: shouldRandomizeSlices,
       randomizeMap: shouldRandomizeMap,
       draftSpeaker,
+      allowHomePlanetSearch,
     }) => {
       const config = draftConfig[mapType];
       let systemPool = [...draftableSystemIds];
@@ -484,6 +488,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         draftSpeaker: draftSpeaker ?? false,
         systemPool,
         factionPool,
+        allowHomePlanetSearch,
       });
     },
 

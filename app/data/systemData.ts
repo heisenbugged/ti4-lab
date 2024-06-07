@@ -1,5 +1,6 @@
 import { Anomaly, PlanetTrait, System, TechSpecialty } from "~/types";
 import { rawSystems } from "./rawSystemData";
+import { factions } from "./factionData";
 
 export const systemData: Record<number, System> = Object.entries(
   rawSystems,
@@ -99,6 +100,10 @@ export const searchableSystemData = Object.values(systemData).reduce(
 
       nameParts.push(`${planet.resources} resources`);
       nameParts.push(`${planet.influence} influence`);
+    }
+
+    if (system.faction) {
+      nameParts.push(factions[system.faction].name.toLowerCase());
     }
 
     acc.push([nameParts.join(" "), system.id] as const);

@@ -11,7 +11,7 @@ export type SystemType = "GREEN" | "BLUE" | "RED" | "HYPERLANE";
 // System from data. To be processed into a proper 'System' object.
 export type RawSystem = {
   id: number;
-  faction?: string; // TODO: Make 'faction' be FactionId
+  faction?: FactionId;
   planets: Planet[];
   type: SystemType;
   anomalies: Anomaly[];

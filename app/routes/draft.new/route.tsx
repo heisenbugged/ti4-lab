@@ -51,6 +51,7 @@ export default function DraftNew() {
       randomizeSlices,
       randomizeMap,
       draftSpeaker,
+      allowHomePlanetSearch,
     } = location.state;
 
     draft.actions.initializeMap({
@@ -62,6 +63,7 @@ export default function DraftNew() {
       randomizeSlices,
       randomizeMap,
       draftSpeaker,
+      allowHomePlanetSearch,
     });
 
     // a bit hacky, but once we 'consume' the state, we remove it from the history
@@ -190,7 +192,9 @@ export default function DraftNew() {
       />
 
       <PlanetFinder
+        factionPool={draft.factionPool}
         availableSystemIds={draft.systemPool}
+        allowHomePlanetSearch={draft.allowHomePlanetSearch}
         opened={planetFinderOpened}
         onClose={() => {
           openTile.current = {

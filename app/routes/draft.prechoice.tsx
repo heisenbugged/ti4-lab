@@ -3,6 +3,8 @@ import {
   Box,
   Button,
   Checkbox,
+  Collapse,
+  Divider,
   Flex,
   Grid,
   Group,
@@ -31,6 +33,7 @@ import "../components/draftprechoice.css";
 import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
 import { systemData } from "~/data/systemData";
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 
 type PrechoiceMap = {
   title: string;
@@ -106,6 +109,8 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
 
 export default function DraftPrechoice() {
   const navigate = useNavigate();
+  const [allowHomePlanetSearch, setAllowHomePlanetSearch] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [hoveredMapType, setHoveredMapType] = useState<DraftType | undefined>();
   const [selectedMapType, setSelectedMapType] = useState<DraftType>("heisen");
   const [numFactions, setNumFactions] = useState(6);
@@ -156,6 +161,7 @@ export default function DraftPrechoice() {
         randomizeMap,
         players,
         draftSpeaker: config?.type === "heisen",
+        allowHomePlanetSearch,
       },
     });
   };
@@ -207,7 +213,7 @@ export default function DraftPrechoice() {
         </Flex>
       </Grid.Col>
       <Grid.Col span={{ base: 12, sm: 5 }}>
-        <Stack gap="xl">
+        <Stack>
           <PlayerInputSection
             players={players}
             onChangeName={handleChangeName}
@@ -266,13 +272,41 @@ export default function DraftPrechoice() {
                 checked={withDiscordant}
                 onChange={() => setWithDiscordant((v) => !v)}
               />
-              <Checkbox
-                label="Discordant Stars Exp"
-                checked={withDiscordantExp}
-                onChange={() => setWithDiscordantExp((v) => !v)}
-              />
+              {withDiscordant && (
+                <Checkbox
+                  label="(+10 factions)"
+                  checked={withDiscordantExp}
+                  onChange={() => setWithDiscordantExp((v) => !v)}
+                />
+              )}
             </Group>
           </Stack>
+          <Box mt="md">
+            <Button
+              variant="outline"
+              color="blue"
+              w="auto"
+              rightSection={
+                showAdvancedSettings ? <IconChevronDown /> : <IconChevronUp />
+              }
+              onMouseDown={() => setShowAdvancedSettings((v) => !v)}
+            >
+              Show advanced settings
+            </Button>
+          </Box>
+          <Collapse in={showAdvancedSettings}>
+            <Stack>
+              <SectionTitle title="For the nerds" />
+
+              <Switch
+                label="Allow search of home planets"
+                description="Useful if running minor factions. Will allow you to put home planets on the board with no/minimal restrictions"
+                checked={allowHomePlanetSearch}
+                onChange={() => setAllowHomePlanetSearch((v) => !v)}
+              />
+            </Stack>
+          </Collapse>
+
           <Button size="lg" w="100%" onMouseDown={handleContinue}>
             Continue
           </Button>

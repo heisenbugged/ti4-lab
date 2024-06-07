@@ -39,6 +39,7 @@ export function SystemTile({ mapId, tile, hideValues = false }: Props) {
       colorClass={classes.system}
       image={image}
       anomaly={system.anomalies.length > 0}
+      faction={system.faction}
     >
       {!hideValues && (
         <Text
