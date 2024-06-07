@@ -38,13 +38,28 @@ const ALL_LEGENDARIES = [
 
 const SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "high", "high"] },
-  { weight: 3, value: ["red", "high", "med"] },
-  { weight: 3, value: ["red", "med", "med"] },
-  { weight: 2, value: ["red", "med", "low"] },
+  { weight: 1, value: ["red", "high", "med"] },
+  { weight: 1, value: ["red", "med", "med"] },
+  { weight: 1, value: ["red", "med", "low"] },
   { weight: 1, value: ["red", "low", "low"] },
+  { weight: 1, value: ["red", "low", "high"] },
+];
+
+const INNER_SLICE_CHOICES: SliceChoice[] = [
+  { weight: 2, value: ["red", "red", "high"] },
+  { weight: 2, value: ["red", "red", "med"] },
+  { weight: 1, value: ["red", "low", "med"] },
+  { weight: 1, value: ["red", "med", "high"] },
 ];
 
 export function generateMap(sliceCount: number, availableSystems: number[]) {
+  // assume 6 slices
+  // TODO: Scale if more slices.
+  let targetRed = 12;
+  let targetHigh = 6;
+  let targetMed = 6;
+  let targetLow = 6;
+
   const chosenSpots: Record<number, number> = {};
 
   const { numAlphas: totalNumAlphas, numBetas: totalNumBetas } =
@@ -109,25 +124,108 @@ export function generateMap(sliceCount: number, availableSystems: number[]) {
 
   // we get remaining systems and sort by tiers to fill the rest of the map.
   // we exclude remaining legendaries and wormho toles as these will get placed in the slices.
-  const tiered = getTieredSystems(
-    availableSystems.filter(
-      (id) =>
-        !chosenSystems.includes(id) &&
-        !legendaries.includes(id) &&
-        !alphaWormholes.includes(id) &&
-        !betaWormholes.includes(id),
-    ),
+  // const tiered = getTieredSystems(
+  //   availableSystems.filter(
+  //     (id) =>
+  //       !chosenSystems.includes(id) &&
+  //       !legendaries.includes(id) &&
+  //       !alphaWormholes.includes(id) &&
+  //       !betaWormholes.includes(id),
+  //   ),
+  // );
+  // const remainingSystems = {
+  //   red: shuffle(tiered.red),
+  //   high: shuffle(tiered.high),
+  //   med: shuffle(tiered.med),
+  //   low: shuffle(tiered.low),
+  // };
+
+  // calculate remaining alphas, betas, and wormholes to fill in slices
+  // considering the ones put on the map
+  const remainingAlphas = Math.max(totalNumAlphas - numAlphas, 0);
+  const remainingBetas = Math.max(totalNumBetas - numBetas, 0);
+  const remainingLegendaries = Math.max(
+    totalNumLegendaries - numLegendaries,
+    0,
   );
-  const remainingSystems = {
-    red: shuffle(tiered.red),
-    high: shuffle(tiered.high),
-    med: shuffle(tiered.med),
-    low: shuffle(tiered.low),
+  const remainingSystemsAfterWormholes = availableSystems.filter(
+    (id) => !chosenSystems.includes(id),
+  );
+
+  // generate slices
+  const slices = generateSlices(
+    sliceCount,
+    remainingSystemsAfterWormholes,
+    remainingAlphas,
+    remainingBetas,
+    remainingLegendaries,
+  );
+  const usedSliceSystems = slices.flat(1);
+
+  // this is remaining after slice generation
+  const remainingSystemsAfterSlices = remainingSystemsAfterWormholes.filter(
+    (id) => !usedSliceSystems.includes(id),
+  );
+
+  // calcualte used systems by comparing the availableSystems to remainignSystems2
+  const utilizedSystems = availableSystems.filter(
+    (id) => !remainingSystemsAfterSlices.includes(id),
+  );
+
+  console.log(
+    "remainingSystemsAfterWormholes",
+    remainingSystemsAfterWormholes.length,
+  );
+  console.log(
+    "remainingSystemsAfterSlices",
+    remainingSystemsAfterSlices.length,
+  );
+
+  // now count number highs/meds/low/red by calling calculateSystemTier and grouping on the kye
+  const tiered = getTieredSystems(utilizedSystems);
+  const usedTiers = {
+    high: tiered.high.length,
+    med: tiered.med.length,
+    low: tiered.low.length,
+    red: tiered.red.length,
   };
+
+  // subtract
+  targetRed = Math.max(targetRed - usedTiers.red, 0);
+  targetHigh = Math.max(targetHigh - usedTiers.high, 0);
+  targetMed = Math.max(targetMed - usedTiers.med, 0);
+  targetLow = Math.max(targetLow - usedTiers.low, 0);
+
+  // categorize remaining systems into tiers
+  let remainingTieredSystems = getTieredSystems(remainingSystemsAfterSlices);
+  // const systemsToPullFrom = shuffle(
+  //   shuffle([
+  //   shuffle(remainingTieredSystems.low).slice(0, targetLow),
+  //   shuffle(remainingTieredSystems.med).slice(0, targetMed),
+  //   shuffle(remainingTieredSystems.high).slice(0, targetHigh),
+  // ]))
+
+  let systemsToPullFrom = [
+    ...shuffle(remainingTieredSystems.low).slice(0, targetLow),
+    ...shuffle(remainingTieredSystems.med).slice(0, targetMed),
+    ...shuffle(remainingTieredSystems.high).slice(0, targetHigh),
+  ].flat(1);
+  systemsToPullFrom = shuffle(systemsToPullFrom);
+  systemsToPullFrom = shuffle([
+    ...systemsToPullFrom,
+    ...shuffle(remainingTieredSystems.red).slice(0, targetRed),
+  ]);
+
+  console.log("targetRed", targetRed);
+  console.log("remaining places in middle", tileLocations.length);
+
+  tileLocations.forEach((location) => {
+    chosenSpots[location.mapIdx] = systemsToPullFrom.pop()!;
+  });
 
   // PART 2:
   function fillSlice(slice: number[]) {
-    const sliceTiers = shuffle(weightedChoice(SLICE_CHOICES));
+    const sliceTiers = shuffle(weightedChoice(INNER_SLICE_CHOICES));
     // Remove already chosen spots (from previous 'fill') from the available tiers.
     slice
       .filter((idx) => chosenSpots[idx])
@@ -150,36 +248,38 @@ export function generateMap(sliceCount: number, availableSystems: number[]) {
         // TODO: how to deal with not enough systems?
         // realistically should not happen if generating the whole map.
         const tier = sliceTiers.pop()!!;
-        const candidate = remainingSystems[tier].pop()!!;
+        const candidate = remainingSystemsAfterWormholes[tier].pop()!!;
         chosenSpots[idx] = candidate;
       });
   }
 
-  // fill inner slices
-  fillSlice([0, 7, 17]);
-  fillSlice([1, 7, 9]);
-  fillSlice([2, 9, 11]);
-  fillSlice([3, 11, 13]);
-  fillSlice([4, 13, 15]);
-  fillSlice([5, 15, 17]);
+  // // fill inner slices
+  // fillSlice([0, 7, 17]);
+  // fillSlice([1, 7, 9]);
+  // fillSlice([2, 9, 11]);
+  // fillSlice([3, 11, 13]);
+  // fillSlice([4, 13, 15]);
+  // fillSlice([5, 15, 17]);
 
-  // calculate remaining alphas, betas, and wormholes to fill in slices
-  // considering the ones put on the map
-  const remainingAlphas = Math.max(totalNumAlphas - numAlphas, 0);
-  const remainingBetas = Math.max(totalNumBetas - numBetas, 0);
-  const remainingLegendaries = Math.max(
-    totalNumLegendaries - numLegendaries,
-    0,
-  );
+  // // calculate remaining alphas, betas, and wormholes to fill in slices
+  // // considering the ones put on the map
+  // const remainingAlphas = Math.max(totalNumAlphas - numAlphas, 0);
+  // const remainingBetas = Math.max(totalNumBetas - numBetas, 0);
+  // const remainingLegendaries = Math.max(
+  //   totalNumLegendaries - numLegendaries,
+  //   0,
+  // );
 
-  // generate slices
-  const slices = generateSlices(
-    sliceCount,
-    availableSystems.filter((id) => !chosenSystems.includes(id)),
-    remainingAlphas,
-    remainingBetas,
-    remainingLegendaries,
-  );
+  // // generate slices
+  // const slices = generateSlices(
+  //   sliceCount,
+  //   availableSystems.filter((id) => !chosenSystems.includes(id)),
+  //   remainingAlphas,
+  //   remainingBetas,
+  //   remainingLegendaries,
+  // );
+
+  // const slices = [0, 1, 2, 3, 4, 5].map(() => [0, 0, 0]);
 
   return {
     chosenSpots,
