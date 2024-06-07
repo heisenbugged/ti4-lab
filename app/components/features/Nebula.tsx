@@ -6,6 +6,7 @@ export function Nebula({ radius }: { radius: number }) {
       y={-radius * 1.25}
       width={2 * radius * 1.25}
       height={2 * radius * 1.25}
+      imageRendering="pixelated"
     />
   );
 }

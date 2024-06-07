@@ -6,6 +6,7 @@ export function Asteroids({ radius }: { radius: number }) {
       y={-radius * 1}
       width={2 * radius * 1}
       height={2 * radius * 1}
+      imageRendering="pixelated"
     />
   );
 }

@@ -29,7 +29,7 @@ export function useWindowDimensions() {
   return { width: windowDimensions.width, height: windowDimensions.height };
 }
 
-const getSafeWindow = () => {
+export const getSafeWindow = () => {
   if (typeof window !== "undefined") {
     return window;
   }

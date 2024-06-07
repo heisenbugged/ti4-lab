@@ -1,4 +1,4 @@
-import { HomeTile, Map as MapType } from "~/types";
+import { HomeTile, Map, Map as MapType } from "~/types";
 import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
@@ -62,6 +62,47 @@ export function Map({
               }}
               modifiable={mode === "create" && isTileModifiable(config, idx)}
               homeSelectable={onSelectHomeTile && mode === "draft"}
+            />
+          ))}
+      </Box>
+    </MapContext.Provider>
+  );
+}
+
+export function RawMap({
+  mapId,
+  map,
+  width,
+  height,
+}: {
+  mapId: string;
+  map: Map;
+  width: number;
+  height: number;
+}) {
+  const n = 3;
+  const gap = Math.min(width, height) * 0.01;
+  const radius = calculateMaxHexRadius(n, width, height, gap);
+
+  return (
+    <MapContext.Provider
+      value={{
+        width,
+        height,
+        radius,
+        gap,
+        hOffset: -radius + height * 0.5,
+        wOffset: -radius + width * 0.5,
+      }}
+    >
+      <Box w="100%" h="100%">
+        {map
+          .filter((t) => !!t.position)
+          .map((tile) => (
+            <MapTile
+              mapId={mapId}
+              key={`${tile.position.x}-${tile.position.y}`}
+              tile={tile}
             />
           ))}
       </Box>

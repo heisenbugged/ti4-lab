@@ -9,6 +9,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
 import {
   Button,
@@ -20,6 +21,8 @@ import { useEffect, useState } from "react";
 import type { Socket } from "socket.io-client";
 import io from "socket.io-client";
 import { SocketProvider } from "./socketContext";
+import { getSafeWindow } from "./hooks/useWindowDimensions";
+import { LoaderFunctionArgs } from "@remix-run/node";
 
 const mantineTheme = createTheme({
   colors: {
@@ -145,6 +148,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     });
   }, [socket]);
 
+  const result = useLoaderData<typeof loader>();
+
   return (
     <html lang="en">
       <head>
@@ -186,7 +191,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
-        <MantineProvider theme={mantineTheme} defaultColorScheme="auto">
+        <MantineProvider
+          theme={mantineTheme}
+          defaultColorScheme="auto"
+          forceColorScheme={result.forcedColorScheme ?? undefined}
+        >
           <SocketProvider socket={socket}>{children}</SocketProvider>
         </MantineProvider>
         <ScrollRestoration />
@@ -195,6 +204,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
     </html>
   );
 }
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const url = new URL(request.url);
+  const forcedColorScheme = url.searchParams.get("FORCED_COLOR_SCHEME") as
+    | "dark"
+    | "light";
+  return { forcedColorScheme };
+};
 
 export default function App() {
   return <Outlet />;

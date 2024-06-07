@@ -46,6 +46,7 @@ const EMPTY_MAP = parseMapString(draftConfig.heisen, EMPTY_MAP_STRING);
 
 type DraftsState = {
   initialized: boolean;
+  draftUrl: string;
   config: DraftConfig;
   mapString: number[];
   hydratedMap: Map;
@@ -60,12 +61,13 @@ type DraftsState = {
   selectSeat: (playerId: number, seatIdx: number) => void;
   selectFaction: (playerId: number, factionId: FactionId) => void;
   selectSpeakerOrder: (playerId: number, speakerOrder: number) => void;
-  hydrate: (draft: PersistedDraft) => void;
+  hydrate: (draft: PersistedDraft, draftUrlName: string) => void;
   getPersisted: () => PersistedDraft;
 };
 
 export const useDraft = create<DraftsState>((set, get) => ({
   initialized: false,
+  draftUrl: "",
   config: draftConfig.milty,
   mapString: EMPTY_MAP_STRING,
   hydratedMap: EMPTY_MAP,
@@ -189,7 +191,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
           `${activePlayerName} selected ${playerSpeakerOrder[speakerOrder]} on the speaker order.`,
       };
     }),
-  hydrate: (draft: PersistedDraft) =>
+  hydrate: (draft: PersistedDraft, draftUrlName: string) =>
     set(() => {
       const mapString = draft.mapString.split(" ").map(Number);
       const config = draftConfig[draft.mapType];
@@ -211,6 +213,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
         config,
         hydratedMap: hydratedMap,
         mapString,
+        draftUrl: draftUrlName,
         players: draft.players,
         slices: draft.slices,
         factions: draft.factions,

@@ -22,6 +22,7 @@
     "cross-env": "^7.0.3",
     "drizzle-orm": "^0.30.10",
     "isbot": "^4.1.0",
+    "puppeteer": "^22.10.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-loading-indicators": "^0.2.3",

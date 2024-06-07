@@ -14,7 +14,6 @@ import { SlicesSection } from "../draft/SlicesSection";
 import { MapSection } from "../draft/MapSection";
 import { Section, SectionTitle } from "~/components/Section";
 import { playerSpeakerOrder } from "~/utils/map";
-import { PlayerChip } from "./components/PlayerChip";
 import { CurrentPickBanner } from "./components/CurrentPickBanner";
 import { DraftOrder } from "./components/DraftOrder";
 import { PlayerSelectionScreen } from "./components/PlayerSelectionScreen";
@@ -62,7 +61,7 @@ export default function RunningDraft() {
     });
     socket.on("syncDraft", (data) => {
       const draft = JSON.parse(data) as PersistedDraft;
-      useDraft.getState().hydrate(draft);
+      useDraft.getState().hydrate(draft, result.urlName!);
     });
   }, [socket]);
 
@@ -72,7 +71,7 @@ export default function RunningDraft() {
 
   // pre-seed store with loaded persisted draft
   useEffect(() => {
-    draft.hydrate(result.data);
+    draft.hydrate(result.data, result.urlName!);
     const storedSelectedPlayer = localStorage.getItem(
       `draft:player:${result.id}`,
     );
@@ -82,7 +81,6 @@ export default function RunningDraft() {
   }, []);
 
   const syncDraft = useSyncDraft();
-
   const handleSync = async () => {
     const persistedDraft = draft.getPersisted();
     await syncDraft(result.id, persistedDraft);
@@ -270,8 +268,8 @@ export const loader = async ({ params }: { params: { id: string } }) => {
 
   // If using a legacy "UUID url", generate a pretty URL
   // and then redirect to it.
-  console.log("UUID url detected, generating pretty url");
   if (validateUUID(draftId)) {
+    console.log("UUID url detected, generating pretty url");
     const draft = await draftById(draftId);
     if (draft.urlName) {
       console.log(`redirecting to pretty url ${draft.urlName}`);

@@ -1,15 +1,24 @@
-import { SimpleGrid, Stack, Table, Textarea, Title } from "@mantine/core";
+import {
+  Button,
+  SimpleGrid,
+  Stack,
+  Table,
+  Textarea,
+  Title,
+} from "@mantine/core";
 import { useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
 import { MapSection } from "~/routes/draft/MapSection";
 import { SummaryRow } from "./SummaryRow";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { SummaryCard } from "./MidDraftSummary";
+import { Link } from "@remix-run/react";
 
 export function FinalizedDraft() {
   const draft = useDraft();
   const slices = draft.slices;
   const players = draft.players;
+  const [exportingImage, setExportingImage] = useState(false);
 
   const sortedPlayers = useMemo(
     () => players.sort((a, b) => a.speakerOrder! - b.speakerOrder!),
@@ -73,6 +82,21 @@ export function FinalizedDraft() {
           <Section>
             <SectionTitle title="Map String" />
             <Textarea>{mapString}</Textarea>
+          </Section>
+          <Section>
+            <SectionTitle title="Export image" />
+            <Link
+              to={`/map-image/draft/${draft.draftUrl}/generate`}
+              reloadDocument
+              onClick={() => {
+                setExportingImage(true);
+                // cannot actually know when the image finishes downloading
+                // so it's just an approximation
+                setTimeout(() => setExportingImage(false), 5000);
+              }}
+            >
+              <Button loading={exportingImage}>Download image</Button>
+            </Link>
           </Section>
         </Stack>
         <Stack flex={1} gap="xl">
