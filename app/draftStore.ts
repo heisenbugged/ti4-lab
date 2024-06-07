@@ -57,6 +57,7 @@ type DraftsState = {
   pickOrder: number[];
   lastEvent: string;
   draftSpeaker: boolean;
+  updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
   selectSlice: (playerId: number, sliceIdx: number) => void;
   selectSeat: (playerId: number, seatIdx: number) => void;
   selectFaction: (playerId: number, factionId: FactionId) => void;
@@ -230,6 +231,13 @@ export const useDraft = create<DraftsState>((set, get) => ({
       slices: newSlices,
     };
   },
+
+  updatePlayer: (playerIdx: number, player: Partial<Player>) =>
+    set(({ players }) => ({
+      players: players.map((p, idx) =>
+        idx === playerIdx ? { ...p, ...player } : p,
+      ),
+    })),
 }));
 
 type NewDraftState = {

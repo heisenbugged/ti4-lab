@@ -36,6 +36,7 @@ import { allFactionIds } from "~/data/factionData";
 import { allDraftableSystemIds, draftableSystemIds } from "~/data/systemData";
 import { useDisclosure } from "@mantine/hooks";
 import { PlanetFinder } from "./components/PlanetFinder";
+import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 
 export default function RunningDraft() {
   const { adminMode, pickForAnyone } = useOutletContext<{
@@ -248,6 +249,18 @@ export default function RunningDraft() {
               />
             </Tabs.Panel>
           </Tabs>
+
+          {adminMode && (
+            <>
+              <PlayerInputSection
+                players={draft.players}
+                onChangeName={(playerIdx, name) => {
+                  draft.updatePlayer(playerIdx, { name });
+                }}
+              />
+              <Button onClick={handleSync}>Save</Button>
+            </>
+          )}
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, lg: 6 }}>
