@@ -65,6 +65,16 @@ type DraftsState = {
   removeSystemFromMap: (tileIdx: number) => void;
   hydrate: (draft: PersistedDraft, draftUrlName: string) => void;
   getPersisted: () => PersistedDraft;
+  refreshMap: (options: {
+    mapString?: number[];
+    players?: Player[];
+    slices?: Slice[];
+  }) => {
+    hydratedMap: Map;
+    mapString: number[];
+    players: Player[];
+    slices: Slice[];
+  };
 };
 
 export const useDraft = create<DraftsState>((set, get) => ({
@@ -96,19 +106,12 @@ export const useDraft = create<DraftsState>((set, get) => ({
       const players = state.players.map((p) =>
         p.id === playerId ? { ...p, faction: factionId } : p,
       );
-      const hydratedMap = hydrateMap(
-        state.config,
-        state.hydratedMap,
-        players,
-        state.slices,
-      );
       const activePlayerName = state.players.find(
         (p) => p.id === playerId,
       )?.name;
 
       return {
-        players,
-        hydratedMap: hydratedMap,
+        ...state.refreshMap({ players }),
         currentPick: state.currentPick + 1,
         lastEvent:
           activePlayerName &&
@@ -120,18 +123,12 @@ export const useDraft = create<DraftsState>((set, get) => ({
       const players = state.players.map((p) =>
         p.id === playerId ? { ...p, sliceIdx } : p,
       );
-      const hydratedMap = hydrateMap(
-        state.config,
-        state.hydratedMap,
-        players,
-        state.slices,
-      );
+
       const activePlayerName = state.players.find(
         (p) => p.id === playerId,
       )?.name;
       return {
-        players,
-        hydratedMap: hydratedMap,
+        ...state.refreshMap({ players }),
         currentPick: state.currentPick + 1,
         lastEvent:
           activePlayerName &&
@@ -152,25 +149,12 @@ export const useDraft = create<DraftsState>((set, get) => ({
           : p,
       );
 
-      const parsedMap = parseMapString(
-        state.config,
-        state.mapString,
-        mapStringOrder,
-        false,
-      );
-      const hydratedMap = hydrateMap(
-        state.config,
-        parsedMap,
-        players,
-        state.slices,
-      );
       const activePlayerName = state.players.find(
         (p) => p.id === playerId,
       )?.name;
 
       return {
-        players,
-        hydratedMap: hydratedMap,
+        ...state.refreshMap({ players }),
         currentPick: state.currentPick + 1,
         lastEvent:
           activePlayerName &&
@@ -194,74 +178,58 @@ export const useDraft = create<DraftsState>((set, get) => ({
       };
     }),
   hydrate: (draft: PersistedDraft, draftUrlName: string) =>
-    set(() => {
-      const mapString = draft.mapString.split(" ").map(Number);
+    set((state) => {
+      let mapString = draft.mapString.split(" ").map(Number);
+      // NOTE: Some old drafts have 'mecatol' at the start of the map string. This is not great, but we fix it here.
+      // TODO: Eventually clean up all the old drafts
+      if (mapString[0] === 18) mapString = mapString.slice(1);
       const config = draftConfig[draft.mapType];
-      const parsedMap = parseMapString(
-        config,
-        mapString,
-        mapStringOrder,
-        false,
-      );
-      const hydratedMap = hydrateMap(
-        config,
-        parsedMap,
-        draft.players,
-        draft.slices,
-      );
 
       return {
         initialized: true,
         config,
-        hydratedMap: hydratedMap,
-        mapString,
         draftUrl: draftUrlName,
-        players: draft.players,
-        slices: draft.slices,
         factions: draft.factions,
         currentPick: draft.currentPick,
         pickOrder: draft.pickOrder,
         lastEvent: draft.lastEvent,
         draftSpeaker: draft.draftSpeaker,
+        ...state.refreshMap({
+          mapString,
+          players: draft.players,
+          slices: draft.slices,
+        }),
       };
     }),
 
   addSystemToMap: (tileIdx: number, system: System) =>
     set((state) => {
       const mapString = [...state.mapString];
-      mapString[tileIdx] = system.id;
-      const parsedMap = parseMapString(
-        state.config,
-        mapString,
-        mapStringOrder,
-        false,
-      );
-      const hydratedMap = hydrateMap(
-        state.config,
-        parsedMap,
-        state.players,
-        state.slices,
-      );
-      return { mapString, hydratedMap };
+      mapString[tileIdx - 1] = system.id;
+      return state.refreshMap({ mapString });
     }),
   removeSystemFromMap: (tileIdx: number) =>
     set((state) => {
       const mapString = [...state.mapString];
-      mapString[tileIdx] = 0;
-      const parsedMap = parseMapString(
-        state.config,
-        mapString,
-        mapStringOrder,
-        false,
-      );
-      const hydratedMap = hydrateMap(
-        state.config,
-        parsedMap,
-        state.players,
-        state.slices,
-      );
-      return { mapString, hydratedMap };
+      mapString[tileIdx - 1] = 0;
+      return state.refreshMap({ mapString });
     }),
+
+  refreshMap: ({ mapString, players, slices }) => {
+    const newMapString = mapString ?? get().mapString;
+    const newPlayers = players ?? get().players;
+    const newSlices = slices ?? get().slices;
+
+    const config = get().config;
+    const parsedMap = parseMapString(config, newMapString);
+    const hydratedMap = hydrateMap(config, parsedMap, newPlayers, newSlices);
+    return {
+      hydratedMap,
+      mapString: newMapString,
+      players: newPlayers,
+      slices: newSlices,
+    };
+  },
 }));
 
 type NewDraftState = {
