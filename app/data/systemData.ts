@@ -50,6 +50,11 @@ export const draftableDiscordantSystemIds = Object.values(systemData)
   )
   .map((system) => system.id);
 
+export const allDraftableSystemIds = [
+  ...draftableSystemIds,
+  ...draftableDiscordantSystemIds,
+];
+
 const searchableTech: Record<TechSpecialty, string> = {
   BIOTIC: "green tech",
   CYBERNETIC: "yellow tech",

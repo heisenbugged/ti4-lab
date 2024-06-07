@@ -14,7 +14,12 @@ import { useMemo, useState } from "react";
 import { SummaryCard } from "./MidDraftSummary";
 import { Link } from "@remix-run/react";
 
-export function FinalizedDraft() {
+type Props = {
+  adminMode: boolean;
+  onSelectSystemTile: (systemId: number) => void;
+};
+
+export function FinalizedDraft({ adminMode, onSelectSystemTile }: Props) {
   const draft = useDraft();
   const slices = draft.slices;
   const players = draft.players;
@@ -104,7 +109,9 @@ export function FinalizedDraft() {
             config={draft.config}
             map={draft.hydratedMap}
             allowSeatSelection={false}
-            mode="draft"
+            mode={adminMode ? "create" : "draft"}
+            onDeleteSystemTile={(tile) => draft.removeSystemFromMap(tile)}
+            onSelectSystemTile={onSelectSystemTile}
           />
         </Stack>
       </SimpleGrid>

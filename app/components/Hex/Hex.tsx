@@ -70,21 +70,20 @@ export function Hex({
           alignItems: "center",
           justifyContent: "center",
           display: "flex",
+          position: "relative",
         }}
       >
         {faction && (
-          <div
+          <FactionIcon
+            faction={faction}
             style={{
-              position: "absolute",
-              bottom: radius * 0.15,
-              left: radius * 0.45,
               width: radius * 0.35,
               height: radius * 0.35,
-              // backgroundColor: "magenta",
+              position: "absolute",
+              top: radius * 1.5,
+              left: radius * 0.45,
             }}
-          >
-            <FactionIcon faction={faction} />
-          </div>
+          />
         )}
         {children}
       </div>

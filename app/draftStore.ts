@@ -61,6 +61,8 @@ type DraftsState = {
   selectSeat: (playerId: number, seatIdx: number) => void;
   selectFaction: (playerId: number, factionId: FactionId) => void;
   selectSpeakerOrder: (playerId: number, speakerOrder: number) => void;
+  addSystemToMap: (tileIdx: number, system: System) => void;
+  removeSystemFromMap: (tileIdx: number) => void;
   hydrate: (draft: PersistedDraft, draftUrlName: string) => void;
   getPersisted: () => PersistedDraft;
 };
@@ -223,6 +225,43 @@ export const useDraft = create<DraftsState>((set, get) => ({
         draftSpeaker: draft.draftSpeaker,
       };
     }),
+
+  addSystemToMap: (tileIdx: number, system: System) =>
+    set((state) => {
+      const mapString = [...state.mapString];
+      mapString[tileIdx] = system.id;
+      const parsedMap = parseMapString(
+        state.config,
+        mapString,
+        mapStringOrder,
+        false,
+      );
+      const hydratedMap = hydrateMap(
+        state.config,
+        parsedMap,
+        state.players,
+        state.slices,
+      );
+      return { mapString, hydratedMap };
+    }),
+  removeSystemFromMap: (tileIdx: number) =>
+    set((state) => {
+      const mapString = [...state.mapString];
+      mapString[tileIdx] = 0;
+      const parsedMap = parseMapString(
+        state.config,
+        mapString,
+        mapStringOrder,
+        false,
+      );
+      const hydratedMap = hydrateMap(
+        state.config,
+        parsedMap,
+        state.players,
+        state.slices,
+      );
+      return { mapString, hydratedMap };
+    }),
 }));
 
 type NewDraftState = {
@@ -231,6 +270,7 @@ type NewDraftState = {
   systemPool: number[];
   factionPool: FactionId[];
   allowHomePlanetSearch: boolean;
+  allowEmptyMapTiles: boolean;
   map: Map;
   slices: Slice[];
   numFactionsToDraft: number;
@@ -281,6 +321,7 @@ type NewDraftState = {
       randomizeMap: boolean;
       draftSpeaker?: boolean;
       allowHomePlanetSearch: boolean;
+      allowEmptyMapTiles: boolean;
     }) => void;
     clearMap: () => void;
     importMap: (mapString: string) => void;
@@ -304,6 +345,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   systemPool: draftableSystemIds,
   factionPool: allFactionIds,
   allowHomePlanetSearch: false,
+  allowEmptyMapTiles: false,
   slices: [
     [-1, 0, 0, 0],
     [-1, 0, 0, 0],
@@ -352,7 +394,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     const mapType = get().config.type;
     if (
       hydratedMap.some((tile) => tile.type === "OPEN") &&
-      mapType !== "miltyeqless"
+      mapType !== "miltyeqless" &&
+      !get().allowEmptyMapTiles
     ) {
       errors.push("Map has empty tiles");
     }
@@ -429,6 +472,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       randomizeMap: shouldRandomizeMap,
       draftSpeaker,
       allowHomePlanetSearch,
+      allowEmptyMapTiles,
     }) => {
       const config = draftConfig[mapType];
       let systemPool = [...draftableSystemIds];
@@ -489,6 +533,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         systemPool,
         factionPool,
         allowHomePlanetSearch,
+        allowEmptyMapTiles,
       });
     },
 

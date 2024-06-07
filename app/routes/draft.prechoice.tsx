@@ -109,6 +109,7 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
 
 export default function DraftPrechoice() {
   const navigate = useNavigate();
+  const [allowEmptyMapTiles, setAllowEmptyMapTiles] = useState(false);
   const [allowHomePlanetSearch, setAllowHomePlanetSearch] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [hoveredMapType, setHoveredMapType] = useState<DraftType | undefined>();
@@ -162,6 +163,7 @@ export default function DraftPrechoice() {
         players,
         draftSpeaker: config?.type === "heisen",
         allowHomePlanetSearch,
+        allowEmptyMapTiles,
       },
     });
   };
@@ -296,13 +298,19 @@ export default function DraftPrechoice() {
           </Box>
           <Collapse in={showAdvancedSettings}>
             <Stack>
-              <SectionTitle title="For the nerds" />
+              <SectionTitle title="Advanced Options" />
 
               <Switch
                 label="Allow search of home planets"
                 description="Useful if running minor factions. Will allow you to put home planets on the board with no/minimal restrictions"
                 checked={allowHomePlanetSearch}
                 onChange={() => setAllowHomePlanetSearch((v) => !v)}
+              />
+              <Switch
+                label="Allow empty map tiles"
+                description="Will allow starting a draft even if not every tile is filled"
+                checked={allowEmptyMapTiles}
+                onChange={() => setAllowEmptyMapTiles((v) => !v)}
               />
             </Stack>
           </Collapse>

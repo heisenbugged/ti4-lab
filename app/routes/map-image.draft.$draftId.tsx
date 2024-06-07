@@ -3,6 +3,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { Logo } from "~/components/Logo";
 import { Map, RawMap } from "~/components/Map";
+import { mapStringOrder } from "~/data/mapStringOrder";
 import { draftConfig } from "~/draft";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { PersistedDraft } from "~/types";
@@ -12,12 +13,14 @@ export default function MapImage() {
   const result = useLoaderData<typeof loader>();
   const draft = result.data;
   const config = draftConfig[draft.mapType];
+  const rawMapString = draft.mapString.split(" ").map((n) => parseInt(n, 10));
   const mapString = parseMapString(
     config,
-    draft.mapString.split(" ").map((n) => parseInt(n, 10)),
+    rawMapString,
+    mapStringOrder,
+    rawMapString[0] !== 18,
   );
-  /// http://localhost:3000/draft/voidborn-scepter-elder
-  // is buggy, diagnose why.
+
   const map = hydrateMap(config, mapString, draft.players, draft.slices);
 
   return (

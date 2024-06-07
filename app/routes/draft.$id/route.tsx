@@ -2,7 +2,7 @@ import { Button, Grid, SimpleGrid, Stack, Tabs, Text } from "@mantine/core";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
 import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
@@ -32,9 +32,16 @@ import {
   generateUniquePrettyUrl,
 } from "~/drizzle/draft.server";
 import { DraftableSpeakerOrder } from "./components/DraftableSpeakerOrder";
+import { allFactionIds } from "~/data/factionData";
+import { allDraftableSystemIds, draftableSystemIds } from "~/data/systemData";
+import { useDisclosure } from "@mantine/hooks";
+import { PlanetFinder } from "./components/PlanetFinder";
 
 export default function RunningDraft() {
-  const { adminMode } = useOutletContext<{ adminMode: boolean }>();
+  const { adminMode, pickForAnyone } = useOutletContext<{
+    adminMode: boolean;
+    pickForAnyone: boolean;
+  }>();
 
   useEffect(() => {
     requestNotificationPermission();
@@ -91,7 +98,7 @@ export default function RunningDraft() {
   const activePlayerId = draft.pickOrder[draft.currentPick];
   const activePlayer = draft.players.find((p) => p.id === activePlayerId);
 
-  const currentlyPicking = activePlayerId === selectedPlayer || adminMode;
+  const currentlyPicking = activePlayerId === selectedPlayer || pickForAnyone;
   const canSelectSlice = currentlyPicking && (activePlayer?.sliceIdx ?? -1) < 0;
   const canSelectSeat = currentlyPicking && (activePlayer?.seatIdx ?? -1) < 0;
   const canSelectFaction = currentlyPicking && !activePlayer?.faction;
@@ -108,10 +115,45 @@ export default function RunningDraft() {
     }
   }, [activePlayerId === selectedPlayer]);
 
+  const selectedTile = useRef<number>();
+  const [
+    planetFinderOpened,
+    { open: openPlanetFinder, close: closePlanetFinder },
+  ] = useDisclosure(false);
+
+  const planetFinder = (
+    <PlanetFinder
+      factionPool={allFactionIds}
+      availableSystemIds={allDraftableSystemIds}
+      allowHomePlanetSearch
+      opened={planetFinderOpened}
+      onClose={() => {
+        closePlanetFinder();
+      }}
+      onSelectSystem={(system) => {
+        if (!selectedTile.current) return;
+        draft.addSystemToMap(selectedTile.current, system);
+        closePlanetFinder();
+        handleSync();
+      }}
+      usedSystemIds={[]}
+    />
+  );
   if (!draft.initialized || !draft.hydratedMap) return <LoadingOverlay />;
 
   if (draftFinalized) {
-    return <FinalizedDraft />;
+    return (
+      <>
+        {planetFinder}
+        <FinalizedDraft
+          adminMode={adminMode}
+          onSelectSystemTile={(systemId) => {
+            selectedTile.current = systemId;
+            openPlanetFinder();
+          }}
+        />
+      </>
+    );
   }
 
   if (selectedPlayer === undefined) {
@@ -131,6 +173,7 @@ export default function RunningDraft() {
 
   return (
     <>
+      {planetFinder}
       <audio id="notificationSound" src="/chime.mp3" preload="auto"></audio>
       <Stack gap="sm" mb="60" mt="lg">
         <CurrentPickBanner player={activePlayer!} lastEvent={draft.lastEvent} />
@@ -226,10 +269,15 @@ export default function RunningDraft() {
             config={draft.config}
             map={draft.hydratedMap}
             allowSeatSelection={canSelectSeat}
-            mode="draft"
+            mode={adminMode ? "create" : "draft"}
             onSelectHomeTile={(tile) => {
               draft.selectSeat(activePlayerId, tile.seatIdx);
               handleSync();
+            }}
+            onDeleteSystemTile={(tile) => draft.removeSystemFromMap(tile)}
+            onSelectSystemTile={(tile) => {
+              selectedTile.current = tile;
+              openPlanetFinder();
             }}
           />
         </Grid.Col>

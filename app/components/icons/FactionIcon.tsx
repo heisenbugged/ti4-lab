@@ -15,6 +15,22 @@ export function FactionIcon({
   visibleFrom,
   hiddenFrom,
 }: Props) {
+  // Box can mess with layout for reasons not totally understood,
+  // so avoid its use, if possible
+  if (!visibleFrom && !hiddenFrom) {
+    return (
+      <img
+        src={factions[faction].iconPath}
+        style={{
+          objectFit: "contain",
+          width: "100%",
+          height: "100%",
+          ...style,
+        }}
+      />
+    );
+  }
+
   return (
     <Box visibleFrom={visibleFrom} hiddenFrom={hiddenFrom} style={style}>
       <img

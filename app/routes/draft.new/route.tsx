@@ -52,6 +52,7 @@ export default function DraftNew() {
       randomizeMap,
       draftSpeaker,
       allowHomePlanetSearch,
+      allowEmptyMapTiles,
     } = location.state;
 
     draft.actions.initializeMap({
@@ -64,6 +65,7 @@ export default function DraftNew() {
       randomizeMap,
       draftSpeaker,
       allowHomePlanetSearch,
+      allowEmptyMapTiles,
     });
 
     // a bit hacky, but once we 'consume' the state, we remove it from the history

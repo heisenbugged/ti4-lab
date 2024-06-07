@@ -7,6 +7,7 @@ import { MainAppShell } from "~/components/MainAppShell";
 
 export default function Draft() {
   const [adminMode, setAdminMode] = useState(false);
+  const [pickForAnyone, setPickForAnyone] = useState(false);
   const { setColorScheme } = useMantineColorScheme();
 
   return (
@@ -33,13 +34,19 @@ export default function Draft() {
           </Button>
           <Switch
             label="Pick for anyone"
+            checked={pickForAnyone}
+            onChange={(e) => setPickForAnyone(e.currentTarget.checked)}
+          />
+          <Switch
+            visibleFrom="sm"
+            label="Admin mode"
             checked={adminMode}
             onChange={(e) => setAdminMode(e.currentTarget.checked)}
           />
         </Group>
       }
     >
-      <Outlet context={{ adminMode }} />
+      <Outlet context={{ adminMode, pickForAnyone }} />
     </MainAppShell>
   );
 }
