@@ -31,10 +31,18 @@ export function PlanetStats({
   }
   return (
     <Group gap={3}>
-      <Text size={fontSize} fw="bolder" style={{ color: "#edff00" }} lh={0}>
+      <Text
+        size={fontSize}
+        fw="bolder"
+        style={{
+          color: "#edff00",
+          ["-webkit-text-stroke"]: "2px #40578a5e",
+          paintOrder: "stroke fill",
+        }}
+      >
         {resources}
       </Text>
-      <Text size={fontSize} c="blue.9" fw="bolder" lh={0}>
+      <Text size={fontSize} c="blue.9" fw="bolder">
         {influence}
       </Text>
     </Group>
