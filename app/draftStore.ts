@@ -67,6 +67,7 @@ type DraftsState = {
   hydrate: (draft: PersistedDraft, draftUrlName: string) => void;
   getPersisted: () => PersistedDraft;
   refreshMap: (options: {
+    config?: DraftConfig;
     mapString?: number[];
     players?: Player[];
     slices?: Slice[];
@@ -181,6 +182,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
   hydrate: (draft: PersistedDraft, draftUrlName: string) =>
     set((state) => {
       let mapString = draft.mapString.split(" ").map(Number);
+
       // NOTE: Some old drafts have 'mecatol' at the start of the map string. This is not great, but we fix it here.
       // TODO: Eventually clean up all the old drafts
       if (mapString[0] === 18) mapString = mapString.slice(1);
@@ -196,6 +198,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
         lastEvent: draft.lastEvent,
         draftSpeaker: draft.draftSpeaker,
         ...state.refreshMap({
+          config,
           mapString,
           players: draft.players,
           slices: draft.slices,
@@ -216,16 +219,17 @@ export const useDraft = create<DraftsState>((set, get) => ({
       return state.refreshMap({ mapString });
     }),
 
-  refreshMap: ({ mapString, players, slices }) => {
+  refreshMap: ({ config, mapString, players, slices }) => {
+    const newConfig = config ?? get().config;
     const newMapString = mapString ?? get().mapString;
     const newPlayers = players ?? get().players;
     const newSlices = slices ?? get().slices;
+    const parsedMap = parseMapString(newConfig, newMapString);
+    const hydratedMap = hydrateMap(newConfig, parsedMap, newPlayers, newSlices);
 
-    const config = get().config;
-    const parsedMap = parseMapString(config, newMapString);
-    const hydratedMap = hydrateMap(config, parsedMap, newPlayers, newSlices);
     return {
       hydratedMap,
+      config: newConfig,
       mapString: newMapString,
       players: newPlayers,
       slices: newSlices,
