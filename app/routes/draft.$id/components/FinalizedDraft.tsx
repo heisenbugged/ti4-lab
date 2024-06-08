@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   SimpleGrid,
   Stack,
@@ -13,13 +14,20 @@ import { SummaryRow } from "./SummaryRow";
 import { useMemo, useState } from "react";
 import { SummaryCard } from "./MidDraftSummary";
 import { Link } from "@remix-run/react";
+import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
+import { factionSystems, systemData } from "~/data/systemData";
 
 type Props = {
   adminMode: boolean;
   onSelectSystemTile: (systemId: number) => void;
+  onSavePlayerNames: () => void;
 };
 
-export function FinalizedDraft({ adminMode, onSelectSystemTile }: Props) {
+export function FinalizedDraft({
+  adminMode,
+  onSelectSystemTile,
+  onSavePlayerNames,
+}: Props) {
   const draft = useDraft();
   const slices = draft.slices;
   const players = draft.players;
@@ -34,7 +42,10 @@ export function FinalizedDraft({ adminMode, onSelectSystemTile }: Props) {
   const mapString = draft.hydratedMap
     .slice(1, draft.hydratedMap.length)
     .map((t) => {
-      if (t.type === "HOME") return "0";
+      if (t.type === "HOME") {
+        if (t.player?.faction === undefined) return "0";
+        return factionSystems[t.player.faction].id;
+      }
       if (t.system) return t.system.id;
       return "-1";
     })
@@ -44,6 +55,24 @@ export function FinalizedDraft({ adminMode, onSelectSystemTile }: Props) {
     <Stack mt="lg" gap={30}>
       <Title>Draft complete!</Title>
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 60 }}>
+        {adminMode && (
+          <>
+            <div />
+            {adminMode && (
+              <Box>
+                <PlayerInputSection
+                  players={draft.players}
+                  onChangeName={(playerIdx, name) => {
+                    draft.updatePlayer(playerIdx, { name });
+                  }}
+                />
+                <Button mt="lg" onClick={onSavePlayerNames}>
+                  Save
+                </Button>
+              </Box>
+            )}
+          </>
+        )}
         <Stack flex={1} gap="xl">
           <Section>
             <SectionTitle title="Draft Summary" />

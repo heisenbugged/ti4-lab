@@ -20,7 +20,6 @@ import {
   playerSpeakerOrder,
   sliceMap,
 } from "./utils/map";
-import { mapStringOrder } from "./data/mapStringOrder";
 import {
   draftableDiscordantSystemIds,
   draftableSystemIds,
@@ -276,7 +275,6 @@ type NewDraftState = {
     removeFaction: (id: FactionId) => void;
 
     // system actions
-    // setRandomMap: () => void;
     addSystemToMap: (tileIdx: number, system: System) => void;
     removeSystemFromMap: (tileIdx: number) => void;
     addSystemToSlice: (

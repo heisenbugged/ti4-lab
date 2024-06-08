@@ -148,6 +148,7 @@ export default function RunningDraft() {
         {planetFinder}
         <FinalizedDraft
           adminMode={adminMode}
+          onSavePlayerNames={handleSync}
           onSelectSystemTile={(systemId) => {
             selectedTile.current = systemId;
             openPlanetFinder();
@@ -182,6 +183,20 @@ export default function RunningDraft() {
       </Stack>
 
       <Grid gutter="xl">
+        {adminMode && (
+          <Grid.Col offset={6} span={6}>
+            <PlayerInputSection
+              players={draft.players}
+              onChangeName={(playerIdx, name) => {
+                draft.updatePlayer(playerIdx, { name });
+              }}
+            />
+            <Button mt="lg" onClick={handleSync}>
+              Save
+            </Button>
+          </Grid.Col>
+        )}
+
         {draft.draftSpeaker && (
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Section>
@@ -249,18 +264,6 @@ export default function RunningDraft() {
               />
             </Tabs.Panel>
           </Tabs>
-
-          {adminMode && (
-            <>
-              <PlayerInputSection
-                players={draft.players}
-                onChangeName={(playerIdx, name) => {
-                  draft.updatePlayer(playerIdx, { name });
-                }}
-              />
-              <Button onClick={handleSync}>Save</Button>
-            </>
-          )}
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, lg: 6 }}>
