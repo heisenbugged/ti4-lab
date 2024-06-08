@@ -22,7 +22,7 @@ import {
   systemsInSlice,
 } from "./utils/map";
 import {
-  draftableDiscordantSystemIds,
+  unchartedStarsSystemIds,
   draftableSystemIds,
   systemData,
 } from "./data/systemData";
@@ -456,8 +456,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     }) => {
       const config = draftConfig[mapType];
       let systemPool = [...draftableSystemIds];
-      if (gameSets.includes("discordant")) {
-        systemPool.push(...draftableDiscordantSystemIds);
+      if (gameSets.includes("unchartedstars")) {
+        systemPool.push(...unchartedStarsSystemIds);
       }
       systemPool = systemPool.flat(1);
 

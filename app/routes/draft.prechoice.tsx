@@ -16,6 +16,7 @@ import {
 } from "@mantine/core";
 import {
   EmptyTile,
+  GameSet,
   OpenTile,
   Player,
   PlayerDemoTile,
@@ -126,10 +127,12 @@ export default function DraftPrechoice() {
   ]);
   const [withDiscordant, setWithDiscordant] = useState<boolean>(false);
   const [withDiscordantExp, setWithDiscordantExp] = useState<boolean>(false);
+  const [withUnchartedStars, setWithUnchartedStars] = useState<boolean>(false);
 
-  let gameSets = ["base", "pok"];
+  let gameSets: GameSet[] = ["base", "pok"];
   if (withDiscordant) gameSets.push("discordant");
   if (withDiscordantExp) gameSets.push("discordantexp");
+  if (withUnchartedStars) gameSets.push("unchartedstars");
 
   const maxFactionCount = getFactionCount(gameSets);
   useEffect(() => {
@@ -268,20 +271,35 @@ export default function DraftPrechoice() {
               disabled={!showRandomizeMapTiles}
             />
 
-            <Group>
+            <Stack>
               <Checkbox
                 label="Discordant Stars"
                 checked={withDiscordant}
-                onChange={() => setWithDiscordant((v) => !v)}
+                onChange={() => {
+                  // if switching from OFF to ON, we also switch the others on by default
+                  if (!withDiscordant) {
+                    setWithDiscordantExp(true);
+                    setWithUnchartedStars(true);
+                  }
+                  setWithDiscordant((v) => !v);
+                }}
               />
               {withDiscordant && (
-                <Checkbox
-                  label="(+10 factions)"
-                  checked={withDiscordantExp}
-                  onChange={() => setWithDiscordantExp((v) => !v)}
-                />
+                <Group mx="lg">
+                  <Checkbox
+                    label="(+10 factions)"
+                    checked={withDiscordantExp}
+                    onChange={() => setWithDiscordantExp((v) => !v)}
+                  />
+
+                  <Checkbox
+                    label="Uncharted Stars"
+                    checked={withUnchartedStars}
+                    onChange={() => setWithUnchartedStars((v) => !v)}
+                  />
+                </Group>
               )}
-            </Group>
+            </Stack>
           </Stack>
           <Box mt="md">
             <Button

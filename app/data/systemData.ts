@@ -61,7 +61,7 @@ export const draftableSystemIds = Object.values(systemData)
   )
   .map((system) => system.id);
 
-export const draftableDiscordantSystemIds = Object.values(systemData)
+export const unchartedStarsSystemIds = Object.values(systemData)
   .filter(
     (system) =>
       (system.type === "BLUE" || system.type === "RED") && system.id >= 100,
@@ -70,7 +70,7 @@ export const draftableDiscordantSystemIds = Object.values(systemData)
 
 export const allDraftableSystemIds = [
   ...draftableSystemIds,
-  ...draftableDiscordantSystemIds,
+  ...unchartedStarsSystemIds,
 ];
 
 const searchableTech: Record<TechSpecialty, string> = {

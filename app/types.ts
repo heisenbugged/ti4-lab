@@ -1,6 +1,11 @@
 import { DraftType } from "./draft";
 
-export type GameSet = "base" | "pok" | "discordant" | "discordantexp";
+export type GameSet =
+  | "base"
+  | "pok"
+  | "discordant"
+  | "discordantexp"
+  | "unchartedstars";
 
 // green = home
 // blue = planet tile
