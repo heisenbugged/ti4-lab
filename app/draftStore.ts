@@ -19,6 +19,7 @@ import {
   parseMapString,
   playerSpeakerOrder,
   sliceMap,
+  systemsInSlice,
 } from "./utils/map";
 import {
   draftableDiscordantSystemIds,
@@ -32,7 +33,7 @@ import {
   factionDiscordantIds,
   factions,
 } from "./data/factionData";
-import { fisherYatesShuffle, generateSlices } from "./stats";
+import { fisherYatesShuffle, generateSlices, valueSlice } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig, DraftType } from "./draft/types";
 import { generateMap as generateHeisenMap } from "./draft/heisen/generateMap";
@@ -491,6 +492,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
           numSlices,
           systemPool,
         );
+
         slices = rawSlices.map((s) => [-1, ...s]);
         const mapIds = [...EMPTY_MAP_STRING];
         Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
@@ -498,6 +500,13 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         });
         map = parseMapString(config, mapIds);
       }
+
+      // sort by most valuable first
+      slices.sort((a, b) => {
+        const aSystems = systemsInSlice(a);
+        const bSystems = systemsInSlice(b);
+        return valueSlice(bSystems) - valueSlice(aSystems);
+      });
 
       set({
         config,
@@ -652,6 +661,13 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
           mapIds[Number(mapIdx)] = system;
         });
         const map = parseMapString(state.config, mapIds);
+
+        // sort by most valuable first
+        slices.sort((a, b) => {
+          const aSystems = systemsInSlice(a);
+          const bSystems = systemsInSlice(b);
+          return valueSlice(bSystems) - valueSlice(aSystems);
+        });
 
         return { map, slices };
       }),
