@@ -233,6 +233,7 @@ export default function DraftNew() {
         }}
         onRemoveFaction={draft.actions.removeLastFaction}
         onAddFaction={draft.actions.addRandomFaction}
+        onRandomizeFactions={draft.actions.randomizeFactions}
       />
       <Box mt="lg">
         <SlicesSection

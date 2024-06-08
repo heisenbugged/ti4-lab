@@ -269,6 +269,7 @@ type NewDraftState = {
     updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
 
     // faction actions
+    randomizeFactions: () => void;
     setNumFactionsToDraft: (num: number | undefined) => void;
     addFaction: (id: FactionId) => void;
     addRandomFaction: () => void;
@@ -531,6 +532,15 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         const slices = [...state.slices];
         slices[sliceIdx] = emptySlice(state.config.numSystemsInSlice);
         return { slices };
+      }),
+
+    randomizeFactions: () =>
+      set((state) => {
+        const availableFactions = fisherYatesShuffle(
+          state.factionPool,
+          state.numFactionsToDraft,
+        );
+        return { availableFactions };
       }),
 
     setNumFactionsToDraft: (num) => set({ numFactionsToDraft: num }),

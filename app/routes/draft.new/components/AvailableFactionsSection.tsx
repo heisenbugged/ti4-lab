@@ -4,6 +4,7 @@ import { allFactionIds, factions } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
 import { NewDraftFaction } from "./NewDraftFaction";
 import { NumberStepper } from "~/components/NumberStepper";
+import { IconDice6Filled } from "@tabler/icons-react";
 
 type Props = {
   numFactions: number;
@@ -12,6 +13,7 @@ type Props = {
   onAddFaction: () => void;
   onRemoveFaction: () => void;
   onToggleFaction: (factionId: FactionId, checked: boolean) => void;
+  onRandomizeFactions: () => void;
 };
 
 export function AvailableFactionsSection({
@@ -21,11 +23,21 @@ export function AvailableFactionsSection({
   onRemoveFaction,
   onAddFaction,
   onToggleFaction,
+  onRandomizeFactions,
 }: Props) {
   return (
     <Section>
       <SectionTitle title="Faction Pool">
         <Group>
+          <Button
+            size="xs"
+            onMouseDown={onRandomizeFactions}
+            color="gray.7"
+            variant="filled"
+          >
+            <IconDice6Filled size={24} />
+          </Button>
+
           <Text># factions: {numFactions}</Text>
           <NumberStepper
             decrease={onRemoveFaction}
