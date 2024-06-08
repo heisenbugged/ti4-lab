@@ -9,14 +9,25 @@ import {
   fillSlicesWithRemainingTiles,
   fillSlicesWithRequiredTiles,
 } from "../helpers/sliceGeneration";
+import { PlanetTrait } from "~/types";
 
 const MAP_WORMHOLES = [
-  { weight: 3, value: { numAlphas: 3, numBetas: 2 } },
-  { weight: 3, value: { numAlphas: 2, numBetas: 0 } },
-  { weight: 3, value: { numAlphas: 0, numBetas: 2 } },
-  { weight: 2, value: { numAlphas: 3, numBetas: 0 } },
-  { weight: 2, value: { numAlphas: 0, numBetas: 3 } },
+  { weight: 1, value: { numAlphas: 3, numBetas: 3 } },
+  { weight: 1, value: { numAlphas: 3, numBetas: 2 } },
+  { weight: 1, value: { numAlphas: 2, numBetas: 3 } },
+  { weight: 1, value: { numAlphas: 3, numBetas: 1 } },
+  { weight: 1, value: { numAlphas: 1, numBetas: 3 } },
+  { weight: 1, value: { numAlphas: 2, numBetas: 2 } },
+  { weight: 1, value: { numAlphas: 3, numBetas: 0 } },
+  { weight: 1, value: { numAlphas: 0, numBetas: 3 } },
+  { weight: 1, value: { numAlphas: 2, numBetas: 1 } },
+  { weight: 1, value: { numAlphas: 1, numBetas: 2 } },
+  { weight: 1, value: { numAlphas: 2, numBetas: 0 } },
+  { weight: 1, value: { numAlphas: 0, numBetas: 2 } },
   { weight: 1, value: { numAlphas: 1, numBetas: 1 } },
+  { weight: 1, value: { numAlphas: 0, numBetas: 1 } },
+  { weight: 1, value: { numAlphas: 1, numBetas: 0 } },
+  { weight: 1, value: { numAlphas: 0, numBetas: 0 } },
 ];
 
 const MAP_LEGENDARIES = [
@@ -38,14 +49,43 @@ const ALL_LEGENDARIES = [
 
 const SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "high", "high"] },
-  { weight: 3, value: ["red", "high", "med"] },
-  { weight: 3, value: ["red", "med", "med"] },
-  { weight: 2, value: ["red", "med", "low"] },
+  { weight: 1, value: ["red", "high", "med"] },
+  { weight: 1, value: ["red", "med", "med"] },
+  { weight: 1, value: ["red", "med", "low"] },
   { weight: 1, value: ["red", "low", "low"] },
+  { weight: 1, value: ["red", "low", "high"] },
 ];
 
-export function generateMap(sliceCount: number, availableSystems: number[]) {
-  const chosenSpots: Record<number, number> = {};
+export function generateMap(sliceCount: number, systemPool: number[]) {
+  // TODO: Scale if more slices.
+  const targets: Record<ChoosableTier, number> = {
+    high: 6,
+    med: 6,
+    low: 6,
+    red: 12,
+  };
+
+  console.log("slice count is", sliceCount);
+  // if we have more than 6 slices, we boost the 'targets'
+  for (let i = 6; i < sliceCount; i++) {
+    console.log("boosting");
+    const slice = weightedChoice(SLICE_CHOICES);
+    slice.forEach((tier) => (targets[tier] += 1));
+  }
+
+  const chosenMapLocations: Record<number, number> = {};
+  let chosenSliceSystems: number[] = [];
+
+  const remainingSystems = () => {
+    const chosenMap = Object.values(chosenMapLocations);
+    return systemPool.filter(
+      (id) => !chosenMap.includes(id) && !chosenSliceSystems.includes(id),
+    );
+  };
+  const usedSystems = () => {
+    const remaining = remainingSystems();
+    return systemPool.filter((id) => !remaining.includes(id));
+  };
 
   const { numAlphas: totalNumAlphas, numBetas: totalNumBetas } =
     weightedChoice(ALL_WORMHOLES);
@@ -54,16 +94,19 @@ export function generateMap(sliceCount: number, availableSystems: number[]) {
   const { numAlphas, numBetas } = weightedChoice(MAP_WORMHOLES);
   const numLegendaries = weightedChoice(MAP_LEGENDARIES);
 
-  const alphaWormholes = shuffle(
-    availableSystems.filter((id) => systemData[id].wormholes.includes("ALPHA")),
+  // --------------------------------------------------
+  // Step 1: Distribute alphas/betas/legendaries on map.
+  // --------------------------------------------------
+  const alphas = shuffle(
+    systemPool.filter((id) => systemData[id].wormholes.includes("ALPHA")),
   );
 
-  const betaWormholes = shuffle(
-    availableSystems.filter((id) => systemData[id].wormholes.includes("BETA")),
+  const betas = shuffle(
+    systemPool.filter((id) => systemData[id].wormholes.includes("BETA")),
   );
 
   const legendaries = shuffle(
-    availableSystems.filter(
+    systemPool.filter(
       (id) => !!systemData[id].planets.find((p) => p.legendary),
     ),
   );
@@ -75,18 +118,8 @@ export function generateMap(sliceCount: number, availableSystems: number[]) {
     })),
   );
 
-  const alphaSpots = distributeByDistance(
-    tileLocations,
-    alphaWormholes,
-    numAlphas,
-  );
-
-  const betaSpots = distributeByDistance(
-    tileLocations,
-    betaWormholes,
-    numBetas,
-  );
-
+  const alphaSpots = distributeByDistance(tileLocations, alphas, numAlphas);
+  const betaSpots = distributeByDistance(tileLocations, betas, numBetas);
   const legendarySpots = distributeByDistance(
     tileLocations,
     legendaries,
@@ -95,73 +128,18 @@ export function generateMap(sliceCount: number, availableSystems: number[]) {
 
   // promote found tiles to chosenSpots
   alphaSpots.forEach(
-    ({ location, systemId }) => (chosenSpots[location.mapIdx] = systemId),
+    ({ location, systemId }) =>
+      (chosenMapLocations[location.mapIdx] = systemId),
   );
   betaSpots.forEach(
-    ({ location, systemId }) => (chosenSpots[location.mapIdx] = systemId),
+    ({ location, systemId }) =>
+      (chosenMapLocations[location.mapIdx] = systemId),
   );
 
   legendarySpots.forEach(
-    ({ location, systemId }) => (chosenSpots[location.mapIdx] = systemId),
+    ({ location, systemId }) =>
+      (chosenMapLocations[location.mapIdx] = systemId),
   );
-
-  const chosenSystems = Object.values(chosenSpots);
-
-  // we get remaining systems and sort by tiers to fill the rest of the map.
-  // we exclude remaining legendaries and wormho toles as these will get placed in the slices.
-  const tiered = getTieredSystems(
-    availableSystems.filter(
-      (id) =>
-        !chosenSystems.includes(id) &&
-        !legendaries.includes(id) &&
-        !alphaWormholes.includes(id) &&
-        !betaWormholes.includes(id),
-    ),
-  );
-  const remainingSystems = {
-    red: shuffle(tiered.red),
-    high: shuffle(tiered.high),
-    med: shuffle(tiered.med),
-    low: shuffle(tiered.low),
-  };
-
-  // PART 2:
-  function fillSlice(slice: number[]) {
-    const sliceTiers = shuffle(weightedChoice(SLICE_CHOICES));
-    // Remove already chosen spots (from previous 'fill') from the available tiers.
-    slice
-      .filter((idx) => chosenSpots[idx])
-      .forEach((idx) => {
-        const systemId = chosenSpots[idx];
-        const tier = calculateTier(systemData[systemId]) as ChoosableTier;
-
-        // remove the tier from the sliceTiers
-        // but if there is not a matching 'tier', then we remove the closest match
-        const closestTier = pickClosestTier(tier, sliceTiers);
-
-        // remove the matched tier.
-        sliceTiers.splice(sliceTiers.indexOf(closestTier), 1);
-      });
-
-    // Fill in remaining tiers in the slice
-    slice
-      .filter((idx) => !chosenSpots[idx])
-      .forEach((idx) => {
-        // TODO: how to deal with not enough systems?
-        // realistically should not happen if generating the whole map.
-        const tier = sliceTiers.pop()!!;
-        const candidate = remainingSystems[tier].pop()!!;
-        chosenSpots[idx] = candidate;
-      });
-  }
-
-  // fill inner slices
-  fillSlice([0, 7, 17]);
-  fillSlice([1, 7, 9]);
-  fillSlice([2, 9, 11]);
-  fillSlice([3, 11, 13]);
-  fillSlice([4, 13, 15]);
-  fillSlice([5, 15, 17]);
 
   // calculate remaining alphas, betas, and wormholes to fill in slices
   // considering the ones put on the map
@@ -172,26 +150,156 @@ export function generateMap(sliceCount: number, availableSystems: number[]) {
     0,
   );
 
-  // generate slices
+  // ---------------------------------------------------------------------------------
+  // Step 2: Generate slices, distributing remaining alphas/betas/legendaries equally
+  // ---------------------------------------------------------------------------------
   const slices = generateSlices(
     sliceCount,
-    availableSystems.filter((id) => !chosenSystems.includes(id)),
+    remainingSystems(),
     remainingAlphas,
     remainingBetas,
     remainingLegendaries,
   );
+  // promote the chosen slice systems.
+  chosenSliceSystems = slices.flat(1);
+
+  // Adjust targets by chosen systems
+  usedSystems().forEach((id) => {
+    const tier = calculateTier(systemData[id]) as ChoosableTier; // Unsafe typecast.
+    targets[tier] = Math.max(targets[tier] - 1, 0);
+  });
+
+  // categorize remaining systems into tiers
+  const tieredSystems = getTieredSystems(remainingSystems());
+
+  // Select random target number of low/med/high systems,
+  // and then shuffle.
+  let systemsToPullFrom = shuffle(
+    [
+      ...shuffle(tieredSystems.low).slice(0, targets.low),
+      ...shuffle(tieredSystems.med).slice(0, targets.med),
+      ...shuffle(tieredSystems.high).slice(0, targets.high),
+      ...shuffle(tieredSystems.red).slice(0, targets.red),
+    ].flat(1),
+  );
+
+  // ------------------------------------------------
+  // Step 3: Distribute remaining systems on the map.
+  // ------------------------------------------------
+  tileLocations.forEach((location) => {
+    chosenMapLocations[location.mapIdx] = systemsToPullFrom.pop()!;
+  });
+
+  // ------------------------------------------------
+  // Step 4: Adjust to balance planet traits
+  // ------------------------------------------------
+  // since we fix a number of wormholes and legendaries, this biases
+  // the random sampling towards blue/red planets. we do some post-processing
+  // to ensure that the distribution of planet traits is more balanced.
+  const { swaps } = rebalanceTraits(usedSystems(), remainingSystems());
+  swaps.forEach(({ toRemove, toAdd }) => {
+    // swap on map, if on map
+    const idx = Object.values(chosenMapLocations).indexOf(toRemove);
+    if (idx !== -1) {
+      const mapIdx = Object.keys(chosenMapLocations)[idx];
+      chosenMapLocations[Number(mapIdx)] = toAdd;
+      return;
+    }
+
+    // swap on slices, if in slices
+    const sliceIdx = slices.findIndex((slice) => slice.includes(toRemove));
+    if (sliceIdx !== -1) {
+      const systemIdx = slices[sliceIdx].indexOf(toRemove);
+      slices[sliceIdx][systemIdx] = toAdd;
+      return;
+    }
+  });
 
   return {
-    chosenSpots,
-    slices,
+    chosenSpots: chosenMapLocations,
+    // lastly, jumble up the slices
+    slices: slices.map((slice) => shuffle(slice)),
   };
 }
 
-const tierOrder: Record<ChoosableTier, number> = {
-  red: 0,
-  low: 1,
-  med: 2,
-  high: 3,
+type Swap = { toRemove: number; toAdd: number };
+const rebalanceTraits = (
+  usedSystems: number[],
+  availableSystems: number[],
+  swaps: Swap[] = [],
+  attempts: number = 0,
+  maxAttempts: number = 10,
+): { swaps: Swap[] } => {
+  const planetTraits = countPlanetTraits(usedSystems);
+  const { spread, maxTrait, minTrait } = calculateSpread(planetTraits);
+  if (spread < 5 || attempts >= maxAttempts) return { swaps };
+
+  const candidateToRemove = usedSystems
+    .filter((id) =>
+      systemData[id].planets.find(({ trait }) => trait === maxTrait),
+    )
+    .sort(
+      (a, b) =>
+        systemData[b].planets.filter(({ trait }) => trait === maxTrait).length -
+        systemData[a].planets.filter(({ trait }) => trait === maxTrait).length,
+    )[0];
+
+  if (!candidateToRemove) return { swaps };
+
+  // find a planet with the desired trait
+  const candidateToAdd = availableSystems.find(
+    (id) =>
+      systemData[id].planets.find(({ trait }) => trait === minTrait) &&
+      systemData[id].planets.length ===
+        systemData[candidateToRemove].planets.length,
+  )!;
+
+  if (!candidateToAdd) return { swaps };
+
+  // modify 'used' and 'available' systems
+  usedSystems = usedSystems.filter((id) => id !== candidateToRemove);
+  usedSystems.push(candidateToAdd);
+
+  availableSystems = availableSystems.filter((id) => id !== candidateToAdd);
+  availableSystems.push(candidateToRemove);
+
+  swaps.push({ toRemove: candidateToRemove, toAdd: candidateToAdd });
+  return rebalanceTraits(usedSystems, availableSystems, swaps, attempts + 1);
+};
+
+/**
+ * Given a count of planet traits, calculate the spread between the highest and lowest trait.
+ */
+const calculateSpread = (planetTraits: Record<PlanetTrait, number>) => {
+  const traitValues = Object.values(planetTraits);
+  const maxTrait = Object.keys(planetTraits).find(
+    (trait) => planetTraits[trait as PlanetTrait] === Math.max(...traitValues),
+  ) as PlanetTrait;
+  const minTrait = Object.keys(planetTraits).find(
+    (trait) => planetTraits[trait as PlanetTrait] === Math.min(...traitValues),
+  ) as PlanetTrait;
+  const spread = Math.max(...traitValues) - Math.min(...traitValues);
+
+  return { spread, maxTrait, minTrait };
+};
+
+/**
+ * Count the number of planet traits in the used systems.
+ */
+const countPlanetTraits = (used: number[]) => {
+  const planetTraits: Record<PlanetTrait, number> = {
+    HAZARDOUS: 0,
+    CULTURAL: 0,
+    INDUSTRIAL: 0,
+  };
+
+  used.forEach((id) => {
+    systemData[id].planets.forEach(({ trait }) => {
+      if (trait) planetTraits[trait] += 1;
+    });
+  });
+
+  return planetTraits;
 };
 
 export function generateSlices(
@@ -228,16 +336,6 @@ export function generateSlices(
 
   return slices;
 }
-
-/**
- * Picks the closest tier to the given tier from the sliceTiers.
- */
-const pickClosestTier = (tier: ChoosableTier, sliceTiers: ChoosableTier[]) =>
-  [...sliceTiers].sort(
-    (a, b) =>
-      Math.abs(tierOrder[a] - tierOrder[tier]) -
-      Math.abs(tierOrder[b] - tierOrder[tier]),
-  )[0];
 
 type Location = { mapIdx: number; position: { x: number; y: number } };
 
@@ -314,3 +412,19 @@ function cubeDistance(a: Cube, b: Cube) {
   const vec = cubeSubtract(a, b);
   return Math.max(Math.abs(vec.q), Math.abs(vec.r), Math.abs(vec.s));
 }
+
+/**
+ * Picks the closest tier to the given tier from the sliceTiers.
+ */
+const tierOrder: Record<ChoosableTier, number> = {
+  red: 0,
+  low: 1,
+  med: 2,
+  high: 3,
+};
+const pickClosestTier = (tier: ChoosableTier, sliceTiers: ChoosableTier[]) =>
+  [...sliceTiers].sort(
+    (a, b) =>
+      Math.abs(tierOrder[a] - tierOrder[tier]) -
+      Math.abs(tierOrder[b] - tierOrder[tier]),
+  )[0];
