@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
-import { Button, Stack, darken, useMantineTheme } from "@mantine/core";
+import { Button, Stack } from "@mantine/core";
 import { HomeTile as THomeTile } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 import { FactionIcon } from "../icons/FactionIcon";

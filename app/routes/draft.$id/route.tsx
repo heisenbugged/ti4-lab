@@ -33,7 +33,7 @@ import {
 } from "~/drizzle/draft.server";
 import { DraftableSpeakerOrder } from "./components/DraftableSpeakerOrder";
 import { allFactionIds } from "~/data/factionData";
-import { allDraftableSystemIds, draftableSystemIds } from "~/data/systemData";
+import { allDraftableSystemIds } from "~/data/systemData";
 import { useDisclosure } from "@mantine/hooks";
 import { PlanetFinder } from "./components/PlanetFinder";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";

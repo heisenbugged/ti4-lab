@@ -65,10 +65,8 @@ export function generateMap(sliceCount: number, systemPool: number[]) {
     red: 12,
   };
 
-  console.log("slice count is", sliceCount);
   // if we have more than 6 slices, we boost the 'targets'
   for (let i = 6; i < sliceCount; i++) {
-    console.log("boosting");
     const slice = weightedChoice(SLICE_CHOICES);
     slice.forEach((tier) => (targets[tier] += 1));
   }

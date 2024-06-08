@@ -134,8 +134,11 @@ function sampleSlice(
 
 export const valueSlice = (sliceSystems: System[]) =>
   sliceSystems.reduce(
-    // TODO: isOnMecatolPath = idx === 1 ASSUMES heisen draft.
-    (acc, s, idx) => acc + valueSystem(s, idx === 1),
+    (acc, s) =>
+      acc +
+      s.optimalSpend.flex +
+      s.optimalSpend.influence +
+      s.optimalSpend.resources,
     0,
   );
 

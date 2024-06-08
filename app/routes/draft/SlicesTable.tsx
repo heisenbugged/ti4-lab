@@ -24,7 +24,6 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Name</Table.Th>
-          <Table.Th>Value</Table.Th>
           <Table.Th>Optimal</Table.Th>
           <Table.Th>Total</Table.Th>
           <Table.Th visibleFrom="xs">Features</Table.Th>
@@ -43,7 +42,6 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
               opacity={isDrafted ? 0.6 : 1}
             >
               <Table.Td>{`Slice ${idx + 1}`}</Table.Td>
-              <Table.Td>{valueSlice(systems)}</Table.Td>
               <Table.Td>
                 <Group gap={2}>
                   <PlanetStatsPill
@@ -52,15 +50,7 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
                     influence={optimal.influence}
                     flex={optimal.flex}
                   />
-                  <Box visibleFrom="xs">
-                    (
-                    {(
-                      optimal.resources +
-                      optimal.influence +
-                      optimal.flex
-                    ).toString()}
-                    )
-                  </Box>
+                  <Box visibleFrom="xs">({valueSlice(systems).toString()})</Box>
                 </Group>
               </Table.Td>
               <Table.Td>
