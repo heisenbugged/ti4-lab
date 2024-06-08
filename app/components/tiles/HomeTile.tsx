@@ -7,6 +7,9 @@ import { FactionIcon } from "../icons/FactionIcon";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
 
 import classes from "./Tiles.module.css";
+import { calcScale } from "./calcScale";
+import { SystemId } from "../SystemId";
+import { factionSystems } from "~/data/systemData";
 
 type Props = {
   mapId: string;
@@ -17,9 +20,18 @@ type Props = {
 
 export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
   const { radius } = useContext(MapContext);
-
+  const scale = calcScale(radius);
+  const systemIdSize = radius >= 53 ? "10px" : "8px";
   return (
     <Hex id={`${mapId}-home`} radius={radius} colorClass={classes.home}>
+      {tile.player?.faction && (
+        <SystemId
+          id={factionSystems[tile.player.faction].id}
+          size={systemIdSize}
+          scale={scale}
+        />
+      )}
+
       {!tile.player && selectable && (
         <Button ta="center" lh={1} size="xs" onMouseDown={onSelect}>
           Select Seat

@@ -1,4 +1,10 @@
-import { Anomaly, PlanetTrait, System, TechSpecialty } from "~/types";
+import {
+  Anomaly,
+  FactionId,
+  PlanetTrait,
+  System,
+  TechSpecialty,
+} from "~/types";
 import { rawSystems } from "./rawSystemData";
 import { factions } from "./factionData";
 
@@ -31,6 +37,18 @@ export const systemData: Record<number, System> = Object.entries(
     return acc;
   },
   {} as Record<number, System>,
+);
+
+export const factionSystems: Record<FactionId, System> = Object.values(
+  systemData,
+).reduce(
+  (acc, system) => {
+    if (system.faction) {
+      acc[system.faction] = system;
+    }
+    return acc;
+  },
+  {} as Record<FactionId, System>,
 );
 
 export const draftableSystemIds = Object.values(systemData)

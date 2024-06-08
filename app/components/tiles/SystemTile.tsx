@@ -11,6 +11,7 @@ import { MapContext } from "~/contexts/MapContext";
 
 import classes from "./Tiles.module.css";
 import { LegendaryImage, hasLegendaryImage } from "../LegendaryImage";
+import { SystemId } from "../SystemId";
 
 type Props = { mapId: string; tile: SystemTileType; hideValues?: boolean };
 
@@ -42,17 +43,8 @@ export function SystemTile({ mapId, tile, hideValues = false }: Props) {
       faction={system.faction}
     >
       {!hideValues && (
-        <Text
-          size={systemIdSize}
-          c="white"
-          pos="absolute"
-          top={15 * scale}
-          fw="bolder"
-        >
-          {tile.system.id}
-        </Text>
+        <SystemId id={tile.system.id} size={systemIdSize} scale={scale} />
       )}
-
       <Group
         gap={4}
         justify="center"
