@@ -76,6 +76,18 @@ const mantineTheme = createTheme({
       "#40578a",
       "#324b7c",
     ],
+    discordBlue: [
+      "#ecf1ff",
+      "#d7e0fa",
+      "#afbded",
+      "#8499e0",
+      "#5f79d5",
+      "#4866cf",
+      "#3b5ccd",
+      "#2c4cb6",
+      "#2444a4",
+      "#173992",
+    ],
     magenta: [
       "#ffe9f6",
       "#ffd1e6",

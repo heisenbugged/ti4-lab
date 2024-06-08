@@ -33,6 +33,8 @@ import { v4 as uuidv4 } from "uuid";
 import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
 import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
+import { DiscordBanner } from "~/components/DiscordBanner";
+import { discordClient } from "~/discord/bot.server";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -53,6 +55,7 @@ export default function DraftNew() {
       draftSpeaker,
       allowHomePlanetSearch,
       allowEmptyMapTiles,
+      discordData,
     } = location.state;
 
     draft.actions.initializeMap({
@@ -66,6 +69,7 @@ export default function DraftNew() {
       draftSpeaker,
       allowHomePlanetSearch,
       allowEmptyMapTiles,
+      discordData,
     });
 
     // a bit hacky, but once we 'consume' the state, we remove it from the history
@@ -105,6 +109,7 @@ export default function DraftNew() {
       slices: draft.slices,
       numFactionsToDraft: draft.numFactionsToDraft ?? null,
       draftSpeaker: draft.draftSpeaker,
+      discordData: draft.discordData ?? null,
     });
 
   const validationErrors = draft.validationErrors();
@@ -180,6 +185,9 @@ export default function DraftNew() {
 
   return (
     <Flex p="lg" direction="column">
+      <Box mb="lg">
+        <DiscordBanner />
+      </Box>
       <GenerateSlicesModal
         defaultNumSlices={draft.slices.length}
         onClose={closeGenerateSlices}
@@ -341,6 +349,7 @@ export async function action({ request }: ActionFunctionArgs) {
     : body.availableFactions;
 
   const draft: PersistedDraft = {
+    discordData: body.discordData ?? undefined,
     mapType: body.mapType,
     factions,
     mapString: body.mapString,
@@ -365,6 +374,27 @@ export async function action({ request }: ActionFunctionArgs) {
       data: JSON.stringify(draft),
     })
     .run();
+
+  if (body.discordData) {
+    // const guild = await discordClient.guilds.fetch(body.discordData.guildId);
+    // const channel = await guild.channels.fetch(body.discordData.channelId);
+
+    // notify that draft has started
+    const guild = await global.discordClient.guilds.fetch(
+      body.discordData.guildId,
+    );
+    const channel = await guild.channels.fetch(body.discordData.channelId);
+    if (channel) {
+      const baseUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://ti4-lab.fly.dev"
+          : "http://localhost:3000";
+
+      await channel.send(
+        `Draft has started! Join here: ${baseUrl}/draft/${prettyUrl}`,
+      );
+    }
+  }
 
   return redirect(`/draft/${prettyUrl}`);
 }

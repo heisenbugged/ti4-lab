@@ -169,6 +169,7 @@ export type Faction = {
 export type Player = {
   id: number;
   name: string;
+  discordName?: string;
   faction?: FactionId;
   seatIdx?: number;
   sliceIdx?: number;
@@ -185,6 +186,7 @@ export type PersistedDraft = {
   pickOrder: number[];
   lastEvent?: string;
   draftSpeaker: boolean;
+  discordData?: DiscordData;
 };
 
 export type SystemStats = {
@@ -212,3 +214,9 @@ export type Variance = "low" | "medium" | "high" | "extreme";
 export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
 
 export type Slice = number[];
+
+export type DiscordData = {
+  playerNames: string[];
+  guildId: string;
+  channelId: string;
+};

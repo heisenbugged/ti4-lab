@@ -304,17 +304,22 @@ export default function RunningDraft() {
 
 function useSyncDraft() {
   const fetcher = useFetcher();
-  return async (id: string, draft: PersistedDraft) =>
+  return async (
+    id: string,
+    draft: PersistedDraft,
+    turnPassed: boolean = true,
+  ) =>
     fetcher.submit(
-      { id, draft },
+      { id, draft, turnPassed },
       { method: "POST", encType: "application/json" },
     );
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { id, draft } = (await request.json()) as {
+  const { id, draft, turnPassed } = (await request.json()) as {
     id: string;
     draft: PersistedDraft;
+    turnPassed: boolean;
   };
 
   // TODO: Handle if not successful
@@ -323,6 +328,16 @@ export async function action({ request }: ActionFunctionArgs) {
     .set({ data: JSON.stringify(draft) })
     .where(eq(drafts.id, id))
     .run();
+
+  if (turnPassed && draft.discordData) {
+    const currentPlayer = draft.players[draft.currentPick];
+    const discordGuildId = draft.discordData.guildId;
+    const discordChannelId = draft.discordData.channelId;
+
+    const guild = await global.discordClient.guilds.fetch(discordGuildId);
+    const channel = await guild.channels.fetch(discordChannelId);
+    channel.send(`It's your turn to draft, <@${currentPlayer.discordName}>!`);
+  }
 
   return { success: true };
 }

@@ -1,6 +1,6 @@
 import { useFetcher } from "@remix-run/react";
 import { DraftType } from "~/draft";
-import { FactionId, Player, Slice } from "~/types";
+import { DiscordData, FactionId, Player, Slice } from "~/types";
 
 export type CreateDraftInput = {
   mapType: DraftType;
@@ -10,6 +10,7 @@ export type CreateDraftInput = {
   slices: Slice[];
   numFactionsToDraft: number | null;
   draftSpeaker: boolean;
+  discordData: DiscordData | null;
 };
 
 export function useCreateDraft() {

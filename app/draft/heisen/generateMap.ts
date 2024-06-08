@@ -57,7 +57,6 @@ const SLICE_CHOICES: SliceChoice[] = [
 ];
 
 export function generateMap(sliceCount: number, systemPool: number[]) {
-  // TODO: Scale if more slices.
   const targets: Record<ChoosableTier, number> = {
     high: 6,
     med: 6,

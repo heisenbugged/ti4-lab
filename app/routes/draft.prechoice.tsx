@@ -1,20 +1,19 @@
-import { LoaderFunction } from "@remix-run/node";
+import { LoaderFunction, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Box,
   Button,
   Checkbox,
   Collapse,
-  Divider,
   Flex,
   Grid,
   Group,
   Input,
-  Slider,
   Stack,
   Switch,
   Text,
 } from "@mantine/core";
 import {
+  DiscordData,
   EmptyTile,
   GameSet,
   OpenTile,
@@ -27,14 +26,21 @@ import { mapStringOrder } from "~/data/mapStringOrder";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "./draft.new/components/PlayerInputSection";
-import { useNavigate } from "@remix-run/react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { DraftConfig, DraftType, draftConfig } from "~/draft";
 
 import "../components/draftprechoice.css";
 import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
 import { systemData } from "~/data/systemData";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import {
+  IconBrandDiscord,
+  IconBrandDiscordFilled,
+  IconChevronDown,
+  IconChevronUp,
+} from "@tabler/icons-react";
+import { DiscordBanner } from "~/components/DiscordBanner";
+import { discordClient } from "~/discord/bot.server";
 
 type PrechoiceMap = {
   title: string;
@@ -109,6 +115,7 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
 };
 
 export default function DraftPrechoice() {
+  const { discordData } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [allowEmptyMapTiles, setAllowEmptyMapTiles] = useState(false);
   const [allowHomePlanetSearch, setAllowHomePlanetSearch] = useState(false);
@@ -122,7 +129,8 @@ export default function DraftPrechoice() {
   const [players, setPlayers] = useState<Player[]>([
     ...[0, 1, 2, 3, 4, 5].map((i) => ({
       id: i,
-      name: "",
+      name: discordData?.playerNames[i] ?? "",
+      discordName: discordData?.playerNames[i],
     })),
   ]);
   const [withDiscordant, setWithDiscordant] = useState<boolean>(false);
@@ -167,12 +175,18 @@ export default function DraftPrechoice() {
         draftSpeaker: config?.type === "heisen",
         allowHomePlanetSearch,
         allowEmptyMapTiles,
+        discordData,
       },
     });
   };
 
   return (
     <Grid mt="lg">
+      {discordData && (
+        <Grid.Col span={12}>
+          <DiscordBanner />
+        </Grid.Col>
+      )}
       <Grid.Col span={{ base: 12, sm: 7 }}>
         <Flex align="center" justify="center" direction="column">
           <Box w="100%">
@@ -384,7 +398,13 @@ function parseDemoMapString(config: DraftConfig, mapString: number[]) {
   return tiles;
 }
 
-export const loader: LoaderFunction = async () => {
-  // return redirect("/draft/new");
-  return null;
+export const loader = async (args: LoaderFunctionArgs) => {
+  let discordData: DiscordData | undefined;
+  const discordString = new URL(args.request.url).searchParams.get("discord");
+
+  if (discordString) {
+    discordData = JSON.parse(atob(discordString)) as DiscordData;
+  }
+
+  return { discordData };
 };

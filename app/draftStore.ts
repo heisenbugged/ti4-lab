@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import {
+  DiscordData,
   FactionId,
   GameSet,
   Map,
@@ -57,6 +58,7 @@ type DraftsState = {
   pickOrder: number[];
   lastEvent: string;
   draftSpeaker: boolean;
+  discordData?: DiscordData;
   updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
   selectSlice: (playerId: number, sliceIdx: number) => void;
   selectSeat: (playerId: number, seatIdx: number) => void;
@@ -92,6 +94,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
   pickOrder: [],
   lastEvent: "",
   draftSpeaker: false,
+  discordData: undefined,
   getPersisted: () => ({
     mapType: get().config.type,
     mapString: get().mapString.join(" "),
@@ -102,6 +105,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
     pickOrder: get().pickOrder,
     lastEvent: get().lastEvent,
     draftSpeaker: get().draftSpeaker,
+    discordData: get().discordData,
   }),
   selectFaction: (playerId: number, factionId: FactionId) =>
     set((state) => {
@@ -197,6 +201,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
         pickOrder: draft.pickOrder,
         lastEvent: draft.lastEvent,
         draftSpeaker: draft.draftSpeaker,
+        discordData: draft.discordData,
         ...state.refreshMap({
           config,
           mapString,
@@ -259,6 +264,7 @@ type NewDraftState = {
   players: Player[];
   varianceValue: Variance;
   opulenceValue: Opulence;
+  discordData?: DiscordData;
 
   validationErrors: () => string[]; // TODO: Move derived data to hook.
   exportableMapString: () => string; // TODO: Move derived data to hook.
@@ -302,6 +308,7 @@ type NewDraftState = {
       draftSpeaker?: boolean;
       allowHomePlanetSearch: boolean;
       allowEmptyMapTiles: boolean;
+      discordData?: DiscordData;
     }) => void;
     clearMap: () => void;
     importMap: (mapString: string) => void;
@@ -345,6 +352,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   draftSpeaker: false,
   varianceValue: "medium",
   opulenceValue: "medium",
+  discordData: undefined,
 
   validationErrors: () => {
     const errors = [];
@@ -453,6 +461,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       draftSpeaker,
       allowHomePlanetSearch,
       allowEmptyMapTiles,
+      discordData,
     }) => {
       const config = draftConfig[mapType];
       let systemPool = [...draftableSystemIds];
@@ -522,6 +531,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         factionPool,
         allowHomePlanetSearch,
         allowEmptyMapTiles,
+        discordData,
       });
     },
 
