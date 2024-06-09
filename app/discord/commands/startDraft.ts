@@ -6,8 +6,10 @@ import {
 import { DiscordData } from "~/types";
 
 const data = new SlashCommandBuilder()
-  .setName("ping")
-  .setDescription("Replies with Pong!")
+  .setName("startdraft")
+  .setDescription(
+    "Will provide a TI4 link. Once  created, notifications will be sent to this channel.",
+  )
   .addStringOption((option) =>
     option
       .setName("player1")
