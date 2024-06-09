@@ -34,7 +34,7 @@ import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
 import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
 import { DiscordBanner } from "~/components/DiscordBanner";
-import { discordClient } from "~/discord/bot.server";
+import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -376,24 +376,15 @@ export async function action({ request }: ActionFunctionArgs) {
     .run();
 
   if (body.discordData) {
-    // const guild = await discordClient.guilds.fetch(body.discordData.guildId);
-    // const channel = await guild.channels.fetch(body.discordData.channelId);
-
-    // notify that draft has started
-    const guild = await global.discordClient.guilds.fetch(
+    const channel = await getChannel(
       body.discordData.guildId,
+      body.discordData.channelId,
     );
-    const channel = await guild.channels.fetch(body.discordData.channelId);
-    if (channel) {
-      const baseUrl =
-        process.env.NODE_ENV === "production"
-          ? "https://ti4-lab.fly.dev"
-          : "http://localhost:3000";
 
-      await channel.send(
-        `Draft has started! Join here: ${baseUrl}/draft/${prettyUrl}`,
-      );
-    }
+    await channel?.send(
+      `Draft has started! Join here: ${global.env.baseUrl}/draft/${prettyUrl}`,
+    );
+    await notifyCurrentPick(draft);
   }
 
   return redirect(`/draft/${prettyUrl}`);

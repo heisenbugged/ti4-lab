@@ -1,8 +1,11 @@
-import { createRequestHandler } from "@remix-run/express";
 import express from "express";
+import { createRequestHandler } from "@remix-run/express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { startDiscordBot } from "~/discord/bot.server.js";
+import { initEnv } from "~/env.server.js";
+
+initEnv();
 
 const viteDevServer =
   process.env.NODE_ENV === "production"

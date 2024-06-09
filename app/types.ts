@@ -170,6 +170,8 @@ export type Player = {
   id: number;
   name: string;
   discordName?: string;
+  discordMemberId?: string;
+
   faction?: FactionId;
   seatIdx?: number;
   sliceIdx?: number;
@@ -215,8 +217,13 @@ export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
 
 export type Slice = number[];
 
+export type DiscordPlayer = {
+  name: string;
+  memberId?: string;
+};
+
 export type DiscordData = {
-  playerNames: string[];
+  players: DiscordPlayer[];
   guildId: string;
   channelId: string;
 };

@@ -25,7 +25,7 @@ export function PlayerInputSection({ players, onChangeName }: Props) {
         <Stack gap="xs" flex={1}>
           {players.map((player, idx) => (
             <Group key={idx} gap="lg">
-              {!player.discordName && (
+              {!player.discordMemberId && (
                 <>
                   <Indicator
                     color={playerColors[player.id]}
@@ -42,7 +42,7 @@ export function PlayerInputSection({ players, onChangeName }: Props) {
                   />
                 </>
               )}
-              {player.discordName && (
+              {player.discordMemberId && (
                 <>
                   <IconBrandDiscordFilled
                     color={colors[playerColors[player.id]][5]}

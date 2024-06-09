@@ -1,4 +1,4 @@
-import { HomeTile, Map, Map as MapType } from "~/types";
+import { HomeTile, Map as MapType } from "~/types";
 import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
@@ -76,7 +76,7 @@ export function RawMap({
   height,
 }: {
   mapId: string;
-  map: Map;
+  map: MapType;
   width: number;
   height: number;
 }) {

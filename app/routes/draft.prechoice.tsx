@@ -1,4 +1,4 @@
-import { LoaderFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { LoaderFunctionArgs } from "@remix-run/node";
 import {
   Box,
   Button,
@@ -28,19 +28,13 @@ import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "./draft.new/components/PlayerInputSection";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { DraftConfig, DraftType, draftConfig } from "~/draft";
-
-import "../components/draftprechoice.css";
 import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
 import { systemData } from "~/data/systemData";
-import {
-  IconBrandDiscord,
-  IconBrandDiscordFilled,
-  IconChevronDown,
-  IconChevronUp,
-} from "@tabler/icons-react";
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
-import { discordClient } from "~/discord/bot.server";
+
+import "../components/draftprechoice.css";
 
 type PrechoiceMap = {
   title: string;
@@ -129,8 +123,9 @@ export default function DraftPrechoice() {
   const [players, setPlayers] = useState<Player[]>([
     ...[0, 1, 2, 3, 4, 5].map((i) => ({
       id: i,
-      name: discordData?.playerNames[i] ?? "",
-      discordName: discordData?.playerNames[i],
+      name: discordData?.players[i]?.name ?? "",
+      discordName: discordData?.players[i]?.name,
+      discordMemberId: discordData?.players[i]?.memberId,
     })),
   ]);
   const [withDiscordant, setWithDiscordant] = useState<boolean>(false);

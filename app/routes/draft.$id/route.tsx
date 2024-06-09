@@ -37,6 +37,7 @@ import { allDraftableSystemIds } from "~/data/systemData";
 import { useDisclosure } from "@mantine/hooks";
 import { PlanetFinder } from "./components/PlanetFinder";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
+import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
 
 export default function RunningDraft() {
   const { adminMode, pickForAnyone } = useOutletContext<{
@@ -329,14 +330,8 @@ export async function action({ request }: ActionFunctionArgs) {
     .where(eq(drafts.id, id))
     .run();
 
-  if (turnPassed && draft.discordData) {
-    const currentPlayer = draft.players[draft.currentPick];
-    const discordGuildId = draft.discordData.guildId;
-    const discordChannelId = draft.discordData.channelId;
-
-    const guild = await global.discordClient.guilds.fetch(discordGuildId);
-    const channel = await guild.channels.fetch(discordChannelId);
-    channel.send(`It's your turn to draft, <@${currentPlayer.discordName}>!`);
+  if (turnPassed) {
+    await notifyCurrentPick(draft);
   }
 
   return { success: true };
