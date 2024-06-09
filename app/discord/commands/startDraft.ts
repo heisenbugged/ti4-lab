@@ -76,7 +76,7 @@ async function execute(interaction: ChatInputCommandInteraction) {
   const discordString = btoa(JSON.stringify(discordData));
 
   await interaction.reply({
-    content: `Draft link: http://localhost:3000/draft/prechoice?discord=${discordString}`,
+    content: `Draft link: ${global.env.baseUrl}/draft/prechoice?discord=${discordString}`,
     ephemeral: true,
   });
 }
