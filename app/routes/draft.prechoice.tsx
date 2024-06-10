@@ -418,15 +418,17 @@ export default function DraftPrechoice() {
             Continue
           </Button>
 
-          <Button
-            size="md"
-            variant="filled"
-            color="discordBlue.5"
-            leftSection={<IconBrandDiscordFilled />}
-            onMouseDown={openDiscord}
-          >
-            Integrate with Discord (BETA)
-          </Button>
+          {!discordData && (
+            <Button
+              size="md"
+              variant="filled"
+              color="discordBlue.5"
+              leftSection={<IconBrandDiscordFilled />}
+              onMouseDown={openDiscord}
+            >
+              Integrate with Discord (BETA)
+            </Button>
+          )}
         </Stack>
       </Grid.Col>
     </Grid>
