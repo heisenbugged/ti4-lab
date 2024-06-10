@@ -1,16 +1,22 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import {
+  Badge,
   Box,
   Button,
   Checkbox,
+  Chip,
   Code,
   Collapse,
+  Divider,
   Flex,
   Grid,
   Group,
   Image,
   Input,
+  List,
   Modal,
+  Paper,
+  SimpleGrid,
   Stack,
   Stepper,
   Switch,
@@ -40,6 +46,7 @@ import {
   IconBrandDiscordFilled,
   IconChevronDown,
   IconChevronUp,
+  IconDice6Filled,
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
 
@@ -56,47 +63,10 @@ type PrechoiceMap = {
 const colors = ["blue", "red", "green", "magenta", "violet", "orange"];
 
 const MAPS: Record<DraftType, PrechoiceMap> = {
-  heisen: {
-    title: "Nucleus",
-    description:
-      "A new draft format featuring a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order.",
-    map: parseDemoMapString(
-      draftConfig.heisen,
-      "18 -1 -1 -1 -1 -1 -1 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
-        .split(" ")
-        .map(Number),
-    ),
-    titles: ["P1", "P2", "P3", "P4", "P5", "P6"],
-  },
-
-  miltyeq: {
-    title: "Milty EQ",
-    description:
-      "The classic, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board.",
-    map: parseDemoMapString(
-      draftConfig.miltyeq,
-      "18 1 2 3 4 5 6 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
-        .split(" ")
-        .map(Number),
-    ),
-    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
-  },
-  miltyeqless: {
-    title: "Milty xEQ",
-    description:
-      "Milty-EQ, but with empty equidistant systems. Sandbox for new TI4 content",
-    map: parseDemoMapString(
-      draftConfig.miltyeq,
-      "18 1 2 3 4 5 6 1 -2 2 -2 3 -2 4 -2 5 -2 6 -2 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
-        .split(" ")
-        .map(Number),
-    ),
-    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
-  },
   milty: {
     title: "Milty",
     description:
-      "The O.G. draft format. Slices include the left equidistant system, and no preset tiles are on the board.",
+      "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
     map: parseDemoMapString(
       draftConfig.milty,
       "18 1 2 3 4 5 6 1 1 2 2 3 3 4 4 5 5 6 6 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
@@ -105,9 +75,34 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
   },
+  miltyeq: {
+    title: "Milty EQ",
+    description:
+      "Like milty, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board. Slices are biased towards having one red, but some have two. Equidistants are fully randomized.",
+    map: parseDemoMapString(
+      draftConfig.miltyeq,
+      "18 1 2 3 4 5 6 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
+        .split(" ")
+        .map(Number),
+    ),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
+  },
+  heisen: {
+    title: "Nucleus",
+    description:
+      "Features a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order. Beneficial for players who want to design their own maps while still running a draft. Randomization prioritizes high wormholes, and separates them for maximum impact.",
+    map: parseDemoMapString(
+      draftConfig.heisen,
+      "18 -1 -1 -1 -1 -1 -1 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
+        .split(" ")
+        .map(Number),
+    ),
+    titles: ["P1", "P2", "P3", "P4", "P5", "P6"],
+  },
   wekker: {
     title: "Wekker",
-    description: "Chaotic but strategic.",
+    description:
+      "Also known as 'spiral draft'. Slices contained tiles that are close to other players. Slice generation follows 'milty draft' rules (2 anomalies, 3 blue tiles). Fun for players who want to have a more chaotic draft result.",
     map: parseDemoMapString(
       draftConfig.miltyeq,
       "18 6 1 2 3 4 5 1 1 2 2 3 3 4 4 5 5 6 6 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1 1"
@@ -125,7 +120,7 @@ export default function DraftPrechoice() {
   const [allowHomePlanetSearch, setAllowHomePlanetSearch] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [hoveredMapType, setHoveredMapType] = useState<DraftType | undefined>();
-  const [selectedMapType, setSelectedMapType] = useState<DraftType>("heisen");
+  const [selectedMapType, setSelectedMapType] = useState<DraftType>("milty");
   const [numFactions, setNumFactions] = useState(6);
   const [numSlices, setNumSlices] = useState(6);
   const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
@@ -188,8 +183,42 @@ export default function DraftPrechoice() {
   const [discordOpened, { open: openDiscord, close: closeDiscord }] =
     useDisclosure(false);
 
+  const [
+    minorFactionsOpened,
+    { open: openMinorFactions, close: closeMinorFactions },
+  ] = useDisclosure(false);
+
   return (
     <Grid mt="lg">
+      <Modal
+        size="lg"
+        opened={minorFactionsOpened}
+        onClose={closeMinorFactions}
+        title="How to run a minor factions draft"
+      >
+        <Text size="lg" fw="bold">
+          TI4 Lab supports minor factions (unofficially)!
+        </Text>
+        <Text>
+          Due to there being no official rules, minor factions are not directly
+          integrated into the draft, but you can still run a draft with them.
+        </Text>
+        <Text mt="lg">To run a minor factions draft:</Text>
+        <List mt="lg" mx="sm">
+          <List.Item>
+            Enable 'Allow search of home planets' in advanced settings.
+          </List.Item>
+          <List.Item>
+            Enable 'allow empty map tiles' in advanced settings
+          </List.Item>
+          <List.Item>Use Milty EQ as the draft format.</List.Item>
+        </List>
+        <Text mt="lg">
+          You can place home systems on the map before the draft begins, or
+          during the draft by flipping 'admin mode' on. The actual process of
+          drafting the minor factions is up to you.
+        </Text>
+      </Modal>
       <Modal
         size="lg"
         opened={discordOpened}
@@ -254,51 +283,60 @@ export default function DraftPrechoice() {
           <DiscordBanner />
         </Grid.Col>
       )}
-      <Grid.Col span={{ base: 12, sm: 7 }}>
-        <Flex align="center" justify="center" direction="column">
+      <Grid.Col span={{ base: 12, md: 7 }}>
+        <Flex align="center" direction="column">
           <Box w="100%">
             <SectionTitle title="Draft style" />
           </Box>
-          <Group
-            gap="md"
-            onMouseLeave={() => setHoveredMapType(undefined)}
-            mt="lg"
-            mb="lg"
-            w="100%"
-            align="center"
-            justify="center"
-          >
-            {Object.entries(MAPS).map(([type, { title }]) => (
+          <Group w="100%" align="flex-start">
+            <Stack
+              gap="xs"
+              onMouseLeave={() => setHoveredMapType(undefined)}
+              mt="sm"
+            >
+              {Object.entries(MAPS).map(([type, { title }]) => (
+                <Button
+                  key={type}
+                  miw="150px"
+                  color="blue"
+                  size="md"
+                  variant={selectedMapType === type ? "filled" : "outline"}
+                  ff="heading"
+                  onMouseOver={() => setHoveredMapType(type as DraftType)}
+                  onMouseDown={() => setSelectedMapType(type as DraftType)}
+                >
+                  {title}
+                </Button>
+              ))}
+              <Divider />
               <Button
-                key={type}
-                color="blue"
-                size="xl"
-                variant={selectedMapType === type ? "filled" : "outline"}
-                ff="heading"
-                onMouseOver={() => setHoveredMapType(type as DraftType)}
-                onMouseDown={() => setSelectedMapType(type as DraftType)}
+                color="orange"
+                variant="outline"
+                onMouseDown={openMinorFactions}
               >
-                {title}
+                Minor Factions
               </Button>
-            ))}
+            </Stack>
+            <Box flex={1} pos="relative" mt="sm">
+              <Paper shadow="md" withBorder px="md" py="sm">
+                <Text size="md">{MAPS[mapType].description}</Text>
+              </Paper>
+              <Box flex={1} pos="relative" mah="1000px" mt="lg">
+                {mapType && (
+                  <DemoMap
+                    id="prechoice-map"
+                    map={MAPS[mapType].map}
+                    titles={MAPS[mapType].titles}
+                    colors={colors}
+                    padding={0}
+                  />
+                )}
+              </Box>
+            </Box>
           </Group>
-          <Box pos="relative" w="80%" maw="700px" mt="sm">
-            {mapType && (
-              <DemoMap
-                id="prechoice-map"
-                map={MAPS[mapType].map}
-                titles={MAPS[mapType].titles}
-                colors={colors}
-                padding={0}
-              />
-            )}
-          </Box>
-          <Text size="md" mt="xl" maw="700px" ta="center" c="dimmed">
-            {MAPS[mapType].description}
-          </Text>
         </Flex>
       </Grid.Col>
-      <Grid.Col span={{ base: 12, sm: 5 }}>
+      <Grid.Col span={{ base: 12, md: 5 }}>
         <Stack>
           <PlayerInputSection
             players={players}

@@ -6,6 +6,7 @@ import {
 } from "~/types";
 import {
   calcHexHeight,
+  calculateMaxHexRadius,
   calculateMaxHexWidthRadius,
   getHexPosition,
 } from "~/utils/positioning";
@@ -28,24 +29,27 @@ type Props = {
 };
 
 export function DemoMap({ id, map, padding, titles, colors }: Props) {
-  const { ref, width } = useDimensions<HTMLDivElement>();
+  const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = 3;
   const gap = 6;
-  const radius = calculateMaxHexWidthRadius(n, width, gap);
-  const height = calcHexHeight(radius) * 7 + 6 * gap;
+  const initRadius = calculateMaxHexWidthRadius(n, width, gap);
+  const initHeight = calcHexHeight(initRadius) * 7 + 6 * gap;
+  const clampedHeight = Math.min(initHeight, 1000);
+  const radius = calculateMaxHexRadius(n, width, clampedHeight, gap);
 
   return (
     <MapContext.Provider
       value={{
         width,
-        height,
+        height: clampedHeight,
         radius,
         gap,
         hOffset: -radius + height * 0.5 + padding,
         wOffset: -radius + width * 0.5 + padding,
+        disabled: false,
       }}
     >
-      <Box ref={ref} w="100%" h={height}>
+      <Box ref={ref} w="100%" h={`${clampedHeight}px`}>
         {width > 0 &&
           map
             .filter((t) => !!t.position)

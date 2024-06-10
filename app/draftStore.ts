@@ -45,6 +45,28 @@ const EMPTY_MAP_STRING =
     .map(Number);
 const EMPTY_MAP = parseMapString(draftConfig.heisen, EMPTY_MAP_STRING);
 
+type DraftEvent =
+  | {
+      type: "selectSlice";
+      playerId: number;
+      sliceIdx: number;
+    }
+  | {
+      type: "selectSeat";
+      playerId: number;
+      seatIdx: number;
+    }
+  | {
+      type: "selectFaction";
+      playerId: number;
+      factionId: FactionId;
+    }
+  | {
+      type: "selectSpeakerOrder";
+      playerId: number;
+      speakerOrder: number;
+    };
+
 type DraftsState = {
   initialized: boolean;
   draftUrl: string;

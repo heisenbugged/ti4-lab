@@ -50,13 +50,13 @@ export const calcHexHeight = (r: number) => Math.sqrt(3) * r;
  *
  */
 export const calculateMaxHexRadius = (
-  numTiles: number,
+  n: number, // number of concentric circles
   width: number,
   height: number,
   gap: number,
 ) => {
-  const radiusFromWidth = calculateMaxHexWidthRadius(numTiles, width, gap);
-
+  const radiusFromWidth = calculateMaxHexWidthRadius(n, width, gap);
+  const numTiles = n * 2 + 1;
   // a tile height is radius * sqrt(3)
   // so total height = numTiles * radius * sqrt(3)
   // solving for r, we get: r = height / (numTiles * sqrt(3))
