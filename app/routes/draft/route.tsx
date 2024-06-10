@@ -35,13 +35,23 @@ export default function Draft() {
           <Switch
             label="Pick for anyone"
             checked={pickForAnyone}
-            onChange={(e) => setPickForAnyone(e.currentTarget.checked)}
+            onChange={(e) => {
+              setPickForAnyone(e.currentTarget.checked);
+              if (e.currentTarget.checked) {
+                setAdminMode(false);
+              }
+            }}
           />
           <Switch
             visibleFrom="sm"
             label="Admin mode"
             checked={adminMode}
-            onChange={(e) => setAdminMode(e.currentTarget.checked)}
+            onChange={(e) => {
+              setAdminMode(e.currentTarget.checked);
+              if (e.currentTarget.checked) {
+                setPickForAnyone(false);
+              }
+            }}
           />
         </Group>
       }

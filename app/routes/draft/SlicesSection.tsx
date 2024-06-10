@@ -13,6 +13,7 @@ type Props = {
   allowSliceSelection?: boolean;
   players?: Player[];
   draftedSlices?: number[];
+  disabled?: boolean;
   onRandomizeSlices?: () => void;
   onAddNewSlice?: () => void;
   onSelectSlice?: (sliceIdx: number) => void;
@@ -30,6 +31,7 @@ export function SlicesSection({
   mode = "create",
   allowSliceSelection = true,
   draftedSlices = [],
+  disabled = false,
   onRandomizeSlices,
   onSelectTile,
   onDeleteTile,
@@ -85,6 +87,7 @@ export function SlicesSection({
             }
             onRandomizeSlice={() => onRandomizeSlice?.(idx)}
             onClearSlize={() => onClearSlice?.(idx)}
+            disabled={disabled}
           />
         ))}
       </SimpleGrid>

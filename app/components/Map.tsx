@@ -13,6 +13,7 @@ type Props = {
   map: MapType;
   padding: number;
   mode: "create" | "draft";
+  disabled?: boolean;
   onSelectSystemTile?: (tileIdx: number) => void;
   onDeleteSystemTile?: (tileIdx: number) => void;
   onSelectHomeTile?: (tile: HomeTile) => void;
@@ -24,6 +25,7 @@ export function Map({
   map,
   padding,
   mode,
+  disabled = false,
   onSelectSystemTile,
   onDeleteSystemTile,
   onSelectHomeTile,
@@ -42,6 +44,7 @@ export function Map({
         gap,
         hOffset: -radius + height * 0.5 + padding,
         wOffset: -radius + width * 0.5 + padding,
+        disabled,
       }}
     >
       <Box ref={ref} w="100%" h="100%">

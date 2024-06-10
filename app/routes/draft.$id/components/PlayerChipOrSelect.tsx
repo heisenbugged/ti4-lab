@@ -4,10 +4,15 @@ import { Player } from "~/types";
 
 type Props = {
   player?: Player;
+  disabled?: boolean;
   onSelect?: () => void;
 };
 
-export function PlayerChipOrSelect({ player, onSelect }: Props) {
+export function PlayerChipOrSelect({
+  player,
+  disabled = false,
+  onSelect,
+}: Props) {
   return (
     <div
       style={{
@@ -18,7 +23,7 @@ export function PlayerChipOrSelect({ player, onSelect }: Props) {
     >
       {player && <PlayerChip player={player} />}
       {!player && onSelect && (
-        <Button size="compact-xs" onMouseDown={onSelect}>
+        <Button size="compact-xs" onMouseDown={onSelect} disabled={disabled}>
           Select
         </Button>
       )}

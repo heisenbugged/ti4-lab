@@ -20,6 +20,7 @@ type Props = {
   slice: TSlice;
   player?: Player;
   mode: "create" | "draft";
+  disabled?: boolean;
   onSelectTile?: (tile: Tile) => void;
   onDeleteTile?: (tile: Tile) => void;
   onSelectSlice?: () => void;
@@ -34,6 +35,7 @@ export function Slice({
   slice,
   player,
   mode,
+  disabled = false,
   onSelectTile,
   onDeleteTile,
   onSelectSlice,
@@ -78,6 +80,7 @@ export function Slice({
                   h="auto"
                   onMouseDown={onSelectSlice}
                   variant="filled"
+                  disabled={disabled}
                 >
                   Select
                 </Button>

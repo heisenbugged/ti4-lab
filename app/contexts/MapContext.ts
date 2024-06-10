@@ -7,4 +7,5 @@ export const MapContext = createContext({
   wOffset: 0,
   radius: 0,
   gap: 0,
+  disabled: false,
 });

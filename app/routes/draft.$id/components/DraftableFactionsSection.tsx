@@ -8,6 +8,7 @@ type Props = {
   allowFactionSelection?: boolean;
   factions: FactionId[];
   players: Player[];
+  disabled?: boolean;
   onSelectFaction?: (factionId: FactionId) => void;
 };
 
@@ -15,6 +16,7 @@ export function DraftableFactionsSection({
   allowFactionSelection = true,
   factions,
   players,
+  disabled = false,
   onSelectFaction,
 }: Props) {
   return (
@@ -31,6 +33,7 @@ export function DraftableFactionsSection({
                 ? () => onSelectFaction(factionId)
                 : undefined
             }
+            disabled={disabled}
           />
         ))}
       </SimpleGrid>

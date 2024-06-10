@@ -19,7 +19,7 @@ type Props = {
 };
 
 export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
-  const { radius } = useContext(MapContext);
+  const { radius, disabled } = useContext(MapContext);
   const scale = calcScale(radius);
   const systemIdSize = radius >= 53 ? "10px" : "8px";
   return (
@@ -33,7 +33,13 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
       )}
 
       {!tile.player && selectable && (
-        <Button ta="center" lh={1} size="xs" onMouseDown={onSelect}>
+        <Button
+          ta="center"
+          lh={1}
+          size="xs"
+          onMouseDown={onSelect}
+          disabled={disabled}
+        >
           Select Seat
         </Button>
       )}

@@ -19,10 +19,16 @@ import classes from "~/components/Surface.module.css";
 type Props = {
   faction: Faction;
   player?: Player;
+  disabled?: boolean;
   onSelect?: () => void;
 };
 
-export function DraftableFaction({ faction, player, onSelect }: Props) {
+export function DraftableFaction({
+  faction,
+  player,
+  disabled = false,
+  onSelect,
+}: Props) {
   const [opened, { open, close }] = useDisclosure();
   return (
     <Stack
@@ -85,7 +91,11 @@ export function DraftableFaction({ faction, player, onSelect }: Props) {
           Info
         </Button>
       </Box>
-      <PlayerChipOrSelect player={player} onSelect={onSelect} />
+      <PlayerChipOrSelect
+        player={player}
+        onSelect={onSelect}
+        disabled={disabled}
+      />
     </Stack>
   );
 }

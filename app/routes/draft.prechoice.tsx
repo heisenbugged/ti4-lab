@@ -417,7 +417,7 @@ export default function DraftPrechoice() {
           <Button size="lg" w="100%" onMouseDown={handleContinue}>
             Continue
           </Button>
-          {/* {!discordData && (
+          {!discordData && (
             <Button
               size="md"
               variant="filled"
@@ -427,7 +427,7 @@ export default function DraftPrechoice() {
             >
               Integrate with Discord (BETA)
             </Button>
-          )} */}
+          )}
         </Stack>
       </Grid.Col>
     </Grid>

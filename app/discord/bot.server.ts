@@ -80,11 +80,12 @@ export async function notifyCurrentPick(draft: PersistedDraft) {
     draft.discordData.guildId,
     draft.discordData.channelId,
   );
+
   if (currentPlayer && currentPlayer.discordMemberId) {
     channel?.send(
       `It's your turn to draft, <@${currentPlayer.discordMemberId}>!`,
     );
   } else {
-    channel?.send(`It's your turn to draft!, ${currentPlayer.name}!`);
+    channel?.send(`It's your turn to draft, ${currentPlayer.name}!`);
   }
 }

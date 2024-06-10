@@ -8,6 +8,7 @@ type Props = {
   speakerOrder: string;
   player?: Player;
   canSelectSpeakerOrder: boolean;
+  disabled: boolean;
   onSelect: () => void;
 };
 
@@ -15,6 +16,7 @@ export function DraftableSpeakerOrder({
   speakerOrder,
   player,
   canSelectSpeakerOrder,
+  disabled = false,
   onSelect,
 }: Props) {
   return (
@@ -34,7 +36,12 @@ export function DraftableSpeakerOrder({
         {speakerOrder}
       </Text>
       {!player && canSelectSpeakerOrder && (
-        <Button size="compact-sm" px="lg" onMouseDown={onSelect}>
+        <Button
+          size="compact-sm"
+          px="lg"
+          onMouseDown={onSelect}
+          disabled={disabled}
+        >
           Select
         </Button>
       )}

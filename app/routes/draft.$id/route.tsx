@@ -89,7 +89,9 @@ export default function RunningDraft() {
     }
   }, []);
 
-  const syncDraft = useSyncDraft();
+  const { syncDraft, state } = useSyncDraft();
+  const syncing = state === "submitting";
+
   const handleSync = async () => {
     const persistedDraft = draft.getPersisted();
     await syncDraft(result.id, persistedDraft);
@@ -192,7 +194,7 @@ export default function RunningDraft() {
                 draft.updatePlayer(playerIdx, { name });
               }}
             />
-            <Button mt="lg" onClick={handleSync}>
+            <Button mt="lg" onClick={handleSync} disabled={syncing}>
               Save
             </Button>
           </Grid.Col>
@@ -218,6 +220,7 @@ export default function RunningDraft() {
                         handleSync();
                       }}
                       canSelectSpeakerOrder={canSelectSpeakerOrder}
+                      disabled={syncing}
                     />
                   );
                 })}
@@ -245,6 +248,7 @@ export default function RunningDraft() {
               draft.selectFaction(activePlayerId, factionId);
               handleSync();
             }}
+            disabled={syncing}
           />
         </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }}>
@@ -279,6 +283,7 @@ export default function RunningDraft() {
               draft.selectSlice(activePlayerId, sliceIdx);
               handleSync();
             }}
+            disabled={syncing}
           />
         </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }}>
@@ -296,6 +301,7 @@ export default function RunningDraft() {
               selectedTile.current = tile;
               openPlanetFinder();
             }}
+            disabled={syncing}
           />
         </Grid.Col>
       </Grid>
@@ -305,15 +311,19 @@ export default function RunningDraft() {
 
 function useSyncDraft() {
   const fetcher = useFetcher();
-  return async (
-    id: string,
-    draft: PersistedDraft,
-    turnPassed: boolean = true,
-  ) =>
-    fetcher.submit(
-      { id, draft, turnPassed },
-      { method: "POST", encType: "application/json" },
-    );
+
+  return {
+    syncDraft: async (
+      id: string,
+      draft: PersistedDraft,
+      turnPassed: boolean = true,
+    ) =>
+      fetcher.submit(
+        { id, draft, turnPassed },
+        { method: "POST", encType: "application/json" },
+      ),
+    state: fetcher.state,
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

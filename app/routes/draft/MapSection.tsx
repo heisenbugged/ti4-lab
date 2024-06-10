@@ -18,6 +18,7 @@ type Props = {
   mode: "create" | "draft";
   stats?: MapStats;
   allowSeatSelection?: boolean;
+  disabled?: boolean;
   onSelectSystemTile?: (tileIdx: number) => void;
   onDeleteSystemTile?: (tileIdx: number) => void;
   onSelectHomeTile?: (homeTile: HomeTile) => void;
@@ -31,6 +32,7 @@ export function MapSection({
   stats,
   mode = "create",
   allowSeatSelection = true,
+  disabled = false,
   onDeleteSystemTile,
   onSelectSystemTile,
   onSelectHomeTile,
@@ -103,6 +105,7 @@ export function MapSection({
           onSelectSystemTile={onSelectSystemTile}
           onDeleteSystemTile={onDeleteSystemTile}
           onSelectHomeTile={allowSeatSelection ? onSelectHomeTile : undefined}
+          disabled={disabled}
         />
       </Box>
     </div>
