@@ -37,7 +37,7 @@ import { allDraftableSystemIds } from "~/data/systemData";
 import { useDisclosure } from "@mantine/hooks";
 import { PlanetFinder } from "./components/PlanetFinder";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
-import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
+import { notifyCurrentPick } from "~/discord/bot.server";
 
 export default function RunningDraft() {
   const { adminMode, pickForAnyone } = useOutletContext<{

@@ -185,9 +185,11 @@ export default function DraftNew() {
 
   return (
     <Flex p="lg" direction="column">
-      <Box mb="lg">
-        <DiscordBanner />
-      </Box>
+      {draft.discordData && (
+        <Box mb="lg">
+          <DiscordBanner />
+        </Box>
+      )}
       <GenerateSlicesModal
         defaultNumSlices={draft.slices.length}
         onClose={closeGenerateSlices}
