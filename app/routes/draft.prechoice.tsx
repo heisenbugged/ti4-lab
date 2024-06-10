@@ -3,12 +3,16 @@ import {
   Box,
   Button,
   Checkbox,
+  Code,
   Collapse,
   Flex,
   Grid,
   Group,
+  Image,
   Input,
+  Modal,
   Stack,
+  Stepper,
   Switch,
   Text,
 } from "@mantine/core";
@@ -26,15 +30,21 @@ import { mapStringOrder } from "~/data/mapStringOrder";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "./draft.new/components/PlayerInputSection";
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { DraftConfig, DraftType, draftConfig } from "~/draft";
 import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
 import { systemData } from "~/data/systemData";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import {
+  IconBrandDiscord,
+  IconBrandDiscordFilled,
+  IconChevronDown,
+  IconChevronUp,
+} from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
 
 import "../components/draftprechoice.css";
+import { useDisclosure } from "@mantine/hooks";
 
 type PrechoiceMap = {
   title: string;
@@ -175,8 +185,70 @@ export default function DraftPrechoice() {
     });
   };
 
+  const [discordOpened, { open: openDiscord, close: closeDiscord }] =
+    useDisclosure(false);
+
   return (
     <Grid mt="lg">
+      <Modal
+        size="lg"
+        opened={discordOpened}
+        onClose={closeDiscord}
+        title={
+          <Group>
+            <IconBrandDiscordFilled />
+            <Text>Integrate with Discord (BETA)</Text>
+          </Group>
+        }
+      >
+        <Stack mb="lg" gap="xs">
+          <Text>
+            The TI4 Lab robot will notify players via the chosen channel when it
+            is their turn to draft.
+          </Text>
+          <Text c="dimmed" size="sm">
+            NOTE: Any players that you <Code>@mention</Code> during{" "}
+            <Code>/startdraft</Code> will be mentioned in the notification when
+            it's their turn.
+          </Text>
+        </Stack>
+
+        <Stepper orientation="vertical" active={0}>
+          <Stepper.Step
+            label="Add the discord bot to your server"
+            description={
+              <Link
+                to="https://discord.com/oauth2/authorize?client_id=1247915595551477850&permissions=3072&integration_type=0&scope=bot"
+                reloadDocument
+              >
+                <Button
+                  mt={4}
+                  size="sm"
+                  leftSection={<IconBrandDiscordFilled />}
+                  variant="filled"
+                  color="discordBlue.5"
+                >
+                  Authorize
+                </Button>
+              </Link>
+            }
+          />
+          <Stepper.Step
+            label="Start a draft via /startdraft"
+            description={<Image src="/discorddraft.png" />}
+          ></Stepper.Step>
+          <Stepper.Step
+            label="Setup draft on TI4 Lab"
+            description={
+              <Stack>
+                <Text>Follow the created draft link.</Text>
+                <Image src="/discorddraftresponse.png" />
+              </Stack>
+            }
+            mt="lg"
+          />
+        </Stepper>
+      </Modal>
       {discordData && (
         <Grid.Col span={12}>
           <DiscordBanner />
@@ -344,6 +416,16 @@ export default function DraftPrechoice() {
 
           <Button size="lg" w="100%" onMouseDown={handleContinue}>
             Continue
+          </Button>
+
+          <Button
+            size="md"
+            variant="filled"
+            color="discordBlue.5"
+            leftSection={<IconBrandDiscordFilled />}
+            onMouseDown={openDiscord}
+          >
+            Integrate with Discord (BETA)
           </Button>
         </Stack>
       </Grid.Col>
