@@ -12,9 +12,9 @@ export function DiscordBanner() {
         borderColor: "var(--mantine-color-discordBlue-4)",
       }}
     >
-      <IconBrandDiscordFilled style={{ display: "block" }} />
+      <IconBrandDiscordFilled style={{ display: "block" }} color="white" />
 
-      <Text flex={1}>
+      <Text flex={1} c="white">
         You are running this draft with discord! Once the draft starts, the
         discord bot will ping people when it's their turn to draft.
       </Text>

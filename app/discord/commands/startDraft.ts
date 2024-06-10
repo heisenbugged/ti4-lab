@@ -59,8 +59,12 @@ async function execute(interaction: ChatInputCommandInteraction) {
   ].map((name) => {
     if (name.startsWith("<@")) {
       const memberId = name.substring(2, name.length - 1);
+      const member = interaction.guild?.members.cache.get(memberId)!;
+      const nickname = member.nickname;
+      const username = member.user.username;
+
       return {
-        name: interaction.guild?.members.cache.get(memberId)?.nickname!,
+        name: nickname ?? username,
         memberId,
       };
     }

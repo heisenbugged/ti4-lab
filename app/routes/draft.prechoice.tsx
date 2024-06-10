@@ -218,7 +218,7 @@ export default function DraftPrechoice() {
             label="Add the discord bot to your server"
             description={
               <Link
-                to="https://discord.com/oauth2/authorize?client_id=1247915595551477850&permissions=3072&integration_type=0&scope=bot"
+                to="https://discord.com/oauth2/authorize?client_id=1249387926559916132&permissions=3072&integration_type=0&scope=bot"
                 reloadDocument
               >
                 <Button
@@ -417,8 +417,7 @@ export default function DraftPrechoice() {
           <Button size="lg" w="100%" onMouseDown={handleContinue}>
             Continue
           </Button>
-
-          {!discordData && (
+          {/* {!discordData && (
             <Button
               size="md"
               variant="filled"
@@ -428,7 +427,7 @@ export default function DraftPrechoice() {
             >
               Integrate with Discord (BETA)
             </Button>
-          )}
+          )} */}
         </Stack>
       </Grid.Col>
     </Grid>
