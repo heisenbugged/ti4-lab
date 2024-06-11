@@ -10,6 +10,8 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useRouteError,
+  useRouteLoaderData,
 } from "@remix-run/react";
 import {
   Button,
@@ -160,7 +162,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     });
   }, [socket]);
 
-  const result = useLoaderData<typeof loader>();
+  const result = useRouteLoaderData<typeof loader>("root");
 
   return (
     <html lang="en">
@@ -206,7 +208,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <MantineProvider
           theme={mantineTheme}
           defaultColorScheme="auto"
-          forceColorScheme={result.forcedColorScheme ?? undefined}
+          forceColorScheme={result?.forcedColorScheme ?? undefined}
         >
           <SocketProvider socket={socket}>{children}</SocketProvider>
         </MantineProvider>
