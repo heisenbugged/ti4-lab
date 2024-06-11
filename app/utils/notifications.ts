@@ -12,7 +12,7 @@ export function requestNotificationPermission() {
   }
 }
 
-export function showNotification(title, options) {
+export function showNotification(title: string, options: NotificationOptions) {
   if ("Notification" in window && navigator.serviceWorker) {
     navigator.serviceWorker.ready.then((registration) => {
       registration.showNotification(title, options);

@@ -1,11 +1,13 @@
+import { SystemId } from "~/types";
+
 type Props = {
-  systemId: number;
+  systemId: SystemId;
   radius: number;
 };
 
 export function LegendaryImage({ systemId, radius }: Props) {
   switch (systemId) {
-    case 66:
+    case "66":
       return (
         <image
           href="/hopesend.webp"
@@ -17,7 +19,7 @@ export function LegendaryImage({ systemId, radius }: Props) {
         />
       );
 
-    case 65:
+    case "65":
       return (
         <image
           href="/primor.png"
@@ -29,7 +31,7 @@ export function LegendaryImage({ systemId, radius }: Props) {
         />
       );
 
-    case 237:
+    case "237":
       return (
         <image
           href="/silence.webp"
@@ -40,7 +42,7 @@ export function LegendaryImage({ systemId, radius }: Props) {
           style={{ imageRendering: "pixelated" }}
         />
       );
-    case 240:
+    case "240":
       return (
         <image
           href="/prism.png"
@@ -51,7 +53,7 @@ export function LegendaryImage({ systemId, radius }: Props) {
           style={{ imageRendering: "pixelated" }}
         />
       );
-    case 253:
+    case "253":
       return (
         <image
           href="/domna.webp"
@@ -62,7 +64,7 @@ export function LegendaryImage({ systemId, radius }: Props) {
           style={{ imageRendering: "pixelated" }}
         />
       );
-    case 239:
+    case "239":
       return (
         <image
           href="/tarrock.webp"
@@ -73,7 +75,7 @@ export function LegendaryImage({ systemId, radius }: Props) {
           style={{ imageRendering: "pixelated" }}
         />
       );
-    case 238:
+    case "238":
       return (
         <image
           href="/echo.webp"
@@ -89,6 +91,6 @@ export function LegendaryImage({ systemId, radius }: Props) {
   }
 }
 
-export function hasLegendaryImage(systemId: number): boolean {
-  return [66, 240, 65, 237, 253, 239, 238].includes(systemId);
+export function hasLegendaryImage(systemId: SystemId): boolean {
+  return ["66", "240", "65", "237", "253", "239", "238"].includes(systemId);
 }

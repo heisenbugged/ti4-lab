@@ -20,7 +20,7 @@ type Props = {
   onDelete?: () => void;
 };
 
-const MECATOL_REX_ID = 18;
+const MECATOL_REX_ID = "18";
 export function MapTile(props: Props) {
   const [hovered, setHovered] = useState(false);
   const {

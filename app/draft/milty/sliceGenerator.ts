@@ -1,3 +1,4 @@
+import { Slice, SystemId } from "~/types";
 import { weightedChoice } from "../helpers/randomization";
 import {
   fillSlicesWithRemainingTiles,
@@ -27,7 +28,7 @@ const MIN_LEGENDARY_CHOICES = [
 
 export function generateSlices(
   sliceCount: number,
-  availableSystems: number[],
+  availableSystems: SystemId[],
   sliceShape: string[] = SLICE_SHAPES.milty,
 ) {
   // miltydraft only has one slice choice
@@ -50,7 +51,7 @@ export function generateSlices(
 
   // distirbute the wormholes/legendaries in round robin fashion
   // on the slices.
-  const slices: number[][] = Array.from({ length: sliceCount }, () => []);
+  const slices: Slice[] = Array.from({ length: sliceCount }, () => []);
   fillSlicesWithRequiredTiles(tieredSlices, chosenTiles, slices);
 
   // fill slices with remaining tiles, respecting the 'tier' requirements

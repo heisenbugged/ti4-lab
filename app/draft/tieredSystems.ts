@@ -1,5 +1,5 @@
 import { systemData } from "~/data/systemData";
-import { System } from "~/types";
+import { System, SystemId } from "~/types";
 
 const SYSTEM_TIER = {
   LOW: "low",
@@ -26,9 +26,9 @@ const SYSTEM_TIER = {
  */
 export function calculateTier(system: System) {
   // Handle some special cases before looking at blue systems.
-  if (system.id === 18) {
+  if (system.id === "18") {
     return SYSTEM_TIER.MECATOL;
-  } else if (system.id === 81) {
+  } else if (system.id === "81") {
     return SYSTEM_TIER.OTHER; // muaat hero supernova.id
   } else if (system.type === "GREEN") {
     return SYSTEM_TIER.HOME;
@@ -36,7 +36,7 @@ export function calculateTier(system: System) {
     return SYSTEM_TIER.RED;
   } else if (system.type === "HYPERLANE") {
     return SYSTEM_TIER.HYPERLANE;
-  } else if (system.id <= 0) {
+  } else if (system.id <= "0") {
     return SYSTEM_TIER.OTHER;
   }
 
@@ -46,7 +46,7 @@ export function calculateTier(system: System) {
     system.planets.filter((planet) => planet.legendary).length > 0;
 
   // Special case move Atlas/Lodor to med.
-  if (system.id === 26 || system.id === 64) {
+  if (system.id === "26" || system.id === "64") {
     return SYSTEM_TIER.HIGH;
   }
 
@@ -68,12 +68,12 @@ export function calculateTier(system: System) {
   //   throw new Error(`system ${system.id}: ${system.getSummaryStr()}`);
 }
 
-export function getTieredSystems(systems: number[]) {
+export function getTieredSystems(systems: SystemId[]) {
   const tiers = {
-    [SYSTEM_TIER.LOW]: [] as number[],
-    [SYSTEM_TIER.MED]: [] as number[],
-    [SYSTEM_TIER.HIGH]: [] as number[],
-    [SYSTEM_TIER.RED]: [] as number[],
+    [SYSTEM_TIER.LOW]: [] as SystemId[],
+    [SYSTEM_TIER.MED]: [] as SystemId[],
+    [SYSTEM_TIER.HIGH]: [] as SystemId[],
+    [SYSTEM_TIER.RED]: [] as SystemId[],
   };
 
   systems.forEach((s) => {

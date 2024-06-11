@@ -1,5 +1,5 @@
 import { DraftType } from "./draft";
-import { System } from "./types";
+import { System, SystemId } from "./types";
 
 type GeneratedSlice = {
   systems: System[];
@@ -87,7 +87,7 @@ function sampleSlice(
   opulence: "poverty" | "low" | "medium" | "high" | "wealthy" = "medium",
   meanValue: number,
   stdDev: number,
-  usedSystems: Record<number, boolean>,
+  usedSystems: Record<SystemId, boolean>,
   mapType: DraftType,
   maxAttempts: number = 100000,
 ): GeneratedSlice | undefined {

@@ -7,6 +7,7 @@ import {
   Player,
   Slice,
   System,
+  SystemId,
   TechSpecialty,
   Tile,
   TilePosition,
@@ -49,6 +50,7 @@ export const hydrateMap = (
     const player = players.find((p) => p.seatIdx === homeIdx);
     if (!player || player.sliceIdx === undefined) return;
     const slice = slices[player.sliceIdx];
+    if (!slice) return;
 
     config.seatTilePlacement[homeIdx]?.forEach(([x, y], sliceIdx) => {
       const pos = { x: tile.position.x + x, y: tile.position.y + y };
@@ -103,7 +105,7 @@ export const sliceMap = (
   const slices: Slice[] = [];
   config.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
     const homeTile = tiles[tileIdx];
-    const slice: Slice = [-1];
+    const slice: Slice = ["-1"];
     config.seatTilePlacement[seatIdx]?.forEach(([x, y]) => {
       const pos = { x: homeTile.position.x + x, y: homeTile.position.y + y };
       // find tile the matches the hexagonal coordinate position to modify
@@ -113,7 +115,7 @@ export const sliceMap = (
       if (tileToModify.system) {
         slice.push(tileToModify.system?.id);
       } else {
-        slice.push(0);
+        slice.push("0");
       }
 
       tiles[tileToModify.idx] = {
@@ -134,11 +136,11 @@ export const sliceMap = (
 
 export const parseMapString = (
   config: DraftConfig,
-  systems: number[],
+  systems: SystemId[],
   positionOrder: TilePosition[] = mapStringOrder,
   includeMecatol = true,
 ): Map => {
-  const rawSystems = includeMecatol ? [18, ...systems] : systems;
+  const rawSystems = includeMecatol ? ["18", ...systems] : systems;
   const map: Map = rawSystems
     .map((n) => [n, systemData[n]] as const)
     .map(([id, system], idx) => {
@@ -147,7 +149,7 @@ export const parseMapString = (
       const baseAttrs = { id, idx, seatIdx, position, system };
       // TODO: -1 is generally interpreted as 'empty' by other tools.
       // FIX THIS.
-      if (seatIdx >= 0 || id === -1) {
+      if (seatIdx >= 0 || id === "-1") {
         return { ...baseAttrs, type: "HOME" as const };
       } else if (system) {
         return { ...baseAttrs, type: "SYSTEM" };
@@ -198,9 +200,14 @@ export const systemsInSlice = (slice: Slice): System[] =>
   }, [] as System[]);
 
 export const emptySlice = (numSystems: number): Slice => [
-  -1,
-  ...Array.from({ length: numSystems }, () => 0),
+  "-1",
+  ...Array.from({ length: numSystems }, () => "0"),
 ];
 
 export const emptySlices = (numSlices: number, numSystems: number): Slice[] =>
   Array.from({ length: numSlices }, () => emptySlice(numSystems));
+
+export const normalizeSlice = (slice: Slice): Slice => {
+  if (slice[0] === "-1") return slice;
+  return ["-1", ...slice];
+};

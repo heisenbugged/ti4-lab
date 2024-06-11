@@ -35,22 +35,6 @@ export function Hex({
   const points = hexVertices(radius);
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
 
-  // Define the start and end points for the hyperlane
-  // const startX = points[5].x; // North edge
-  // const startY = points[5].y; // North edge
-
-  const { x: startX, y: startY } = interpolatePoint(points[0], points[5], 0.5);
-  const { x: endX, y: endY } = interpolatePoint(points[3], points[4], 0.5);
-
-  // Define the control points for the Bezier curve (adjust as needed for the desired curvature)
-  const controlX1 = radius * 0.25;
-  const controlY1 = radius * 0.25;
-  const controlX2 = -radius * 0.25;
-  const controlY2 = 0;
-
-  // Create the path string for the hyperlane
-  const pathString = `M${startX},${startY} C${controlX1},${controlY1} ${controlX2},${controlY2} ${endX},${endY}`;
-
   return (
     <>
       <div style={{ position: "absolute" }}>
@@ -60,15 +44,15 @@ export function Hex({
           viewBox={`-${radius} -${radius} ${2 * radius} ${2 * radius}`}
         >
           <defs>
-            <filter id="glow">
+            <filter id="glow" y="-50%" height="200%">
               <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
               <feMerge>
                 <feMergeNode in="coloredBlur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            <filter id="glow2">
-              <feGaussianBlur stdDeviation="6" result="coloredBlur2" />
+            <filter id="glow2" y="-100%" height="400%">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur2" />
               <feMerge>
                 <feMergeNode in="coloredBlur2" />
                 <feMergeNode in="SourceGraphic" />
@@ -77,27 +61,7 @@ export function Hex({
           </defs>
 
           <polygon points={pointsString} fill={color} className={colorClass} />
-          <path
-            d={pathString}
-            stroke="purple"
-            strokeWidth="4"
-            fill="none"
-            filter="url(#glow2)"
-          />
-          <path
-            d={pathString}
-            stroke="blue"
-            strokeWidth="2"
-            fill="none"
-            filter="url(#glow)"
-          />
-          <path
-            d={pathString}
-            stroke="white"
-            strokeWidth="2"
-            fill="none"
-            // filter="url(#glow)"
-          />
+
           {showBorder && (
             <HexBorder
               radius={radius}

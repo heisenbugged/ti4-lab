@@ -4,14 +4,14 @@ import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { Player } from "~/types";
+import { Player, SystemId } from "~/types";
 import { PlayerChip } from "./PlayerChip";
 import { DraftConfig } from "~/draft";
 
 type Props = {
   config: DraftConfig;
   player: Player;
-  systems: number[];
+  systems: SystemId[];
 };
 export function SummaryRow({ config, player, systems }: Props) {
   const faction = factions[player.faction!];

@@ -38,6 +38,7 @@ export function SliceMap({
         gap,
         hOffset: height - calcHexHeight(radius) - 10, //padding
         wOffset: width * 0.5 - radius + radius * wOffsetMultiplier,
+        disabled: false,
       }}
     >
       <div

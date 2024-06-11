@@ -96,6 +96,7 @@ export function RawMap({
         gap,
         hOffset: -radius + height * 0.5,
         wOffset: -radius + width * 0.5,
+        disabled: false,
       }}
     >
       <Box w="100%" h="100%">

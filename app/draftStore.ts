@@ -10,6 +10,7 @@ import {
   Player,
   Slice,
   System,
+  SystemId,
   SystemStats,
   Variance,
 } from "./types";
@@ -17,6 +18,7 @@ import {
   emptySlice,
   emptySlices,
   hydrateMap,
+  normalizeSlice,
   parseMapString,
   playerSpeakerOrder,
   sliceMap,
@@ -40,38 +42,17 @@ import { DraftConfig, DraftType } from "./draft/types";
 import { generateMap as generateHeisenMap } from "./draft/heisen/generateMap";
 
 const EMPTY_MAP_STRING =
-  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-    .split(" ")
-    .map(Number);
-const EMPTY_MAP = parseMapString(draftConfig.heisen, EMPTY_MAP_STRING);
+  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
+    " ",
+  );
 
-type DraftEvent =
-  | {
-      type: "selectSlice";
-      playerId: number;
-      sliceIdx: number;
-    }
-  | {
-      type: "selectSeat";
-      playerId: number;
-      seatIdx: number;
-    }
-  | {
-      type: "selectFaction";
-      playerId: number;
-      factionId: FactionId;
-    }
-  | {
-      type: "selectSpeakerOrder";
-      playerId: number;
-      speakerOrder: number;
-    };
+const EMPTY_MAP = parseMapString(draftConfig.heisen, EMPTY_MAP_STRING);
 
 type DraftsState = {
   initialized: boolean;
   draftUrl: string;
   config: DraftConfig;
-  mapString: number[];
+  mapString: SystemId[];
   hydratedMap: Map;
   players: Player[];
   slices: Slice[];
@@ -92,12 +73,12 @@ type DraftsState = {
   getPersisted: () => PersistedDraft;
   refreshMap: (options: {
     config?: DraftConfig;
-    mapString?: number[];
+    mapString?: SystemId[];
     players?: Player[];
     slices?: Slice[];
   }) => {
     hydratedMap: Map;
-    mapString: number[];
+    mapString: SystemId[];
     players: Player[];
     slices: Slice[];
   };
@@ -207,11 +188,11 @@ export const useDraft = create<DraftsState>((set, get) => ({
     }),
   hydrate: (draft: PersistedDraft, draftUrlName: string) =>
     set((state) => {
-      let mapString = draft.mapString.split(" ").map(Number);
+      let mapString = draft.mapString.split(" ");
 
       // NOTE: Some old drafts have 'mecatol' at the start of the map string. This is not great, but we fix it here.
       // TODO: Eventually clean up all the old drafts
-      if (mapString[0] === 18) mapString = mapString.slice(1);
+      if (mapString[0] === "18") mapString = mapString.slice(1);
       const config = draftConfig[draft.mapType];
 
       return {
@@ -242,7 +223,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
   removeSystemFromMap: (tileIdx: number) =>
     set((state) => {
       const mapString = [...state.mapString];
-      mapString[tileIdx - 1] = 0;
+      mapString[tileIdx - 1] = "0";
       return state.refreshMap({ mapString });
     }),
 
@@ -274,7 +255,7 @@ export const useDraft = create<DraftsState>((set, get) => ({
 type NewDraftState = {
   initialized: boolean;
   config: DraftConfig;
-  systemPool: number[];
+  systemPool: SystemId[];
   factionPool: FactionId[];
   allowHomePlanetSearch: boolean;
   allowEmptyMapTiles: boolean;
@@ -355,14 +336,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
   factionPool: allFactionIds,
   allowHomePlanetSearch: false,
   allowEmptyMapTiles: false,
-  slices: [
-    [-1, 0, 0, 0],
-    [-1, 0, 0, 0],
-    [-1, 0, 0, 0],
-    [-1, 0, 0, 0],
-    [-1, 0, 0, 0],
-    [-1, 0, 0, 0],
-  ],
+  // TODO: Determine if we should instead just make this a full empty array.
+  slices: [],
   availableFactions: [...allFactionIds],
   players: [
     ...[0, 1, 2, 3, 4, 5].map((i) => ({
@@ -387,7 +362,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     // if there are any zeroes in slices except for the first value in the slice, return false
     const slices = get().slices.map((slice) => slice.slice(1));
     slices.forEach((slice, idx) => {
-      if (slice.some((tile) => tile === 0)) {
+      if (slice.some((tile) => tile === "0")) {
         errors.push(`Slice ${idx} has empty tiles`);
       }
     });
@@ -525,7 +500,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
           systemPool,
         );
 
-        slices = rawSlices.map((s) => [-1, ...s]);
+        slices = rawSlices.map(normalizeSlice);
         const mapIds = [...EMPTY_MAP_STRING];
         Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
           mapIds[Number(mapIdx)] = system;
@@ -584,10 +559,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       })),
     importMap: (mapString: string) =>
       set((state) => {
-        const rawMap = parseMapString(
-          state.config,
-          mapString.split(" ").map(Number),
-        );
+        const rawMap = parseMapString(state.config, mapString.split(" "));
         const { slices, map: slicedMap } = sliceMap(state.config, rawMap);
         return {
           map: slicedMap,
@@ -645,7 +617,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       set((state) => {
         const slices = [...state.slices];
         slices[sliceIdx] = [...slices[sliceIdx]];
-        slices[sliceIdx][tileIdx] = 0;
+        slices[sliceIdx][tileIdx] = "0";
         return { slices };
       }),
 
@@ -697,7 +669,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
           state.slices.length,
           state.systemPool,
         );
-        const slices = rawSlices.map((s) => [-1, ...s]);
+        const slices = rawSlices.map(normalizeSlice);
         const mapIds = [...EMPTY_MAP_STRING];
         Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
           mapIds[Number(mapIdx)] = system;
@@ -737,9 +709,9 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
         const usedSliceSystems = state.slices
           .filter((_, idx) => idx !== sliceIdx)
           .flat(1)
-          .filter((i) => i !== -1);
+          .filter((i) => i !== "-1");
 
-        const usedMapSystems: number[] = [];
+        const usedMapSystems: SystemId[] = [];
         state.config.modifiableMapTiles.forEach((idx) => {
           const system = state.map[idx].system;
           if (system) {
@@ -813,11 +785,11 @@ function systemStats(system: System): SystemStats {
 function randomizeMap(
   config: DraftConfig,
   slices: Slice[],
-  systemPool: number[],
+  systemPool: SystemId[],
 ) {
   const mapString = [...EMPTY_MAP_STRING];
   const numMapTiles = config.modifiableMapTiles.length;
-  const usedSystemIds = slices.flat(1).filter((i) => i !== -1);
+  const usedSystemIds = slices.flat(1).filter((i) => i !== "-1");
   const filteredSystemIds = fisherYatesShuffle(
     systemPool.filter((id) => !usedSystemIds.includes(id)),
     numMapTiles,
@@ -834,16 +806,14 @@ function randomizeMap(
 function randomizeSlices(
   config: DraftConfig,
   numSlices: number,
-  systemPool: number[],
+  systemPool: SystemId[],
   opulence: Opulence = "medium",
   variance: Variance = "medium",
 ) {
   let slices: Slice[] = [];
   if (config.generateSlices !== undefined) {
     // Use draft-specific randomization algorithm.
-    slices = config
-      .generateSlices(numSlices, systemPool)
-      .map((s) => [-1, ...s]);
+    slices = config.generateSlices(numSlices, systemPool).map(normalizeSlice);
   } else {
     // If not defined, used our 'standard' statistics sampling randomization,
     slices = generateSlices(
@@ -853,7 +823,7 @@ function randomizeSlices(
       opulence,
       config.numSystemsInSlice,
       config.type,
-    ).map((s) => [-1, ...s.systems.map((sys) => sys.id)]);
+    ).map((s) => ["-1", ...s.systems.map((sys) => sys.id)]);
   }
 
   return slices;

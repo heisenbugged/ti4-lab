@@ -1,5 +1,11 @@
 import dotenv from "dotenv";
-import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
+import {
+  Client,
+  Collection,
+  Events,
+  GatewayIntentBits,
+  TextChannel,
+} from "discord.js";
 import startDraft from "./commands/startDraft";
 import { PersistedDraft } from "~/types";
 
@@ -70,7 +76,7 @@ export async function getChannel(guildId: string, channelId: string) {
     cachedGuild ?? (await global.discordClient.guilds.fetch(guildId));
 
   const cachedChannel = guild.channels.cache.get(channelId);
-  return cachedChannel ?? guild.channels.fetch(channelId);
+  return (cachedChannel ?? guild.channels.fetch(channelId)) as TextChannel;
 }
 
 export async function notifyCurrentPick(draft: PersistedDraft) {

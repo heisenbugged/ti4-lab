@@ -29,6 +29,7 @@ import {
   OpenTile,
   Player,
   PlayerDemoTile,
+  SystemId,
   SystemTile,
 } from "~/types";
 import { useEffect, useState } from "react";
@@ -53,6 +54,8 @@ import { DiscordBanner } from "~/components/DiscordBanner";
 import "../components/draftprechoice.css";
 import { useDisclosure } from "@mantine/hooks";
 
+type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
+
 type PrechoiceMap = {
   title: string;
   description: string;
@@ -62,16 +65,16 @@ type PrechoiceMap = {
 
 const colors = ["blue", "red", "green", "magenta", "violet", "orange"];
 
-const MAPS: Record<DraftType, PrechoiceMap> = {
+const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
   milty: {
     title: "Milty",
     description:
       "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
     map: parseDemoMapString(
       draftConfig.milty,
-      "18 1 2 3 4 5 6 1 1 2 2 3 3 4 4 5 5 6 6 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
-        .split(" ")
-        .map(Number),
+      "18 1 2 3 4 5 6 1 1 2 2 3 3 4 4 5 5 6 6 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
+        " ",
+      ),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
   },
@@ -81,9 +84,9 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
       "Like milty, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board. Slices are biased towards having one red, but some have two. Equidistants are fully randomized.",
     map: parseDemoMapString(
       draftConfig.miltyeq,
-      "18 1 2 3 4 5 6 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
-        .split(" ")
-        .map(Number),
+      "18 1 2 3 4 5 6 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
+        " ",
+      ),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
   },
@@ -93,9 +96,9 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
       "Features a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order. Beneficial for players who want to design their own maps while still running a draft. Randomization prioritizes high wormholes, and separates them for maximum impact.",
     map: parseDemoMapString(
       draftConfig.heisen,
-      "18 -1 -1 -1 -1 -1 -1 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1"
-        .split(" ")
-        .map(Number),
+      "18 -1 -1 -1 -1 -1 -1 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
+        " ",
+      ),
     ),
     titles: ["P1", "P2", "P3", "P4", "P5", "P6"],
   },
@@ -105,9 +108,9 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
       "Also known as 'spiral draft'. Slices contained tiles that are close to other players. Slice generation follows 'milty draft' rules (2 red tiles, 3 blue tiles). Fun for players who want to have a more chaotic draft result.",
     map: parseDemoMapString(
       draftConfig.miltyeq,
-      "18 6 1 2 3 4 5 1 1 2 2 3 3 4 4 5 5 6 6 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1 1"
-        .split(" ")
-        .map(Number),
+      "18 6 1 2 3 4 5 1 1 2 2 3 3 4 4 5 5 6 6 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1 1".split(
+        " ",
+      ),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
   },
@@ -119,8 +122,11 @@ export default function DraftPrechoice() {
   const [allowEmptyMapTiles, setAllowEmptyMapTiles] = useState(false);
   const [allowHomePlanetSearch, setAllowHomePlanetSearch] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-  const [hoveredMapType, setHoveredMapType] = useState<DraftType | undefined>();
-  const [selectedMapType, setSelectedMapType] = useState<DraftType>("milty");
+  const [hoveredMapType, setHoveredMapType] = useState<
+    ChoosableDraftType | undefined
+  >();
+  const [selectedMapType, setSelectedMapType] =
+    useState<ChoosableDraftType>("milty");
   const [numFactions, setNumFactions] = useState(6);
   const [numSlices, setNumSlices] = useState(6);
   const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
@@ -302,8 +308,12 @@ export default function DraftPrechoice() {
                   size="md"
                   variant={selectedMapType === type ? "filled" : "outline"}
                   ff="heading"
-                  onMouseOver={() => setHoveredMapType(type as DraftType)}
-                  onMouseDown={() => setSelectedMapType(type as DraftType)}
+                  onMouseOver={() =>
+                    setHoveredMapType(type as ChoosableDraftType)
+                  }
+                  onMouseDown={() =>
+                    setSelectedMapType(type as ChoosableDraftType)
+                  }
                 >
                   {title}
                 </Button>
@@ -492,12 +502,12 @@ export default function DraftPrechoice() {
   );
 }
 
-function parseDemoMapString(config: DraftConfig, mapString: number[]) {
+function parseDemoMapString(config: DraftConfig, mapString: SystemId[]) {
   const tiles = mapString.map((player, idx) => {
     const position = mapStringOrder[idx];
     const isHomeSystem = config.homeIdxInMapString.includes(idx);
 
-    if (player === 18) {
+    if (player === "18") {
       return {
         idx,
         position,
@@ -506,7 +516,7 @@ function parseDemoMapString(config: DraftConfig, mapString: number[]) {
       } as SystemTile;
     }
 
-    if (player === -1) {
+    if (player === "-1") {
       return {
         idx,
         position,
@@ -514,7 +524,7 @@ function parseDemoMapString(config: DraftConfig, mapString: number[]) {
       } as OpenTile;
     }
 
-    if (player === -2) {
+    if (player === "-2") {
       return {
         idx,
         position,
@@ -526,7 +536,7 @@ function parseDemoMapString(config: DraftConfig, mapString: number[]) {
       idx,
       position,
       isHomeSystem,
-      playerNumber: player - 1,
+      playerNumber: Number(player) - 1,
       type: "PLAYER_DEMO",
       system: undefined,
     } as PlayerDemoTile;

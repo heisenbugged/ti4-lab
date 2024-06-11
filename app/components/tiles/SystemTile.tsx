@@ -8,10 +8,9 @@ import { AnomalyImage } from "../features/AnomalyImage";
 import { GravityRift } from "../features/GravityRift";
 import { Wormhole } from "../features/Wormhole";
 import { MapContext } from "~/contexts/MapContext";
-
-import classes from "./Tiles.module.css";
 import { LegendaryImage, hasLegendaryImage } from "../LegendaryImage";
 import { SystemId } from "../SystemId";
+import classes from "./Tiles.module.css";
 
 type Props = { mapId: string; tile: SystemTileType; hideValues?: boolean };
 

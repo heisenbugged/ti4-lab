@@ -13,12 +13,12 @@ export default function MapImage() {
   const result = useLoaderData<typeof loader>();
   const draft = result.data;
   const config = draftConfig[draft.mapType];
-  const rawMapString = draft.mapString.split(" ").map((n) => parseInt(n, 10));
+  const rawMapString = draft.mapString.split(" ");
   const mapString = parseMapString(
     config,
     rawMapString,
     mapStringOrder,
-    rawMapString[0] !== 18,
+    rawMapString[0] !== "18",
   );
 
   const map = hydrateMap(config, mapString, draft.players, draft.slices);

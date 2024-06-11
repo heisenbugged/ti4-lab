@@ -15,12 +15,13 @@ export type SystemType = "GREEN" | "BLUE" | "RED" | "HYPERLANE";
 
 // System from data. To be processed into a proper 'System' object.
 export type RawSystem = {
-  id: number;
+  id: SystemId;
   faction?: FactionId;
   planets: Planet[];
   type: SystemType;
   anomalies: Anomaly[];
   wormholes: Wormhole[];
+  hyperlanes?: number[][];
 };
 
 export type System = RawSystem & {
@@ -215,7 +216,7 @@ export type MapStats = {
 export type Variance = "low" | "medium" | "high" | "extreme";
 export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
 
-export type Slice = number[];
+export type Slice = SystemId[];
 
 export type DiscordPlayer = {
   name: string;
@@ -227,3 +228,5 @@ export type DiscordData = {
   guildId: string;
   channelId: string;
 };
+
+export type SystemId = string;

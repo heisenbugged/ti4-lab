@@ -1,7 +1,8 @@
 import { Text } from "@mantine/core";
+import { SystemId as SystemIdType } from "~/types";
 
 type Props = {
-  id: number;
+  id: SystemIdType;
   size: string;
   scale: number;
 };

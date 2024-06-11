@@ -1,3 +1,4 @@
+import { Slice, SystemId } from "~/types";
 import { shuffle, weightedChoice } from "../helpers/randomization";
 import {
   fillSlicesWithRemainingTiles,
@@ -41,7 +42,10 @@ const MIN_LEGENDARY_CHOICES = [
   { weight: 1, value: 2 },
 ];
 
-export function generateSlices(sliceCount: number, availableSystems: number[]) {
+export function generateSlices(
+  sliceCount: number,
+  availableSystems: SystemId[],
+) {
   const tieredSlices: TieredSlice[] = [];
   for (let i = 0; i < sliceCount; i++) {
     const tierValues = shuffle(weightedChoice(SLICE_CHOICES));
@@ -63,7 +67,7 @@ export function generateSlices(sliceCount: number, availableSystems: number[]) {
 
   // distirbute the wormholes/legendaries in round robin fashion
   // on the slices.
-  const slices: number[][] = Array.from({ length: sliceCount }, () => []);
+  const slices: Slice[] = Array.from({ length: sliceCount }, () => []);
   fillSlicesWithRequiredTiles(tieredSlices, chosenTiles, slices);
 
   // fill slices with remaining tiles, respecting the 'tier' requirements

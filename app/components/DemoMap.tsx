@@ -16,9 +16,9 @@ import { useContext } from "react";
 import { MapContext } from "~/contexts/MapContext";
 import { PlayerDemoTile } from "./tiles/PlayerDemoTile";
 import { Hex } from "./Hex";
+import { MecatolTile } from "./tiles/MecatolTile";
 
 import classes from "./tiles/Tiles.module.css";
-import { MecatolTile } from "./tiles/MecatolTile";
 
 type Props = {
   id: string;
@@ -93,7 +93,7 @@ export function DemoMapTile({
         color={colors[tile.playerNumber]}
       />
     );
-  } else if (tile.type === "SYSTEM" && tile.system?.id === 18) {
+  } else if (tile.type === "SYSTEM" && tile.system?.id === "18") {
     Tile = <MecatolTile mapId={`${mapId}-mecatol`} tile={tile} hideValues />;
   } else {
     Tile = (

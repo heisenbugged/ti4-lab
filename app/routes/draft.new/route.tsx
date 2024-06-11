@@ -98,7 +98,7 @@ export default function DraftNew() {
     draft.map.filter((t) => t.type === "SYSTEM").map((t) => t.system!.id),
   ]
     .flat(2)
-    .filter((t) => t !== -1 && t !== 0);
+    .filter((t) => t !== "-1" && t !== "0");
 
   const handleCreate = () =>
     createDraft({
