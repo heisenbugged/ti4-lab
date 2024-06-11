@@ -102,7 +102,7 @@ const MAPS: Record<DraftType, PrechoiceMap> = {
   wekker: {
     title: "Wekker",
     description:
-      "Also known as 'spiral draft'. Slices contained tiles that are close to other players. Slice generation follows 'milty draft' rules (2 anomalies, 3 blue tiles). Fun for players who want to have a more chaotic draft result.",
+      "Also known as 'spiral draft'. Slices contained tiles that are close to other players. Slice generation follows 'milty draft' rules (2 red tiles, 3 blue tiles). Fun for players who want to have a more chaotic draft result.",
     map: parseDemoMapString(
       draftConfig.miltyeq,
       "18 6 1 2 3 4 5 1 1 2 2 3 3 4 4 5 5 6 6 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1 1"
@@ -209,7 +209,7 @@ export default function DraftPrechoice() {
             Enable 'Allow search of home planets' in advanced settings.
           </List.Item>
           <List.Item>
-            Enable 'allow empty map tiles' in advanced settings
+            Enable 'Allow empty map tiles' in advanced settings.
           </List.Item>
           <List.Item>Use Milty EQ as the draft format.</List.Item>
         </List>
