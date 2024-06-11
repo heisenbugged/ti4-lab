@@ -321,7 +321,13 @@ export default function DraftPrechoice() {
               <Paper shadow="md" withBorder px="md" py="sm">
                 <Text size="md">{MAPS[mapType].description}</Text>
               </Paper>
-              <Box flex={1} pos="relative" mah="1000px" mt="lg">
+              <Box
+                flex={1}
+                pos="relative"
+                mah="1000px"
+                mt="lg"
+                visibleFrom="xs"
+              >
                 {mapType && (
                   <DemoMap
                     id="prechoice-map"
@@ -335,6 +341,20 @@ export default function DraftPrechoice() {
             </Box>
           </Group>
         </Flex>
+      </Grid.Col>
+
+      <Grid.Col span={12} hiddenFrom="xs">
+        <Box flex={1} pos="relative" mah="1000px" mt="lg">
+          {mapType && (
+            <DemoMap
+              id="prechoice-map"
+              map={MAPS[mapType].map}
+              titles={MAPS[mapType].titles}
+              colors={colors}
+              padding={0}
+            />
+          )}
+        </Box>
       </Grid.Col>
       <Grid.Col span={{ base: 12, md: 5 }}>
         <Stack>
