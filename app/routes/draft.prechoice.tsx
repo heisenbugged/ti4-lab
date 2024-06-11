@@ -247,7 +247,7 @@ export default function DraftPrechoice() {
             label="Add the discord bot to your server"
             description={
               <Link
-                to="https://discord.com/oauth2/authorize?client_id=1249387926559916132&permissions=3072&integration_type=0&scope=bot"
+                to="https://discord.com/oauth2/authorize?client_id=1247915595551477850&permissions=2048&integration_type=0&scope=bot"
                 reloadDocument
               >
                 <Button
