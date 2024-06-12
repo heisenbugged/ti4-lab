@@ -4,7 +4,7 @@ import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { valueSlice } from "~/stats";
 import {
   optimalStatsForSystems,
-  systemsInSlice,
+  systemsInSliceOld,
   totalStatsForSystems,
 } from "~/utils/map";
 import { useSortedSlices } from "./useSortedSlices";
@@ -31,7 +31,7 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
       </Table.Thead>
       <Table.Tbody>
         {sortedSlices.map(({ slice, idx }) => {
-          const systems = systemsInSlice(slice);
+          const systems = systemsInSliceOld(slice);
           const total = totalStatsForSystems(systems);
           const optimal = optimalStatsForSystems(systems);
           const isDrafted = draftedSlices.includes(idx);

@@ -2,6 +2,7 @@ import { mapStringOrder } from "~/data/mapStringOrder";
 import { systemData } from "~/data/systemData";
 import { DraftConfig } from "~/draft/types";
 import {
+  DraftSlice,
   HomeTile,
   Map,
   Player,
@@ -11,6 +12,7 @@ import {
   TechSpecialty,
   Tile,
   TilePosition,
+  TileRef,
 } from "~/types";
 
 /**
@@ -191,7 +193,7 @@ export const techSpecialtiesForSystems = (systems: System[]) =>
     return acc;
   }, [] as TechSpecialty[]);
 
-export const systemsInSlice = (slice: Slice): System[] =>
+export const systemsInSliceOld = (slice: Slice): System[] =>
   slice.reduce((acc, t) => {
     const system = systemData[t];
     if (!system) return acc;
@@ -199,15 +201,18 @@ export const systemsInSlice = (slice: Slice): System[] =>
     return acc;
   }, [] as System[]);
 
-export const emptySlice = (numSystems: number): Slice => [
+export const emptySliceOld = (numSystems: number): Slice => [
   "-1",
   ...Array.from({ length: numSystems }, () => "0"),
 ];
 
-export const emptySlices = (numSlices: number, numSystems: number): Slice[] =>
-  Array.from({ length: numSlices }, () => emptySlice(numSystems));
+export const emptySlicesOld = (
+  numSlices: number,
+  numSystems: number,
+): Slice[] =>
+  Array.from({ length: numSlices }, () => emptySliceOld(numSystems));
 
-export const normalizeSlice = (slice: Slice): Slice => {
+export const normalizeSliceOld = (slice: Slice): Slice => {
   if (slice[0] === "-1") return slice;
   return ["-1", ...slice];
 };

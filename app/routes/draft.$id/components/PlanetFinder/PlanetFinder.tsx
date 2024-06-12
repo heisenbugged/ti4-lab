@@ -33,6 +33,7 @@ export function PlanetFinder({
 
   const isValidSystem = (system: System) =>
     availableSystemIds.includes(system.id) ||
+    system.type === "HYPERLANE" ||
     (allowHomePlanetSearch &&
       system.faction &&
       system.type === "GREEN" &&

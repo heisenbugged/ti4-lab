@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { valueSlice } from "~/stats";
 import { Slice } from "~/types";
-import { systemsInSlice } from "~/utils/map";
+import { systemsInSliceOld } from "~/utils/map";
 
 export function useSortedSlices(slices: Slice[], draftedSlices: number[]) {
   const sortedSlices = useMemo(() => {
@@ -10,8 +10,8 @@ export function useSortedSlices(slices: Slice[], draftedSlices: number[]) {
       .sort((a, b) => {
         if (draftedSlices.includes(a.idx)) return 1;
         if (draftedSlices.includes(b.idx)) return -1;
-        const aSystems = systemsInSlice(a.slice);
-        const bSystems = systemsInSlice(b.slice);
+        const aSystems = systemsInSliceOld(a.slice);
+        const bSystems = systemsInSliceOld(b.slice);
         return valueSlice(bSystems) - valueSlice(aSystems);
       });
   }, [slices, draftedSlices]);

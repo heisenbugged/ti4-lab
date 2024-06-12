@@ -16,16 +16,18 @@ import { redirect, useLocation, useNavigate } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { serializeMap } from "~/data/serialize";
-import { useDraftV2, useNewDraft } from "~/draftStore";
+import { useNewDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { PersistedDraft, Player } from "~/types";
 import { CreateDraftInput, useCreateDraft } from "./useCreateDraft";
 import { ImportMapInput } from "~/components/ImportMapInput";
 import { AvailableFactionsSection } from "./components/AvailableFactionsSection";
+import { SlicesSection } from "../draft/SlicesSection";
 import { MapSection } from "../draft/MapSection";
 import { ExportMapModal } from "./components/ExportMapModal";
 import { fisherYatesShuffle } from "~/stats";
+import { GenerateSlicesModal } from "./components/GenerateSlicesModal";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { v4 as uuidv4 } from "uuid";
 import { SectionTitle } from "~/components/Section";
@@ -33,15 +35,12 @@ import { SlicesTable } from "../draft/SlicesTable";
 import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
-import { SlicesSection } from "./sections";
 
 export default function DraftNew() {
   const location = useLocation();
   const navigate = useNavigate();
   const createDraft = useCreateDraft();
   const draft = useNewDraft();
-
-  const draftV2 = useDraftV2();
 
   useEffect(() => {
     if (location.state == null) return navigate("/draft/prechoice");
@@ -58,11 +57,6 @@ export default function DraftNew() {
       allowEmptyMapTiles,
       discordData,
     } = location.state;
-
-    draftV2.actions.initializeDraft({
-      randomizeMap: false,
-      randomizeSlices: false,
-    });
 
     draft.actions.initializeMap({
       gameSets,
@@ -124,6 +118,11 @@ export default function DraftNew() {
   const [
     validationErrorsOpened,
     { close: closeValidationErrors, open: openValidationErrors },
+  ] = useDisclosure(false);
+
+  const [
+    generateSlicesOpened,
+    { open: openGenerateSlices, close: closeGenerateSlices },
   ] = useDisclosure(false);
 
   if (!draft.initialized) return <LoadingOverlay />;
@@ -191,6 +190,12 @@ export default function DraftNew() {
           <DiscordBanner />
         </Box>
       )}
+      <GenerateSlicesModal
+        defaultNumSlices={draft.slices.length}
+        onClose={closeGenerateSlices}
+        onGenerateSlices={draft.actions.randomizeSlices}
+        opened={generateSlicesOpened}
+      />
 
       <ExportMapModal
         mapString={draft.exportableMapString()}
@@ -215,11 +220,9 @@ export default function DraftNew() {
           if (!openTile.current) return;
           const { mode, sliceIdx, tileIdx } = openTile.current;
 
-          if (mode === "map") {
-            draftV2.actions.addSystemToMap(tileIdx, system);
-          }
+          if (mode === "map") draft.actions.addSystemToMap(tileIdx, system);
           if (mode === "slice" && sliceIdx > -1) {
-            draftV2.actions.addSystemToSlice(sliceIdx, tileIdx, system);
+            draft.actions.addSystemToSlice(sliceIdx, tileIdx, system);
           }
 
           closePlanetFinder();
@@ -244,6 +247,24 @@ export default function DraftNew() {
       />
       <Box mt="lg">
         <SlicesSection
+          fullView
+          config={draft.config}
+          mode="create"
+          slices={draft.slices}
+          onRandomizeSlices={() => {
+            if (draft.config.type === "heisen")
+              return draft.actions.randomizeAll();
+
+            if (draft.config.generateSlices) {
+              draft.actions.randomizeSlices();
+            } else {
+              openGenerateSlices();
+            }
+          }}
+          onAddNewSlice={draft.actions.addNewSlice}
+          onDeleteTile={(sliceIdx, tileIdx) => {
+            draft.actions.removeSystemFromSlice(sliceIdx, tileIdx);
+          }}
           onSelectTile={(sliceIdx, tileIdx) => {
             openTile.current = {
               mode: "slice",
@@ -252,6 +273,8 @@ export default function DraftNew() {
             };
             openPlanetFinder();
           }}
+          onClearSlice={draft.actions.clearSlice}
+          onRandomizeSlice={draft.actions.randomizeSlice}
         />
       </Box>
 
@@ -263,7 +286,7 @@ export default function DraftNew() {
           <Stack gap="xl" w="100%">
             <Stack gap="xs">
               <SectionTitle title="Slices Summary" />
-              {/* <SlicesTable slices={draft.slices} /> */}
+              <SlicesTable slices={draft.slices} />
             </Stack>
             {showFullMap && advancedOptions}
           </Stack>
@@ -276,7 +299,7 @@ export default function DraftNew() {
             <MapSection
               mode="create"
               config={draft.config}
-              map={draftV2.draft.presetMap}
+              map={draft.map}
               stats={draft.mapStats()}
               onDeleteSystemTile={(tileIdx) => {
                 draft.actions.removeSystemFromMap(tileIdx);

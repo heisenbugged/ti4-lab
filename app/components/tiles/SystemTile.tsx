@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
 import { Planet } from "../Planet";
-import { SystemTile as SystemTileType } from "~/types";
+import { SystemTileRef, SystemTile as SystemTileType } from "~/types";
 import { Group, Text, useMantineTheme } from "@mantine/core";
 import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
@@ -11,21 +11,23 @@ import { MapContext } from "~/contexts/MapContext";
 import { LegendaryImage, hasLegendaryImage } from "../LegendaryImage";
 import { SystemId } from "../SystemId";
 import classes from "./Tiles.module.css";
+import { systemData } from "~/data/systemData";
 
-type Props = { mapId: string; tile: SystemTileType; hideValues?: boolean };
+type Props = { mapId: string; tile: SystemTileRef; hideValues?: boolean };
 
 export function SystemTile({ mapId, tile, hideValues = false }: Props) {
   const { radius } = useContext(MapContext);
   const scale = calcScale(radius);
-  const system = tile.system;
+  const system = systemData[tile.systemId];
+  if (system === undefined) debugger;
 
   const image = (
     <>
-      {tile.system.anomalies.map((anomaly) => (
+      {system.anomalies.map((anomaly) => (
         <AnomalyImage key={anomaly} radius={radius} anomaly={anomaly} />
       ))}
-      {hasLegendaryImage(tile.system.id) && (
-        <LegendaryImage systemId={tile.system.id} radius={radius} />
+      {hasLegendaryImage(system.id) && (
+        <LegendaryImage systemId={system.id} radius={radius} />
       )}
     </>
   );
@@ -34,15 +36,16 @@ export function SystemTile({ mapId, tile, hideValues = false }: Props) {
 
   return (
     <Hex
-      id={`${mapId}-${tile.system.id}`}
+      id={`${mapId}-${system.id}`}
       radius={radius}
       colorClass={classes.system}
       image={image}
       anomaly={system.anomalies.length > 0}
       faction={system.faction}
+      hyperlanes={system.hyperlanes}
     >
       {!hideValues && (
-        <SystemId id={tile.system.id} size={systemIdSize} scale={scale} />
+        <SystemId id={system.id} size={systemIdSize} scale={scale} />
       )}
       <Group
         gap={4}
@@ -58,8 +61,8 @@ export function SystemTile({ mapId, tile, hideValues = false }: Props) {
             hasLegendaryImage={hasLegendaryImage(system.id)}
           />
         ))}
-        {tile.system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}
-        {tile.system.wormholes.map((wormhole) => (
+        {system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}
+        {system.wormholes.map((wormhole) => (
           <Wormhole key={wormhole} wormhole={wormhole} />
         ))}
       </Group>

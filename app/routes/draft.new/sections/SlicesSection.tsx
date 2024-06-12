@@ -1,0 +1,53 @@
+import { Button, Group, SimpleGrid } from "@mantine/core";
+import { Section, SectionTitle } from "~/components/Section";
+import { Slice } from "~/components/Slice";
+import { draftConfig } from "~/draft";
+import { useDraftV2 } from "~/draftStore";
+
+type Props = {
+  onSelectTile?: (sliceIdx: number, tileIdx: number) => void;
+};
+
+export function SlicesSection({ onSelectTile }: Props) {
+  const config = useDraftV2((state) => draftConfig[state.draft.settings.type]);
+  const slices = useDraftV2((state) => state.draft.slices);
+  const { removeSystemFromSlice, clearSlice, randomizeSlice, randomizeSlices } =
+    useDraftV2((state) => state.actions);
+
+  const xxlCols = config.type !== "wekker" ? 6 : 4;
+  const cols = { base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: xxlCols };
+  return (
+    <Section>
+      <div style={{ position: "sticky", top: 60, zIndex: 11 }}>
+        <SectionTitle title="Slices">
+          <Group gap={4}>
+            <Button onMouseDown={randomizeSlices} variant="light">
+              Randomize All
+            </Button>
+          </Group>
+        </SectionTitle>
+      </div>
+
+      <SimpleGrid
+        flex={1}
+        cols={cols}
+        spacing="lg"
+        style={{ alignItems: "flex-start" }}
+      >
+        {slices.map((slice, idx) => (
+          <Slice
+            key={idx}
+            id={`slice-${idx}`}
+            slice={slice}
+            mode="create"
+            config={config}
+            onSelectTile={(tile) => onSelectTile?.(idx, tile.idx)}
+            onDeleteTile={(tile) => removeSystemFromSlice(idx, tile.idx)}
+            onRandomizeSlice={() => randomizeSlice(idx)}
+            onClearSlize={() => clearSlice(idx)}
+          />
+        ))}
+      </SimpleGrid>
+    </Section>
+  );
+}

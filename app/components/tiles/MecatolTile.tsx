@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
-import { SystemTile as SystemTileType } from "~/types";
+import { SystemTileRef, SystemTile as SystemTileType } from "~/types";
 import { Box, Flex } from "@mantine/core";
 import { MecatolPlanet } from "../features/MecatolPlanet";
 import { calcScale } from "./calcScale";
@@ -9,14 +9,14 @@ import { PlanetName, PlanetStats } from "../Planet";
 
 import classes from "./Tiles.module.css";
 
-type Props = { mapId: string; tile: SystemTileType; hideValues?: boolean };
+type Props = { mapId: string; tile: SystemTileRef; hideValues?: boolean };
 
 export function MecatolTile({ mapId, tile, hideValues = false }: Props) {
   const { radius } = useContext(MapContext);
   const scale = calcScale(radius);
   return (
     <Hex
-      id={`${mapId}-${tile.system.id}`}
+      id={`${mapId}-${tile.systemId}`}
       radius={radius}
       colorClass={classes.system}
       image={<MecatolPlanet radius={radius} />}

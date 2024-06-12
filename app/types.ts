@@ -1,4 +1,5 @@
-import { DraftType } from "./draft";
+import { mapStringOrder } from "./data/mapStringOrder";
+import { DraftConfig, DraftType } from "./draft";
 
 export type GameSet =
   | "base"
@@ -61,7 +62,6 @@ type BaseTile = {
 };
 
 export type SystemTile = BaseTile & {
-  position: TilePosition;
   type: "SYSTEM";
   system: System;
 };
@@ -86,13 +86,7 @@ export type EmptyTile = BaseTile & {
   type: "EMPTY";
 };
 
-export type Tile =
-  | HomeTile
-  | OpenTile
-  | ({ type: "CLOSED" } & BaseTile)
-  | ({ type: "WARP" } & BaseTile)
-  | PlayerDemoTile
-  | SystemTile;
+export type Tile = HomeTile | OpenTile | SystemTile;
 
 export type Map = Tile[];
 
@@ -230,3 +224,97 @@ export type DiscordData = {
 };
 
 export type SystemId = string;
+
+/// V2
+export type DraftSettings = {
+  type: DraftType;
+  gameSets: GameSet[];
+  draftSpeaker: boolean;
+  allowEmptyTiles: boolean;
+  allowHomePlanetSearch: boolean;
+  numFactions: number;
+  numSlices: number;
+};
+
+export type DraftIntegrations = {
+  discord?: {
+    guildId: string;
+    channelId: string;
+    players: {
+      playerId: number;
+      memberId: string;
+      nickname: string;
+      username: string;
+    }[];
+  };
+};
+
+export type DraftPlayer = {
+  id: number;
+  name: string;
+};
+
+export type DraftSlice = {
+  name: string;
+  tiles: TileRef[];
+};
+
+type BaseTileRef = {
+  idx: number;
+  position: TilePosition;
+};
+
+export type SystemTileRef = BaseTileRef & {
+  type: "SYSTEM";
+  systemId: SystemId;
+};
+
+export type HomeTileRef = BaseTileRef & {
+  type: "HOME";
+  seat?: number;
+};
+
+export type OpenTileRef = BaseTileRef & {
+  type: "OPEN";
+};
+
+export type TileRef = SystemTileRef | HomeTileRef | OpenTileRef;
+
+export type MapV2 = TileRef[];
+
+export type Draft = {
+  settings: DraftSettings;
+  integrations: DraftIntegrations;
+  players: DraftPlayer[];
+  slices: DraftSlice[];
+  presetMap: MapV2;
+  availableFactions: FactionId[];
+  // TODO: implement draft
+  // draftSelections: {
+  //   type: DraftSelectionType;
+  //   data: any; // depends on the event type
+  // }
+};
+
+export function generateEmptyMap(config: DraftConfig): MapV2 {
+  return Array.from({ length: 37 }, (_, idx) => {
+    if (idx === 0)
+      return {
+        idx,
+        type: "SYSTEM",
+        systemId: "18",
+        position: mapStringOrder[idx],
+      };
+
+    if (config.homeIdxInMapString.includes(idx)) {
+      return {
+        idx,
+        type: "HOME",
+        seat: config.homeIdxInMapString.indexOf(idx),
+        position: mapStringOrder[idx],
+      };
+    }
+
+    return { idx, type: "OPEN", position: mapStringOrder[idx] };
+  });
+}

@@ -29,7 +29,7 @@ export const systemData: Record<SystemId, System> = Object.entries(
       }
     });
 
-    acc[parseInt(id)] = {
+    acc[id] = {
       ...system,
       totalSpend,
       optimalSpend,
@@ -37,7 +37,7 @@ export const systemData: Record<SystemId, System> = Object.entries(
 
     return acc;
   },
-  {} as Record<number, System>,
+  {} as Record<SystemId, System>,
 );
 
 export const factionSystems: Record<FactionId, System> = Object.values(

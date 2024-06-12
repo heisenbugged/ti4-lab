@@ -1,12 +1,12 @@
 import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
 import { useDimensions } from "~/hooks/useDimensions";
 import { MapTile } from "../MapTile";
-import { Tile } from "~/types";
+import { Tile, TileRef } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 
 type Props = {
   id: string;
-  tiles: Tile[];
+  tiles: TileRef[];
   sliceHeight: number;
   sliceConcentricCircles?: number;
   wOffsetMultiplier?: number;

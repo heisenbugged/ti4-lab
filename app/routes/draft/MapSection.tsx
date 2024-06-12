@@ -5,7 +5,7 @@ import {
   calculateMaxHexRadius,
   calculateMaxHexWidthRadius,
 } from "~/utils/positioning";
-import { HomeTile, MapStats, Map as TMap } from "~/types";
+import { HomeTile, MapStats, MapV2, Map as TMap } from "~/types";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 import { Map } from "~/components/Map";
 import { SectionTitle } from "~/components/Section";
@@ -14,7 +14,7 @@ import { DraftConfig } from "~/draft";
 
 type Props = {
   config: DraftConfig;
-  map: TMap;
+  map: MapV2;
   mode: "create" | "draft";
   stats?: MapStats;
   allowSeatSelection?: boolean;

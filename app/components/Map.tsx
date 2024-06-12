@@ -1,4 +1,4 @@
-import { HomeTile, Map as MapType } from "~/types";
+import { HomeTile, Map as MapType, MapV2 } from "~/types";
 import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
@@ -10,7 +10,7 @@ import { DraftConfig } from "~/draft";
 type Props = {
   id: string;
   config: DraftConfig;
-  map: MapType;
+  map: MapV2;
   padding: number;
   mode: "create" | "draft";
   disabled?: boolean;

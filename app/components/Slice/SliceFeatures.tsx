@@ -1,12 +1,13 @@
 import { Group } from "@mantine/core";
-import { systemsInSlice, techSpecialtiesForSystems } from "~/utils/map";
+import { systemsInSliceOld, techSpecialtiesForSystems } from "~/utils/map";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
 import { Wormhole } from "../features/Wormhole";
-import { Slice } from "~/types";
+import { DraftSlice, Slice } from "~/types";
+import { systemsInSlice } from "~/utils/slice";
 
 type Props = {
-  slice: Slice;
+  slice: DraftSlice;
 };
 
 export function SliceFeatures({ slice }: Props) {
@@ -25,7 +26,7 @@ export function SliceFeatures({ slice }: Props) {
       {specialties.map((tech, idx) => (
         <TechIcon key={idx} techSpecialty={tech} />
       ))}
-      {legendarySystems.map((s, idx) => (
+      {legendarySystems.map((s) => (
         <LegendaryIcon key={s.id} />
       ))}
       {wormholes.map((w, idx) => (

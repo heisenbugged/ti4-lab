@@ -1,32 +1,26 @@
 import { Button, Group, SimpleGrid } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
 import { Slice } from "~/components/Slice";
-import { Player, Slice as TSlice } from "~/types";
+import { DraftSlice, Player, Slice as TSlice } from "~/types";
 import { useSortedSlices } from "./useSortedSlices";
-import { DraftConfig } from "~/draft";
+import { DraftConfig, draftConfig } from "~/draft";
+import { useDraftV2 } from "~/draftStore";
 
 type Props = {
   fullView?: boolean;
-  config: DraftConfig;
   mode: "create" | "draft";
-  slices: TSlice[];
   allowSliceSelection?: boolean;
   players?: Player[];
   draftedSlices?: number[];
   disabled?: boolean;
   onRandomizeSlices?: () => void;
-  onAddNewSlice?: () => void;
   onSelectSlice?: (sliceIdx: number) => void;
   onSelectTile?: (sliceIdx: number, tileIdx: number) => void;
-  onDeleteTile?: (sliceIdx: number, tileIdx: number) => void;
-  onClearSlice?: (sliceIdx: number) => void;
   onRandomizeSlice?: (sliceIdx: number) => void;
 };
 
 export function SlicesSection({
   fullView = false,
-  config,
-  slices: rawSlices,
   players,
   mode = "create",
   allowSliceSelection = true,
@@ -34,16 +28,22 @@ export function SlicesSection({
   disabled = false,
   onRandomizeSlices,
   onSelectTile,
-  onDeleteTile,
   onSelectSlice,
-  onClearSlice,
   onRandomizeSlice,
 }: Props) {
-  const sortedSlices = useSortedSlices(rawSlices, draftedSlices);
-  const slices =
-    mode === "draft"
-      ? sortedSlices
-      : rawSlices.map((slice, idx) => ({ slice, idx }));
+  const config = useDraftV2((state) => draftConfig[state.draft.settings.type]);
+  const rawSlices = useDraftV2((state) => state.draft.slices);
+  const { removeSystemFromSlice, clearSlice } = useDraftV2(
+    (state) => state.actions,
+  );
+  // TODO: Actually sort the slices
+  // const sortedSlices = useSortedSlices(rawSlices, draftedSlices);
+  // const slices =
+  //   mode === "draft"
+  //     ? sortedSlices
+  //     : rawSlices.map((slice, idx) => ({ slice, idx }));
+
+  const slices = rawSlices;
 
   const xxlCols = config.type !== "wekker" ? 6 : 4;
 
@@ -59,7 +59,6 @@ export function SlicesSection({
               <Button onMouseDown={onRandomizeSlices} variant="light">
                 Randomize All
               </Button>
-              {/* <Button onMouseDown={onAddNewSlice}>Add New Slice</Button> */}
             </Group>
           )}
         </SectionTitle>
@@ -71,22 +70,22 @@ export function SlicesSection({
         spacing="lg"
         style={{ alignItems: "flex-start" }}
       >
-        {slices.map(({ slice, idx }) => (
+        {slices.map((slice, idx) => (
           <Slice
             key={idx}
             config={config}
             id={`slice-${idx}`}
-            name={`Slice ${idx + 1}`}
+            name={slice.name}
             mode={mode}
             slice={slice}
             player={players?.find((p) => p.sliceIdx === idx)}
             onSelectTile={(tile) => onSelectTile?.(idx, tile.idx)}
-            onDeleteTile={(tile) => onDeleteTile?.(idx, tile.idx)}
+            onDeleteTile={(tile) => removeSystemFromSlice(idx, tile.idx)}
             onSelectSlice={
               allowSliceSelection ? () => onSelectSlice?.(idx) : undefined
             }
             onRandomizeSlice={() => onRandomizeSlice?.(idx)}
-            onClearSlize={() => onClearSlice?.(idx)}
+            onClearSlize={() => clearSlice(idx)}
             disabled={disabled}
           />
         ))}

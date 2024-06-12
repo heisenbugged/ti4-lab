@@ -4,7 +4,7 @@ import { PlayerChip } from "./PlayerChip";
 import { factions } from "~/data/factionData";
 import {
   optimalStatsForSystems,
-  systemsInSlice,
+  systemsInSliceOld,
   techSpecialtiesForSystems,
   totalStatsForSystems,
 } from "~/utils/map";
@@ -90,7 +90,7 @@ export function SummaryCard({
 
   if (player.faction) faction = factions[player.faction];
   if (slice) {
-    systems = systemsInSlice(slice);
+    systems = systemsInSliceOld(slice);
     total = totalStatsForSystems(systems);
     optimal = optimalStatsForSystems(systems);
     specialties = techSpecialtiesForSystems(systems);
@@ -174,7 +174,7 @@ function SummaryRow({ player, slice, showSeat }: Props) {
 
   if (player.faction) faction = factions[player.faction];
   if (slice) {
-    systems = systemsInSlice(slice);
+    systems = systemsInSliceOld(slice);
     total = totalStatsForSystems(systems);
     optimal = optimalStatsForSystems(systems);
     specialties = techSpecialtiesForSystems(systems);

@@ -1,23 +1,21 @@
-import { Box, Button, Divider, Group, Paper, Stack, Text } from "@mantine/core";
+import { Box, Button, Group, Paper, Stack, Text } from "@mantine/core";
 import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
-import { Player, Slice as TSlice, Tile } from "~/types";
+import { DraftSlice, Player, Tile } from "~/types";
 import { useSlice } from "./useSlice";
 import { SliceFeatures } from "./SliceFeatures";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
 import { IconDice6Filled } from "@tabler/icons-react";
 import { DraftConfig } from "~/draft";
-import { useIsLight } from "~/hooks/useIsLight";
 
 import classes from "./Slice.module.css";
 
 type Props = {
   config: DraftConfig;
   id: string;
-  name: string;
-  slice: TSlice;
+  slice: DraftSlice;
   player?: Player;
   mode: "create" | "draft";
   disabled?: boolean;
@@ -31,7 +29,6 @@ type Props = {
 export function Slice({
   config,
   id,
-  name,
   slice,
   player,
   mode,
@@ -42,7 +39,7 @@ export function Slice({
   onRandomizeSlice,
   onClearSlize,
 }: Props) {
-  const { tiles, total, optimal } = useSlice(config, slice);
+  const { total, optimal } = useSlice(slice);
   const selected = !!player;
 
   return (
@@ -92,7 +89,7 @@ export function Slice({
             <Titles.Slice
               className={`${classes["slice-text"]} ${selected ? classes.selected : ""}`}
             >
-              {name}
+              {slice.name}
             </Titles.Slice>
             {player ? <PlayerChip player={player} /> : undefined}
           </Group>
@@ -123,7 +120,7 @@ export function Slice({
             sliceHeight={config.sliceHeight}
             sliceConcentricCircles={config.sliceConcentricCircles}
             wOffsetMultiplier={config.wOffsetMultiplier}
-            tiles={tiles}
+            tiles={slice.tiles}
             onSelectTile={onSelectTile}
             onDeleteTile={onDeleteTile}
             mode={mode}

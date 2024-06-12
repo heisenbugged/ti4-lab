@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
 import { Button, Stack } from "@mantine/core";
-import { HomeTile as THomeTile } from "~/types";
+import { HomeTileRef, HomeTile as THomeTile } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 import { FactionIcon } from "../icons/FactionIcon";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
@@ -13,7 +13,7 @@ import { factionSystems } from "~/data/systemData";
 
 type Props = {
   mapId: string;
-  tile: THomeTile;
+  tile: HomeTileRef;
   selectable?: boolean;
   onSelect?: () => void;
 };
@@ -24,15 +24,15 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
   const systemIdSize = radius >= 53 ? "10px" : "8px";
   return (
     <Hex id={`${mapId}-home`} radius={radius} colorClass={classes.home}>
-      {tile.player?.faction && (
+      {/* {tile.player?.faction && (
         <SystemId
           id={factionSystems[tile.player.faction].id}
           size={systemIdSize}
           scale={scale}
         />
-      )}
+      )} */}
 
-      {!tile.player && selectable && (
+      {/* {!tile.player && selectable && (
         <Button
           ta="center"
           lh={1}
@@ -42,8 +42,8 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
         >
           Select Seat
         </Button>
-      )}
-      {tile.player && (
+      )} */}
+      {/* {tile.player && (
         <Stack
           align="center"
           gap="6px"
@@ -61,7 +61,7 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
           <PlayerChip player={tile.player} size="lg" visibleFrom="lg" />
           <PlayerChip player={tile.player} size="md" hiddenFrom="lg" />
         </Stack>
-      )}
+      )} */}
     </Hex>
   );
 }

@@ -1,4 +1,4 @@
-import { SystemTile as SystemTileType, Tile } from "~/types";
+import { SystemTile as SystemTileType, Tile, TileRef } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
 import { useContext, useEffect, useState } from "react";
@@ -13,7 +13,7 @@ import { MapContext } from "~/contexts/MapContext";
 
 type Props = {
   mapId: string;
-  tile: Tile;
+  tile: TileRef;
   modifiable?: boolean;
   homeSelectable?: boolean;
   onSelect?: () => void;
@@ -60,13 +60,13 @@ export function MapTile(props: Props) {
     case "SYSTEM":
       Tile = <SystemTile {...props} tile={tile} />;
       break;
-    default:
-      Tile = <EmptyTile {...props} />;
+    case "OPEN":
+      Tile = <EmptyTile {...props} tile={tile} />;
       break;
   }
 
-  if (tile.system?.id === MECATOL_REX_ID) {
-    Tile = <MecatolTile {...props} tile={tile as SystemTileType} />;
+  if (tile.type === "SYSTEM" && tile.systemId === MECATOL_REX_ID) {
+    Tile = <MecatolTile {...props} tile={tile} />;
   }
 
   // maybe an easier way of making this condition

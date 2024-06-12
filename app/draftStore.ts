@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   DiscordData,
+  Draft,
   FactionId,
   GameSet,
   Map,
@@ -13,16 +14,17 @@ import {
   SystemId,
   SystemStats,
   Variance,
+  generateEmptyMap,
 } from "./types";
 import {
-  emptySlice,
-  emptySlices,
+  emptySliceOld,
+  emptySlicesOld,
   hydrateMap,
-  normalizeSlice,
+  normalizeSliceOld,
   parseMapString,
   playerSpeakerOrder,
   sliceMap,
-  systemsInSlice,
+  systemsInSliceOld,
 } from "./utils/map";
 import {
   unchartedStarsSystemIds,
@@ -40,6 +42,8 @@ import { fisherYatesShuffle, generateSlices, valueSlice } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig, DraftType } from "./draft/types";
 import { generateMap as generateHeisenMap } from "./draft/heisen/generateMap";
+import { immer } from "zustand/middleware/immer";
+import { emptySlice, emptySlices } from "./utils/slice";
 
 const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
@@ -488,7 +492,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
       if (mapType !== "heisen") {
         slices = shouldRandomizeSlices
           ? randomizeSlices(config, numSlices, systemPool)
-          : emptySlices(numSlices, config.numSystemsInSlice);
+          : emptySlicesOld(numSlices, config.numSystemsInSlice);
 
         map = shouldRandomizeMap
           ? randomizeMap(config, slices, systemPool)
@@ -500,7 +504,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
           systemPool,
         );
 
-        slices = rawSlices.map(normalizeSlice);
+        slices = rawSlices.map(normalizeSliceOld);
         const mapIds = [...EMPTY_MAP_STRING];
         Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
           mapIds[Number(mapIdx)] = system;
@@ -510,8 +514,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
       // sort by most valuable first
       slices.sort((a, b) => {
-        const aSystems = systemsInSlice(a);
-        const bSystems = systemsInSlice(b);
+        const aSystems = systemsInSliceOld(a);
+        const bSystems = systemsInSliceOld(b);
         return valueSlice(bSystems) - valueSlice(aSystems);
       });
 
@@ -537,7 +541,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
     clearSlice: (sliceIdx: number) =>
       set((state) => {
         const slices = [...state.slices];
-        slices[sliceIdx] = emptySlice(state.config.numSystemsInSlice);
+        slices[sliceIdx] = emptySliceOld(state.config.numSystemsInSlice);
         return { slices };
       }),
 
@@ -623,7 +627,10 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
     addNewSlice: () =>
       set((state) => ({
-        slices: [emptySlice(state.config.numSystemsInSlice), ...state.slices],
+        slices: [
+          emptySliceOld(state.config.numSystemsInSlice),
+          ...state.slices,
+        ],
       })),
 
     addFaction: (id: FactionId) =>
@@ -669,7 +676,7 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
           state.slices.length,
           state.systemPool,
         );
-        const slices = rawSlices.map(normalizeSlice);
+        const slices = rawSlices.map(normalizeSliceOld);
         const mapIds = [...EMPTY_MAP_STRING];
         Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
           mapIds[Number(mapIdx)] = system;
@@ -678,8 +685,8 @@ export const useNewDraft = create<NewDraftState>((set, get) => ({
 
         // sort by most valuable first
         slices.sort((a, b) => {
-          const aSystems = systemsInSlice(a);
-          const bSystems = systemsInSlice(b);
+          const aSystems = systemsInSliceOld(a);
+          const bSystems = systemsInSliceOld(b);
           return valueSlice(bSystems) - valueSlice(aSystems);
         });
 
@@ -813,7 +820,9 @@ function randomizeSlices(
   let slices: Slice[] = [];
   if (config.generateSlices !== undefined) {
     // Use draft-specific randomization algorithm.
-    slices = config.generateSlices(numSlices, systemPool).map(normalizeSlice);
+    slices = config
+      .generateSlices(numSlices, systemPool)
+      .map(normalizeSliceOld);
   } else {
     // If not defined, used our 'standard' statistics sampling randomization,
     slices = generateSlices(
@@ -828,3 +837,189 @@ function randomizeSlices(
 
   return slices;
 }
+
+/// V2
+
+type DraftV2State = {
+  draft: Draft;
+  factionPool: FactionId[];
+  systemPool: SystemId[];
+  initialized: boolean;
+  actions: {
+    initializeDraft: (args: {
+      // draft: Draft;
+      randomizeSlices: boolean;
+      randomizeMap: boolean;
+    }) => void;
+
+    setDraftSpeaker: (draftSpeaker: boolean) => void;
+    // HOW are we updating players?
+    // updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
+
+    // faction actions
+    randomizeFactions: () => void;
+    setNumFactionsToDraft: (num: number) => void;
+    addRandomFaction: () => void;
+    removeLastFaction: () => void;
+
+    // system actions
+    addSystemToMap: (tileIdx: number, system: System) => void;
+    removeSystemFromMap: (tileIdx: number) => void;
+
+    // slice actions
+    addSystemToSlice: (
+      sliceIdx: number,
+      tileIdx: number,
+      system: System,
+    ) => void;
+    removeSystemFromSlice: (sliceIdx: number, tileIdx: number) => void;
+    clearSlice: (sliceIdx: number) => void;
+
+    // map actions
+    clearMap: () => void;
+    importMap: (mapString: string) => void;
+
+    // randomization
+    randomizeAll: () => void;
+    randomizeMap: () => void;
+    randomizeSlice: (sliceIdx: number) => void;
+    randomizeSlices: () => void;
+  };
+};
+
+export const useDraftV2 = create<DraftV2State>()(
+  immer((set) => ({
+    initialized: false,
+    factionPool: [],
+    systemPool: [],
+    draft: {
+      settings: {
+        allowEmptyTiles: false,
+        allowHomePlanetSearch: false,
+        draftSpeaker: false,
+        gameSets: [],
+        numFactions: 6,
+        numSlices: 6,
+        type: "heisen",
+      },
+      availableFactions: [],
+      integrations: {},
+      players: [],
+      slices: [],
+      presetMap: [],
+    },
+    actions: {
+      initializeDraft: (args: {
+        // draftSettings: DraftSettings;
+        randomizeSlices: boolean;
+        randomizeMap: boolean;
+      }) =>
+        set(({ draft }) => {
+          // TODO: Make this actual config what it should be
+          const config = draftConfig.heisen;
+          draft.presetMap = generateEmptyMap(config);
+
+          // now set slices to empty
+          draft.slices = emptySlices(config, draft.settings.numSlices);
+        }),
+
+      setDraftSpeaker: (draftSpeaker: boolean) =>
+        set(({ draft }) => {
+          draft.settings.draftSpeaker = draftSpeaker;
+        }),
+      // HOW are we updating players?
+      // updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
+
+      // faction actions
+      randomizeFactions: () =>
+        set(({ draft, factionPool }) => {
+          draft.availableFactions = fisherYatesShuffle(
+            factionPool,
+            draft.settings.numFactions,
+          );
+        }),
+
+      setNumFactionsToDraft: (num: number) =>
+        set(({ draft }) => {
+          draft.settings.numFactions = num;
+        }),
+      addRandomFaction: () =>
+        set(({ draft, factionPool }) => {
+          const availableFactions = factionPool.filter(
+            (f) => !draft.availableFactions.includes(f),
+          );
+          const idx = Math.floor(Math.random() * availableFactions.length);
+          draft.availableFactions.push(availableFactions[idx]);
+        }),
+
+      removeLastFaction: () =>
+        set(({ draft }) => {
+          const availableFactions = draft.availableFactions.slice(0, -1);
+          draft.settings.numFactions = availableFactions.length;
+          draft.availableFactions = availableFactions;
+        }),
+
+      // system actions
+      addSystemToMap: (tileIdx: number, system: System) =>
+        set(({ draft }) => {
+          draft.presetMap[tileIdx] = {
+            idx: tileIdx,
+            position: draft.presetMap[tileIdx].position,
+            type: "SYSTEM",
+            systemId: system.id,
+          };
+        }),
+      removeSystemFromMap: (tileIdx: number) =>
+        set(({ draft }) => {
+          draft.presetMap[tileIdx] = {
+            idx: tileIdx,
+            position: draft.presetMap[tileIdx].position,
+            type: "OPEN",
+          };
+        }),
+
+      // slice actions
+      addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
+        set(({ draft }) => {
+          draft.slices[sliceIdx].tiles[tileIdx] = {
+            ...draft.slices[sliceIdx].tiles[tileIdx],
+            type: "SYSTEM",
+            systemId: system.id,
+          };
+        }),
+      removeSystemFromSlice: (sliceIdx: number, tileIdx: number) =>
+        set(({ draft }) => {
+          draft.slices[sliceIdx].tiles[tileIdx] = {
+            ...draft.slices[sliceIdx].tiles[tileIdx],
+            type: "OPEN",
+          };
+        }),
+      clearSlice: (sliceIdx: number) =>
+        set(({ draft }) => {
+          const config = draftConfig[draft.settings.type];
+          draft.slices[sliceIdx] = emptySlice(
+            config,
+            draft.slices[sliceIdx].name,
+            config.numSystemsInSlice,
+          );
+        }),
+
+      // map actions
+      clearMap: () => {},
+      importMap: (mapString: string) => {},
+
+      // randomization
+      randomizeAll: () => {},
+      randomizeMap: () => {},
+      randomizeSlice: (sliceIdx: number) => {},
+      randomizeSlices: () => {},
+    },
+    setDraft: (partial: (state: DraftV2State) => Draft | Partial<Draft>) =>
+      set((state) => ({
+        draft: {
+          ...state.draft,
+          ...partial(state),
+        },
+      })),
+  })),
+);
