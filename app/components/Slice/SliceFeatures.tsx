@@ -1,5 +1,5 @@
 import { Group } from "@mantine/core";
-import { systemsInSliceOld, techSpecialtiesForSystems } from "~/utils/map";
+import { techSpecialtiesForSystems } from "~/utils/map";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
 import { Wormhole } from "../features/Wormhole";

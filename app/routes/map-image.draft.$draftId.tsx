@@ -7,7 +7,7 @@ import { mapStringOrder } from "~/data/mapStringOrder";
 import { draftConfig } from "~/draft";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { PersistedDraft } from "~/types";
-import { hydrateMap, parseMapString } from "~/utils/map";
+import { hydrateMapOld, parseMapString } from "~/utils/map";
 
 export default function MapImage() {
   const result = useLoaderData<typeof loader>();
@@ -21,7 +21,7 @@ export default function MapImage() {
     rawMapString[0] !== "18",
   );
 
-  const map = hydrateMap(config, mapString, draft.players, draft.slices);
+  const map = hydrateMapOld(config, mapString, draft.players, draft.slices);
 
   return (
     <div

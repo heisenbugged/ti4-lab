@@ -1,4 +1,4 @@
-import { HomeTile, Map as MapType, MapV2 } from "~/types";
+import { HomeTileRef, Map as MapType, MapV2, TileRef } from "~/types";
 import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
@@ -11,20 +11,18 @@ type Props = {
   id: string;
   config: DraftConfig;
   map: MapV2;
-  padding: number;
-  mode: "create" | "draft";
+  editable: boolean;
   disabled?: boolean;
-  onSelectSystemTile?: (tileIdx: number) => void;
-  onDeleteSystemTile?: (tileIdx: number) => void;
-  onSelectHomeTile?: (tile: HomeTile) => void;
+  onSelectSystemTile?: (tile: TileRef) => void;
+  onDeleteSystemTile?: (tile: TileRef) => void;
+  onSelectHomeTile?: (tile: HomeTileRef) => void;
 };
 
 export function Map({
   id,
   config,
   map,
-  padding,
-  mode,
+  editable = false,
   disabled = false,
   onSelectSystemTile,
   onDeleteSystemTile,
@@ -42,8 +40,8 @@ export function Map({
         height,
         radius,
         gap,
-        hOffset: -radius + height * 0.5 + padding,
-        wOffset: -radius + width * 0.5 + padding,
+        hOffset: -radius + height * 0.5,
+        wOffset: -radius + width * 0.5,
         disabled,
       }}
     >
@@ -57,14 +55,14 @@ export function Map({
               tile={tile}
               onSelect={() => {
                 if (tile.type === "SYSTEM" || tile.type === "OPEN")
-                  onSelectSystemTile?.(idx);
+                  onSelectSystemTile?.(tile);
                 if (tile.type === "HOME") onSelectHomeTile?.(tile);
               }}
               onDelete={() => {
-                if (tile.type === "SYSTEM") onDeleteSystemTile?.(idx);
+                if (tile.type === "SYSTEM") onDeleteSystemTile?.(tile);
               }}
-              modifiable={mode === "create" && isTileModifiable(config, idx)}
-              homeSelectable={onSelectHomeTile && mode === "draft"}
+              modifiable={editable && isTileModifiable(config, idx)}
+              homeSelectable={!!onSelectHomeTile}
             />
           ))}
       </Box>

@@ -1,6 +1,7 @@
 import { systemData } from "~/data/systemData";
 import { DraftConfig } from "~/draft";
-import { DraftSlice, System, TileRef } from "~/types";
+import { valueSlice } from "~/stats";
+import { DraftSlice, System, SystemId, TileRef } from "~/types";
 
 export function emptySlices(
   config: DraftConfig,
@@ -42,3 +43,41 @@ export const systemsInSlice = (slice: DraftSlice): System[] => {
     return acc;
   }, [] as System[]);
 };
+
+export const systemIdsToSlice = (
+  config: DraftConfig,
+  sliceName: string,
+  systemIds: SystemId[],
+): DraftSlice => {
+  return {
+    name: sliceName,
+    tiles: [
+      {
+        idx: 0,
+        type: "HOME",
+        position: config.seatTilePositions[0],
+      },
+      ...systemIds.map((id, idx) => ({
+        idx: idx + 1,
+        position: config.seatTilePositions[idx + 1],
+        type: "SYSTEM" as const,
+        systemId: id,
+      })),
+    ],
+  };
+};
+
+export const systemIdsToSlices = (
+  config: DraftConfig,
+  rawSlices: SystemId[][],
+): DraftSlice[] => {
+  const sorted = [...rawSlices].sort(
+    (a, b) => valueSlice(systemsFromIds(b)) - valueSlice(systemsFromIds(a)),
+  );
+  return sorted.map((systemIds, idx) =>
+    systemIdsToSlice(config, `Slice ${idx + 1}`, systemIds),
+  );
+};
+
+const systemsFromIds = (ids: SystemId[]): System[] =>
+  ids.map((id) => systemData[id]);

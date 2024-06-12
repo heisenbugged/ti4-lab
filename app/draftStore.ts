@@ -2,48 +2,37 @@ import { create } from "zustand";
 import {
   DiscordData,
   Draft,
+  DraftSettings,
+  DraftSlice,
   FactionId,
-  GameSet,
   Map,
-  MapStats,
-  Opulence,
+  MapV2,
   PersistedDraft,
   Player,
   Slice,
   System,
   SystemId,
-  SystemStats,
-  Variance,
-  generateEmptyMap,
 } from "./types";
 import {
-  emptySliceOld,
-  emptySlicesOld,
-  hydrateMap,
-  normalizeSliceOld,
+  generateEmptyMap,
   parseMapString,
   playerSpeakerOrder,
-  sliceMap,
-  systemsInSliceOld,
 } from "./utils/map";
-import {
-  unchartedStarsSystemIds,
-  draftableSystemIds,
-  systemData,
-} from "./data/systemData";
-import {
-  allFactionIds,
-  baseFactionIds,
-  factionDiscordantExpIds,
-  factionDiscordantIds,
-  factions,
-} from "./data/factionData";
-import { fisherYatesShuffle, generateSlices, valueSlice } from "./stats";
+import { factions } from "./data/factionData";
+import { fisherYatesShuffle } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
-import { DraftConfig, DraftType } from "./draft/types";
+import { DraftConfig } from "./draft/types";
 import { generateMap as generateHeisenMap } from "./draft/heisen/generateMap";
 import { immer } from "zustand/middleware/immer";
-import { emptySlice, emptySlices } from "./utils/slice";
+import {
+  emptySlice,
+  emptySlices,
+  systemIdsToSlice,
+  systemIdsToSlices,
+} from "./utils/slice";
+import { getSystemPool, systemStats } from "./utils/system";
+import { getFactionPool } from "./utils/factions";
+import { mapStringOrder } from "./data/mapStringOrder";
 
 const EMPTY_MAP_STRING =
   "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
@@ -237,7 +226,12 @@ export const useDraft = create<DraftsState>((set, get) => ({
     const newPlayers = players ?? get().players;
     const newSlices = slices ?? get().slices;
     const parsedMap = parseMapString(newConfig, newMapString);
-    const hydratedMap = hydrateMap(newConfig, parsedMap, newPlayers, newSlices);
+    const hydratedMap = hydrateMapOld(
+      newConfig,
+      parsedMap,
+      newPlayers,
+      newSlices,
+    );
 
     return {
       hydratedMap,
@@ -256,601 +250,53 @@ export const useDraft = create<DraftsState>((set, get) => ({
     })),
 }));
 
-type NewDraftState = {
-  initialized: boolean;
-  config: DraftConfig;
-  systemPool: SystemId[];
-  factionPool: FactionId[];
-  allowHomePlanetSearch: boolean;
-  allowEmptyMapTiles: boolean;
-  map: Map;
-  slices: Slice[];
-  numFactionsToDraft: number;
-  draftSpeaker: boolean;
-  availableFactions: FactionId[];
-  players: Player[];
-  varianceValue: Variance;
-  opulenceValue: Opulence;
-  discordData?: DiscordData;
-
-  validationErrors: () => string[]; // TODO: Move derived data to hook.
-  exportableMapString: () => string; // TODO: Move derived data to hook.
-  mapStats: () => MapStats; // TODO: Move derived data to hook.
-
-  actions: {
-    setDraftSpeaker: (draftSpeaker: boolean) => void;
-    updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
-
-    // faction actions
-    randomizeFactions: () => void;
-    setNumFactionsToDraft: (num: number | undefined) => void;
-    addFaction: (id: FactionId) => void;
-    addRandomFaction: () => void;
-    removeLastFaction: () => void;
-    removeFaction: (id: FactionId) => void;
-
-    // system actions
-    addSystemToMap: (tileIdx: number, system: System) => void;
-    removeSystemFromMap: (tileIdx: number) => void;
-    addSystemToSlice: (
-      sliceIdx: number,
-      tileIdx: number,
-      system: System,
-    ) => void;
-    removeSystemFromSlice: (sliceIdx: number, tileIdx: number) => void;
-
-    // slice actions
-    addNewSlice: () => void;
-    clearSlice: (sliceIdx: number) => void;
-
-    // map actions
-    initializeMap: (args: {
-      gameSets: GameSet[];
-      mapType: DraftType;
-      numFactions: number;
-      numSlices: number;
-      players: Player[];
-      randomizeSlices: boolean;
-      randomizeMap: boolean;
-      draftSpeaker?: boolean;
-      allowHomePlanetSearch: boolean;
-      allowEmptyMapTiles: boolean;
-      discordData?: DiscordData;
-    }) => void;
-    clearMap: () => void;
-    importMap: (mapString: string) => void;
-
-    // randomization
-    randomizeAll: () => void;
-    randomizeMap: () => void;
-    randomizeSlice: (sliceIdx: number) => void;
-    randomizeSlices: (
-      numSlices?: number,
-      varianceValue?: Variance,
-      opulenceValue?: Opulence,
-    ) => void;
-  };
-};
-
-export const useNewDraft = create<NewDraftState>((set, get) => ({
-  initialized: false,
-  config: draftConfig.heisen,
-  map: EMPTY_MAP,
-  systemPool: draftableSystemIds,
-  factionPool: allFactionIds,
-  allowHomePlanetSearch: false,
-  allowEmptyMapTiles: false,
-  // TODO: Determine if we should instead just make this a full empty array.
-  slices: [],
-  availableFactions: [...allFactionIds],
-  players: [
-    ...[0, 1, 2, 3, 4, 5].map((i) => ({
-      id: i,
-      name: "",
-    })),
-  ],
-  numFactionsToDraft: 6,
-  draftSpeaker: false,
-  varianceValue: "medium",
-  opulenceValue: "medium",
-  discordData: undefined,
-
-  validationErrors: () => {
-    const errors = [];
-    const numFactionsToDraft = get().numFactionsToDraft;
-
-    if (numFactionsToDraft !== undefined && numFactionsToDraft < 6) {
-      errors.push("Number of factions to draft must be 6 or more");
-    }
-
-    // if there are any zeroes in slices except for the first value in the slice, return false
-    const slices = get().slices.map((slice) => slice.slice(1));
-    slices.forEach((slice, idx) => {
-      if (slice.some((tile) => tile === "0")) {
-        errors.push(`Slice ${idx} has empty tiles`);
-      }
-    });
-
-    // we pretend as if all players have seated.
-    const hydratedMap = hydrateMap(
-      get().config,
-      get().map,
-      get().players.map((p, idx) => ({ ...p, seatIdx: idx, sliceIdx: idx })),
-      get().slices,
-    );
-
-    // if there are any zeroes on the map, return false.
-    const mapType = get().config.type;
-    if (
-      hydratedMap.some((tile) => tile.type === "OPEN") &&
-      mapType !== "miltyeqless" &&
-      !get().allowEmptyMapTiles
-    ) {
-      errors.push("Map has empty tiles");
-    }
-
-    return errors;
-  },
-
-  exportableMapString: () => {
-    // we pretend as if all players have seated.
-    const hydratedMap = hydrateMap(
-      get().config,
-      get().map,
-      get().players.map((p, idx) => ({ ...p, seatIdx: idx, sliceIdx: idx })),
-      get().slices,
-    );
-
-    return hydratedMap
-      .map((tile) => tile.system?.id ?? "0")
-      .slice(1, hydratedMap.length)
-      .join(" ");
-  },
-  mapStats: () => {
-    const stats: SystemStats[] = [];
-    get().slices.forEach((slice) => {
-      slice.forEach((t) => {
-        const system = systemData[t];
-        if (!system) return;
-        stats.push(systemStats(system));
-      });
-    });
-    get().map.forEach((tile) => {
-      if (tile.type !== "SYSTEM") return;
-      stats.push(systemStats(tile.system));
-    });
-
-    return stats.reduce(
-      (acc, s) => {
-        acc.totalResources += s.totalResources;
-        acc.totalInfluence += s.totalInfluence;
-        acc.totalTech = acc.totalTech.concat(s.totalTech).sort();
-        acc.redTraits += s.redTraits;
-        acc.greenTraits += s.greenTraits;
-        acc.blueTraits += s.blueTraits;
-
-        if (s.systemType === "RED") {
-          acc.redTiles++;
-        } else if (s.systemType === "BLUE") {
-          acc.blueTiles++;
-        }
-
-        return acc;
-      },
-      {
-        redTiles: 0,
-        blueTiles: 0,
-        totalResources: 0,
-        totalInfluence: 0,
-        totalTech: [] as string[],
-        redTraits: 0,
-        greenTraits: 0,
-        blueTraits: 0,
-      },
-    );
-  },
-
-  actions: {
-    initializeMap: ({
-      gameSets,
-      mapType,
-      numFactions,
-      numSlices,
-      players,
-      randomizeSlices: shouldRandomizeSlices,
-      randomizeMap: shouldRandomizeMap,
-      draftSpeaker,
-      allowHomePlanetSearch,
-      allowEmptyMapTiles,
-      discordData,
-    }) => {
-      const config = draftConfig[mapType];
-      let systemPool = [...draftableSystemIds];
-      if (gameSets.includes("unchartedstars")) {
-        systemPool.push(...unchartedStarsSystemIds);
-      }
-      systemPool = systemPool.flat(1);
-
-      let factionPool = [...baseFactionIds];
-      if (gameSets.includes("discordant")) {
-        factionPool.push(...factionDiscordantIds);
-      }
-      if (gameSets.includes("discordantexp")) {
-        factionPool.push(...factionDiscordantExpIds);
-      }
-      factionPool = factionPool.flat(1);
-
-      // randomly pull factions from the list of all factions
-      const availableFactions: FactionId[] = fisherYatesShuffle(
-        factionPool,
-        numFactions,
-      );
-
-      let slices: Slice[];
-      let map: Map;
-
-      if (mapType !== "heisen") {
-        slices = shouldRandomizeSlices
-          ? randomizeSlices(config, numSlices, systemPool)
-          : emptySlicesOld(numSlices, config.numSystemsInSlice);
-
-        map = shouldRandomizeMap
-          ? randomizeMap(config, slices, systemPool)
-          : EMPTY_MAP;
-      } else {
-        // nucleum has a very special draft format.
-        const { chosenSpots, slices: rawSlices } = generateHeisenMap(
-          numSlices,
-          systemPool,
-        );
-
-        slices = rawSlices.map(normalizeSliceOld);
-        const mapIds = [...EMPTY_MAP_STRING];
-        Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
-          mapIds[Number(mapIdx)] = system;
-        });
-        map = parseMapString(config, mapIds);
-      }
-
-      // sort by most valuable first
-      slices.sort((a, b) => {
-        const aSystems = systemsInSliceOld(a);
-        const bSystems = systemsInSliceOld(b);
-        return valueSlice(bSystems) - valueSlice(aSystems);
-      });
-
-      set({
-        config,
-        map,
-        slices,
-        players,
-        initialized: true,
-        availableFactions,
-        numFactionsToDraft: numFactions,
-        draftSpeaker: draftSpeaker ?? false,
-        systemPool,
-        factionPool,
-        allowHomePlanetSearch,
-        allowEmptyMapTiles,
-        discordData,
-      });
-    },
-
-    setDraftSpeaker: (draftSpeaker: boolean) => set({ draftSpeaker }),
-
-    clearSlice: (sliceIdx: number) =>
-      set((state) => {
-        const slices = [...state.slices];
-        slices[sliceIdx] = emptySliceOld(state.config.numSystemsInSlice);
-        return { slices };
-      }),
-
-    randomizeFactions: () =>
-      set((state) => {
-        const availableFactions = fisherYatesShuffle(
-          state.factionPool,
-          state.numFactionsToDraft,
-        );
-        return { availableFactions };
-      }),
-
-    setNumFactionsToDraft: (num) => set({ numFactionsToDraft: num }),
-    updatePlayer: (playerIdx: number, player: Partial<Player>) =>
-      set(({ players }) => ({
-        players: players.map((p, idx) =>
-          idx === playerIdx ? { ...p, ...player } : p,
-        ),
-      })),
-    importMap: (mapString: string) =>
-      set((state) => {
-        const rawMap = parseMapString(state.config, mapString.split(" "));
-        const { slices, map: slicedMap } = sliceMap(state.config, rawMap);
-        return {
-          map: slicedMap,
-          slices,
-        };
-      }),
-
-    clearMap: () =>
-      set((state) => {
-        const map = [...state.map];
-        state.config.modifiableMapTiles.forEach((idx) => {
-          map[idx] = {
-            position: state.map[idx].position,
-            idx: state.map[idx].idx,
-            system: undefined,
-            type: "OPEN",
-          };
-        });
-        return { map };
-      }),
-
-    addSystemToMap: (tileIdx: number, system: System) =>
-      set((state) => {
-        const map = [...state.map];
-        map[tileIdx] = {
-          ...state.map[tileIdx],
-          type: "SYSTEM",
-          system,
-        };
-
-        return { map };
-      }),
-
-    removeSystemFromMap: (tileIdx: number) =>
-      set((state) => {
-        const map = [...state.map];
-        map[tileIdx] = {
-          position: state.map[tileIdx].position,
-          idx: state.map[tileIdx].idx,
-          system: undefined,
-          type: "OPEN",
-        };
-        return { map };
-      }),
-
-    addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
-      set((state) => {
-        const slices = [...state.slices];
-        slices[sliceIdx] = [...slices[sliceIdx]];
-        slices[sliceIdx][tileIdx] = system.id;
-        return { slices };
-      }),
-
-    removeSystemFromSlice: (sliceIdx: number, tileIdx: number) =>
-      set((state) => {
-        const slices = [...state.slices];
-        slices[sliceIdx] = [...slices[sliceIdx]];
-        slices[sliceIdx][tileIdx] = "0";
-        return { slices };
-      }),
-
-    addNewSlice: () =>
-      set((state) => ({
-        slices: [
-          emptySliceOld(state.config.numSystemsInSlice),
-          ...state.slices,
-        ],
-      })),
-
-    addFaction: (id: FactionId) =>
-      set(({ availableFactions }) => ({
-        availableFactions: [...availableFactions, id],
-      })),
-
-    addRandomFaction: () =>
-      set((state) => {
-        const availableFactions = state.factionPool.filter(
-          (f) => !state.availableFactions.includes(f),
-        );
-        const idx = Math.floor(Math.random() * availableFactions.length);
-        const faction = availableFactions[idx];
-        return {
-          availableFactions: [...state.availableFactions, faction],
-          numFactionsToDraft: state.numFactionsToDraft + 1,
-        };
-      }),
-
-    removeLastFaction: () =>
-      set((state) => {
-        const availableFactions = state.availableFactions.slice(0, -1);
-        return {
-          availableFactions,
-          numFactionsToDraft: availableFactions.length,
-        };
-      }),
-
-    removeFaction: (id: FactionId) =>
-      set(({ availableFactions }) => ({
-        numFactionsToDraft: availableFactions.length - 1,
-        availableFactions: availableFactions.filter((f) => f !== id),
-      })),
-
-    // randomization actions
-    randomizeAll: () =>
-      set((state) => {
-        if (state.config.type !== "heisen") return {};
-
-        // nucleum has a very special draft format.
-        const { chosenSpots, slices: rawSlices } = generateHeisenMap(
-          state.slices.length,
-          state.systemPool,
-        );
-        const slices = rawSlices.map(normalizeSliceOld);
-        const mapIds = [...EMPTY_MAP_STRING];
-        Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
-          mapIds[Number(mapIdx)] = system;
-        });
-        const map = parseMapString(state.config, mapIds);
-
-        // sort by most valuable first
-        slices.sort((a, b) => {
-          const aSystems = systemsInSliceOld(a);
-          const bSystems = systemsInSliceOld(b);
-          return valueSlice(bSystems) - valueSlice(aSystems);
-        });
-
-        return { map, slices };
-      }),
-
-    randomizeMap: () =>
-      set((state) => {
-        const map = randomizeMap(state.config, state.slices, state.systemPool);
-        return { map };
-      }),
-    randomizeSlices: (numSlices, varianceValue, opulenceValue) =>
-      set((state) => {
-        const slices = randomizeSlices(
-          state.config,
-          numSlices ?? state.slices.length,
-          state.systemPool,
-          opulenceValue,
-          varianceValue,
-        );
-
-        return { slices, varianceValue, opulenceValue };
-      }),
-    randomizeSlice: (sliceIdx: number) =>
-      set((state) => {
-        // get all used system ids of other tiles to exclude from the random pull.
-        const usedSliceSystems = state.slices
-          .filter((_, idx) => idx !== sliceIdx)
-          .flat(1)
-          .filter((i) => i !== "-1");
-
-        const usedMapSystems: SystemId[] = [];
-        state.config.modifiableMapTiles.forEach((idx) => {
-          const system = state.map[idx].system;
-          if (system) {
-            usedMapSystems.push(system.id);
-          }
-        });
-
-        const usedSystemIds = [...usedSliceSystems, ...usedMapSystems];
-        const availableSystems = state.systemPool.filter(
-          (s) => !usedSystemIds.includes(s),
-        );
-
-        const generatedSlice = randomizeSlices(
-          state.config,
-          1,
-          availableSystems,
-          state.opulenceValue,
-          state.varianceValue,
-        )[0];
-
-        // update slice in array
-        const slices = [...state.slices];
-        slices[sliceIdx] = generatedSlice;
-
-        return { slices };
-      }),
-  },
-}));
-
-function systemStats(system: System): SystemStats {
-  const techSpecialtyMap = {
-    BIOTIC: "G",
-    CYBERNETIC: "Y",
-    WARFARE: "R",
-    PROPULSION: "B",
-  } as const;
-
-  const traitCount = {
-    HAZARDOUS: "redTraits",
-    INDUSTRIAL: "greenTraits",
-    CULTURAL: "blueTraits",
-  } as const;
-
-  return system.planets.reduce(
-    (stats, p) => {
-      stats.totalResources += p.resources;
-      stats.totalInfluence += p.influence;
-
-      if (p.tech) {
-        stats.totalTech.push(techSpecialtyMap[p.tech]);
-      }
-
-      if (p.trait) {
-        stats[traitCount[p.trait]]++;
-      }
-
-      return stats;
-    },
-    {
-      systemType: system.type,
-      totalResources: 0,
-      totalInfluence: 0,
-      totalTech: [] as string[],
-      redTraits: 0,
-      greenTraits: 0,
-      blueTraits: 0,
-    },
-  );
-}
-
 function randomizeMap(
   config: DraftConfig,
-  slices: Slice[],
+  slices: DraftSlice[],
   systemPool: SystemId[],
-) {
-  const mapString = [...EMPTY_MAP_STRING];
+): MapV2 {
+  const map = generateEmptyMap(config);
   const numMapTiles = config.modifiableMapTiles.length;
-  const usedSystemIds = slices.flat(1).filter((i) => i !== "-1");
+  const usedSystemIds = slices
+    .map((s) => s.tiles)
+    .flat(1)
+    .map((t) => (t.type === "SYSTEM" ? t.systemId : undefined))
+    .filter((t) => !!t) as SystemId[];
+
   const filteredSystemIds = fisherYatesShuffle(
     systemPool.filter((id) => !usedSystemIds.includes(id)),
     numMapTiles,
   );
 
   config.modifiableMapTiles.forEach((idx) => {
-    // idx - 1 to account for mecatol
-    mapString[idx - 1] = filteredSystemIds.pop()!;
+    map[idx] = {
+      idx: idx,
+      position: mapStringOrder[idx],
+      type: "SYSTEM",
+      systemId: filteredSystemIds.pop()!,
+    };
   });
-
-  return parseMapString(config, mapString);
-}
-
-function randomizeSlices(
-  config: DraftConfig,
-  numSlices: number,
-  systemPool: SystemId[],
-  opulence: Opulence = "medium",
-  variance: Variance = "medium",
-) {
-  let slices: Slice[] = [];
-  if (config.generateSlices !== undefined) {
-    // Use draft-specific randomization algorithm.
-    slices = config
-      .generateSlices(numSlices, systemPool)
-      .map(normalizeSliceOld);
-  } else {
-    // If not defined, used our 'standard' statistics sampling randomization,
-    slices = generateSlices(
-      numSlices,
-      systemPool.map((id) => systemData[id]),
-      variance,
-      opulence,
-      config.numSystemsInSlice,
-      config.type,
-    ).map((s) => ["-1", ...s.systems.map((sys) => sys.id)]);
-  }
-
-  return slices;
+  return map;
 }
 
 /// V2
-
 type DraftV2State = {
   draft: Draft;
   factionPool: FactionId[];
   systemPool: SystemId[];
   initialized: boolean;
+  planetFinderModal?:
+    | {
+        mode: "map";
+        tileIdx: number;
+      }
+    | {
+        mode: "slice";
+        sliceIdx: number;
+        tileIdx: number;
+      };
   actions: {
-    initializeDraft: (args: {
-      // draft: Draft;
-      randomizeSlices: boolean;
-      randomizeMap: boolean;
-    }) => void;
+    initializeDraft: (settings: DraftSettings) => void;
 
     setDraftSpeaker: (draftSpeaker: boolean) => void;
     // HOW are we updating players?
@@ -861,6 +307,12 @@ type DraftV2State = {
     setNumFactionsToDraft: (num: number) => void;
     addRandomFaction: () => void;
     removeLastFaction: () => void;
+    removeFaction: (id: FactionId) => void;
+
+    // planet finding actions
+    openPlanetFinderForMap: (tileIdx: number) => void;
+    openPlanetFinderForSlice: (sliceIdx: number, tileIdx: number) => void;
+    closePlanetFinder: () => void;
 
     // system actions
     addSystemToMap: (tileIdx: number, system: System) => void;
@@ -892,11 +344,14 @@ export const useDraftV2 = create<DraftV2State>()(
     initialized: false,
     factionPool: [],
     systemPool: [],
+    planetFinderModal: undefined,
     draft: {
       settings: {
         allowEmptyTiles: false,
         allowHomePlanetSearch: false,
         draftSpeaker: false,
+        randomizeMap: false,
+        randomizeSlices: false,
         gameSets: [],
         numFactions: 6,
         numSlices: 6,
@@ -909,18 +364,40 @@ export const useDraftV2 = create<DraftV2State>()(
       presetMap: [],
     },
     actions: {
-      initializeDraft: (args: {
-        // draftSettings: DraftSettings;
-        randomizeSlices: boolean;
-        randomizeMap: boolean;
-      }) =>
-        set(({ draft }) => {
-          // TODO: Make this actual config what it should be
-          const config = draftConfig.heisen;
-          draft.presetMap = generateEmptyMap(config);
+      initializeDraft: (settings: DraftSettings) =>
+        set((state) => {
+          const draft = state.draft;
+          const config = draftConfig[settings.type];
 
-          // now set slices to empty
-          draft.slices = emptySlices(config, draft.settings.numSlices);
+          // intialize pools based on game sets.
+          state.factionPool = getFactionPool(settings.gameSets);
+          state.systemPool = getSystemPool(settings.gameSets);
+
+          draft.availableFactions = fisherYatesShuffle(
+            state.factionPool,
+            settings.numFactions,
+          );
+
+          // pre-fill map and slices
+          if (config.type === "heisen") {
+            // nucleus has a special draft format.
+            const { map, slices } = initializeHeisen(
+              settings,
+              state.systemPool,
+            );
+            draft.presetMap = map;
+            draft.slices = slices;
+          } else {
+            draft.slices = initializeSlices(settings, state.systemPool);
+            draft.presetMap = initializeMap(
+              settings,
+              draft.slices,
+              state.systemPool,
+            );
+          }
+
+          state.draft.settings = settings;
+          state.initialized = true;
         }),
 
       setDraftSpeaker: (draftSpeaker: boolean) =>
@@ -950,6 +427,7 @@ export const useDraftV2 = create<DraftV2State>()(
           );
           const idx = Math.floor(Math.random() * availableFactions.length);
           draft.availableFactions.push(availableFactions[idx]);
+          draft.settings.numFactions += 1;
         }),
 
       removeLastFaction: () =>
@@ -957,6 +435,37 @@ export const useDraftV2 = create<DraftV2State>()(
           const availableFactions = draft.availableFactions.slice(0, -1);
           draft.settings.numFactions = availableFactions.length;
           draft.availableFactions = availableFactions;
+        }),
+
+      removeFaction: (id: FactionId) =>
+        set(({ draft }) => {
+          draft.settings.numFactions = draft.availableFactions.length - 1;
+          draft.availableFactions = draft.availableFactions.filter(
+            (f) => f !== id,
+          );
+        }),
+
+      // planet finder actions
+      openPlanetFinderForMap: (tileIdx: number) =>
+        set((state) => {
+          state.planetFinderModal = {
+            mode: "map",
+            tileIdx,
+          };
+        }),
+
+      openPlanetFinderForSlice: (sliceIdx: number, tileIdx: number) =>
+        set((state) => {
+          state.planetFinderModal = {
+            mode: "slice",
+            sliceIdx,
+            tileIdx,
+          };
+        }),
+
+      closePlanetFinder: () =>
+        set((state) => {
+          state.planetFinderModal = undefined;
         }),
 
       // system actions
@@ -1005,7 +514,11 @@ export const useDraftV2 = create<DraftV2State>()(
         }),
 
       // map actions
-      clearMap: () => {},
+      clearMap: () =>
+        set(({ draft }) => {
+          const config = draftConfig[draft.settings.type];
+          draft.presetMap = generateEmptyMap(config);
+        }),
       importMap: (mapString: string) => {},
 
       // randomization
@@ -1023,3 +536,386 @@ export const useDraftV2 = create<DraftV2State>()(
       })),
   })),
 );
+
+function initializeHeisen(settings: DraftSettings, systemPool: SystemId[]) {
+  const config = draftConfig[settings.type];
+  const map = generateEmptyMap(config);
+  if (!settings.randomizeMap) {
+    return {
+      map,
+      slices: emptySlices(config, settings.numSlices),
+    };
+  }
+
+  const { chosenSpots, slices: rawSlices } = generateHeisenMap(
+    settings.numSlices,
+    systemPool,
+  );
+
+  Object.entries(chosenSpots).forEach(([mapIdx, systemId]) => {
+    const existing = map[Number(mapIdx) + 1];
+    map[Number(mapIdx) + 1] = {
+      ...existing,
+      type: "SYSTEM",
+      systemId,
+    };
+  });
+
+  return { map, slices: systemIdsToSlices(config, rawSlices) };
+}
+
+function initializeSlices(settings: DraftSettings, systemPool: SystemId[]) {
+  const config = draftConfig[settings.type];
+  if (!settings.randomizeSlices) return emptySlices(config, settings.numSlices);
+
+  const rawSlices = config.generateSlices(settings.numSlices, systemPool);
+  return systemIdsToSlices(config, rawSlices);
+}
+
+function initializeMap(
+  settings: DraftSettings,
+  slices: DraftSlice[],
+  systemPool: SystemId[],
+) {
+  const config = draftConfig[settings.type];
+  if (!settings.randomizeMap) return generateEmptyMap(config);
+
+  return randomizeMap(config, slices, systemPool);
+}
+
+// export const useNewDraft = create<NewDraftState>((set, get) => ({
+//   initialized: false,
+//   config: draftConfig.heisen,
+//   map: EMPTY_MAP,
+//   systemPool: draftableSystemIds,
+//   factionPool: allFactionIds,
+//   allowHomePlanetSearch: false,
+//   allowEmptyMapTiles: false,
+//   // TODO: Determine if we should instead just make this a full empty array.
+//   slices: [],
+//   availableFactions: [...allFactionIds],
+//   players: [
+//     ...[0, 1, 2, 3, 4, 5].map((i) => ({
+//       id: i,
+//       name: "",
+//     })),
+//   ],
+//   numFactionsToDraft: 6,
+//   draftSpeaker: false,
+//   varianceValue: "medium",
+//   opulenceValue: "medium",
+//   discordData: undefined,
+
+//   exportableMapString: () => {
+//     return "";
+//     // // we pretend as if all players have seated.
+//     // const hydratedMap = hydrateMapOld(
+//     //   get().config,
+//     //   get().map,
+//     //   get().players.map((p, idx) => ({ ...p, seatIdx: idx, sliceIdx: idx })),
+//     //   get().slices,
+//     // );
+
+//     // return hydratedMap
+//     //   .map((tile) => tile.system?.id ?? "0")
+//     //   .slice(1, hydratedMap.length)
+//     //   .join(" ");
+//   },
+
+//   actions: {
+//     initializeMap: ({
+//       gameSets,
+//       mapType,
+//       numFactions,
+//       numSlices,
+//       players,
+//       randomizeSlices: shouldRandomizeSlices,
+//       randomizeMap: shouldRandomizeMap,
+//       draftSpeaker,
+//       allowHomePlanetSearch,
+//       allowEmptyMapTiles,
+//       discordData,
+//     }) => {
+//       const config = draftConfig[mapType];
+//       let systemPool = [...draftableSystemIds];
+//       if (gameSets.includes("unchartedstars")) {
+//         systemPool.push(...unchartedStarsSystemIds);
+//       }
+//       systemPool = systemPool.flat(1);
+
+//       let factionPool = [...baseFactionIds];
+//       if (gameSets.includes("discordant")) {
+//         factionPool.push(...factionDiscordantIds);
+//       }
+//       if (gameSets.includes("discordantexp")) {
+//         factionPool.push(...factionDiscordantExpIds);
+//       }
+//       factionPool = factionPool.flat(1);
+
+//       // randomly pull factions from the list of all factions
+//       const availableFactions: FactionId[] = fisherYatesShuffle(
+//         factionPool,
+//         numFactions,
+//       );
+
+//       let slices: Slice[];
+//       let map: Map;
+
+//       if (mapType !== "heisen") {
+//         slices = shouldRandomizeSlices
+//           ? randomizeSlices(config, numSlices, systemPool)
+//           : emptySlicesOld(numSlices, config.numSystemsInSlice);
+
+//         map = shouldRandomizeMap
+//           ? randomizeMap(config, slices, systemPool)
+//           : EMPTY_MAP;
+//       } else {
+//         // nucleum has a very special draft format.
+//         const { chosenSpots, slices: rawSlices } = generateHeisenMap(
+//           numSlices,
+//           systemPool,
+//         );
+
+//         slices = rawSlices.map(normalizeSliceOld);
+//         const mapIds = [...EMPTY_MAP_STRING];
+//         Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
+//           mapIds[Number(mapIdx)] = system;
+//         });
+//         map = parseMapString(config, mapIds);
+//       }
+
+//       // sort by most valuable first
+//       slices.sort((a, b) => {
+//         const aSystems = systemsInSliceOld(a);
+//         const bSystems = systemsInSliceOld(b);
+//         return valueSlice(bSystems) - valueSlice(aSystems);
+//       });
+
+//       set({
+//         config,
+//         map,
+//         slices,
+//         players,
+//         initialized: true,
+//         availableFactions,
+//         numFactionsToDraft: numFactions,
+//         draftSpeaker: draftSpeaker ?? false,
+//         systemPool,
+//         factionPool,
+//         allowHomePlanetSearch,
+//         allowEmptyMapTiles,
+//         discordData,
+//       });
+//     },
+
+//     setDraftSpeaker: (draftSpeaker: boolean) => set({ draftSpeaker }),
+
+//     clearSlice: (sliceIdx: number) =>
+//       set((state) => {
+//         const slices = [...state.slices];
+//         slices[sliceIdx] = emptySliceOld(state.config.numSystemsInSlice);
+//         return { slices };
+//       }),
+
+//     randomizeFactions: () =>
+//       set((state) => {
+//         const availableFactions = fisherYatesShuffle(
+//           state.factionPool,
+//           state.numFactionsToDraft,
+//         );
+//         return { availableFactions };
+//       }),
+
+//     setNumFactionsToDraft: (num) => set({ numFactionsToDraft: num }),
+//     updatePlayer: (playerIdx: number, player: Partial<Player>) =>
+//       set(({ players }) => ({
+//         players: players.map((p, idx) =>
+//           idx === playerIdx ? { ...p, ...player } : p,
+//         ),
+//       })),
+//     importMap: (mapString: string) =>
+//       set((state) => {
+//         const rawMap = parseMapString(state.config, mapString.split(" "));
+//         const { slices, map: slicedMap } = sliceMap(state.config, rawMap);
+//         return {
+//           map: slicedMap,
+//           slices,
+//         };
+//       }),
+
+//     clearMap: () =>
+//       set((state) => {
+//         const map = [...state.map];
+//         state.config.modifiableMapTiles.forEach((idx) => {
+//           map[idx] = {
+//             position: state.map[idx].position,
+//             idx: state.map[idx].idx,
+//             system: undefined,
+//             type: "OPEN",
+//           };
+//         });
+//         return { map };
+//       }),
+
+//     addSystemToMap: (tileIdx: number, system: System) =>
+//       set((state) => {
+//         const map = [...state.map];
+//         map[tileIdx] = {
+//           ...state.map[tileIdx],
+//           type: "SYSTEM",
+//           system,
+//         };
+
+//         return { map };
+//       }),
+
+//     removeSystemFromMap: (tileIdx: number) =>
+//       set((state) => {
+//         const map = [...state.map];
+//         map[tileIdx] = {
+//           position: state.map[tileIdx].position,
+//           idx: state.map[tileIdx].idx,
+//           system: undefined,
+//           type: "OPEN",
+//         };
+//         return { map };
+//       }),
+
+//     addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
+//       set((state) => {
+//         const slices = [...state.slices];
+//         slices[sliceIdx] = [...slices[sliceIdx]];
+//         slices[sliceIdx][tileIdx] = system.id;
+//         return { slices };
+//       }),
+
+//     removeSystemFromSlice: (sliceIdx: number, tileIdx: number) =>
+//       set((state) => {
+//         const slices = [...state.slices];
+//         slices[sliceIdx] = [...slices[sliceIdx]];
+//         slices[sliceIdx][tileIdx] = "0";
+//         return { slices };
+//       }),
+
+//     addNewSlice: () =>
+//       set((state) => ({
+//         slices: [
+//           emptySliceOld(state.config.numSystemsInSlice),
+//           ...state.slices,
+//         ],
+//       })),
+
+//     addFaction: (id: FactionId) =>
+//       set(({ availableFactions }) => ({
+//         availableFactions: [...availableFactions, id],
+//       })),
+
+//     addRandomFaction: () =>
+//       set((state) => {
+//         const availableFactions = state.factionPool.filter(
+//           (f) => !state.availableFactions.includes(f),
+//         );
+//         const idx = Math.floor(Math.random() * availableFactions.length);
+//         const faction = availableFactions[idx];
+//         return {
+//           availableFactions: [...state.availableFactions, faction],
+//           numFactionsToDraft: state.numFactionsToDraft + 1,
+//         };
+//       }),
+
+//     removeLastFaction: () =>
+//       set((state) => {
+//         const availableFactions = state.availableFactions.slice(0, -1);
+//         return {
+//           availableFactions,
+//           numFactionsToDraft: availableFactions.length,
+//         };
+//       }),
+
+//     removeFaction: (id: FactionId) =>
+//       set(({ availableFactions }) => ({
+//         numFactionsToDraft: availableFactions.length - 1,
+//         availableFactions: availableFactions.filter((f) => f !== id),
+//       })),
+
+//     // randomization actions
+//     randomizeAll: () =>
+//       set((state) => {
+//         if (state.config.type !== "heisen") return {};
+
+//         // nucleum has a very special draft format.
+//         const { chosenSpots, slices: rawSlices } = generateHeisenMap(
+//           state.slices.length,
+//           state.systemPool,
+//         );
+//         const slices = rawSlices.map(normalizeSliceOld);
+//         const mapIds = [...EMPTY_MAP_STRING];
+//         Object.entries(chosenSpots).forEach(([mapIdx, system]) => {
+//           mapIds[Number(mapIdx)] = system;
+//         });
+//         const map = parseMapString(state.config, mapIds);
+
+//         // sort by most valuable first
+//         slices.sort((a, b) => {
+//           const aSystems = systemsInSliceOld(a);
+//           const bSystems = systemsInSliceOld(b);
+//           return valueSlice(bSystems) - valueSlice(aSystems);
+//         });
+
+//         return { map, slices };
+//       }),
+
+//     randomizeMap: () =>
+//       set((state) => {
+//         const map = randomizeMap(state.config, state.slices, state.systemPool);
+//         return { map };
+//       }),
+//     randomizeSlices: (numSlices, varianceValue, opulenceValue) =>
+//       set((state) => {
+//         const slices = randomizeSlices(
+//           state.config,
+//           numSlices ?? state.slices.length,
+//           state.systemPool,
+//           opulenceValue,
+//           varianceValue,
+//         );
+
+//         return { slices, varianceValue, opulenceValue };
+//       }),
+//     randomizeSlice: (sliceIdx: number) =>
+//       set((state) => {
+//         // get all used system ids of other tiles to exclude from the random pull.
+//         const usedSliceSystems = state.slices
+//           .filter((_, idx) => idx !== sliceIdx)
+//           .flat(1)
+//           .filter((i) => i !== "-1");
+
+//         const usedMapSystems: SystemId[] = [];
+//         state.config.modifiableMapTiles.forEach((idx) => {
+//           const system = state.map[idx].system;
+//           if (system) {
+//             usedMapSystems.push(system.id);
+//           }
+//         });
+
+//         const usedSystemIds = [...usedSliceSystems, ...usedMapSystems];
+//         const availableSystems = state.systemPool.filter(
+//           (s) => !usedSystemIds.includes(s),
+//         );
+
+//         const generatedSlice = randomizeSlices(
+//           state.config,
+//           1,
+//           availableSystems,
+//           state.opulenceValue,
+//           state.varianceValue,
+//         )[0];
+
+//         // update slice in array
+//         const slices = [...state.slices];
+//         slices[sliceIdx] = generatedSlice;
+
+//         return { slices };
+//       }),
+//   },
+// }));

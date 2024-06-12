@@ -13,17 +13,15 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect, useLocation, useNavigate } from "@remix-run/react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { serializeMap } from "~/data/serialize";
-import { useDraftV2, useNewDraft } from "~/draftStore";
+import { useDraftV2 } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { PersistedDraft, Player } from "~/types";
 import { CreateDraftInput, useCreateDraft } from "./useCreateDraft";
 import { ImportMapInput } from "~/components/ImportMapInput";
-import { AvailableFactionsSection } from "./components/AvailableFactionsSection";
-import { MapSection } from "../draft/MapSection";
 import { ExportMapModal } from "./components/ExportMapModal";
 import { fisherYatesShuffle } from "~/stats";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
@@ -33,15 +31,29 @@ import { SlicesTable } from "../draft/SlicesTable";
 import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
-import { SlicesSection } from "./sections";
+import {
+  AvailableFactionsSection,
+  MapSection,
+  SlicesSection,
+} from "./sections";
+import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
+import { useDraftConfig } from "~/hooks/useDraftConfig";
+import { useDraftSettings } from "~/hooks/useDraftSettings";
 
 export default function DraftNew() {
   const location = useLocation();
   const navigate = useNavigate();
   const createDraft = useCreateDraft();
-  const draft = useNewDraft();
-
   const draftV2 = useDraftV2();
+  const config = useDraftConfig();
+  const settings = useDraftSettings();
+
+  const validationErrors = useDraftValidationErrors();
+  const draftIsValid = validationErrors.length === 0;
+  const [
+    validationErrorsOpened,
+    { close: closeValidationErrors, open: openValidationErrors },
+  ] = useDisclosure(false);
 
   useEffect(() => {
     if (location.state == null) return navigate("/draft/prechoice");
@@ -60,88 +72,55 @@ export default function DraftNew() {
     } = location.state;
 
     draftV2.actions.initializeDraft({
-      randomizeMap: false,
-      randomizeSlices: false,
-    });
-
-    draft.actions.initializeMap({
-      gameSets,
-      mapType,
+      type: mapType,
       numFactions,
       numSlices,
-      players,
-      randomizeSlices,
-      randomizeMap,
-      draftSpeaker,
       allowHomePlanetSearch,
-      allowEmptyMapTiles,
-      discordData,
+      allowEmptyTiles: allowEmptyMapTiles,
+      gameSets,
+      draftSpeaker,
+      randomizeMap,
+      randomizeSlices,
     });
 
     // a bit hacky, but once we 'consume' the state, we remove it from the history
     window.history.replaceState({ ...window.history.state, usr: null }, "");
   }, []);
 
-  const openTile = useRef<{
-    mode: "map" | "slice";
-    sliceIdx: number;
-    tileIdx: number;
-  }>({
-    mode: "map",
-    sliceIdx: -1,
-    tileIdx: -1,
-  });
-  const [
-    planetFinderOpened,
-    { open: openPlanetFinder, close: closePlanetFinder },
-  ] = useDisclosure(false);
-
   const [mapExportOpened, { open: openMapExport, close: closeMapExport }] =
     useDisclosure(false);
 
-  const usedSystemIds = [
-    draft.slices,
-    draft.map.filter((t) => t.type === "SYSTEM").map((t) => t.system!.id),
-  ]
-    .flat(2)
-    .filter((t) => t !== "-1" && t !== "0");
+  // TODO: Create needs to be adapted.
+  const handleCreate = () => {};
+  // createDraft({
+  //   mapType: config.type,
+  //   availableFactions: draftV2.draft.availableFactions,
+  //   // TODO: Implement equivalent
+  //   // mapString: serializeMap(draft.map).join(" "),
+  //   mapString: "",
+  //   players: draft.players,
+  //   slices: draft.slices,
+  //   numFactionsToDraft: draft.numFactionsToDraft ?? null,
+  //   draftSpeaker: draft.draftSpeaker,
+  //   discordData: draft.discordData ?? null,
+  // });
 
-  const handleCreate = () =>
-    createDraft({
-      mapType: draft.config.type,
-      availableFactions: draft.availableFactions,
-      mapString: serializeMap(draft.map).join(" "),
-      players: draft.players,
-      slices: draft.slices,
-      numFactionsToDraft: draft.numFactionsToDraft ?? null,
-      draftSpeaker: draft.draftSpeaker,
-      discordData: draft.discordData ?? null,
-    });
+  if (!draftV2.initialized) return <LoadingOverlay />;
 
-  const validationErrors = draft.validationErrors();
-  const draftIsValid = validationErrors.length === 0;
-
-  const [
-    validationErrorsOpened,
-    { close: closeValidationErrors, open: openValidationErrors },
-  ] = useDisclosure(false);
-
-  if (!draft.initialized) return <LoadingOverlay />;
-
-  const showFullMap = draft.config.modifiableMapTiles.length > 0;
+  const showFullMap = config.modifiableMapTiles.length > 0;
 
   const advancedOptions = (
     <Stack gap="lg">
       <SectionTitle title="Advanced Options" />
       <Switch
-        checked={draft.draftSpeaker}
-        onChange={() => draft.actions.setDraftSpeaker(!draft.draftSpeaker)}
+        checked={settings.draftSpeaker}
+        onChange={() => draftV2.actions.setDraftSpeaker(!settings.draftSpeaker)}
         size="md"
         label="Draft Speaker order separately"
         description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
       />
 
-      <ImportMapInput onImport={draft.actions.importMap} />
+      <ImportMapInput onImport={draftV2.actions.importMap} />
 
       <Divider mt="md" mb="md" />
       <Group gap="sm">
@@ -186,73 +165,25 @@ export default function DraftNew() {
 
   return (
     <Flex p="lg" direction="column">
-      {draft.discordData && (
+      {draftV2.draft.integrations.discord && (
         <Box mb="lg">
           <DiscordBanner />
         </Box>
       )}
 
       <ExportMapModal
-        mapString={draft.exportableMapString()}
+        // TODO: Implement actual map string
+        mapString=""
+        // mapString={draft.exportableMapString()}
         opened={mapExportOpened}
         onClose={closeMapExport}
       />
 
-      <PlanetFinder
-        factionPool={draft.factionPool}
-        availableSystemIds={draft.systemPool}
-        allowHomePlanetSearch={draft.allowHomePlanetSearch}
-        opened={planetFinderOpened}
-        onClose={() => {
-          openTile.current = {
-            mode: "map",
-            sliceIdx: -1,
-            tileIdx: -1,
-          };
-          closePlanetFinder();
-        }}
-        onSelectSystem={(system) => {
-          if (!openTile.current) return;
-          const { mode, sliceIdx, tileIdx } = openTile.current;
+      <PlanetFinder />
 
-          if (mode === "map") {
-            draftV2.actions.addSystemToMap(tileIdx, system);
-          }
-          if (mode === "slice" && sliceIdx > -1) {
-            draftV2.actions.addSystemToSlice(sliceIdx, tileIdx, system);
-          }
-
-          closePlanetFinder();
-        }}
-        usedSystemIds={usedSystemIds}
-      />
-
-      <AvailableFactionsSection
-        factionPool={draft.factionPool}
-        numFactions={draft.numFactionsToDraft}
-        selectedFactions={draft.availableFactions}
-        onToggleFaction={(factionId, checked) => {
-          if (checked) {
-            draft.actions.addFaction(factionId);
-          } else {
-            draft.actions.removeFaction(factionId);
-          }
-        }}
-        onRemoveFaction={draft.actions.removeLastFaction}
-        onAddFaction={draft.actions.addRandomFaction}
-        onRandomizeFactions={draft.actions.randomizeFactions}
-      />
+      <AvailableFactionsSection />
       <Box mt="lg">
-        <SlicesSection
-          onSelectTile={(sliceIdx, tileIdx) => {
-            openTile.current = {
-              mode: "slice",
-              sliceIdx,
-              tileIdx,
-            };
-            openPlanetFinder();
-          }}
-        />
+        <SlicesSection />
       </Box>
 
       <Grid style={{ gap: 30 }} mt="50px">
@@ -263,7 +194,7 @@ export default function DraftNew() {
           <Stack gap="xl" w="100%">
             <Stack gap="xs">
               <SectionTitle title="Slices Summary" />
-              {/* <SlicesTable slices={draft.slices} /> */}
+              <SlicesTable slices={draftV2.draft.slices} />
             </Stack>
             {showFullMap && advancedOptions}
           </Stack>
@@ -272,34 +203,7 @@ export default function DraftNew() {
           span={{ base: 12, lg: 6 }}
           order={showFullMap ? { base: 1, lg: 2 } : undefined}
         >
-          {showFullMap && (
-            <MapSection
-              mode="create"
-              config={draft.config}
-              map={draftV2.draft.presetMap}
-              stats={draft.mapStats()}
-              onDeleteSystemTile={(tileIdx) => {
-                draft.actions.removeSystemFromMap(tileIdx);
-              }}
-              onSelectSystemTile={(tileIdx) => {
-                openTile.current = {
-                  mode: "map",
-                  sliceIdx: -1,
-                  tileIdx,
-                };
-                openPlanetFinder();
-              }}
-              onClearMap={draft.actions.clearMap}
-              // do not allow map randomization with heisen
-              // as the map is carefully constructed in tandem with slices
-              // and we do not want to upset that balance.
-              onRandomizeMap={
-                draft.config.type !== "heisen"
-                  ? draft.actions.randomizeMap
-                  : undefined
-              }
-            />
-          )}
+          {showFullMap && <MapSection />}
           {!showFullMap && advancedOptions}
         </Grid.Col>
       </Grid>

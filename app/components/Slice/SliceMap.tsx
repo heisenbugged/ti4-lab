@@ -1,7 +1,7 @@
 import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
 import { useDimensions } from "~/hooks/useDimensions";
 import { MapTile } from "../MapTile";
-import { Tile, TileRef } from "~/types";
+import { TileRef } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 
 type Props = {
@@ -10,9 +10,9 @@ type Props = {
   sliceHeight: number;
   sliceConcentricCircles?: number;
   wOffsetMultiplier?: number;
-  mode: "create" | "draft";
-  onSelectTile?: (tile: Tile) => void;
-  onDeleteTile?: (tile: Tile) => void;
+  mapModifiable?: boolean;
+  onSelectTile?: (tile: TileRef) => void;
+  onDeleteTile?: (tile: TileRef) => void;
 };
 
 export function SliceMap({
@@ -21,7 +21,7 @@ export function SliceMap({
   sliceHeight,
   sliceConcentricCircles = 1,
   wOffsetMultiplier = 0,
-  mode = "create",
+  mapModifiable = false,
   onSelectTile,
   onDeleteTile,
 }: Props) {
@@ -58,7 +58,7 @@ export function SliceMap({
               tile={t}
               onSelect={onSelectTile ? () => onSelectTile(t) : undefined}
               onDelete={onDeleteTile ? () => onDeleteTile(t) : undefined}
-              modifiable={mode === "create"}
+              modifiable={mapModifiable}
             />
           ))}
       </div>

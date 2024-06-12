@@ -3,14 +3,14 @@ import { systemData } from "~/data/systemData";
 import { DraftConfig } from "~/draft/types";
 import {
   DraftSlice,
-  HomeTile,
+  HomeTileRef,
   Map,
-  Player,
+  MapV2,
+  PlayerSelection,
   Slice,
   System,
   SystemId,
   TechSpecialty,
-  Tile,
   TilePosition,
   TileRef,
 } from "~/types";
@@ -33,25 +33,26 @@ export const playerLetters = ["a", "b", "c", "d", "e", "f"];
 export const isTileModifiable = (config: DraftConfig, tileIdx: number) =>
   config.modifiableMapTiles.includes(tileIdx);
 
-export const hydrateMap = (
+export function hydrateMap(
   config: DraftConfig,
-  map: Map,
-  players: Player[],
-  slices: Slice[],
-): Map => {
-  const hydrated: Map = [...map];
+  map: MapV2,
+  slices: DraftSlice[],
+  selections: PlayerSelection[],
+): MapV2 {
+  const hydrated: MapV2 = [...map];
 
   // add player data to home systems
   forHomeTiles(config, hydrated, (tile, homeIdx) => {
     const tileIdx = config.homeIdxInMapString[homeIdx];
-    hydrated[tileIdx] = hydrateHomeTile(tile, players, homeIdx);
+    hydrated[tileIdx] = hydrateHomeTile(tile, homeIdx, selections);
   });
 
   // Iterate over home tiles to apply slices
   forHomeTiles(config, hydrated, (tile, homeIdx) => {
-    const player = players.find((p) => p.seatIdx === homeIdx);
-    if (!player || player.sliceIdx === undefined) return;
-    const slice = slices[player.sliceIdx];
+    const selection = selections.find((s) => s.seatIdx === homeIdx);
+    if (!selection || selection.sliceIdx === undefined) return;
+
+    const slice = slices[selection.sliceIdx];
     if (!slice) return;
 
     config.seatTilePlacement[homeIdx]?.forEach(([x, y], sliceIdx) => {
@@ -61,26 +62,30 @@ export const hydrateMap = (
         (t) => t.position.x === pos.x && t.position.y === pos.y,
       );
 
-      // replace with new tile from slice.
-      hydrated[idxToModify] = {
-        idx: idxToModify,
-        position: pos,
-        type: "SYSTEM",
-        system: systemData[slice[sliceIdx + 1]],
-      };
+      const sliceTile = slice.tiles[sliceIdx + 1];
+      if (sliceTile.type === "SYSTEM") {
+        // replace with new tile from slice.
+        hydrated[idxToModify] = {
+          idx: idxToModify,
+          position: pos,
+          type: "SYSTEM",
+          systemId: sliceTile.systemId,
+        };
+      }
     });
   });
 
   return hydrated;
-};
+}
 
 /**
  * Iterates over the home systems in the map, calling the provided function
  */
+
 const forHomeTiles = (
   config: DraftConfig,
-  tiles: Tile[],
-  fn: (tile: Tile, homeIdx: number) => void,
+  tiles: TileRef[],
+  fn: (tile: TileRef, homeIdx: number) => void,
 ) => {
   tiles.forEach((tile, idx) => {
     const homeSystemIdx = config.homeIdxInMapString.indexOf(idx);
@@ -91,12 +96,20 @@ const forHomeTiles = (
 };
 
 const hydrateHomeTile = (
-  tile: Tile,
-  players: Player[],
+  tile: TileRef,
   seatIdx: number,
-): HomeTile => {
-  const player = players.find((p) => p.seatIdx === seatIdx);
-  return { ...tile, type: "HOME", player, seatIdx };
+  selections: PlayerSelection[],
+): HomeTileRef => {
+  const selection = selections.find((s) => s.seatIdx === seatIdx);
+  const homeTile: HomeTileRef = {
+    idx: tile.idx,
+    position: tile.position,
+    type: "HOME",
+    seat: seatIdx,
+    playerId: selection?.playerId,
+  };
+
+  return homeTile;
 };
 
 export const sliceMap = (
@@ -216,3 +229,26 @@ export const normalizeSliceOld = (slice: Slice): Slice => {
   if (slice[0] === "-1") return slice;
   return ["-1", ...slice];
 };
+
+export function generateEmptyMap(config: DraftConfig): MapV2 {
+  return Array.from({ length: 37 }, (_, idx) => {
+    if (idx === 0)
+      return {
+        idx,
+        type: "SYSTEM",
+        systemId: "18",
+        position: mapStringOrder[idx],
+      };
+
+    if (config.homeIdxInMapString.includes(idx)) {
+      return {
+        idx,
+        type: "HOME",
+        seat: config.homeIdxInMapString.indexOf(idx),
+        position: mapStringOrder[idx],
+      };
+    }
+
+    return { idx, type: "OPEN", position: mapStringOrder[idx] };
+  });
+}

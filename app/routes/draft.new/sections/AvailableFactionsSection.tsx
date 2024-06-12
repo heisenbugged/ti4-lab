@@ -1,37 +1,31 @@
 import { Button, Group, SimpleGrid, Text } from "@mantine/core";
-import { FactionId } from "~/types";
-import { allFactionIds, factions } from "~/data/factionData";
+import { factions } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
-import { NewDraftFaction } from "./NewDraftFaction";
 import { NumberStepper } from "~/components/NumberStepper";
 import { IconDice6Filled } from "@tabler/icons-react";
+import { NewDraftFaction } from "../components/NewDraftFaction";
+import { useDraftV2 } from "~/draftStore";
 
-type Props = {
-  numFactions: number;
-  selectedFactions: FactionId[];
-  factionPool: FactionId[];
-  onAddFaction: () => void;
-  onRemoveFaction: () => void;
-  onToggleFaction: (factionId: FactionId, checked: boolean) => void;
-  onRandomizeFactions: () => void;
-};
+export function AvailableFactionsSection() {
+  const {
+    addRandomFaction,
+    removeLastFaction,
+    randomizeFactions,
+    removeFaction,
+  } = useDraftV2((state) => state.actions);
+  const factionPool = useDraftV2((state) => state.factionPool);
+  const { numFactions, availableFactions } = useDraftV2((state) => ({
+    numFactions: state.draft.settings.numFactions,
+    availableFactions: state.draft.availableFactions,
+  }));
 
-export function AvailableFactionsSection({
-  numFactions,
-  selectedFactions,
-  factionPool,
-  onRemoveFaction,
-  onAddFaction,
-  onToggleFaction,
-  onRandomizeFactions,
-}: Props) {
   return (
     <Section>
       <SectionTitle title="Faction Pool">
         <Group>
           <Button
             size="xs"
-            onMouseDown={onRandomizeFactions}
+            onMouseDown={randomizeFactions}
             color="gray.7"
             variant="filled"
           >
@@ -40,8 +34,8 @@ export function AvailableFactionsSection({
 
           <Text># factions: {numFactions}</Text>
           <NumberStepper
-            decrease={onRemoveFaction}
-            increase={onAddFaction}
+            decrease={removeLastFaction}
+            increase={addRandomFaction}
             decreaseDisabled={numFactions <= 6}
             increaseDisabled={numFactions >= factionPool.length}
           />
@@ -51,12 +45,12 @@ export function AvailableFactionsSection({
         cols={{ base: 1, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }}
         spacing="xs"
       >
-        {selectedFactions.map((factionId) => (
+        {availableFactions.map((factionId) => (
           <NewDraftFaction
             key={factionId}
             faction={factions[factionId]}
-            onRemove={() => onToggleFaction(factionId, false)}
-            removeEnabled={selectedFactions.length > 6}
+            onRemove={() => removeFaction(factionId)}
+            removeEnabled={availableFactions.length > 6}
           />
         ))}
       </SimpleGrid>

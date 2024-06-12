@@ -3,7 +3,7 @@ import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
-import { DraftSlice, Player, Tile } from "~/types";
+import { DraftSlice, Player, TileRef } from "~/types";
 import { useSlice } from "./useSlice";
 import { SliceFeatures } from "./SliceFeatures";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
@@ -19,8 +19,8 @@ type Props = {
   player?: Player;
   mode: "create" | "draft";
   disabled?: boolean;
-  onSelectTile?: (tile: Tile) => void;
-  onDeleteTile?: (tile: Tile) => void;
+  onSelectTile?: (tile: TileRef) => void;
+  onDeleteTile?: (tile: TileRef) => void;
   onSelectSlice?: () => void;
   onRandomizeSlice?: () => void;
   onClearSlize?: () => void;
@@ -123,7 +123,7 @@ export function Slice({
             tiles={slice.tiles}
             onSelectTile={onSelectTile}
             onDeleteTile={onDeleteTile}
-            mode={mode}
+            mapModifiable={mode === "create"}
           />
         </Box>
 

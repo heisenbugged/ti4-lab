@@ -225,6 +225,8 @@ export type DiscordData = {
 
 export type SystemId = string;
 
+export type PlayerId = number;
+
 /// V2
 export type DraftSettings = {
   type: DraftType;
@@ -234,6 +236,9 @@ export type DraftSettings = {
   allowHomePlanetSearch: boolean;
   numFactions: number;
   numSlices: number;
+
+  randomizeMap: Boolean;
+  randomizeSlices: Boolean;
 };
 
 export type DraftIntegrations = {
@@ -272,6 +277,7 @@ export type SystemTileRef = BaseTileRef & {
 export type HomeTileRef = BaseTileRef & {
   type: "HOME";
   seat?: number;
+  playerId?: PlayerId;
 };
 
 export type OpenTileRef = BaseTileRef & {
@@ -296,25 +302,8 @@ export type Draft = {
   // }
 };
 
-export function generateEmptyMap(config: DraftConfig): MapV2 {
-  return Array.from({ length: 37 }, (_, idx) => {
-    if (idx === 0)
-      return {
-        idx,
-        type: "SYSTEM",
-        systemId: "18",
-        position: mapStringOrder[idx],
-      };
-
-    if (config.homeIdxInMapString.includes(idx)) {
-      return {
-        idx,
-        type: "HOME",
-        seat: config.homeIdxInMapString.indexOf(idx),
-        position: mapStringOrder[idx],
-      };
-    }
-
-    return { idx, type: "OPEN", position: mapStringOrder[idx] };
-  });
-}
+export type PlayerSelection = {
+  playerId: PlayerId;
+  sliceIdx?: number;
+  seatIdx?: number;
+};

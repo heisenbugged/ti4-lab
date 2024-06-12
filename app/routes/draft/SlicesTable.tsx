@@ -2,18 +2,15 @@ import { Box, Group, Table } from "@mantine/core";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { valueSlice } from "~/stats";
-import {
-  optimalStatsForSystems,
-  systemsInSliceOld,
-  totalStatsForSystems,
-} from "~/utils/map";
+import { optimalStatsForSystems, totalStatsForSystems } from "~/utils/map";
 import { useSortedSlices } from "./useSortedSlices";
-import { Slice } from "~/types";
+import { DraftSlice } from "~/types";
+import { systemsInSlice } from "~/utils/slice";
 
 import classes from "~/components/Table.module.css";
 
 type Props = {
-  slices: Slice[];
+  slices: DraftSlice[];
   draftedSlices?: number[];
 };
 
@@ -31,7 +28,7 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
       </Table.Thead>
       <Table.Tbody>
         {sortedSlices.map(({ slice, idx }) => {
-          const systems = systemsInSliceOld(slice);
+          const systems = systemsInSlice(slice);
           const total = totalStatsForSystems(systems);
           const optimal = optimalStatsForSystems(systems);
           const isDrafted = draftedSlices.includes(idx);
@@ -41,7 +38,7 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
               className={isDrafted ? classes.isDrafted : undefined}
               opacity={isDrafted ? 0.6 : 1}
             >
-              <Table.Td>{`Slice ${idx + 1}`}</Table.Td>
+              <Table.Td>{slice.name}</Table.Td>
               <Table.Td>
                 <Group gap={2}>
                   <PlanetStatsPill

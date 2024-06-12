@@ -1,18 +1,19 @@
 import { Button, Group, SimpleGrid } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
-import { Slice } from "~/components/Slice";
 import { draftConfig } from "~/draft";
 import { useDraftV2 } from "~/draftStore";
+import { BuildableSlice } from "../components/BuildableSlice";
 
-type Props = {
-  onSelectTile?: (sliceIdx: number, tileIdx: number) => void;
-};
-
-export function SlicesSection({ onSelectTile }: Props) {
+export function SlicesSection() {
   const config = useDraftV2((state) => draftConfig[state.draft.settings.type]);
   const slices = useDraftV2((state) => state.draft.slices);
-  const { removeSystemFromSlice, clearSlice, randomizeSlice, randomizeSlices } =
-    useDraftV2((state) => state.actions);
+  const {
+    removeSystemFromSlice,
+    clearSlice,
+    randomizeSlice,
+    randomizeSlices,
+    openPlanetFinderForSlice,
+  } = useDraftV2((state) => state.actions);
 
   const xxlCols = config.type !== "wekker" ? 6 : 4;
   const cols = { base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: xxlCols };
@@ -35,13 +36,11 @@ export function SlicesSection({ onSelectTile }: Props) {
         style={{ alignItems: "flex-start" }}
       >
         {slices.map((slice, idx) => (
-          <Slice
+          <BuildableSlice
             key={idx}
             id={`slice-${idx}`}
             slice={slice}
-            mode="create"
-            config={config}
-            onSelectTile={(tile) => onSelectTile?.(idx, tile.idx)}
+            onSelectTile={(tile) => openPlanetFinderForSlice(idx, tile.idx)}
             onDeleteTile={(tile) => removeSystemFromSlice(idx, tile.idx)}
             onRandomizeSlice={() => randomizeSlice(idx)}
             onClearSlize={() => clearSlice(idx)}

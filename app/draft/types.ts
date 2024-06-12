@@ -65,8 +65,5 @@ export type DraftConfig = {
    * @param sliceCount The number of slices to generate.
    * @param availableSystems
    */
-  generateSlices?: (
-    sliceCount: number,
-    availableSystems: SystemId[],
-  ) => Slice[];
+  generateSlices: (sliceCount: number, availableSystems: SystemId[]) => Slice[];
 };

@@ -1,5 +1,6 @@
 import { systemData } from "~/data/systemData";
 import { System, SystemId } from "~/types";
+import { ChoosableTier, TieredSystems } from "./types";
 
 const SYSTEM_TIER = {
   LOW: "low",
@@ -69,15 +70,16 @@ export function calculateTier(system: System) {
 }
 
 export function getTieredSystems(systems: SystemId[]) {
-  const tiers = {
-    [SYSTEM_TIER.LOW]: [] as SystemId[],
-    [SYSTEM_TIER.MED]: [] as SystemId[],
-    [SYSTEM_TIER.HIGH]: [] as SystemId[],
-    [SYSTEM_TIER.RED]: [] as SystemId[],
+  const tiers: TieredSystems = {
+    low: [] as SystemId[],
+    med: [] as SystemId[],
+    high: [] as SystemId[],
+    red: [] as SystemId[],
   };
 
   systems.forEach((s) => {
-    const tier = calculateTier(systemData[s]);
+    // TODO: Remove 'as ChoosableTier' casting here
+    const tier = calculateTier(systemData[s]) as ChoosableTier;
     tiers[tier]?.push(s);
   });
   return tiers;

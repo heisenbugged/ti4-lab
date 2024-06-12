@@ -32,24 +32,16 @@ export function SlicesSection({
   onRandomizeSlice,
 }: Props) {
   const config = useDraftV2((state) => draftConfig[state.draft.settings.type]);
-  const rawSlices = useDraftV2((state) => state.draft.slices);
+  const slices = useDraftV2((state) => state.draft.slices);
   const { removeSystemFromSlice, clearSlice } = useDraftV2(
     (state) => state.actions,
   );
-  // TODO: Actually sort the slices
-  // const sortedSlices = useSortedSlices(rawSlices, draftedSlices);
-  // const slices =
-  //   mode === "draft"
-  //     ? sortedSlices
-  //     : rawSlices.map((slice, idx) => ({ slice, idx }));
-
-  const slices = rawSlices;
 
   const xxlCols = config.type !== "wekker" ? 6 : 4;
-
   const cols = fullView
     ? { base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: xxlCols }
     : { base: 1, sm: 2, md: 3, lg: 2, xxl: 3 };
+
   return (
     <Section>
       <div style={{ position: "sticky", top: 60, zIndex: 11 }}>
@@ -75,7 +67,6 @@ export function SlicesSection({
             key={idx}
             config={config}
             id={`slice-${idx}`}
-            name={slice.name}
             mode={mode}
             slice={slice}
             player={players?.find((p) => p.sliceIdx === idx)}

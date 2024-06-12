@@ -21,8 +21,7 @@ export function chooseRequiredSystems(
   availableSystems: SystemId[],
   { minAlphaWormholes = 0, minBetaWormholes = 0, minLegendary = 0 },
 ) {
-  // TODO: Remove 'as' casting
-  const tieredSystems = getTieredSystems(availableSystems) as TieredSystems;
+  const tieredSystems = getTieredSystems(availableSystems);
 
   // Get the initial set, before promoting anything.
   const remainingSystems: TieredSystems = shuffleTieredSystems(tieredSystems);
