@@ -52,7 +52,8 @@ export function PlanetFinder({ onSystemSelected }: Props) {
 
   const isValidSystem = (system: System) =>
     availableSystemIds.includes(system.id) ||
-    system.type === "HYPERLANE" ||
+    // TODO: re-enable hyperlanes when ready
+    // system.type === "HYPERLANE" ||
     (allowHomePlanetSearch &&
       system.faction &&
       system.type === "GREEN" &&
