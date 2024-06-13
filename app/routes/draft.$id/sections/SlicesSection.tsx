@@ -15,7 +15,9 @@ export function SlicesSection({ draftedSlices = [] }: Props) {
   const slices = useDraftV2((state) => state.draft.slices);
   const { selectSlice } = useDraftV2((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
-  const { activePlayer, hydratedPlayers } = useHydratedDraft();
+  const { activePlayer, hydratedPlayers, currentlyPicking } =
+    useHydratedDraft();
+  const canSelect = currentlyPicking && !activePlayer?.sliceIdx;
 
   return (
     <Section>
@@ -34,10 +36,14 @@ export function SlicesSection({ draftedSlices = [] }: Props) {
             id={`slice-${idx}`}
             slice={slice}
             player={hydratedPlayers.find((p) => p.sliceIdx === idx)}
-            onSelect={() => {
-              selectSlice(activePlayer.id, idx);
-              syncDraft();
-            }}
+            onSelect={
+              canSelect
+                ? () => {
+                    selectSlice(activePlayer.id, idx);
+                    syncDraft();
+                  }
+                : undefined
+            }
           />
         ))}
       </SimpleGrid>

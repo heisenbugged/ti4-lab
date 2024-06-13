@@ -19,7 +19,7 @@ export function SpeakerOrderSection() {
     useHydratedDraft();
   const { selectSpeakerOrder } = useDraftV2((state) => state.draftActions);
   const { syncing, syncDraft } = useSyncDraft();
-  const canSelectSpeakerOrder = currentlyPicking && !activePlayer?.speakerOrder;
+  const canSelect = currentlyPicking && !activePlayer?.speakerOrder;
 
   return (
     <Section>
@@ -36,7 +36,7 @@ export function SpeakerOrderSection() {
                 selectSpeakerOrder(activePlayer.id, idx);
                 syncDraft();
               }}
-              canSelectSpeakerOrder={canSelectSpeakerOrder}
+              canSelectSpeakerOrder={canSelect}
               disabled={syncing}
             />
           );

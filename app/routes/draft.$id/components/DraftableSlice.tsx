@@ -8,7 +8,7 @@ type Props = {
   id: string;
   slice: DraftSlice;
   player: HydratedPlayer | undefined;
-  onSelect: () => void;
+  onSelect?: () => void;
 };
 
 export function DraftableSlice({ id, slice, player, onSelect }: Props) {
@@ -21,19 +21,21 @@ export function DraftableSlice({ id, slice, player, onSelect }: Props) {
       titleLeft={player ? <PlayerChip player={player} /> : undefined}
       greyOut={!!player}
       titleRight={
-        !player ? (
-          <Button
-            lh={1}
-            py={6}
-            px={10}
-            h="auto"
-            onMouseDown={onSelect}
-            variant="filled"
-            disabled={syncing}
-          >
-            Select
-          </Button>
-        ) : undefined
+        !player
+          ? onSelect && (
+              <Button
+                lh={1}
+                py={6}
+                px={10}
+                h="auto"
+                onMouseDown={onSelect}
+                variant="filled"
+                disabled={syncing}
+              >
+                Select
+              </Button>
+            )
+          : undefined
       }
     />
   );

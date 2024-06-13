@@ -11,7 +11,7 @@ import {
 import { TypedResponse, json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { findDrafts } from "~/drizzle/draft.server";
-import { PersistedDraft } from "~/types";
+import { Draft, PersistedDraft } from "~/types";
 
 import classes from "~/components/Surface.module.css";
 
@@ -120,11 +120,9 @@ export const loader = async () => {
   });
 };
 
-// TODO: Rename to PersistedDraft or just 'Draft'
-// and then call data: 'PersistedDraftData' or just 'DraftData'
 type SavedDraft = {
   id: string;
-  data: PersistedDraft;
+  data: Draft;
   urlName: string | null;
   createdAt: string;
   updatedAt: string;

@@ -1,26 +1,16 @@
-import { create } from "zustand";
+import { useStore } from "zustand";
 import {
-  DiscordData,
   Draft,
   DraftPlayer,
   DraftSettings,
   DraftSlice,
   FactionId,
-  Map,
   MapV2,
-  PersistedDraft,
-  Player,
   PlayerId,
-  Slice,
   System,
   SystemId,
 } from "./types";
-import {
-  generateEmptyMap,
-  parseMapString,
-  playerSpeakerOrder,
-} from "./utils/map";
-import { factions } from "./data/factionData";
+import { generateEmptyMap } from "./utils/map";
 import { fisherYatesShuffle } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig } from "./draft/types";
@@ -33,258 +23,15 @@ import {
   systemIdsToSlice,
   systemIdsToSlices,
 } from "./utils/slice";
-import { getSystemPool, systemStats } from "./utils/system";
+import { getSystemPool } from "./utils/system";
 import { getFactionPool } from "./utils/factions";
 import { mapStringOrder } from "./data/mapStringOrder";
 import {
   getUsedSystemIds,
   getUsedSystemIdsInMap,
 } from "./hooks/useUsedSystemIds";
-
-const EMPTY_MAP_STRING =
-  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0".split(
-    " ",
-  );
-
-const EMPTY_MAP = parseMapString(draftConfig.heisen, EMPTY_MAP_STRING);
-
-type DraftsState = {
-  initialized: boolean;
-  draftUrl: string;
-  config: DraftConfig;
-  mapString: SystemId[];
-  hydratedMap: Map;
-  players: Player[];
-  slices: Slice[];
-  factions: FactionId[];
-  currentPick: number;
-  pickOrder: number[];
-  lastEvent: string;
-  draftSpeaker: boolean;
-  discordData?: DiscordData;
-  updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
-  selectSlice: (playerId: number, sliceIdx: number) => void;
-  selectSeat: (playerId: number, seatIdx: number) => void;
-  selectFaction: (playerId: number, factionId: FactionId) => void;
-  selectSpeakerOrder: (playerId: number, speakerOrder: number) => void;
-  addSystemToMap: (tileIdx: number, system: System) => void;
-  removeSystemFromMap: (tileIdx: number) => void;
-  hydrate: (draft: PersistedDraft, draftUrlName: string) => void;
-  getPersisted: () => PersistedDraft;
-  refreshMap: (options: {
-    config?: DraftConfig;
-    mapString?: SystemId[];
-    players?: Player[];
-    slices?: Slice[];
-  }) => {
-    hydratedMap: Map;
-    mapString: SystemId[];
-    players: Player[];
-    slices: Slice[];
-  };
-};
-
-export const useDraft = create<DraftsState>((set, get) => ({
-  initialized: false,
-  draftUrl: "",
-  config: draftConfig.milty,
-  mapString: EMPTY_MAP_STRING,
-  hydratedMap: EMPTY_MAP,
-  players: [],
-  slices: [],
-  factions: [],
-  currentPick: 0,
-  pickOrder: [],
-  lastEvent: "",
-  draftSpeaker: false,
-  discordData: undefined,
-  getPersisted: () => ({
-    mapType: get().config.type,
-    mapString: get().mapString.join(" "),
-    players: get().players,
-    slices: get().slices,
-    factions: get().factions,
-    currentPick: get().currentPick,
-    pickOrder: get().pickOrder,
-    lastEvent: get().lastEvent,
-    draftSpeaker: get().draftSpeaker,
-    discordData: get().discordData,
-  }),
-  selectFaction: (playerId: number, factionId: FactionId) =>
-    set((state) => {
-      const players = state.players.map((p) =>
-        p.id === playerId ? { ...p, faction: factionId } : p,
-      );
-      const activePlayerName = state.players.find(
-        (p) => p.id === playerId,
-      )?.name;
-
-      return {
-        ...state.refreshMap({ players }),
-        currentPick: state.currentPick + 1,
-        lastEvent:
-          activePlayerName &&
-          `${activePlayerName} selected ${factions[factionId].name}`,
-      };
-    }),
-  selectSlice: (playerId: number, sliceIdx: number) =>
-    set((state) => {
-      const players = state.players.map((p) =>
-        p.id === playerId ? { ...p, sliceIdx } : p,
-      );
-
-      const activePlayerName = state.players.find(
-        (p) => p.id === playerId,
-      )?.name;
-      return {
-        ...state.refreshMap({ players }),
-        currentPick: state.currentPick + 1,
-        lastEvent:
-          activePlayerName &&
-          `${activePlayerName} selected Slice ${sliceIdx + 1}`,
-      };
-    }),
-
-  selectSeat: (playerId: number, seatIdx: number) =>
-    set((state) => {
-      const players = state.players.map((p) =>
-        p.id === playerId
-          ? {
-              ...p,
-              seatIdx: seatIdx,
-              // if not drafting speaker, then selecfting a seat is the same as selecting speaker order
-              speakerOrder: state.draftSpeaker ? p.speakerOrder : seatIdx,
-            }
-          : p,
-      );
-
-      const activePlayerName = state.players.find(
-        (p) => p.id === playerId,
-      )?.name;
-
-      return {
-        ...state.refreshMap({ players }),
-        currentPick: state.currentPick + 1,
-        lastEvent:
-          activePlayerName &&
-          `${activePlayerName} selected Seat ${seatIdx + 1}`,
-      };
-    }),
-  selectSpeakerOrder: (playerId: number, speakerOrder: number) =>
-    set((state) => {
-      const players = state.players.map((p) =>
-        p.id === playerId ? { ...p, speakerOrder } : p,
-      );
-      const activePlayerName = state.players.find(
-        (p) => p.id === playerId,
-      )?.name;
-      return {
-        players,
-        currentPick: state.currentPick + 1,
-        lastEvent:
-          activePlayerName &&
-          `${activePlayerName} selected ${playerSpeakerOrder[speakerOrder]} on the speaker order.`,
-      };
-    }),
-  hydrate: (draft: PersistedDraft, draftUrlName: string) =>
-    set((state) => {
-      let mapString = draft.mapString.split(" ");
-
-      // NOTE: Some old drafts have 'mecatol' at the start of the map string. This is not great, but we fix it here.
-      // TODO: Eventually clean up all the old drafts
-      if (mapString[0] === "18") mapString = mapString.slice(1);
-      const config = draftConfig[draft.mapType];
-
-      return {
-        initialized: true,
-        config,
-        draftUrl: draftUrlName,
-        factions: draft.factions,
-        currentPick: draft.currentPick,
-        pickOrder: draft.pickOrder,
-        lastEvent: draft.lastEvent,
-        draftSpeaker: draft.draftSpeaker,
-        discordData: draft.discordData,
-        ...state.refreshMap({
-          config,
-          mapString,
-          players: draft.players,
-          slices: draft.slices,
-        }),
-      };
-    }),
-
-  addSystemToMap: (tileIdx: number, system: System) =>
-    set((state) => {
-      const mapString = [...state.mapString];
-      mapString[tileIdx - 1] = system.id;
-      return state.refreshMap({ mapString });
-    }),
-  removeSystemFromMap: (tileIdx: number) =>
-    set((state) => {
-      const mapString = [...state.mapString];
-      mapString[tileIdx - 1] = "0";
-      return state.refreshMap({ mapString });
-    }),
-
-  refreshMap: ({ config, mapString, players, slices }) => {
-    const newConfig = config ?? get().config;
-    const newMapString = mapString ?? get().mapString;
-    const newPlayers = players ?? get().players;
-    const newSlices = slices ?? get().slices;
-    const parsedMap = parseMapString(newConfig, newMapString);
-    const hydratedMap = hydrateMapOld(
-      newConfig,
-      parsedMap,
-      newPlayers,
-      newSlices,
-    );
-
-    return {
-      hydratedMap,
-      config: newConfig,
-      mapString: newMapString,
-      players: newPlayers,
-      slices: newSlices,
-    };
-  },
-
-  updatePlayer: (playerIdx: number, player: Partial<Player>) =>
-    set(({ players }) => ({
-      players: players.map((p, idx) =>
-        idx === playerIdx ? { ...p, ...player } : p,
-      ),
-    })),
-}));
-
-function randomizeMap(
-  config: DraftConfig,
-  slices: DraftSlice[],
-  systemPool: SystemId[],
-): MapV2 {
-  const map = generateEmptyMap(config);
-  const numMapTiles = config.modifiableMapTiles.length;
-  const usedSystemIds = slices
-    .map((s) => s.tiles)
-    .flat(1)
-    .map((t) => (t.type === "SYSTEM" ? t.systemId : undefined))
-    .filter((t) => !!t) as SystemId[];
-
-  const filteredSystemIds = fisherYatesShuffle(
-    systemPool.filter((id) => !usedSystemIds.includes(id)),
-    numMapTiles,
-  );
-
-  config.modifiableMapTiles.forEach((idx) => {
-    map[idx] = {
-      idx: idx,
-      position: mapStringOrder[idx],
-      type: "SYSTEM",
-      systemId: filteredSystemIds.pop()!,
-    };
-  });
-  return map;
-}
+import { atomWithStore } from "jotai-zustand";
+import { createStore } from "zustand/vanilla";
 
 /// V2
 type DraftV2State = {
@@ -314,6 +61,8 @@ type DraftV2State = {
     setSelectedPlayer: (playerId: PlayerId) => void;
     selectSpeakerOrder: (playerId: number, speakerOrder: number) => void;
     selectSlice: (playerId: number, sliceIdx: number) => void;
+    selectFaction: (playerId: number, factionId: FactionId) => void;
+    selectSeat: (playerId: number, seatIdx: number) => void;
   };
   actions: {
     initializeDraft: (settings: DraftSettings, players: DraftPlayer[]) => void;
@@ -390,7 +139,7 @@ const initialState = {
   draft: emptyDraft(),
 };
 
-export const useDraftV2 = create<DraftV2State>()(
+export const draftV2Store = createStore<DraftV2State>()(
   immer((set) => ({
     initialized: false,
     hydrated: false,
@@ -432,6 +181,24 @@ export const useDraftV2 = create<DraftV2State>()(
             type: "SELECT_SPEAKER_ORDER",
             playerId,
             speakerOrder,
+          });
+        }),
+
+      selectFaction: (playerId: number, factionId: FactionId) =>
+        set((state) => {
+          state.draft.selections.push({
+            type: "SELECT_FACTION",
+            playerId,
+            factionId,
+          });
+        }),
+
+      selectSeat: (playerId: number, seatIdx: number) =>
+        set((state) => {
+          state.draft.selections.push({
+            type: "SELECT_SEAT",
+            playerId,
+            seatIdx,
           });
         }),
     },
@@ -646,6 +413,17 @@ export const useDraftV2 = create<DraftV2State>()(
   })),
 );
 
+export function useDraftV2(): DraftV2State;
+export function useDraftV2<T>(selector: (state: DraftV2State) => T): T;
+export function useDraftV2<T>(selector?: (state: DraftV2State) => T) {
+  return useStore(draftV2Store, selector!);
+}
+
+// Jotai atom, used for derived/computed values.
+export const draftStoreAtom = atomWithStore(draftV2Store);
+
+// Random functions to be moved elsewhere
+
 function initializeHeisen(settings: DraftSettings, systemPool: SystemId[]) {
   const config = draftConfig[settings.type];
   const map = generateEmptyMap(config);
@@ -689,4 +467,33 @@ function initializeMap(
   const config = draftConfig[settings.type];
   if (!settings.randomizeMap) return generateEmptyMap(config);
   return randomizeMap(config, slices, systemPool);
+}
+
+function randomizeMap(
+  config: DraftConfig,
+  slices: DraftSlice[],
+  systemPool: SystemId[],
+): MapV2 {
+  const map = generateEmptyMap(config);
+  const numMapTiles = config.modifiableMapTiles.length;
+  const usedSystemIds = slices
+    .map((s) => s.tiles)
+    .flat(1)
+    .map((t) => (t.type === "SYSTEM" ? t.systemId : undefined))
+    .filter((t) => !!t) as SystemId[];
+
+  const filteredSystemIds = fisherYatesShuffle(
+    systemPool.filter((id) => !usedSystemIds.includes(id)),
+    numMapTiles,
+  );
+
+  config.modifiableMapTiles.forEach((idx) => {
+    map[idx] = {
+      idx: idx,
+      position: mapStringOrder[idx],
+      type: "SYSTEM",
+      systemId: filteredSystemIds.pop()!,
+    };
+  });
+  return map;
 }

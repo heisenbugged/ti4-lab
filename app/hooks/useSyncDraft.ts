@@ -1,5 +1,5 @@
 import { useFetcher } from "@remix-run/react";
-import { useDraftV2 } from "~/draftStore";
+import { draftV2Store, useDraftV2 } from "~/draftStore";
 import { useSocket } from "~/socketContext";
 import { Draft } from "~/types";
 
@@ -9,7 +9,7 @@ export function useSyncDraft() {
 
   return {
     syncDraft: async () => {
-      const { draft, draftId } = useDraftV2.getState();
+      const { draft, draftId } = draftV2Store.getState();
       if (!draft || !draftId) return;
 
       await fetcher.submit(

@@ -63,10 +63,7 @@ export function calculateTier(system: System) {
     return SYSTEM_TIER.LOW;
   }
 
-  // TODO: Make proper error
   throw new Error(`Could not determine tier for system ${system.id}`);
-  // see this:
-  //   throw new Error(`system ${system.id}: ${system.getSummaryStr()}`);
 }
 
 export function getTieredSystems(systems: SystemId[]) {

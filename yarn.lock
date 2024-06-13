@@ -4618,6 +4618,16 @@ javascript-stringify@^2.0.1:
   resolved "https://registry.yarnpkg.com/javascript-stringify/-/javascript-stringify-2.1.0.tgz#27c76539be14d8bd128219a2d731b09337904e79"
   integrity sha512-JVAfqNPTvNq3sB/VHQJAFxN/sPgKnsKrCwyRt15zwNCdrMMJDdcEOdubuy+DuJYYdm0ox1J4uzEuYKkN+9yhVg==
 
+jotai-zustand@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/jotai-zustand/-/jotai-zustand-0.4.0.tgz#e0cf52a50ed76ab9c420e82acdb9944d419d34bb"
+  integrity sha512-dbG7AgW7ohlofIe0AMq+zck/BG0CU82INuZ756AjgAxX5G/mnGFAbTnRzFjlAD8p4WWFvUcJTDTG0EuEMsIh0Q==
+
+jotai@^2.8.3:
+  version "2.8.3"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-2.8.3.tgz#21b50c89c9ee2d24e694158b925bade1f38641d7"
+  integrity sha512-pR4plVvdbzB6zyt7VLLHPMAkcRSKhRIvZKd+qkifQLa3CEziEo1uwZjePj4acTmQrboiISBlYSdCz3gWcr1Nkg==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"

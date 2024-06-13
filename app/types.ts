@@ -90,7 +90,6 @@ export type Tile = HomeTile | OpenTile | SystemTile;
 
 export type Map = Tile[];
 
-// TODO: Finish filling out
 export type FactionId =
   | "sardakk"
   | "arborec"
@@ -298,6 +297,16 @@ export type DraftSelection =
       type: "SELECT_SLICE";
       playerId: PlayerId;
       sliceIdx: number;
+    }
+  | {
+      type: "SELECT_FACTION";
+      playerId: PlayerId;
+      factionId: FactionId;
+    }
+  | {
+      type: "SELECT_SEAT";
+      playerId: PlayerId;
+      seatIdx: number;
     };
 
 export type Draft = {

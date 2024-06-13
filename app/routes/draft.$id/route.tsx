@@ -1,21 +1,14 @@
-import { Button, Grid, SimpleGrid, Stack, Tabs, Text } from "@mantine/core";
+import { Grid, Stack } from "@mantine/core";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import { useEffect, useRef, useState } from "react";
-import { useDraft, useDraftV2 } from "~/draftStore";
+import { useEffect, useRef } from "react";
+import { useDraftV2 } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { useSocket } from "~/socketContext";
 import { Draft, PersistedDraft } from "~/types";
-import { FinalizedDraft } from "./components/FinalizedDraft";
-import { DraftableFactionsSection } from "./components/DraftableFactionsSection";
-
-import { MapSection } from "../draft/MapSection";
-import { Section, SectionTitle } from "~/components/Section";
-import { playerSpeakerOrder } from "~/utils/map";
 import { CurrentPickBanner } from "./components/CurrentPickBanner";
-import { DraftOrder } from "./components/DraftOrder";
 import { PlayerSelectionScreen } from "./components/PlayerSelectionScreen";
 import {
   playNotificationSound,
@@ -23,32 +16,22 @@ import {
   showNotification,
 } from "~/utils/notifications";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
-import { MidDraftSummary } from "./components/MidDraftSummary";
-import { SlicesTable } from "../draft/SlicesTable";
 import { validate as validateUUID } from "uuid";
 import {
   draftById,
   draftByPrettyUrl,
   generateUniquePrettyUrl,
 } from "~/drizzle/draft.server";
-import { DraftableSpeakerOrder } from "./components/DraftableSpeakerOrder";
-import { allFactionIds } from "~/data/factionData";
-import { allDraftableSystemIds } from "~/data/systemData";
-import { useDisclosure } from "@mantine/hooks";
-import { PlanetFinder } from "./components/PlanetFinder";
-import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import { notifyCurrentPick } from "~/discord/bot.server";
-import { useHydratedMap } from "~/hooks/useHydratedMap";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
-import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { SlicesSection, SpeakerOrderSection } from "./sections";
+import { DraftOrderSection } from "./sections/DraftOrderSection";
+import { DraftableFactionsSection } from "./sections/DraftableFactionsSection";
+import { MapSection } from "./sections/MapSection";
+import { PlanetFinder } from "./components/PlanetFinder";
+import { DraftSummarySection } from "./sections/DraftSummarySection";
 
 export default function RunningDraft() {
-  const { adminMode, pickForAnyone } = useOutletContext<{
-    adminMode: boolean;
-    pickForAnyone: boolean;
-  }>();
-
   useEffect(() => {
     requestNotificationPermission();
   }, []);
@@ -74,12 +57,12 @@ export default function RunningDraft() {
     });
     socket.on("syncDraft", (data) => {
       const draft = JSON.parse(data) as PersistedDraft;
-      useDraft.getState().hydrate(draft, result.urlName!);
+      // TODO: hydrate using the vanilla store
+      // useDraft.getState().hydrate(draft, result.urlName!);
     });
   }, [socket]);
 
   const result = useLoaderData<typeof loader>();
-  // const draft = useDraft();
   const draftV2 = useDraftV2();
   const draft = draftV2.draft;
   const settings = draft.settings;
@@ -99,17 +82,9 @@ export default function RunningDraft() {
     }
   }, []);
 
-  const { syncDraft, syncing } = useSyncDraft();
-
   const draftFinalized = currentPick >= draft.pickOrder.length;
   const activePlayerId = draft.pickOrder[currentPick];
   const activePlayer = draft.players.find((p) => p.id === activePlayerId);
-
-  const currentlyPicking = activePlayerId === selectedPlayer || pickForAnyone;
-  const canSelectSlice = currentlyPicking && (activePlayer?.sliceIdx ?? -1) < 0;
-  const canSelectSeat = currentlyPicking && (activePlayer?.seatIdx ?? -1) < 0;
-  const canSelectFaction = currentlyPicking && !activePlayer?.faction;
-
   const draftedSlices = draft.players
     .filter((p) => p.sliceIdx !== undefined)
     .map((p) => p.sliceIdx!);
@@ -123,29 +98,7 @@ export default function RunningDraft() {
 
   const selectedTile = useRef<number>();
 
-  // TODO: Restore planet finder,.
-  const planetFinder = <></>;
-  // const planetFinder = (
-  //   <PlanetFinder
-  //     factionPool={allFactionIds}
-  //     availableSystemIds={allDraftableSystemIds}
-  //     allowHomePlanetSearch
-  //     opened={planetFinderOpened}
-  //     onClose={() => {
-  //       closePlanetFinder();
-  //     }}
-  //     onSelectSystem={(system) => {
-  //       if (!selectedTile.current) return;
-  //       draft.addSystemToMap(selectedTile.current, system);
-  //       closePlanetFinder();
-  //       handleSync();
-  //     }}
-  //     usedSystemIds={[]}
-  //   />
-  // );
   if (!draftV2.hydrated) return <LoadingOverlay />;
-
-  // debugger;
 
   // if (draftFinalized) {
   //   return (
@@ -180,7 +133,7 @@ export default function RunningDraft() {
 
   return (
     <>
-      {planetFinder}
+      <PlanetFinder />
       <audio id="notificationSound" src="/chime.mp3" preload="auto"></audio>
       <Stack gap="sm" mb="60" mt="lg">
         <CurrentPickBanner player={activePlayer!} lastEvent={lastEvent} />
@@ -208,68 +161,19 @@ export default function RunningDraft() {
           </Grid.Col>
         )}
         <Grid.Col span={settings.draftSpeaker ? { base: 12, sm: 6 } : 12}>
-          <Stack>
-            <SectionTitle title="Draft Order" />
-            {/* <DraftOrder
-              players={draft.players}
-              pickOrder={draft.pickOrder}
-              currentPick={draft.currentPick}
-            /> */}
-          </Stack>
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, lg: 6 }}>
-          {/* <DraftableFactionsSection
-            allowFactionSelection={canSelectFaction}
-            factions={draft.factions}
-            players={draft.players}
-            onSelectFaction={(factionId) => {
-              draft.selectFaction(activePlayerId, factionId);
-              handleSync();
-            }}
-            disabled={syncing}
-          /> */}
+          <DraftOrderSection />
         </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }}>
-          <Tabs defaultValue="draft" variant="pills">
-            <SectionTitle title="Summary">
-              <Tabs.List>
-                <Tabs.Tab value="draft">Draft</Tabs.Tab>
-                <Tabs.Tab value="slice">Slice </Tabs.Tab>
-              </Tabs.List>
-            </SectionTitle>
-            <Tabs.Panel value="draft">
-              <MidDraftSummary />
-            </Tabs.Panel>
-            <Tabs.Panel value="slice">
-              {/* <SlicesTable
-                slices={draftV2.draft.slices}
-                draftedSlices={draftedSlices}
-              /> */}
-            </Tabs.Panel>
-          </Tabs>
+          <DraftableFactionsSection />
         </Grid.Col>
-
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <DraftSummarySection />
+        </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }}>
           <SlicesSection />
         </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }}>
-          {/* <MapSection
-            config={draft.config}
-            map={draft.hydratedMap}
-            allowSeatSelection={canSelectSeat}
-            mode={adminMode ? "create" : "draft"}
-            onSelectHomeTile={(tile) => {
-              draft.selectSeat(activePlayerId, tile.seatIdx);
-              handleSync();
-            }}
-            onDeleteSystemTile={(tile) => draft.removeSystemFromMap(tile)}
-            onSelectSystemTile={(tile) => {
-              selectedTile.current = tile;
-              openPlanetFinder();
-            }}
-            disabled={syncing}
-          /> */}
+          <MapSection />
         </Grid.Col>
       </Grid>
     </>

@@ -1,29 +1,23 @@
-import { useDraftV2 } from "~/draftStore";
+import { draftStoreAtom, useDraftV2 } from "~/draftStore";
 import { useDraftConfig } from "./useDraftConfig";
 import { HydratedPlayer, PlayerSelection } from "~/types";
 import { hydrateMap } from "~/utils/map";
 import { useMemo } from "react";
 import { useOutletContext } from "@remix-run/react";
+import { atom } from "jotai/vanilla";
+import { useAtom } from "jotai";
+import { draftConfig } from "~/draft";
 
-export function useHydratedDraft() {
-  const { pickForAnyone } = useOutletContext<{
-    pickForAnyone: boolean;
-  }>();
-  const config = useDraftConfig();
-  const selectedPlayer = useDraftV2((state) => state.selectedPlayer);
-  const presetMap = useDraftV2((state) => state.draft.presetMap);
-  const slices = useDraftV2((state) => state.draft.slices);
-  const players = useDraftV2((state) => state.draft.players);
-  const pickOrder = useDraftV2((state) => state.draft.pickOrder);
-  const selections = useDraftV2((state) => state.draft.selections);
+const hydratedPlayersAtom = atom((get) => {
+  const store = get(draftStoreAtom);
+  const selections = store.draft.selections;
+  const players = store.draft.players;
 
-  // TODO: Actually hydrate the players
-  const hydratedPlayers = selections.reduce(
+  return selections.reduce(
     (acc, selection) => {
       const playerIdx = acc.findIndex((p) => p.id === selection.playerId);
       if (playerIdx === -1) return acc;
 
-      // NOTE: Assumes there is a single type of selection
       if (selection.type === "SELECT_SPEAKER_ORDER") {
         acc[playerIdx] = {
           ...acc[playerIdx],
@@ -38,21 +32,59 @@ export function useHydratedDraft() {
         };
       }
 
+      if (selection.type === "SELECT_FACTION") {
+        acc[playerIdx] = {
+          ...acc[playerIdx],
+          faction: selection.factionId,
+        };
+      }
+
+      if (selection.type === "SELECT_SEAT") {
+        acc[playerIdx] = {
+          ...acc[playerIdx],
+          seatIdx: selection.seatIdx,
+        };
+      }
+
       return acc;
     },
     [...players] as HydratedPlayer[],
   );
+});
 
-  // TODO: Compute currentPick
+const hydratedMapAtom = atom((get) => {
+  const store = get(draftStoreAtom);
+  const hydratedPlayers = get(hydratedPlayersAtom);
+
+  // the player selections are
+  const playerSelections: PlayerSelection[] = hydratedPlayers.map((p) => ({
+    playerId: p.id,
+    sliceIdx: p.sliceIdx,
+    seatIdx: p.seatIdx,
+  }));
+
+  return hydrateMap(
+    draftConfig[store.draft.settings.type],
+    store.draft.presetMap,
+    store.draft.slices,
+    playerSelections,
+  );
+});
+
+export function useHydratedDraft() {
+  const { pickForAnyone } = useOutletContext<{
+    pickForAnyone: boolean;
+  }>();
+  const selectedPlayer = useDraftV2((state) => state.selectedPlayer);
+  const pickOrder = useDraftV2((state) => state.draft.pickOrder);
+  const selections = useDraftV2((state) => state.draft.selections);
+
+  const [hydratedPlayers] = useAtom(hydratedPlayersAtom);
+  const [hydratedMap] = useAtom(hydratedMapAtom);
+
   const currentPick = selections.length;
   const activePlayerId = pickOrder[currentPick];
   const activePlayer = hydratedPlayers.find((p) => p.id === activePlayerId)!;
-
-  // const selections = useDraftV2((state) => state.draft.selections);
-  const hydratedMap = useMemo(
-    () => hydrateMap(config, presetMap, slices, selections),
-    [config, presetMap, slices, selections],
-  );
 
   return {
     hydratedMap,
