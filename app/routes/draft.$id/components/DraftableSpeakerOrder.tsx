@@ -8,7 +8,7 @@ type Props = {
   speakerOrder: string;
   player?: Player;
   canSelectSpeakerOrder: boolean;
-  disabled: boolean;
+  disabled?: boolean;
   onSelect: () => void;
 };
 

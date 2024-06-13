@@ -12,7 +12,11 @@ import { useUsedSystemIds } from "~/hooks/useUsedSystemIds";
 
 import "./PlanetFinder.css";
 
-export function PlanetFinder() {
+type Props = {
+  onSystemSelected?: (system: System) => void;
+};
+
+export function PlanetFinder({ onSystemSelected }: Props) {
   const planetFinderModal = useDraft((state) => state.planetFinderModal);
   const availableSystemIds = useDraft((state) => state.systemPool);
   const factionPool = useDraft((state) => state.factionPool);
@@ -40,6 +44,7 @@ export function PlanetFinder() {
       );
     }
 
+    onSystemSelected?.(system);
     closePlanetFinder();
   };
 

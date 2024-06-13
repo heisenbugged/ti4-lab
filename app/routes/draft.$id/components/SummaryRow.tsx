@@ -10,9 +10,10 @@ import { PlayerChip } from "./PlayerChip";
 type Props = {
   player: Player;
   slice: DraftSlice;
+  draftSpeaker: Boolean;
 };
 
-export function SummaryRow({ player, slice }: Props) {
+export function SummaryRow({ player, slice, draftSpeaker = false }: Props) {
   const faction = factions[player.faction!];
   const { total, optimal, specialties } = useSlice(slice);
   return (
@@ -27,7 +28,7 @@ export function SummaryRow({ player, slice }: Props) {
         </Group>
       </Table.Td>
       <Table.Td>{player.speakerOrder! + 1}</Table.Td>
-      <Table.Td>{player.seatIdx! + 1}</Table.Td>
+      {draftSpeaker && <Table.Td>{player.seatIdx! + 1}</Table.Td>}
       <Table.Td>
         <PlanetStatsPill
           size="sm"

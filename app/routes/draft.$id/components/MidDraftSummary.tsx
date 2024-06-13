@@ -2,11 +2,7 @@ import { Card, Group, Stack, Table, Text } from "@mantine/core";
 import { useDraft } from "~/draftStore";
 import { PlayerChip } from "./PlayerChip";
 import { factions } from "~/data/factionData";
-import {
-  optimalStatsForSystems,
-  techSpecialtiesForSystems,
-  totalStatsForSystems,
-} from "~/utils/map";
+import { optimalStatsForSystems, techSpecialtiesForSystems } from "~/utils/map";
 import { DraftSlice, Faction, Player, System } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
@@ -44,9 +40,7 @@ export function MidDraftSummary() {
             <Table.Th>Faction</Table.Th>
             <Table.Th>Speaker Order</Table.Th>
             {draftSpeaker && <Table.Th>Seat</Table.Th>}
-            <Table.Th>Optimal Value</Table.Th>
-
-            <Table.Th>Features</Table.Th>
+            <Table.Th w="260px">Slice</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -70,15 +64,9 @@ type Props = {
   player: Player;
   slice?: DraftSlice;
   showSeat: boolean;
-  showSlice?: boolean;
 };
 
-export function SummaryCard({
-  player,
-  slice,
-  showSeat,
-  showSlice = true,
-}: Props) {
+export function SummaryCard({ player, slice, showSeat }: Props) {
   let faction: Faction | undefined;
   let systems: System[] | undefined;
   let optimal:
@@ -137,15 +125,6 @@ export function SummaryCard({
               {player.seatIdx !== undefined ? player.seatIdx + 1 : "Not Chosen"}
             </Text>
           )}
-
-          {showSlice && (
-            <Text size="sm" lh={1}>
-              Slice #:{" "}
-              {player.sliceIdx !== undefined
-                ? player.sliceIdx + 1
-                : "Not Chosen"}
-            </Text>
-          )}
         </Stack>
       </Group>
     </Card>
@@ -191,17 +170,17 @@ function SummaryRow({ player, slice, showSeat }: Props) {
         </Table.Td>
       )}
       <Table.Td>
-        {optimal && (
-          <PlanetStatsPill
-            size="sm"
-            resources={optimal.resources}
-            influence={optimal.influence}
-            flex={optimal.flex}
-          />
-        )}
-      </Table.Td>
-      <Table.Td>
-        {slice !== undefined && <SliceFeatures slice={slice} />}
+        <Group>
+          {optimal && (
+            <PlanetStatsPill
+              size="sm"
+              resources={optimal.resources}
+              influence={optimal.influence}
+              flex={optimal.flex}
+            />
+          )}
+          {slice !== undefined && <SliceFeatures slice={slice} />}
+        </Group>
       </Table.Td>
     </Table.Tr>
   );

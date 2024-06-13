@@ -16,7 +16,6 @@ export function useSyncDraftFetcher() {
     syncDraft: async () => {
       const { draft, draftId } = draftStore.getState();
       if (!draft || !draftId) return;
-      console.log("are we here?");
 
       await fetcher.submit(
         { id: draftId, draft },

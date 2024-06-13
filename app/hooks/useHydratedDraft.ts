@@ -10,10 +10,12 @@ import { useOutletContext } from "@remix-run/react";
 import { atom } from "jotai/vanilla";
 import { useAtom } from "jotai";
 import { draftConfig } from "~/draft";
+import { factionSystems } from "~/data/systemData";
 
 export function hydratePlayers(
   players: DraftPlayer[],
   selections: DraftSelection[],
+  draftSpeaker: boolean = false,
 ): HydratedPlayer[] {
   return selections.reduce(
     (acc, selection) => {
@@ -42,10 +44,15 @@ export function hydratePlayers(
       }
 
       if (selection.type === "SELECT_SEAT") {
-        acc[playerIdx] = {
+        const updated = {
           ...acc[playerIdx],
           seatIdx: selection.seatIdx,
         };
+        if (!draftSpeaker) {
+          updated.speakerOrder = selection.seatIdx;
+        }
+
+        acc[playerIdx] = updated;
       }
 
       return acc;
@@ -62,10 +69,12 @@ export const computePlayerSelections = (hydratedPlayers: HydratedPlayer[]) =>
   }));
 
 const hydratedPlayersAtom = atom((get) => {
-  const store = get(draftStoreAtom);
-  const selections = store.draft.selections;
-  const players = store.draft.players;
-  return hydratePlayers(players, selections);
+  const draft = get(draftStoreAtom).draft;
+  return hydratePlayers(
+    draft.players,
+    draft.selections,
+    draft.settings.draftSpeaker,
+  );
 });
 
 const hydratedMapAtom = atom((get) => {
@@ -78,6 +87,25 @@ const hydratedMapAtom = atom((get) => {
     store.draft.slices,
     computePlayerSelections(hydratedPlayers),
   );
+});
+
+export const hydratedMapStringAtom = atom((get) => {
+  const hydratedMap = get(hydratedMapAtom);
+  const hydratedPlayers = get(hydratedPlayersAtom);
+
+  // slice to remove mecatol
+  return hydratedMap
+    .slice(1, hydratedMap.length)
+    .map((t) => {
+      if (t.type === "HOME") {
+        const player = hydratedPlayers.find((p) => p.id === t.playerId);
+        if (player?.faction === undefined) return "0";
+        return factionSystems[player.faction].id;
+      }
+      if (t.type === "SYSTEM") return t.systemId;
+      return "-1";
+    })
+    .join(" ");
 });
 
 export function useHydratedDraft() {

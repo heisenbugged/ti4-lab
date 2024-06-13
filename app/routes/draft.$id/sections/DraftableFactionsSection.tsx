@@ -11,8 +11,8 @@ export function DraftableFactionsSection() {
   const { selectFaction } = useDraft((state) => state.draftActions);
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
-  const { syncing, syncDraft } = useSyncDraft();
-  const canSelect = currentlyPicking && !activePlayer?.faction;
+  const { syncDraft } = useSyncDraft();
+  const canSelect = currentlyPicking && activePlayer?.faction === undefined;
 
   return (
     <Section>
@@ -31,7 +31,6 @@ export function DraftableFactionsSection() {
                   }
                 : undefined
             }
-            disabled={syncing}
           />
         ))}
       </SimpleGrid>

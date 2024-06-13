@@ -2,7 +2,6 @@ import { Button } from "@mantine/core";
 import { DraftSlice, HydratedPlayer } from "~/types";
 import { BaseSlice } from "~/components/Slice/BaseSlice";
 import { PlayerChip } from "./PlayerChip";
-import { useSyncDraft } from "~/hooks/useSyncDraft";
 
 type Props = {
   id: string;
@@ -12,7 +11,6 @@ type Props = {
 };
 
 export function DraftableSlice({ id, slice, player, onSelect }: Props) {
-  const { syncing } = useSyncDraft();
   return (
     <BaseSlice
       id={id}
@@ -30,7 +28,6 @@ export function DraftableSlice({ id, slice, player, onSelect }: Props) {
                 h="auto"
                 onMouseDown={onSelect}
                 variant="filled"
-                disabled={syncing}
               >
                 Select
               </Button>

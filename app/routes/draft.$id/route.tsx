@@ -1,6 +1,6 @@
-import { Grid, Stack } from "@mantine/core";
+import { Button, Grid, Stack } from "@mantine/core";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useOutletContext } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { useEffect, useRef } from "react";
 import { useDraft } from "~/draftStore";
@@ -10,11 +10,6 @@ import { useSocket } from "~/socketContext";
 import { Draft, PersistedDraft } from "~/types";
 import { CurrentPickBanner } from "./components/CurrentPickBanner";
 import { PlayerSelectionScreen } from "./components/PlayerSelectionScreen";
-import {
-  playNotificationSound,
-  requestNotificationPermission,
-  showNotification,
-} from "~/utils/notifications";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { validate as validateUUID } from "uuid";
 import {
@@ -36,16 +31,18 @@ import { PlanetFinder } from "./components/PlanetFinder";
 import { useNotifyActivePlayer } from "~/hooks/useNotifyActivePlayer";
 import { FinalizedDraft } from "./components/FinalizedDraft";
 import { SyncDraftContext, useSyncDraftFetcher } from "~/hooks/useSyncDraft";
+import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 
 export default function RunningDraft() {
+  const { adminMode } = useOutletContext<{ adminMode: boolean }>();
   useNotifyActivePlayer();
   const result = useLoaderData<typeof loader>();
   const { syncDraft, syncing } = useSyncDraftFetcher();
-  const draftV2 = useDraft();
-  const draft = draftV2.draft;
+  const draftStore = useDraft();
+  const draft = draftStore.draft;
   const settings = draft.settings;
-  const draftActions = draftV2.draftActions;
-  const selectedPlayer = draftV2.selectedPlayer;
+  const draftActions = draftStore.draftActions;
+  const selectedPlayer = draftStore.selectedPlayer;
   const { draftFinished } = useHydratedDraft();
 
   // Real-time socket connection to push and receive state updates.
@@ -59,13 +56,13 @@ export default function RunningDraft() {
     });
     socket.on("syncDraft", (data) => {
       const draft = JSON.parse(data) as Draft;
-      draftV2.draftActions.update(result.id!, draft);
+      draftStore.draftActions.update(result.id!, draft);
     });
   }, [socket]);
 
   // pre-seed store with loaded persisted draft
   useEffect(() => {
-    draftV2.draftActions.hydrate(result.id!, result.urlName!, result.data);
+    draftStore.draftActions.hydrate(result.id!, result.urlName!, result.data);
 
     const storedSelectedPlayer = localStorage.getItem(
       `draft:player:${result.id}`,
@@ -75,7 +72,7 @@ export default function RunningDraft() {
     }
   }, []);
 
-  if (!draftV2.hydrated) return <LoadingOverlay />;
+  if (!draftStore.hydrated) return <LoadingOverlay />;
 
   if (draftFinished) {
     return (
@@ -101,7 +98,7 @@ export default function RunningDraft() {
 
   return (
     <SyncDraftContext.Provider value={{ syncDraft, syncing }}>
-      <PlanetFinder />
+      <PlanetFinder onSystemSelected={syncDraft} />
       <audio id="notificationSound" src="/chime.mp3" preload="auto"></audio>
       <Stack gap="sm" mb="60" mt="lg">
         <CurrentPickBanner />
@@ -109,40 +106,46 @@ export default function RunningDraft() {
       </Stack>
 
       <Grid gutter="xl">
-        {/* {adminMode && (
+        {settings.draftSpeaker && (
+          <Grid.Col
+            span={{ base: 12, sm: 6 }}
+            order={{ base: 3, sm: 1, lg: 1 }}
+          >
+            <SpeakerOrderSection />
+          </Grid.Col>
+        )}
+        <Grid.Col
+          span={settings.draftSpeaker ? { base: 12, sm: 6 } : 12}
+          order={{ base: 1, sm: 2, lg: 2 }}
+        >
+          <DraftOrderSection />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 4, sm: 4, lg: 3 }}>
+          <DraftableFactionsSection />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 2, sm: 3, lg: 4 }}>
+          <DraftSummarySection />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 5, sm: 5, lg: 5 }}>
+          <SlicesSection />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 6, sm: 6, lg: 6 }}>
+          <MapSection />
+        </Grid.Col>
+
+        {adminMode && (
           <Grid.Col offset={6} span={6}>
             <PlayerInputSection
               players={draft.players}
               onChangeName={(playerIdx, name) => {
-                draft.updatePlayer(playerIdx, { name });
+                draftStore.actions.updatePlayerName(playerIdx, name);
               }}
             />
-            <Button mt="lg" onClick={handleSync} disabled={syncing}>
+            <Button mt="lg" onClick={syncDraft} loading={syncing}>
               Save
             </Button>
           </Grid.Col>
-        )} */}
-
-        {settings.draftSpeaker && (
-          <Grid.Col span={{ base: 12, sm: 6 }}>
-            <SpeakerOrderSection />
-          </Grid.Col>
         )}
-        <Grid.Col span={settings.draftSpeaker ? { base: 12, sm: 6 } : 12}>
-          <DraftOrderSection />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, lg: 6 }}>
-          <DraftableFactionsSection />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, lg: 6 }}>
-          <DraftSummarySection />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, lg: 6 }}>
-          <SlicesSection />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, lg: 6 }}>
-          <MapSection />
-        </Grid.Col>
       </Grid>
     </SyncDraftContext.Provider>
   );

@@ -8,18 +8,23 @@ import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraft } from "~/draftStore";
+import { useOutletContext } from "@remix-run/react";
 
 export function MapSection() {
+  const { adminMode } = useOutletContext<{ adminMode: boolean }>();
   const { ref, width } = useDimensions<HTMLDivElement>();
   const { height: windowHeight } = useWindowDimensions();
   const height = getBoundedMapHeight(width, windowHeight - 150);
 
   const config = useDraftConfig();
   const { activePlayer, currentlyPicking, hydratedMap } = useHydratedDraft();
-  const { syncing, syncDraft } = useSyncDraft();
+  const { removeSystemFromMap, openPlanetFinderForMap } = useDraft(
+    (state) => state.actions,
+  );
+  const { syncDraft } = useSyncDraft();
   const { selectSeat } = useDraft((state) => state.draftActions);
 
-  const canSelect = currentlyPicking && !activePlayer?.seatIdx;
+  const canSelect = currentlyPicking && activePlayer?.seatIdx === undefined;
 
   return (
     <div style={{ position: "sticky", width: "auto", top: 60 }}>
@@ -45,9 +50,13 @@ export function MapSection() {
                 }
               : undefined
           }
-          disabled={syncing}
-          // TODO should be editable if admin mode is on
-          editable={false}
+          onSelectSystemTile={(tile) => {
+            openPlanetFinderForMap(tile.idx);
+          }}
+          onDeleteSystemTile={(tile) => {
+            removeSystemFromMap(tile.idx);
+          }}
+          editable={adminMode}
         />
       </Box>
     </div>

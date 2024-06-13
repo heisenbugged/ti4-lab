@@ -65,8 +65,6 @@ export function DraftableFaction({
         align="center"
         flex={1}
         style={{
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
           overflow: "hidden",
           flexWrap: "nowrap",
         }}

@@ -1,23 +1,39 @@
-import { Button, Group, SimpleGrid } from "@mantine/core";
+import { SimpleGrid } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
-import { Slice } from "~/components/Slice";
-import { draftConfig } from "~/draft";
 import { useDraft } from "~/draftStore";
 import { DraftableSlice } from "../components/DraftableSlice";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
+import { useMemo } from "react";
 
-type Props = {
-  draftedSlices?: number[];
-};
-
-export function SlicesSection({ draftedSlices = [] }: Props) {
+export function SlicesSection() {
   const slices = useDraft((state) => state.draft.slices);
+
   const { selectSlice } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
   const { activePlayer, hydratedPlayers, currentlyPicking } =
     useHydratedDraft();
-  const canSelect = currentlyPicking && !activePlayer?.sliceIdx;
+
+  const sortedSlices = useMemo(() => {
+    const draftedSlices = hydratedPlayers
+      .map((p) => p.sliceIdx)
+      .filter((i) => i !== undefined) as number[];
+
+    return [...slices]
+      .map((slice, idx) => ({ slice, idx }))
+      .sort((a, b) => {
+        if (draftedSlices.includes(a.idx) && !draftedSlices.includes(b.idx)) {
+          return 1;
+        }
+        if (draftedSlices.includes(b.idx) && !draftedSlices.includes(a.idx)) {
+          return -1;
+        }
+
+        return a.idx - b.idx;
+      });
+  }, [slices, hydratedPlayers]);
+
+  const canSelect = currentlyPicking && activePlayer?.sliceIdx === undefined;
 
   return (
     <Section>
@@ -31,7 +47,7 @@ export function SlicesSection({ draftedSlices = [] }: Props) {
         spacing="lg"
         style={{ alignItems: "flex-start" }}
       >
-        {slices.map((slice, idx) => (
+        {sortedSlices.map(({ slice, idx }) => (
           <DraftableSlice
             key={idx}
             id={`slice-${idx}`}

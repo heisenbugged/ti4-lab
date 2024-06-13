@@ -16,7 +16,11 @@ export default function MapImage() {
   const result = useLoaderData<typeof loader>();
   const draft = result.data;
   const config = draftConfig[draft.settings.type];
-  const hydratedPlayers = hydratePlayers(draft.players, draft.selections);
+  const hydratedPlayers = hydratePlayers(
+    draft.players,
+    draft.selections,
+    draft.settings.draftSpeaker,
+  );
   const selections = computePlayerSelections(hydratedPlayers);
   const map = hydrateMap(config, draft.presetMap, draft.slices, selections);
 

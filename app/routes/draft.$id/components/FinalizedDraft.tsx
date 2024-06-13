@@ -7,19 +7,22 @@ import {
   Textarea,
   Title,
 } from "@mantine/core";
-import { useDraft, useDraft } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
-
 import { SummaryRow } from "./SummaryRow";
 import { useMemo, useState } from "react";
 import { SummaryCard } from "./MidDraftSummary";
 import { Link, useOutletContext } from "@remix-run/react";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
-import { factionSystems, systemData } from "~/data/systemData";
-import { useHydratedDraft } from "~/hooks/useHydratedDraft";
+import {
+  hydratedMapStringAtom,
+  useHydratedDraft,
+} from "~/hooks/useHydratedDraft";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
-import { systemIdsInSlice, systemsInSlice } from "~/utils/slice";
 import { MapSection } from "../sections";
+import { useAtom } from "jotai";
+import { useSyncDraft } from "~/hooks/useSyncDraft";
+import { PlanetFinder } from "./PlanetFinder";
 
 export function FinalizedDraft() {
   const { adminMode } = useOutletContext<{
@@ -29,59 +32,27 @@ export function FinalizedDraft() {
   const config = useDraftConfig();
   const draftUrl = useDraft((state) => state.draftUrl);
   const draft = useDraft((state) => state.draft);
+  const { updatePlayerName } = useDraft((state) => state.actions);
   const {
     slices,
     players,
     settings: { draftSpeaker },
   } = draft;
   const { hydratedPlayers } = useHydratedDraft();
+  const { syncDraft } = useSyncDraft();
 
   const [exportingImage, setExportingImage] = useState(false);
   const sortedPlayers = useMemo(
-    () => hydratedPlayers.sort((a, b) => b.speakerOrder! - a.speakerOrder!),
+    () => hydratedPlayers.sort((a, b) => a.speakerOrder! - b.speakerOrder!),
     [hydratedPlayers],
   );
-
-  const mapString = "";
-  // TODO: Move this to an actual reusable function
-  // const mapString = draft.hydratedMap
-  //   .slice(1, draft.hydratedMap.length)
-  //   .map((t) => {
-  //     if (t.type === "HOME") {
-  //       if (t.player?.faction === undefined) return "0";
-  //       return factionSystems[t.player.faction].id;
-  //     }
-  //     if (t.system) return t.system.id;
-  //     return "-1";
-  //   })
-  //   .join(" ");
-
-  // TODO: Implement
-  const onSavePlayerNames = () => {};
+  const [mapString] = useAtom(hydratedMapStringAtom);
 
   return (
     <Stack mt="lg" gap={30}>
+      <PlanetFinder onSystemSelected={syncDraft} />
       <Title>Draft complete!</Title>
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 60 }}>
-        {adminMode && (
-          <>
-            <div />
-            {adminMode && (
-              <Box>
-                <PlayerInputSection
-                  players={players}
-                  onChangeName={(playerIdx, name) => {
-                    // FIX
-                    // draft.updatePlayer(playerIdx, { name });
-                  }}
-                />
-                <Button mt="lg" onClick={onSavePlayerNames}>
-                  Save
-                </Button>
-              </Box>
-            )}
-          </>
-        )}
         <Stack flex={1} gap="xl">
           <Section>
             <SectionTitle title="Draft Summary" />
@@ -104,7 +75,7 @@ export function FinalizedDraft() {
                   <Table.Th>Name</Table.Th>
                   <Table.Th>Faction</Table.Th>
                   <Table.Th>Speaker Order</Table.Th>
-                  <Table.Th>Seat</Table.Th>
+                  {draftSpeaker && <Table.Th>Seat</Table.Th>}
                   <Table.Th>Optimal Value</Table.Th>
                   <Table.Th>Total Value</Table.Th>
                   <Table.Th>Features</Table.Th>
@@ -116,6 +87,7 @@ export function FinalizedDraft() {
                     key={p.id}
                     player={p}
                     slice={slices[p.sliceIdx!]}
+                    draftSpeaker={draftSpeaker}
                   />
                 ))}
               </Table.Tbody>
@@ -140,6 +112,20 @@ export function FinalizedDraft() {
               <Button loading={exportingImage}>Download image</Button>
             </Link>
           </Section>
+
+          {adminMode && (
+            <Box>
+              <PlayerInputSection
+                players={players}
+                onChangeName={(playerIdx, name) => {
+                  updatePlayerName(playerIdx, name);
+                }}
+              />
+              <Button mt="lg" onClick={syncDraft}>
+                Save
+              </Button>
+            </Box>
+          )}
         </Stack>
         <Stack flex={1} gap="xl">
           <MapSection />

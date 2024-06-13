@@ -69,8 +69,7 @@ type DraftV2State = {
     initializeDraft: (settings: DraftSettings, players: DraftPlayer[]) => void;
 
     setDraftSpeaker: (draftSpeaker: boolean) => void;
-    // HOW are we updating players?
-    // updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
+    updatePlayerName: (playerIdx: number, name: string) => void;
 
     // faction actions
     randomizeFactions: () => void;
@@ -175,6 +174,11 @@ export const draftStore = createStore<DraftV2State>()(
 
       selectSlice: (playerId: number, sliceIdx: number) =>
         set((state) => {
+          const alreadySelected = state.draft.selections.find(
+            (s) => s.playerId === playerId && s.type === "SELECT_SLICE",
+          );
+          if (alreadySelected) return;
+
           state.draft.selections.push({
             type: "SELECT_SLICE",
             playerId,
@@ -184,6 +188,11 @@ export const draftStore = createStore<DraftV2State>()(
 
       selectSpeakerOrder: (playerId: number, speakerOrder: number) =>
         set((state) => {
+          const alreadySelected = state.draft.selections.find(
+            (s) => s.playerId === playerId && s.type === "SELECT_SPEAKER_ORDER",
+          );
+          if (alreadySelected) return;
+
           state.draft.selections.push({
             type: "SELECT_SPEAKER_ORDER",
             playerId,
@@ -193,6 +202,11 @@ export const draftStore = createStore<DraftV2State>()(
 
       selectFaction: (playerId: number, factionId: FactionId) =>
         set((state) => {
+          const alreadySelected = state.draft.selections.find(
+            (s) => s.playerId === playerId && s.type === "SELECT_FACTION",
+          );
+          if (alreadySelected) return;
+
           state.draft.selections.push({
             type: "SELECT_FACTION",
             playerId,
@@ -202,6 +216,11 @@ export const draftStore = createStore<DraftV2State>()(
 
       selectSeat: (playerId: number, seatIdx: number) =>
         set((state) => {
+          const alreadySelected = state.draft.selections.find(
+            (s) => s.playerId === playerId && s.type === "SELECT_SEAT",
+          );
+          if (alreadySelected) return;
+
           state.draft.selections.push({
             type: "SELECT_SEAT",
             playerId,
@@ -254,8 +273,10 @@ export const draftStore = createStore<DraftV2State>()(
         set(({ draft }) => {
           draft.settings.draftSpeaker = draftSpeaker;
         }),
-      // HOW are we updating players?
-      // updatePlayer: (playerIdx: number, player: Partial<Player>) => void;
+      updatePlayerName: (playerIdx: number, name: string) =>
+        set(({ draft }) => {
+          draft.players[playerIdx].name = name;
+        }),
 
       // faction actions
       randomizeFactions: () =>
