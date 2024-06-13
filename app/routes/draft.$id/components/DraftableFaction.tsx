@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Group,
-  Modal,
-  Popover,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Box, Button, Flex, Group, Modal, Stack, Text } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction, Player } from "~/types";
 import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
@@ -41,6 +32,7 @@ export function DraftableFaction({
         borderRadius: "var(--mantine-radius-md)",
         cursor: "pointer",
         position: "relative",
+        opacity: player && onSelect ? 0.3 : 1,
       }}
     >
       <Modal

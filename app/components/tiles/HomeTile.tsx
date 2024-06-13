@@ -31,7 +31,7 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
 
   return (
     <Hex id={`${mapId}-home`} radius={radius} colorClass={classes.home}>
-      {player?.faction && (
+      {player?.faction && factionSystems[player.faction] && (
         <SystemId
           id={factionSystems[player.faction].id}
           size={systemIdSize}

@@ -128,15 +128,18 @@ export default function DraftPrechoice() {
   const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
   const [randomizeMap, setRandomizeMap] = useState<boolean>(true);
   const [players, setPlayers] = useState<DraftPlayer[]>([
-    ...[0, 1, 2, 3, 4, 5].map((i) => ({
-      id: i,
-      name: "",
+    ...[0, 1, 2, 3, 4, 5].map((i) => {
+      const discordPlayer = discordData?.players.find(
+        (discordPlayer) => discordPlayer.playerId === i,
+      );
+      const name =
+        discordPlayer?.type === "unidentified" ? discordPlayer.name : "";
 
-      // TODO: Restore discord integration
-      // name: discordData?.players[i]?.name ?? "",
-      // discordName: discordData?.players[i]?.name,
-      // discordMemberId: discordData?.players[i]?.memberId,
-    })),
+      return {
+        id: i,
+        name,
+      };
+    }),
   ]);
   const [withDiscordant, setWithDiscordant] = useState<boolean>(false);
   const [withDiscordantExp, setWithDiscordantExp] = useState<boolean>(false);
@@ -184,8 +187,7 @@ export default function DraftPrechoice() {
       state: {
         draftSettings,
         players,
-        // TODO: re-enable discordData when ready
-        // discordData,
+        discordData,
       },
     });
   };
@@ -374,6 +376,7 @@ export default function DraftPrechoice() {
         <Stack>
           <PlayerInputSection
             players={players}
+            discordData={discordData}
             onChangeName={handleChangeName}
           />
           <Stack>

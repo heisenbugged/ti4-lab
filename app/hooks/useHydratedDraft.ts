@@ -100,7 +100,7 @@ export const hydratedMapStringAtom = atom((get) => {
       if (t.type === "HOME") {
         const player = hydratedPlayers.find((p) => p.id === t.playerId);
         if (player?.faction === undefined) return "0";
-        return factionSystems[player.faction].id;
+        return factionSystems[player.faction]?.id ?? "0";
       }
       if (t.type === "SYSTEM") return t.systemId;
       return "-1";

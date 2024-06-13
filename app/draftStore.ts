@@ -1,6 +1,7 @@
 import { useStore } from "zustand";
 import {
   Draft,
+  DraftIntegrations,
   DraftPlayer,
   DraftSettings,
   DraftSlice,
@@ -66,7 +67,11 @@ type DraftV2State = {
     selectSeat: (playerId: number, seatIdx: number) => void;
   };
   actions: {
-    initializeDraft: (settings: DraftSettings, players: DraftPlayer[]) => void;
+    initializeDraft: (
+      settings: DraftSettings,
+      players: DraftPlayer[],
+      integrations: DraftIntegrations,
+    ) => void;
 
     setDraftSpeaker: (draftSpeaker: boolean) => void;
     updatePlayerName: (playerIdx: number, name: string) => void;
@@ -229,7 +234,11 @@ export const draftStore = createStore<DraftV2State>()(
         }),
     },
     actions: {
-      initializeDraft: (settings: DraftSettings, players: DraftPlayer[]) => {
+      initializeDraft: (
+        settings: DraftSettings,
+        players: DraftPlayer[],
+        integrations: DraftIntegrations,
+      ) => {
         // reset state before continuing
         set(initialState);
 
@@ -237,6 +246,7 @@ export const draftStore = createStore<DraftV2State>()(
           const config = draftConfig[settings.type];
           const draft = state.draft;
           draft.players = players;
+          draft.integrations = integrations;
 
           // intialize pools based on game sets.
           state.factionPool = getFactionPool(settings.gameSets);

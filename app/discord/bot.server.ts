@@ -7,7 +7,7 @@ import {
   TextChannel,
 } from "discord.js";
 import startDraft from "./commands/startDraft";
-import { PersistedDraft } from "~/types";
+import { Draft, PersistedDraft } from "~/types";
 
 const commands = [startDraft];
 
@@ -16,11 +16,7 @@ declare global {
 }
 export async function startDiscordBot() {
   const client = new Client({
-    intents: [
-      GatewayIntentBits.Guilds,
-      // GatewayIntentBits.GuildMessages,
-      // GatewayIntentBits.MessageContent,
-    ],
+    intents: [GatewayIntentBits.Guilds],
   });
   dotenv.config();
   const token = process.env.DISCORD_TOKEN;
@@ -79,18 +75,21 @@ export async function getChannel(guildId: string, channelId: string) {
   return (cachedChannel ?? guild.channels.fetch(channelId)) as TextChannel;
 }
 
-export async function notifyCurrentPick(draft: PersistedDraft) {
-  if (!draft.discordData) return;
-  const currentPlayer = draft.players[draft.pickOrder[draft.currentPick]];
-  const channel = await getChannel(
-    draft.discordData.guildId,
-    draft.discordData.channelId,
-  );
+export async function notifyCurrentPick(draft: Draft) {
+  if (!draft.integrations.discord) return;
+  if (draft.selections.length === draft.pickOrder.length) return;
 
-  if (currentPlayer && currentPlayer.discordMemberId) {
-    channel?.send(
-      `It's your turn to draft, <@${currentPlayer.discordMemberId}>!`,
-    );
+  const discord = draft.integrations.discord;
+  const currentPlayer = draft.players[draft.pickOrder[draft.selections.length]];
+  const channel = await getChannel(discord.guildId, discord.channelId);
+  const discordPlayer = discord.players.find(
+    (p) => p.playerId === currentPlayer.id,
+  );
+  const discordMemberId =
+    discordPlayer?.type === "identified" ? discordPlayer.memberId : undefined;
+
+  if (discordMemberId) {
+    channel?.send(`It's your turn to draft, <@${discordMemberId}>!`);
   } else {
     channel?.send(`It's your turn to draft, ${currentPlayer.name}!`);
   }

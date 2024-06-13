@@ -134,7 +134,7 @@ export default function RunningDraft() {
         </Grid.Col>
 
         {adminMode && (
-          <Grid.Col offset={6} span={6}>
+          <Grid.Col offset={6} span={6} order={{ base: 7 }}>
             <PlayerInputSection
               players={draft.players}
               onChangeName={(playerIdx, name) => {
@@ -152,13 +152,14 @@ export default function RunningDraft() {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  console.log("sync called");
-
-  const { id, draft, turnPassed } = (await request.json()) as {
+  const { id, draft } = (await request.json()) as {
     id: string;
-    draft: PersistedDraft;
+    draft: Draft;
     turnPassed: boolean;
   };
+
+  const existingDraft = await draftById(id);
+  const existingDraftData = JSON.parse(existingDraft.data as string) as Draft;
 
   // TODO: Handle if not successful
   const result = db
@@ -167,7 +168,8 @@ export async function action({ request }: ActionFunctionArgs) {
     .where(eq(drafts.id, id))
     .run();
 
-  if (turnPassed) {
+  // only notify if a selection was made
+  if (existingDraftData.selections.length != draft.selections.length) {
     await notifyCurrentPick(draft);
   }
 

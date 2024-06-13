@@ -211,17 +211,6 @@ export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
 
 export type Slice = SystemId[];
 
-export type DiscordPlayer = {
-  name: string;
-  memberId?: string;
-};
-
-export type DiscordData = {
-  players: DiscordPlayer[];
-  guildId: string;
-  channelId: string;
-};
-
 export type SystemId = string;
 
 export type PlayerId = number;
@@ -240,17 +229,28 @@ export type DraftSettings = {
   randomizeSlices: boolean;
 };
 
-export type DraftIntegrations = {
-  discord?: {
-    guildId: string;
-    channelId: string;
-    players: {
+export type DiscordPlayer =
+  | {
+      type: "identified";
       playerId: number;
-      memberId: string;
-      nickname: string;
       username: string;
-    }[];
-  };
+      memberId?: string;
+      nickname?: string;
+    }
+  | {
+      type: "unidentified";
+      playerId: number;
+      name: string;
+    };
+
+export type DiscordData = {
+  guildId: string;
+  channelId: string;
+  players: DiscordPlayer[];
+};
+
+export type DraftIntegrations = {
+  discord?: DiscordData;
 };
 
 export type DraftPlayer = {

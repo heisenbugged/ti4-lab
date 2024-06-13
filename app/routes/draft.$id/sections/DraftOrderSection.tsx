@@ -7,6 +7,7 @@ import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 export function DraftOrderSection() {
   const players = useDraft((state) => state.draft.players);
   const pickOrder = useDraft((state) => state.draft.pickOrder);
+  const discord = useDraft((state) => state.draft.integrations.discord);
   const currentPick = useHydratedDraft().currentPick;
 
   return (
@@ -16,6 +17,7 @@ export function DraftOrderSection() {
         players={players}
         pickOrder={pickOrder}
         currentPick={currentPick}
+        discordPlayers={discord?.players ?? []}
       />
     </Stack>
   );
