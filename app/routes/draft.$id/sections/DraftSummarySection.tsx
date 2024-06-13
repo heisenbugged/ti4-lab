@@ -3,6 +3,10 @@ import { SectionTitle } from "~/components/Section";
 import { MidDraftSummary } from "../components/MidDraftSummary";
 
 export function DraftSummarySection() {
+  // const draftedSlices = draft.players
+  // .filter((p) => p.sliceIdx !== undefined)
+  // .map((p) => p.sliceIdx!);
+
   return (
     <Tabs defaultValue="draft" variant="pills">
       <SectionTitle title="Summary">

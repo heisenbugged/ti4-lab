@@ -4,7 +4,7 @@ import { Section, SectionTitle } from "~/components/Section";
 import { NumberStepper } from "~/components/NumberStepper";
 import { IconDice6Filled } from "@tabler/icons-react";
 import { NewDraftFaction } from "../components/NewDraftFaction";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 
 export function AvailableFactionsSection() {
   const {
@@ -12,9 +12,9 @@ export function AvailableFactionsSection() {
     removeLastFaction,
     randomizeFactions,
     removeFaction,
-  } = useDraftV2((state) => state.actions);
-  const factionPool = useDraftV2((state) => state.factionPool);
-  const { numFactions, availableFactions } = useDraftV2((state) => ({
+  } = useDraft((state) => state.actions);
+  const factionPool = useDraft((state) => state.factionPool);
+  const { numFactions, availableFactions } = useDraft((state) => ({
     numFactions: state.draft.settings.numFactions,
     availableFactions: state.draft.availableFactions,
   }));

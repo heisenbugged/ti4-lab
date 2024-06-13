@@ -4,18 +4,17 @@ import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { Player, SystemId } from "~/types";
+import { DraftSlice, Player } from "~/types";
 import { PlayerChip } from "./PlayerChip";
-import { DraftConfig } from "~/draft";
 
 type Props = {
-  config: DraftConfig;
   player: Player;
-  systems: SystemId[];
+  slice: DraftSlice;
 };
-export function SummaryRow({ config, player, systems }: Props) {
+
+export function SummaryRow({ player, slice }: Props) {
   const faction = factions[player.faction!];
-  const { total, optimal, specialties } = useSlice(config, systems);
+  const { total, optimal, specialties } = useSlice(slice);
   return (
     <Table.Tr>
       <Table.Td>
@@ -45,7 +44,7 @@ export function SummaryRow({ config, player, systems }: Props) {
         />
       </Table.Td>
       <Table.Td>
-        <SliceFeatures slice={systems} />
+        <SliceFeatures slice={slice} />
       </Table.Td>
     </Table.Tr>
   );

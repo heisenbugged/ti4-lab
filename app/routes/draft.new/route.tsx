@@ -15,7 +15,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect, useLocation, useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { Draft } from "~/types";
@@ -41,7 +41,7 @@ import { useDraftSettings } from "~/hooks/useDraftSettings";
 export default function DraftNew() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { draft, actions, initialized } = useDraftV2();
+  const { draft, actions, initialized } = useDraft();
   const config = useDraftConfig();
   const settings = useDraftSettings();
   const createDraft = useCreateDraft();

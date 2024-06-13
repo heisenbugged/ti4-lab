@@ -7,21 +7,21 @@ import { bgColor } from "../../../../components/Planet";
 import { useArrowFocus } from "~/hooks/useArrowFocus";
 import { TechIcon } from "~/components/icons/TechIcon";
 import { factions } from "~/data/factionData";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { useUsedSystemIds } from "~/hooks/useUsedSystemIds";
 
 import "./PlanetFinder.css";
 
 export function PlanetFinder() {
-  const planetFinderModal = useDraftV2((state) => state.planetFinderModal);
-  const availableSystemIds = useDraftV2((state) => state.systemPool);
-  const factionPool = useDraftV2((state) => state.factionPool);
-  const allowHomePlanetSearch = useDraftV2(
+  const planetFinderModal = useDraft((state) => state.planetFinderModal);
+  const availableSystemIds = useDraft((state) => state.systemPool);
+  const factionPool = useDraft((state) => state.factionPool);
+  const allowHomePlanetSearch = useDraft(
     (state) => state.draft.settings.allowHomePlanetSearch,
   );
   const usedSystemIds = useUsedSystemIds();
   const opened = !!planetFinderModal;
-  const { addSystemToMap, addSystemToSlice, closePlanetFinder } = useDraftV2(
+  const { addSystemToMap, addSystemToSlice, closePlanetFinder } = useDraft(
     (state) => state.actions,
   );
 

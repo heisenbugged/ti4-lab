@@ -7,49 +7,57 @@ import {
   Textarea,
   Title,
 } from "@mantine/core";
-import { useDraft } from "~/draftStore";
+import { useDraft, useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
-import { MapSection } from "~/routes/draft/MapSection";
+
 import { SummaryRow } from "./SummaryRow";
 import { useMemo, useState } from "react";
 import { SummaryCard } from "./MidDraftSummary";
-import { Link } from "@remix-run/react";
+import { Link, useOutletContext } from "@remix-run/react";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import { factionSystems, systemData } from "~/data/systemData";
+import { useHydratedDraft } from "~/hooks/useHydratedDraft";
+import { useDraftConfig } from "~/hooks/useDraftConfig";
+import { systemIdsInSlice, systemsInSlice } from "~/utils/slice";
+import { MapSection } from "../sections";
 
-type Props = {
-  adminMode: boolean;
-  onSelectSystemTile: (systemId: number) => void;
-  onSavePlayerNames: () => void;
-};
+export function FinalizedDraft() {
+  const { adminMode } = useOutletContext<{
+    adminMode: boolean;
+  }>();
 
-export function FinalizedDraft({
-  adminMode,
-  onSelectSystemTile,
-  onSavePlayerNames,
-}: Props) {
-  const draft = useDraft();
-  const slices = draft.slices;
-  const players = draft.players;
+  const config = useDraftConfig();
+  const draftUrl = useDraft((state) => state.draftUrl);
+  const draft = useDraft((state) => state.draft);
+  const {
+    slices,
+    players,
+    settings: { draftSpeaker },
+  } = draft;
+  const { hydratedPlayers } = useHydratedDraft();
+
   const [exportingImage, setExportingImage] = useState(false);
-
   const sortedPlayers = useMemo(
-    () => players.sort((a, b) => a.speakerOrder! - b.speakerOrder!),
-    [players],
+    () => hydratedPlayers.sort((a, b) => b.speakerOrder! - a.speakerOrder!),
+    [hydratedPlayers],
   );
 
+  const mapString = "";
   // TODO: Move this to an actual reusable function
-  const mapString = draft.hydratedMap
-    .slice(1, draft.hydratedMap.length)
-    .map((t) => {
-      if (t.type === "HOME") {
-        if (t.player?.faction === undefined) return "0";
-        return factionSystems[t.player.faction].id;
-      }
-      if (t.system) return t.system.id;
-      return "-1";
-    })
-    .join(" ");
+  // const mapString = draft.hydratedMap
+  //   .slice(1, draft.hydratedMap.length)
+  //   .map((t) => {
+  //     if (t.type === "HOME") {
+  //       if (t.player?.faction === undefined) return "0";
+  //       return factionSystems[t.player.faction].id;
+  //     }
+  //     if (t.system) return t.system.id;
+  //     return "-1";
+  //   })
+  //   .join(" ");
+
+  // TODO: Implement
+  const onSavePlayerNames = () => {};
 
   return (
     <Stack mt="lg" gap={30}>
@@ -61,9 +69,10 @@ export function FinalizedDraft({
             {adminMode && (
               <Box>
                 <PlayerInputSection
-                  players={draft.players}
+                  players={players}
                   onChangeName={(playerIdx, name) => {
-                    draft.updatePlayer(playerIdx, { name });
+                    // FIX
+                    // draft.updatePlayer(playerIdx, { name });
                   }}
                 />
                 <Button mt="lg" onClick={onSavePlayerNames}>
@@ -77,15 +86,15 @@ export function FinalizedDraft({
           <Section>
             <SectionTitle title="Draft Summary" />
             <Stack mt="lg" gap="md" hiddenFrom="sm">
-              {players.map((p) => (
+              {hydratedPlayers.map((p) => (
                 <SummaryCard
-                  config={draft.config}
+                  config={config}
                   key={p.id}
                   player={p}
                   slice={
                     p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined
                   }
-                  showSeat={draft.draftSpeaker}
+                  showSeat={draftSpeaker}
                 />
               ))}
             </Stack>
@@ -104,10 +113,9 @@ export function FinalizedDraft({
               <Table.Tbody>
                 {sortedPlayers.map((p) => (
                   <SummaryRow
-                    config={draft.config}
                     key={p.id}
                     player={p}
-                    systems={slices[p.sliceIdx!]}
+                    slice={slices[p.sliceIdx!]}
                   />
                 ))}
               </Table.Tbody>
@@ -120,7 +128,7 @@ export function FinalizedDraft({
           <Section>
             <SectionTitle title="Export image" />
             <Link
-              to={`/map-image/draft/${draft.draftUrl}/generate`}
+              to={`/map-image/draft/${draftUrl}/generate`}
               reloadDocument
               onClick={() => {
                 setExportingImage(true);
@@ -134,14 +142,7 @@ export function FinalizedDraft({
           </Section>
         </Stack>
         <Stack flex={1} gap="xl">
-          <MapSection
-            config={draft.config}
-            map={draft.hydratedMap}
-            allowSeatSelection={false}
-            mode={adminMode ? "create" : "draft"}
-            onDeleteSystemTile={(tile) => draft.removeSystemFromMap(tile)}
-            onSelectSystemTile={onSelectSystemTile}
-          />
+          <MapSection />
         </Stack>
       </SimpleGrid>
     </Stack>

@@ -1,7 +1,7 @@
 import { draftConfig } from "~/draft";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 
 export function useDraftConfig() {
-  const draftType = useDraftV2((state) => state.draft.settings.type);
+  const draftType = useDraft((state) => state.draft.settings.type);
   return draftConfig[draftType];
 }

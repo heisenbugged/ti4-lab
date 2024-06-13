@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { DraftSlice, SystemId, TileRef } from "~/types";
 import { systemIdsInSlice } from "~/utils/slice";
 
@@ -19,7 +19,7 @@ export function getUsedSystemIds(
 }
 
 export function useUsedSystemIds() {
-  const slices = useDraftV2((state) => state.draft.slices);
-  const map = useDraftV2((state) => state.draft.presetMap);
+  const slices = useDraft((state) => state.draft.slices);
+  const map = useDraft((state) => state.draft.presetMap);
   return useMemo(() => getUsedSystemIds(slices, map), [slices, map]);
 }

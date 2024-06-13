@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { systemData } from "~/data/systemData";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { SystemStats } from "~/types";
 import { systemStats } from "~/utils/system";
 
 export function useFullMapStats() {
-  const slices = useDraftV2((state) => state.draft.slices);
-  const presetMap = useDraftV2((state) => state.draft.presetMap);
+  const slices = useDraft((state) => state.draft.slices);
+  const presetMap = useDraft((state) => state.draft.presetMap);
 
   return useMemo(() => {
     const stats: SystemStats[] = [];

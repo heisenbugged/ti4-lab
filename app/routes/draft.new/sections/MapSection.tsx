@@ -10,19 +10,19 @@ import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 import { Map } from "~/components/Map";
 import { SectionTitle } from "~/components/Section";
 import { IconDice6Filled } from "@tabler/icons-react";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useFullMapStats } from "~/hooks/useFullMapStats";
 
 export function MapSection() {
   const config = useDraftConfig();
-  const map = useDraftV2((state) => state.draft.presetMap);
+  const map = useDraft((state) => state.draft.presetMap);
   const {
     randomizeMap,
     clearMap,
     removeSystemFromMap,
     openPlanetFinderForMap,
-  } = useDraftV2((state) => state.actions);
+  } = useDraft((state) => state.actions);
   const stats = useFullMapStats();
 
   const { ref, width } = useDimensions<HTMLDivElement>();

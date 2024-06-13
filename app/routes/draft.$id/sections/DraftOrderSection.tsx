@@ -1,12 +1,12 @@
 import { Stack } from "@mantine/core";
 import { SectionTitle } from "~/components/Section";
 import { DraftOrder } from "../components/DraftOrder";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 
 export function DraftOrderSection() {
-  const players = useDraftV2((state) => state.draft.players);
-  const pickOrder = useDraftV2((state) => state.draft.pickOrder);
+  const players = useDraft((state) => state.draft.players);
+  const pickOrder = useDraft((state) => state.draft.pickOrder);
   const currentPick = useHydratedDraft().currentPick;
 
   return (

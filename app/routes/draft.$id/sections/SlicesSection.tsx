@@ -2,7 +2,7 @@ import { Button, Group, SimpleGrid } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
 import { Slice } from "~/components/Slice";
 import { draftConfig } from "~/draft";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { DraftableSlice } from "../components/DraftableSlice";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
@@ -12,8 +12,8 @@ type Props = {
 };
 
 export function SlicesSection({ draftedSlices = [] }: Props) {
-  const slices = useDraftV2((state) => state.draft.slices);
-  const { selectSlice } = useDraftV2((state) => state.draftActions);
+  const slices = useDraft((state) => state.draft.slices);
+  const { selectSlice } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
   const { activePlayer, hydratedPlayers, currentlyPicking } =
     useHydratedDraft();
@@ -33,6 +33,7 @@ export function SlicesSection({ draftedSlices = [] }: Props) {
       >
         {slices.map((slice, idx) => (
           <DraftableSlice
+            key={idx}
             id={`slice-${idx}`}
             slice={slice}
             player={hydratedPlayers.find((p) => p.sliceIdx === idx)}

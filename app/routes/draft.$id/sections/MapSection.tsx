@@ -7,7 +7,7 @@ import { SectionTitle } from "~/components/Section";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 
 export function MapSection() {
   const { ref, width } = useDimensions<HTMLDivElement>();
@@ -17,7 +17,7 @@ export function MapSection() {
   const config = useDraftConfig();
   const { activePlayer, currentlyPicking, hydratedMap } = useHydratedDraft();
   const { syncing, syncDraft } = useSyncDraft();
-  const { selectSeat } = useDraftV2((state) => state.draftActions);
+  const { selectSeat } = useDraft((state) => state.draftActions);
 
   const canSelect = currentlyPicking && !activePlayer?.seatIdx;
 

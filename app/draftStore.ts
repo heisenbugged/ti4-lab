@@ -58,6 +58,7 @@ type DraftV2State = {
       };
   draftActions: {
     hydrate: (draftId: string, draftUrl: string, draft: Draft) => void;
+    update: (draftId: string, draft: Draft) => void;
     setSelectedPlayer: (playerId: PlayerId) => void;
     selectSpeakerOrder: (playerId: number, speakerOrder: number) => void;
     selectSlice: (playerId: number, sliceIdx: number) => void;
@@ -139,7 +140,7 @@ const initialState = {
   draft: emptyDraft(),
 };
 
-export const draftV2Store = createStore<DraftV2State>()(
+export const draftStore = createStore<DraftV2State>()(
   immer((set) => ({
     initialized: false,
     hydrated: false,
@@ -161,6 +162,12 @@ export const draftV2Store = createStore<DraftV2State>()(
           state.hydrated = true;
         });
       },
+      update: (draftId: string, draft: Draft) =>
+        set((state) => {
+          if (draftId === state.draftId) {
+            state.draft = draft;
+          }
+        }),
       setSelectedPlayer: (playerId: PlayerId) =>
         set((state) => {
           state.selectedPlayer = playerId;
@@ -413,14 +420,14 @@ export const draftV2Store = createStore<DraftV2State>()(
   })),
 );
 
-export function useDraftV2(): DraftV2State;
-export function useDraftV2<T>(selector: (state: DraftV2State) => T): T;
-export function useDraftV2<T>(selector?: (state: DraftV2State) => T) {
-  return useStore(draftV2Store, selector!);
+export function useDraft(): DraftV2State;
+export function useDraft<T>(selector: (state: DraftV2State) => T): T;
+export function useDraft<T>(selector?: (state: DraftV2State) => T) {
+  return useStore(draftStore, selector!);
 }
 
 // Jotai atom, used for derived/computed values.
-export const draftStoreAtom = atomWithStore(draftV2Store);
+export const draftStoreAtom = atomWithStore(draftStore);
 
 // Random functions to be moved elsewhere
 

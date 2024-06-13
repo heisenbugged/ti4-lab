@@ -1,16 +1,22 @@
 import { useFetcher } from "@remix-run/react";
-import { draftV2Store, useDraftV2 } from "~/draftStore";
+import { createContext, useContext } from "react";
+import { draftStore } from "~/draftStore";
 import { useSocket } from "~/socketContext";
-import { Draft } from "~/types";
 
 export function useSyncDraft() {
+  const { syncDraft, syncing } = useContext(SyncDraftContext);
+  return { syncDraft, syncing };
+}
+
+export function useSyncDraftFetcher() {
   const fetcher = useFetcher({ key: "sync-draft" });
   const socket = useSocket();
 
   return {
     syncDraft: async () => {
-      const { draft, draftId } = draftV2Store.getState();
+      const { draft, draftId } = draftStore.getState();
       if (!draft || !draftId) return;
+      console.log("are we here?");
 
       await fetcher.submit(
         { id: draftId, draft },
@@ -19,7 +25,11 @@ export function useSyncDraft() {
 
       socket?.emit("syncDraft", draftId, JSON.stringify(draft));
     },
-    state: fetcher.state,
     syncing: fetcher.state === "submitting",
   };
 }
+
+export const SyncDraftContext = createContext({
+  syncDraft: () => {},
+  syncing: false,
+});

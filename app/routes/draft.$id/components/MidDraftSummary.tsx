@@ -1,5 +1,5 @@
 import { Card, Group, Stack, Table, Text } from "@mantine/core";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { PlayerChip } from "./PlayerChip";
 import { factions } from "~/data/factionData";
 import {
@@ -20,8 +20,8 @@ import classes from "./MidDraftSummary.module.css";
 
 export function MidDraftSummary() {
   const config = useDraftConfig();
-  const slices = useDraftV2((state) => state.draft.slices);
-  const draftSpeaker = useDraftV2((state) => state.draft.settings.draftSpeaker);
+  const slices = useDraft((state) => state.draft.slices);
+  const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
   const { hydratedPlayers } = useHydratedDraft();
 
   return (

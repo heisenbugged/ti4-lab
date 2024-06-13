@@ -3,7 +3,7 @@ import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { useEffect, useRef } from "react";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { useSocket } from "~/socketContext";
@@ -24,27 +24,29 @@ import {
 } from "~/drizzle/draft.server";
 import { notifyCurrentPick } from "~/discord/bot.server";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
-import { SlicesSection, SpeakerOrderSection } from "./sections";
-import { DraftOrderSection } from "./sections/DraftOrderSection";
-import { DraftableFactionsSection } from "./sections/DraftableFactionsSection";
-import { MapSection } from "./sections/MapSection";
+import {
+  SlicesSection,
+  SpeakerOrderSection,
+  DraftOrderSection,
+  DraftableFactionsSection,
+  MapSection,
+  DraftSummarySection,
+} from "./sections";
 import { PlanetFinder } from "./components/PlanetFinder";
-import { DraftSummarySection } from "./sections/DraftSummarySection";
+import { useNotifyActivePlayer } from "~/hooks/useNotifyActivePlayer";
+import { FinalizedDraft } from "./components/FinalizedDraft";
+import { SyncDraftContext, useSyncDraftFetcher } from "~/hooks/useSyncDraft";
 
 export default function RunningDraft() {
-  useEffect(() => {
-    requestNotificationPermission();
-  }, []);
-
-  const handleNotify = () => {
-    const title = "It's your turn to draft!";
-    const options = {
-      icon: "/icon.png",
-      badge: "/badge.png",
-    };
-    showNotification(title, options);
-    playNotificationSound();
-  };
+  useNotifyActivePlayer();
+  const result = useLoaderData<typeof loader>();
+  const { syncDraft, syncing } = useSyncDraftFetcher();
+  const draftV2 = useDraft();
+  const draft = draftV2.draft;
+  const settings = draft.settings;
+  const draftActions = draftV2.draftActions;
+  const selectedPlayer = draftV2.selectedPlayer;
+  const { draftFinished } = useHydratedDraft();
 
   // Real-time socket connection to push and receive state updates.
   const socket = useSocket();
@@ -56,19 +58,10 @@ export default function RunningDraft() {
       socket.emit("joinDraft", result.id);
     });
     socket.on("syncDraft", (data) => {
-      const draft = JSON.parse(data) as PersistedDraft;
-      // TODO: hydrate using the vanilla store
-      // useDraft.getState().hydrate(draft, result.urlName!);
+      const draft = JSON.parse(data) as Draft;
+      draftV2.draftActions.update(result.id!, draft);
     });
   }, [socket]);
-
-  const result = useLoaderData<typeof loader>();
-  const draftV2 = useDraftV2();
-  const draft = draftV2.draft;
-  const settings = draft.settings;
-  const draftActions = draftV2.draftActions;
-  const selectedPlayer = draftV2.selectedPlayer;
-  const { currentPick, hydratedMap, lastEvent } = useHydratedDraft();
 
   // pre-seed store with loaded persisted draft
   useEffect(() => {
@@ -82,40 +75,15 @@ export default function RunningDraft() {
     }
   }, []);
 
-  const draftFinalized = currentPick >= draft.pickOrder.length;
-  const activePlayerId = draft.pickOrder[currentPick];
-  const activePlayer = draft.players.find((p) => p.id === activePlayerId);
-  const draftedSlices = draft.players
-    .filter((p) => p.sliceIdx !== undefined)
-    .map((p) => p.sliceIdx!);
-
-  useEffect(() => {
-    if (activePlayerId === undefined || selectedPlayer === undefined) return;
-    if (activePlayerId === selectedPlayer) {
-      handleNotify();
-    }
-  }, [activePlayerId === selectedPlayer]);
-
-  const selectedTile = useRef<number>();
-
   if (!draftV2.hydrated) return <LoadingOverlay />;
 
-  // if (draftFinalized) {
-  //   return (
-  //     <>
-  //       {planetFinder}
-  //       <FinalizedDraft
-  //         adminMode={adminMode}
-  //         onSavePlayerNames={handleSync}
-  //         onSelectSystemTile={(systemId) => {
-  //           selectedTile.current = systemId;
-  //           // TODO: re-enable
-  //           // openPlanetFinder();
-  //         }}
-  //       />
-  //     </>
-  //   );
-  // }
+  if (draftFinished) {
+    return (
+      <SyncDraftContext.Provider value={{ syncDraft, syncing }}>
+        <FinalizedDraft />
+      </SyncDraftContext.Provider>
+    );
+  }
 
   if (selectedPlayer === undefined) {
     return (
@@ -132,11 +100,11 @@ export default function RunningDraft() {
   }
 
   return (
-    <>
+    <SyncDraftContext.Provider value={{ syncDraft, syncing }}>
       <PlanetFinder />
       <audio id="notificationSound" src="/chime.mp3" preload="auto"></audio>
       <Stack gap="sm" mb="60" mt="lg">
-        <CurrentPickBanner player={activePlayer!} lastEvent={lastEvent} />
+        <CurrentPickBanner />
         <div style={{ height: 15 }} />
       </Stack>
 
@@ -176,11 +144,13 @@ export default function RunningDraft() {
           <MapSection />
         </Grid.Col>
       </Grid>
-    </>
+    </SyncDraftContext.Provider>
   );
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  console.log("sync called");
+
   const { id, draft, turnPassed } = (await request.json()) as {
     id: string;
     draft: PersistedDraft;
@@ -231,11 +201,3 @@ export const loader = async ({ params }: { params: { id: string } }) => {
     data: JSON.parse(result.data as string) as Draft,
   });
 };
-
-/**
- * Convert old drafts that stored slices as an array of strings instead array of numbers
- */
-const translatePersistedDraft = (data: any): PersistedDraft => ({
-  ...data,
-  slices: data.slices.map((slice: any) => slice.map(Number)),
-});

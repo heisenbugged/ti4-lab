@@ -1,5 +1,5 @@
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 
 export function useDraftSettings() {
-  return useDraftV2((state) => state.draft.settings);
+  return useDraft((state) => state.draft.settings);
 }

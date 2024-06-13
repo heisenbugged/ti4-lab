@@ -1,6 +1,6 @@
 import { SimpleGrid } from "@mantine/core";
 import { Section, SectionTitle } from "~/components/Section";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { DraftableSpeakerOrder } from "../components/DraftableSpeakerOrder";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
@@ -17,7 +17,7 @@ export const playerSpeakerOrder = [
 export function SpeakerOrderSection() {
   const { hydratedPlayers, activePlayer, currentlyPicking } =
     useHydratedDraft();
-  const { selectSpeakerOrder } = useDraftV2((state) => state.draftActions);
+  const { selectSpeakerOrder } = useDraft((state) => state.draftActions);
   const { syncing, syncDraft } = useSyncDraft();
   const canSelect = currentlyPicking && !activePlayer?.speakerOrder;
 

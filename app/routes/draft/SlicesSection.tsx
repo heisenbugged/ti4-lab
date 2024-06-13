@@ -4,7 +4,7 @@ import { Slice } from "~/components/Slice";
 import { DraftSlice, Player, Slice as TSlice } from "~/types";
 import { useSortedSlices } from "./useSortedSlices";
 import { DraftConfig, draftConfig } from "~/draft";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 
 type Props = {
   fullView?: boolean;
@@ -31,9 +31,9 @@ export function SlicesSection({
   onSelectSlice,
   onRandomizeSlice,
 }: Props) {
-  const config = useDraftV2((state) => draftConfig[state.draft.settings.type]);
-  const slices = useDraftV2((state) => state.draft.slices);
-  const { removeSystemFromSlice, clearSlice } = useDraftV2(
+  const config = useDraft((state) => draftConfig[state.draft.settings.type]);
+  const slices = useDraft((state) => state.draft.slices);
+  const { removeSystemFromSlice, clearSlice } = useDraft(
     (state) => state.actions,
   );
 

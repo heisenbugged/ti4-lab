@@ -2,16 +2,16 @@ import { SimpleGrid } from "@mantine/core";
 import { factions as allFactions } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
 import { DraftableFaction } from "../components/DraftableFaction";
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 
 export function DraftableFactionsSection() {
-  const factions = useDraftV2((state) => state.draft.availableFactions);
-  const { selectFaction } = useDraftV2((state) => state.draftActions);
+  const factions = useDraft((state) => state.draft.availableFactions);
+  const { selectFaction } = useDraft((state) => state.draftActions);
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
-  const { syncing } = useSyncDraft();
+  const { syncing, syncDraft } = useSyncDraft();
   const canSelect = currentlyPicking && !activePlayer?.faction;
 
   return (
@@ -25,7 +25,10 @@ export function DraftableFactionsSection() {
             faction={allFactions[factionId]}
             onSelect={
               canSelect
-                ? () => selectFaction(activePlayer.id, factionId)
+                ? () => {
+                    selectFaction(activePlayer.id, factionId);
+                    syncDraft();
+                  }
                 : undefined
             }
             disabled={syncing}

@@ -1,4 +1,4 @@
-import { useDraftV2 } from "~/draftStore";
+import { useDraft } from "~/draftStore";
 import { useDraftConfig } from "./useDraftConfig";
 import { hydrateMap } from "~/utils/map";
 import { PlayerSelection } from "~/types";
@@ -6,13 +6,13 @@ import { useMemo } from "react";
 
 export function useDraftValidationErrors() {
   const config = useDraftConfig();
-  const presetMap = useDraftV2((state) => state.draft.presetMap);
-  const numFactions = useDraftV2((state) => state.draft.settings.numFactions);
-  const allowEmptyMapTiles = useDraftV2(
+  const presetMap = useDraft((state) => state.draft.presetMap);
+  const numFactions = useDraft((state) => state.draft.settings.numFactions);
+  const allowEmptyMapTiles = useDraft(
     (state) => state.draft.settings.allowEmptyTiles,
   );
-  const slices = useDraftV2((state) => state.draft.slices);
-  const players = useDraftV2((state) => state.draft.players);
+  const slices = useDraft((state) => state.draft.slices);
+  const players = useDraft((state) => state.draft.players);
 
   return useMemo(() => {
     const errors = [];

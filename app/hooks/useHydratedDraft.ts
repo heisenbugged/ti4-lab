@@ -1,4 +1,4 @@
-import { draftStoreAtom, useDraftV2 } from "~/draftStore";
+import { draftStoreAtom, useDraft } from "~/draftStore";
 import {
   DraftPlayer,
   DraftSelection,
@@ -84,9 +84,9 @@ export function useHydratedDraft() {
   const { pickForAnyone } = useOutletContext<{
     pickForAnyone: boolean;
   }>();
-  const selectedPlayer = useDraftV2((state) => state.selectedPlayer);
-  const pickOrder = useDraftV2((state) => state.draft.pickOrder);
-  const selections = useDraftV2((state) => state.draft.selections);
+  const selectedPlayer = useDraft((state) => state.selectedPlayer);
+  const pickOrder = useDraft((state) => state.draft.pickOrder);
+  const selections = useDraft((state) => state.draft.selections);
 
   const [hydratedPlayers] = useAtom(hydratedPlayersAtom);
   const [hydratedMap] = useAtom(hydratedMapAtom);
@@ -94,6 +94,7 @@ export function useHydratedDraft() {
   const currentPick = selections.length;
   const activePlayerId = pickOrder[currentPick];
   const activePlayer = hydratedPlayers.find((p) => p.id === activePlayerId)!;
+  const draftFinished = currentPick >= pickOrder.length;
 
   return {
     hydratedMap,
@@ -102,5 +103,6 @@ export function useHydratedDraft() {
     currentPick,
     lastEvent: "",
     currentlyPicking: activePlayerId === selectedPlayer || pickForAnyone,
+    draftFinished,
   };
 }
