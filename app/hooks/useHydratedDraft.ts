@@ -1,18 +1,20 @@
 import { draftStoreAtom, useDraftV2 } from "~/draftStore";
-import { useDraftConfig } from "./useDraftConfig";
-import { HydratedPlayer, PlayerSelection } from "~/types";
+import {
+  DraftPlayer,
+  DraftSelection,
+  HydratedPlayer,
+  PlayerSelection,
+} from "~/types";
 import { hydrateMap } from "~/utils/map";
-import { useMemo } from "react";
 import { useOutletContext } from "@remix-run/react";
 import { atom } from "jotai/vanilla";
 import { useAtom } from "jotai";
 import { draftConfig } from "~/draft";
 
-const hydratedPlayersAtom = atom((get) => {
-  const store = get(draftStoreAtom);
-  const selections = store.draft.selections;
-  const players = store.draft.players;
-
+export function hydratePlayers(
+  players: DraftPlayer[],
+  selections: DraftSelection[],
+): HydratedPlayer[] {
   return selections.reduce(
     (acc, selection) => {
       const playerIdx = acc.findIndex((p) => p.id === selection.playerId);
@@ -50,24 +52,31 @@ const hydratedPlayersAtom = atom((get) => {
     },
     [...players] as HydratedPlayer[],
   );
+}
+
+export const computePlayerSelections = (hydratedPlayers: HydratedPlayer[]) =>
+  hydratedPlayers.map((p) => ({
+    playerId: p.id,
+    sliceIdx: p.sliceIdx,
+    seatIdx: p.seatIdx,
+  }));
+
+const hydratedPlayersAtom = atom((get) => {
+  const store = get(draftStoreAtom);
+  const selections = store.draft.selections;
+  const players = store.draft.players;
+  return hydratePlayers(players, selections);
 });
 
 const hydratedMapAtom = atom((get) => {
   const store = get(draftStoreAtom);
   const hydratedPlayers = get(hydratedPlayersAtom);
 
-  // the player selections are
-  const playerSelections: PlayerSelection[] = hydratedPlayers.map((p) => ({
-    playerId: p.id,
-    sliceIdx: p.sliceIdx,
-    seatIdx: p.seatIdx,
-  }));
-
   return hydrateMap(
     draftConfig[store.draft.settings.type],
     store.draft.presetMap,
     store.draft.slices,
-    playerSelections,
+    computePlayerSelections(hydratedPlayers),
   );
 });
 

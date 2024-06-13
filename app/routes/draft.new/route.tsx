@@ -87,7 +87,8 @@ export default function DraftNew() {
         description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
       />
 
-      <ImportMapInput onImport={actions.importMap} />
+      {/* TODO: Re-enable when ready */}
+      {/* <ImportMapInput onImport={actions.importMap} /> */}
 
       <Divider mt="md" mb="md" />
       <Group gap="sm">

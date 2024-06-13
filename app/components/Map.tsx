@@ -77,7 +77,7 @@ export function RawMap({
   height,
 }: {
   mapId: string;
-  map: MapType;
+  map: MapV2;
   width: number;
   height: number;
 }) {

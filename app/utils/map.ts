@@ -149,33 +149,6 @@ export const sliceMap = (
   };
 };
 
-export const parseMapString = (
-  config: DraftConfig,
-  systems: SystemId[],
-  positionOrder: TilePosition[] = mapStringOrder,
-  includeMecatol = true,
-): Map => {
-  const rawSystems = includeMecatol ? ["18", ...systems] : systems;
-  const map: Map = rawSystems
-    .map((n) => [n, systemData[n]] as const)
-    .map(([id, system], idx) => {
-      const position = positionOrder[idx];
-      const seatIdx = config.homeIdxInMapString.indexOf(idx);
-      const baseAttrs = { id, idx, seatIdx, position, system };
-      // TODO: -1 is generally interpreted as 'empty' by other tools.
-      // FIX THIS.
-      if (seatIdx >= 0 || id === "-1") {
-        return { ...baseAttrs, type: "HOME" as const };
-      } else if (system) {
-        return { ...baseAttrs, type: "SYSTEM" };
-      } else {
-        return { ...baseAttrs, type: "OPEN" as const };
-      }
-    });
-
-  return map;
-};
-
 export const totalStatsForSystems = (systems: System[]) =>
   systems.reduce(
     (acc, s) => {
