@@ -1,13 +1,14 @@
 import { Button, Grid, Stack, Title } from "@mantine/core";
 import { useState } from "react";
 import { playerColors } from "~/data/factionData";
+import { useDraftV2 } from "~/draftStore";
 import { Player } from "~/types";
 
 type Props = {
-  players: Player[];
   onDraftJoined: (player: Player) => void;
 };
-export function PlayerSelectionScreen({ players, onDraftJoined }: Props) {
+export function PlayerSelectionScreen({ onDraftJoined }: Props) {
+  const players = useDraftV2((state) => state.draft.players);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   return (
     <Stack flex={1} mih="calc(100vh - 60px)" align="center" justify="center">

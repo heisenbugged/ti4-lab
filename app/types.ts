@@ -237,8 +237,8 @@ export type DraftSettings = {
   numFactions: number;
   numSlices: number;
 
-  randomizeMap: Boolean;
-  randomizeSlices: Boolean;
+  randomizeMap: boolean;
+  randomizeSlices: boolean;
 };
 
 export type DraftIntegrations = {
@@ -288,6 +288,18 @@ export type TileRef = SystemTileRef | HomeTileRef | OpenTileRef;
 
 export type MapV2 = TileRef[];
 
+export type DraftSelection =
+  | {
+      type: "SELECT_SPEAKER_ORDER";
+      playerId: PlayerId;
+      speakerOrder: number;
+    }
+  | {
+      type: "SELECT_SLICE";
+      playerId: PlayerId;
+      sliceIdx: number;
+    };
+
 export type Draft = {
   settings: DraftSettings;
   integrations: DraftIntegrations;
@@ -295,11 +307,17 @@ export type Draft = {
   slices: DraftSlice[];
   presetMap: MapV2;
   availableFactions: FactionId[];
-  // TODO: implement draft
-  // draftSelections: {
-  //   type: DraftSelectionType;
-  //   data: any; // depends on the event type
-  // }
+  pickOrder: PlayerId[];
+  selections: DraftSelection[];
+};
+
+export type HydratedPlayer = {
+  id: number;
+  name: string;
+  faction?: FactionId;
+  seatIdx?: number;
+  sliceIdx?: number;
+  speakerOrder?: number;
 };
 
 export type PlayerSelection = {

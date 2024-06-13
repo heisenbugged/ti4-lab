@@ -1,5 +1,9 @@
-import { draftableSystemIds, unchartedStarsSystemIds } from "~/data/systemData";
-import { GameSet, System, SystemStats } from "~/types";
+import {
+  draftableSystemIds,
+  systemData,
+  unchartedStarsSystemIds,
+} from "~/data/systemData";
+import { GameSet, System, SystemId, SystemStats } from "~/types";
 
 const techSpecialtyMap = {
   BIOTIC: "G",
@@ -49,3 +53,6 @@ export function getSystemPool(sets: GameSet[]) {
   }
   return systemPool.flat(1);
 }
+
+export const systemsFromIds = (ids: SystemId[]): System[] =>
+  ids.map((id) => systemData[id]);

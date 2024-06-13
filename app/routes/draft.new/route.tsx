@@ -15,12 +15,11 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect, useLocation, useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
-import { serializeMap } from "~/data/serialize";
 import { useDraftV2 } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
-import { PersistedDraft, Player } from "~/types";
-import { CreateDraftInput, useCreateDraft } from "./useCreateDraft";
+import { Draft } from "~/types";
+import { DraftInput, useCreateDraft } from "./useCreateDraft";
 import { ImportMapInput } from "~/components/ImportMapInput";
 import { ExportMapModal } from "./components/ExportMapModal";
 import { fisherYatesShuffle } from "~/stats";
@@ -30,7 +29,6 @@ import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
 import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
 import { DiscordBanner } from "~/components/DiscordBanner";
-import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
 import {
   AvailableFactionsSection,
   MapSection,
@@ -43,10 +41,10 @@ import { useDraftSettings } from "~/hooks/useDraftSettings";
 export default function DraftNew() {
   const location = useLocation();
   const navigate = useNavigate();
-  const createDraft = useCreateDraft();
-  const draftV2 = useDraftV2();
+  const { draft, actions, initialized } = useDraftV2();
   const config = useDraftConfig();
   const settings = useDraftSettings();
+  const createDraft = useCreateDraft();
 
   const validationErrors = useDraftValidationErrors();
   const draftIsValid = validationErrors.length === 0;
@@ -55,33 +53,17 @@ export default function DraftNew() {
     { close: closeValidationErrors, open: openValidationErrors },
   ] = useDisclosure(false);
 
+  const showFullMap = config.modifiableMapTiles.length > 0;
+
   useEffect(() => {
     if (location.state == null) return navigate("/draft/prechoice");
     const {
-      gameSets,
-      mapType,
-      numFactions,
-      numSlices,
+      draftSettings,
       players,
-      randomizeSlices,
-      randomizeMap,
-      draftSpeaker,
-      allowHomePlanetSearch,
-      allowEmptyMapTiles,
-      discordData,
+      // TODO re-enable when ready
+      // discordData,
     } = location.state;
-
-    draftV2.actions.initializeDraft({
-      type: mapType,
-      numFactions,
-      numSlices,
-      allowHomePlanetSearch,
-      allowEmptyTiles: allowEmptyMapTiles,
-      gameSets,
-      draftSpeaker,
-      randomizeMap,
-      randomizeSlices,
-    });
+    actions.initializeDraft(draftSettings, players);
 
     // a bit hacky, but once we 'consume' the state, we remove it from the history
     window.history.replaceState({ ...window.history.state, usr: null }, "");
@@ -90,37 +72,22 @@ export default function DraftNew() {
   const [mapExportOpened, { open: openMapExport, close: closeMapExport }] =
     useDisclosure(false);
 
-  // TODO: Create needs to be adapted.
-  const handleCreate = () => {};
-  // createDraft({
-  //   mapType: config.type,
-  //   availableFactions: draftV2.draft.availableFactions,
-  //   // TODO: Implement equivalent
-  //   // mapString: serializeMap(draft.map).join(" "),
-  //   mapString: "",
-  //   players: draft.players,
-  //   slices: draft.slices,
-  //   numFactionsToDraft: draft.numFactionsToDraft ?? null,
-  //   draftSpeaker: draft.draftSpeaker,
-  //   discordData: draft.discordData ?? null,
-  // });
+  const handleCreate = () => createDraft(draft);
 
-  if (!draftV2.initialized) return <LoadingOverlay />;
-
-  const showFullMap = config.modifiableMapTiles.length > 0;
+  if (!initialized) return <LoadingOverlay />;
 
   const advancedOptions = (
     <Stack gap="lg">
       <SectionTitle title="Advanced Options" />
       <Switch
         checked={settings.draftSpeaker}
-        onChange={() => draftV2.actions.setDraftSpeaker(!settings.draftSpeaker)}
+        onChange={() => actions.setDraftSpeaker(!settings.draftSpeaker)}
         size="md"
         label="Draft Speaker order separately"
         description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
       />
 
-      <ImportMapInput onImport={draftV2.actions.importMap} />
+      <ImportMapInput onImport={actions.importMap} />
 
       <Divider mt="md" mb="md" />
       <Group gap="sm">
@@ -165,7 +132,7 @@ export default function DraftNew() {
 
   return (
     <Flex p="lg" direction="column">
-      {draftV2.draft.integrations.discord && (
+      {draft.integrations.discord && (
         <Box mb="lg">
           <DiscordBanner />
         </Box>
@@ -194,7 +161,7 @@ export default function DraftNew() {
           <Stack gap="xl" w="100%">
             <Stack gap="xs">
               <SectionTitle title="Slices Summary" />
-              <SlicesTable slices={draftV2.draft.slices} />
+              <SlicesTable slices={draft.slices} />
             </Stack>
             {showFullMap && advancedOptions}
           </Stack>
@@ -212,63 +179,50 @@ export default function DraftNew() {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const body = (await request.json()) as CreateDraftInput;
+  const body = (await request.json()) as DraftInput;
 
   const playerIds = fisherYatesShuffle(
     body.players.map((p) => p.id),
     body.players.length,
   );
   const reversedPlayerIds = [...playerIds].reverse();
-
   const pickOrder = [...playerIds, ...reversedPlayerIds, ...playerIds];
   // 4th stage to snake draft if picking speaker order separately
-  if (body.draftSpeaker) {
+  if (body.settings.draftSpeaker) {
     pickOrder.push(...reversedPlayerIds);
   }
 
-  // pull out the factions to draft if specified
-  const factions = body.numFactionsToDraft
-    ? fisherYatesShuffle(body.availableFactions, body.numFactionsToDraft)
-    : body.availableFactions;
-
-  const draft: PersistedDraft = {
-    discordData: body.discordData ?? undefined,
-    mapType: body.mapType,
-    factions,
-    mapString: body.mapString,
-    slices: body.slices,
-    draftSpeaker: body.draftSpeaker,
-    // Pre-fill in player names if they don't exist.
-    players: body.players.map((p: Player) => ({
+  const draft: Draft = {
+    ...body,
+    players: body.players.map((p) => ({
       ...p,
       name: p.name.length > 0 ? p.name : `Player ${p.id + 1}`,
     })),
-    currentPick: 0,
     pickOrder,
   };
 
-  const id = uuidv4().toString();
   const prettyUrl = await generateUniquePrettyUrl();
   // TODO: Handle error if insert fails
   db.insert(drafts)
     .values({
-      id,
+      id: uuidv4().toString(),
       urlName: prettyUrl,
       data: JSON.stringify(draft),
     })
     .run();
 
-  if (body.discordData) {
-    const channel = await getChannel(
-      body.discordData.guildId,
-      body.discordData.channelId,
-    );
+  // TODO: DISCORD: re-enable when ready
+  // if (body.discordData) {
+  //   const channel = await getChannel(
+  //     body.discordData.guildId,
+  //     body.discordData.channelId,
+  //   );
 
-    await channel?.send(
-      `Draft has started! Join here: ${global.env.baseUrl}/draft/${prettyUrl}`,
-    );
-    await notifyCurrentPick(draft);
-  }
+  //   await channel?.send(
+  //     `Draft has started! Join here: ${global.env.baseUrl}/draft/${prettyUrl}`,
+  //   );
+  //   await notifyCurrentPick(draft);
+  // }
 
   return redirect(`/draft/${prettyUrl}`);
 }

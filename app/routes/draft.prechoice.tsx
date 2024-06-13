@@ -1,10 +1,8 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import {
-  Badge,
   Box,
   Button,
   Checkbox,
-  Chip,
   Code,
   Collapse,
   Divider,
@@ -16,7 +14,6 @@ import {
   List,
   Modal,
   Paper,
-  SimpleGrid,
   Stack,
   Stepper,
   Switch,
@@ -24,10 +21,11 @@ import {
 } from "@mantine/core";
 import {
   DiscordData,
+  DraftPlayer,
+  DraftSettings,
   EmptyTile,
   GameSet,
   OpenTile,
-  Player,
   PlayerDemoTile,
   SystemId,
   SystemTile,
@@ -43,11 +41,9 @@ import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
 import { systemData } from "~/data/systemData";
 import {
-  IconBrandDiscord,
   IconBrandDiscordFilled,
   IconChevronDown,
   IconChevronUp,
-  IconDice6Filled,
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
 
@@ -131,12 +127,15 @@ export default function DraftPrechoice() {
   const [numSlices, setNumSlices] = useState(6);
   const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
   const [randomizeMap, setRandomizeMap] = useState<boolean>(true);
-  const [players, setPlayers] = useState<Player[]>([
+  const [players, setPlayers] = useState<DraftPlayer[]>([
     ...[0, 1, 2, 3, 4, 5].map((i) => ({
       id: i,
-      name: discordData?.players[i]?.name ?? "",
-      discordName: discordData?.players[i]?.name,
-      discordMemberId: discordData?.players[i]?.memberId,
+      name: "",
+
+      // TODO: Restore discord integration
+      // name: discordData?.players[i]?.name ?? "",
+      // discordName: discordData?.players[i]?.name,
+      // discordMemberId: discordData?.players[i]?.memberId,
     })),
   ]);
   const [withDiscordant, setWithDiscordant] = useState<boolean>(false);
@@ -169,19 +168,24 @@ export default function DraftPrechoice() {
     );
   };
   const handleContinue = () => {
+    const draftSettings: DraftSettings = {
+      gameSets,
+      type: selectedMapType,
+      numFactions: Number(numFactions),
+      numSlices: Number(numSlices),
+      randomizeSlices,
+      randomizeMap,
+      draftSpeaker: config?.type === "heisen",
+      allowHomePlanetSearch,
+      allowEmptyTiles: allowEmptyMapTiles,
+    };
+
     navigate("/draft/new", {
       state: {
-        gameSets,
-        mapType: selectedMapType,
-        numFactions: Number(numFactions),
-        numSlices: Number(numSlices),
-        randomizeSlices,
-        randomizeMap,
+        draftSettings,
         players,
-        draftSpeaker: config?.type === "heisen",
-        allowHomePlanetSearch,
-        allowEmptyMapTiles,
-        discordData,
+        // TODO: re-enable discordData when ready
+        // discordData,
       },
     });
   };

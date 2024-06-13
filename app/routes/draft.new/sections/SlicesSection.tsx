@@ -12,6 +12,7 @@ export function SlicesSection() {
     clearSlice,
     randomizeSlice,
     randomizeSlices,
+    randomizeAll,
     openPlanetFinderForSlice,
   } = useDraftV2((state) => state.actions);
 
@@ -22,7 +23,16 @@ export function SlicesSection() {
       <div style={{ position: "sticky", top: 60, zIndex: 11 }}>
         <SectionTitle title="Slices">
           <Group gap={4}>
-            <Button onMouseDown={randomizeSlices} variant="light">
+            <Button
+              onMouseDown={() => {
+                if (config.type === "heisen") {
+                  randomizeAll();
+                } else {
+                  randomizeSlices();
+                }
+              }}
+              variant="light"
+            >
               Randomize All
             </Button>
           </Group>

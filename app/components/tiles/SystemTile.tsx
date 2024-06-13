@@ -19,7 +19,6 @@ export function SystemTile({ mapId, tile, hideValues = false }: Props) {
   const { radius } = useContext(MapContext);
   const scale = calcScale(radius);
   const system = systemData[tile.systemId];
-  if (system === undefined) debugger;
 
   const image = (
     <>
