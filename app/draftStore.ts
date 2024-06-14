@@ -2,11 +2,11 @@ import { useStore } from "zustand";
 import {
   Draft,
   DraftIntegrations,
-  DraftPlayer,
+  Player,
   DraftSettings,
-  DraftSlice,
+  Slice,
   FactionId,
-  MapV2,
+  Map,
   PlayerId,
   System,
   SystemId,
@@ -69,7 +69,7 @@ type DraftV2State = {
   actions: {
     initializeDraft: (
       settings: DraftSettings,
-      players: DraftPlayer[],
+      players: Player[],
       integrations: DraftIntegrations,
     ) => void;
 
@@ -236,7 +236,7 @@ export const draftStore = createStore<DraftV2State>()(
     actions: {
       initializeDraft: (
         settings: DraftSettings,
-        players: DraftPlayer[],
+        players: Player[],
         integrations: DraftIntegrations,
       ) => {
         // reset state before continuing
@@ -499,7 +499,7 @@ function initializeSlices(settings: DraftSettings, systemPool: SystemId[]) {
 
 function initializeMap(
   settings: DraftSettings,
-  slices: DraftSlice[],
+  slices: Slice[],
   systemPool: SystemId[],
 ) {
   const config = draftConfig[settings.type];
@@ -509,9 +509,9 @@ function initializeMap(
 
 function randomizeMap(
   config: DraftConfig,
-  slices: DraftSlice[],
+  slices: Slice[],
   systemPool: SystemId[],
-): MapV2 {
+): Map {
   const map = generateEmptyMap(config);
   const numMapTiles = config.modifiableMapTiles.length;
   const usedSystemIds = slices

@@ -1,6 +1,6 @@
 import { draftStoreAtom, useDraft } from "~/draftStore";
 import {
-  DraftPlayer,
+  Player,
   DraftSelection,
   HydratedPlayer,
   PlayerSelection,
@@ -13,7 +13,7 @@ import { draftConfig } from "~/draft";
 import { factionSystems } from "~/data/systemData";
 
 export function hydratePlayers(
-  players: DraftPlayer[],
+  players: Player[],
   selections: DraftSelection[],
   draftSpeaker: boolean = false,
 ): HydratedPlayer[] {
@@ -68,7 +68,7 @@ export const computePlayerSelections = (hydratedPlayers: HydratedPlayer[]) =>
     seatIdx: p.seatIdx,
   }));
 
-const hydratedPlayersAtom = atom((get) => {
+export const hydratedPlayersAtom = atom((get) => {
   const draft = get(draftStoreAtom).draft;
   return hydratePlayers(
     draft.players,
@@ -77,7 +77,7 @@ const hydratedPlayersAtom = atom((get) => {
   );
 });
 
-const hydratedMapAtom = atom((get) => {
+export const hydratedMapAtom = atom((get) => {
   const store = get(draftStoreAtom);
   const hydratedPlayers = get(hydratedPlayersAtom);
 

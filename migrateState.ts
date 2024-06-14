@@ -4,13 +4,7 @@ import { draftConfig } from "~/draft";
 import { db } from "~/drizzle/config.server";
 import { findDrafts } from "~/drizzle/draft.server";
 import { drafts } from "~/drizzle/schema.server";
-import {
-  DiscordData,
-  Draft,
-  DraftSelection,
-  DraftSlice,
-  TileRef,
-} from "~/types";
+import { DiscordData, Draft, DraftSelection, Slice, Tile } from "~/types";
 
 async function migrateState() {
   const records = await findDrafts();
@@ -27,7 +21,7 @@ async function migrateState() {
     if (mapString[0] !== "18") {
       mapString = ["18", ...mapString];
     }
-    const presetMap: TileRef[] = mapString.map((id, idx) => {
+    const presetMap: Tile[] = mapString.map((id, idx) => {
       if (id === "18") {
         return {
           idx,
@@ -81,7 +75,7 @@ async function migrateState() {
         };
       });
 
-      const objSlice: DraftSlice = {
+      const objSlice: Slice = {
         name: `Slice ${idx + 1}`,
         tiles: sliceData,
       };

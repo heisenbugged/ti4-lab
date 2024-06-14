@@ -3,7 +3,7 @@ import { useDraft } from "~/draftStore";
 import { PlayerChip } from "./PlayerChip";
 import { factions } from "~/data/factionData";
 import { optimalStatsForSystems, techSpecialtiesForSystems } from "~/utils/map";
-import { DraftSlice, Faction, Player, System } from "~/types";
+import { Slice, Faction, HydratedPlayer, System } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
@@ -19,6 +19,10 @@ export function MidDraftSummary() {
   const slices = useDraft((state) => state.draft.slices);
   const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
   const { hydratedPlayers } = useHydratedDraft();
+  const playerOrder = useDraft((state) => state.draft.pickOrder).slice(
+    0,
+    hydratedPlayers.length,
+  );
 
   return (
     <>
@@ -44,15 +48,23 @@ export function MidDraftSummary() {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {hydratedPlayers.map((p) => (
-            <SummaryRow
-              config={config}
-              key={p.id}
-              player={p}
-              slice={p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined}
-              showSeat={draftSpeaker}
-            />
-          ))}
+          {playerOrder.map((id) => {
+            const player = hydratedPlayers.find((p) => p.id === id);
+            if (!player) return null;
+            return (
+              <SummaryRow
+                config={config}
+                key={player.id}
+                player={player}
+                slice={
+                  player.sliceIdx !== undefined
+                    ? slices[player.sliceIdx]
+                    : undefined
+                }
+                showSeat={draftSpeaker}
+              />
+            );
+          })}
         </Table.Tbody>
       </Table>
     </>
@@ -61,8 +73,8 @@ export function MidDraftSummary() {
 
 type Props = {
   config: DraftConfig;
-  player: Player;
-  slice?: DraftSlice;
+  player: HydratedPlayer;
+  slice?: Slice;
   showSeat: boolean;
 };
 

@@ -1,5 +1,4 @@
-import { mapStringOrder } from "./data/mapStringOrder";
-import { DraftConfig, DraftType } from "./draft";
+import { DraftType } from "./draft";
 
 export type GameSet =
   | "base"
@@ -52,43 +51,32 @@ export type MapSpaceType = "SYSTEM" | "HOME" | "OPEN" | "CLOSED" | "WARP";
 export type TilePosition = {
   x: number;
   y: number;
-  // z: number;
 };
 
-type BaseTile = {
+type OldBaseTile = {
   idx: number;
   position: TilePosition;
   system?: System;
 };
 
-export type SystemTile = BaseTile & {
+export type OldSystemTile = OldBaseTile & {
   type: "SYSTEM";
   system: System;
 };
 
-export type HomeTile = BaseTile & {
-  type: "HOME";
-  seatIdx: number;
-  player?: Player;
+export type OldOpenTile = OldBaseTile & {
+  type: "OPEN";
 };
 
-export type PlayerDemoTile = BaseTile & {
+export type OldEmptyTile = OldBaseTile & {
+  type: "EMPTY";
+};
+
+export type PlayerDemoTile = OldBaseTile & {
   type: "PLAYER_DEMO";
   playerNumber: number;
   isHomeSystem: boolean;
 };
-
-export type OpenTile = BaseTile & {
-  type: "OPEN";
-};
-
-export type EmptyTile = BaseTile & {
-  type: "EMPTY";
-};
-
-export type Tile = HomeTile | OpenTile | SystemTile;
-
-export type Map = Tile[];
 
 export type FactionId =
   | "sardakk"
@@ -160,31 +148,6 @@ export type Faction = {
   set: GameSet;
 };
 
-export type Player = {
-  id: number;
-  name: string;
-  discordName?: string;
-  discordMemberId?: string;
-
-  faction?: FactionId;
-  seatIdx?: number;
-  sliceIdx?: number;
-  speakerOrder?: number;
-};
-
-export type PersistedDraft = {
-  mapType: DraftType;
-  factions: FactionId[];
-  players: Player[];
-  slices: Slice[];
-  mapString: string;
-  currentPick: number;
-  pickOrder: number[];
-  lastEvent?: string;
-  draftSpeaker: boolean;
-  discordData?: DiscordData;
-};
-
 export type SystemStats = {
   systemType: SystemType;
   totalResources: number;
@@ -206,13 +169,8 @@ export type MapStats = {
   blueTraits: number;
 };
 
-export type Variance = "low" | "medium" | "high" | "extreme";
-export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
-
-export type Slice = SystemId[];
-
+export type SystemIds = SystemId[];
 export type SystemId = string;
-
 export type PlayerId = number;
 
 /// V2
@@ -253,39 +211,39 @@ export type DraftIntegrations = {
   discord?: DiscordData;
 };
 
-export type DraftPlayer = {
+export type Player = {
   id: number;
   name: string;
 };
 
-export type DraftSlice = {
+export type Slice = {
   name: string;
-  tiles: TileRef[];
+  tiles: Tile[];
 };
 
-type BaseTileRef = {
+type BaseTile = {
   idx: number;
   position: TilePosition;
 };
 
-export type SystemTileRef = BaseTileRef & {
+export type SystemTile = BaseTile & {
   type: "SYSTEM";
   systemId: SystemId;
 };
 
-export type HomeTileRef = BaseTileRef & {
+export type HomeTile = BaseTile & {
   type: "HOME";
   seat?: number;
   playerId?: PlayerId;
 };
 
-export type OpenTileRef = BaseTileRef & {
+export type OpenTile = BaseTile & {
   type: "OPEN";
 };
 
-export type TileRef = SystemTileRef | HomeTileRef | OpenTileRef;
+export type Tile = SystemTile | HomeTile | OpenTile;
 
-export type MapV2 = TileRef[];
+export type Map = Tile[];
 
 export type DraftSelection =
   | {
@@ -312,9 +270,9 @@ export type DraftSelection =
 export type Draft = {
   settings: DraftSettings;
   integrations: DraftIntegrations;
-  players: DraftPlayer[];
-  slices: DraftSlice[];
-  presetMap: MapV2;
+  players: Player[];
+  slices: Slice[];
+  presetMap: Map;
   availableFactions: FactionId[];
   pickOrder: PlayerId[];
   selections: DraftSelection[];

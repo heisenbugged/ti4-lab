@@ -1,4 +1,4 @@
-import { HomeTileRef, Map as MapType, MapV2, TileRef } from "~/types";
+import type { HomeTile, Map, Tile } from "~/types";
 import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
@@ -10,12 +10,12 @@ import { DraftConfig } from "~/draft";
 type Props = {
   id: string;
   config: DraftConfig;
-  map: MapV2;
+  map: Map;
   editable: boolean;
   disabled?: boolean;
-  onSelectSystemTile?: (tile: TileRef) => void;
-  onDeleteSystemTile?: (tile: TileRef) => void;
-  onSelectHomeTile?: (tile: HomeTileRef) => void;
+  onSelectSystemTile?: (tile: Tile) => void;
+  onDeleteSystemTile?: (tile: Tile) => void;
+  onSelectHomeTile?: (tile: HomeTile) => void;
 };
 
 export function Map({
@@ -77,7 +77,7 @@ export function RawMap({
   height,
 }: {
   mapId: string;
-  map: MapV2;
+  map: Map;
   width: number;
   height: number;
 }) {

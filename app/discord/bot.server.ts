@@ -7,7 +7,7 @@ import {
   TextChannel,
 } from "discord.js";
 import startDraft from "./commands/startDraft";
-import { Draft, PersistedDraft } from "~/types";
+import { Draft } from "~/types";
 
 const commands = [startDraft];
 

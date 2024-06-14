@@ -9,7 +9,7 @@ import {
   fillSlicesWithRemainingTiles,
   fillSlicesWithRequiredTiles,
 } from "../helpers/sliceGeneration";
-import { PlanetTrait, Slice, SystemId } from "~/types";
+import { PlanetTrait, SystemIds, SystemId } from "~/types";
 
 const MAP_WORMHOLES = [
   { weight: 1, value: { numAlphas: 3, numBetas: 3 } },
@@ -324,7 +324,7 @@ export function generateSlices(
 
   // distirbute the wormholes/legendaries in round robin fashion
   // on the slices.
-  const slices: Slice[] = Array.from({ length: sliceCount }, () => []);
+  const slices: SystemIds[] = Array.from({ length: sliceCount }, () => []);
   fillSlicesWithRequiredTiles(tieredSlices, chosenTiles, slices);
 
   // fill slices with remaining tiles, respecting the 'tier' requirements

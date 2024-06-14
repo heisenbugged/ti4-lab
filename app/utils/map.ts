@@ -1,18 +1,13 @@
 import { mapStringOrder } from "~/data/mapStringOrder";
-import { systemData } from "~/data/systemData";
 import { DraftConfig } from "~/draft/types";
 import {
-  DraftSlice,
-  HomeTileRef,
-  Map,
-  MapV2,
-  PlayerSelection,
   Slice,
+  HomeTile,
+  Map,
+  PlayerSelection,
   System,
-  SystemId,
   TechSpecialty,
-  TilePosition,
-  TileRef,
+  Tile,
 } from "~/types";
 
 /**
@@ -35,11 +30,11 @@ export const isTileModifiable = (config: DraftConfig, tileIdx: number) =>
 
 export function hydrateMap(
   config: DraftConfig,
-  map: MapV2,
-  slices: DraftSlice[],
+  map: Map,
+  slices: Slice[],
   selections: PlayerSelection[],
-): MapV2 {
-  const hydrated: MapV2 = [...map];
+): Map {
+  const hydrated: Map = [...map];
 
   // add player data to home systems
   forHomeTiles(config, hydrated, (tile, homeIdx) => {
@@ -84,8 +79,8 @@ export function hydrateMap(
 
 const forHomeTiles = (
   config: DraftConfig,
-  tiles: TileRef[],
-  fn: (tile: TileRef, homeIdx: number) => void,
+  tiles: Tile[],
+  fn: (tile: Tile, homeIdx: number) => void,
 ) => {
   tiles.forEach((tile, idx) => {
     const homeSystemIdx = config.homeIdxInMapString.indexOf(idx);
@@ -96,12 +91,12 @@ const forHomeTiles = (
 };
 
 const hydrateHomeTile = (
-  tile: TileRef,
+  tile: Tile,
   seatIdx: number,
   selections: PlayerSelection[],
-): HomeTileRef => {
+): HomeTile => {
   const selection = selections.find((s) => s.seatIdx === seatIdx);
-  const homeTile: HomeTileRef = {
+  const homeTile: HomeTile = {
     idx: tile.idx,
     position: tile.position,
     type: "HOME",
@@ -112,42 +107,43 @@ const hydrateHomeTile = (
   return homeTile;
 };
 
-export const sliceMap = (
-  config: DraftConfig,
-  map: Map,
-): { map: Map; slices: Slice[] } => {
-  const tiles = [...map];
-  const slices: Slice[] = [];
-  config.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
-    const homeTile = tiles[tileIdx];
-    const slice: Slice = ["-1"];
-    config.seatTilePlacement[seatIdx]?.forEach(([x, y]) => {
-      const pos = { x: homeTile.position.x + x, y: homeTile.position.y + y };
-      // find tile the matches the hexagonal coordinate position to modify
-      const tileToModify = tiles.find(
-        (t) => t.position.x === pos.x && t.position.y === pos.y,
-      )!;
-      if (tileToModify.system) {
-        slice.push(tileToModify.system?.id);
-      } else {
-        slice.push("0");
-      }
+// Legacy code for splitting map up
+// export const sliceMap = (
+//   config: DraftConfig,
+//   map: Map,
+// ): { map: Map; slices: SystemIds[] } => {
+//   const tiles = [...map];
+//   const slices: SystemIds[] = [];
+//   config.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
+//     const homeTile = tiles[tileIdx];
+//     const slice: SystemIds = ["-1"];
+//     config.seatTilePlacement[seatIdx]?.forEach(([x, y]) => {
+//       const pos = { x: homeTile.position.x + x, y: homeTile.position.y + y };
+//       // find tile the matches the hexagonal coordinate position to modify
+//       const tileToModify = tiles.find(
+//         (t) => t.position.x === pos.x && t.position.y === pos.y,
+//       )!;
+//       if (tileToModify.system) {
+//         slice.push(tileToModify.system?.id);
+//       } else {
+//         slice.push("0");
+//       }
 
-      tiles[tileToModify.idx] = {
-        position: tileToModify.position,
-        type: "OPEN",
-        idx: tileToModify.idx,
-        system: undefined,
-      };
-    });
-    slices.push(slice);
-  });
+//       tiles[tileToModify.idx] = {
+//         position: tileToModify.position,
+//         type: "OPEN",
+//         idx: tileToModify.idx,
+//         system: undefined,
+//       };
+//     });
+//     slices.push(slice);
+//   });
 
-  return {
-    map: tiles,
-    slices,
-  };
-};
+//   return {
+//     map: tiles,
+//     slices,
+//   };
+// };
 
 export const totalStatsForSystems = (systems: System[]) =>
   systems.reduce(
@@ -179,31 +175,7 @@ export const techSpecialtiesForSystems = (systems: System[]) =>
     return acc;
   }, [] as TechSpecialty[]);
 
-export const systemsInSliceOld = (slice: Slice): System[] =>
-  slice.reduce((acc, t) => {
-    const system = systemData[t];
-    if (!system) return acc;
-    acc.push(system);
-    return acc;
-  }, [] as System[]);
-
-export const emptySliceOld = (numSystems: number): Slice => [
-  "-1",
-  ...Array.from({ length: numSystems }, () => "0"),
-];
-
-export const emptySlicesOld = (
-  numSlices: number,
-  numSystems: number,
-): Slice[] =>
-  Array.from({ length: numSlices }, () => emptySliceOld(numSystems));
-
-export const normalizeSliceOld = (slice: Slice): Slice => {
-  if (slice[0] === "-1") return slice;
-  return ["-1", ...slice];
-};
-
-export function generateEmptyMap(config: DraftConfig): MapV2 {
+export function generateEmptyMap(config: DraftConfig): Map {
   return Array.from({ length: 37 }, (_, idx) => {
     if (idx === 0)
       return {

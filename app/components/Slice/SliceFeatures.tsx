@@ -3,11 +3,11 @@ import { techSpecialtiesForSystems } from "~/utils/map";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
 import { Wormhole } from "../features/Wormhole";
-import { DraftSlice, Slice } from "~/types";
+import { Slice, SystemIds } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
 
 type Props = {
-  slice: DraftSlice;
+  slice: Slice;
 };
 
 export function SliceFeatures({ slice }: Props) {

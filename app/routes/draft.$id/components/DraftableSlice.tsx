@@ -1,11 +1,11 @@
 import { Button } from "@mantine/core";
-import { DraftSlice, HydratedPlayer } from "~/types";
+import { Slice, HydratedPlayer } from "~/types";
 import { BaseSlice } from "~/components/Slice/BaseSlice";
 import { PlayerChip } from "./PlayerChip";
 
 type Props = {
   id: string;
-  slice: DraftSlice;
+  slice: Slice;
   player: HydratedPlayer | undefined;
   onSelect?: () => void;
 };

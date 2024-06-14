@@ -161,7 +161,7 @@ export async function action({ request }: ActionFunctionArgs) {
   // if this draft data is the old legacy draft data,
   // force a page reload instead
   if ((draft as any)["mapString"] !== undefined) {
-    return { success: false };
+    throw new Error("Cannot read old draft!");
   }
 
   const existingDraft = await draftById(id);

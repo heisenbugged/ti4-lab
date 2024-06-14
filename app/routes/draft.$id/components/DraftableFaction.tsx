@@ -1,6 +1,6 @@
 import { Box, Button, Flex, Group, Modal, Stack, Text } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
-import { Faction, Player } from "~/types";
+import { Player, Faction } from "~/types";
 import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
 import { IconEye } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -32,7 +32,7 @@ export function DraftableFaction({
         borderRadius: "var(--mantine-radius-md)",
         cursor: "pointer",
         position: "relative",
-        opacity: player && onSelect ? 0.3 : 1,
+        opacity: player ? 0.5 : 1,
       }}
     >
       <Modal

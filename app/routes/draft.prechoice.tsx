@@ -21,14 +21,14 @@ import {
 } from "@mantine/core";
 import {
   DiscordData,
-  DraftPlayer,
+  Player,
   DraftSettings,
-  EmptyTile,
+  OldEmptyTile,
   GameSet,
-  OpenTile,
+  OldOpenTile,
   PlayerDemoTile,
   SystemId,
-  SystemTile,
+  OldSystemTile,
 } from "~/types";
 import { useEffect, useState } from "react";
 import { mapStringOrder } from "~/data/mapStringOrder";
@@ -55,7 +55,7 @@ type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 type PrechoiceMap = {
   title: string;
   description: string;
-  map: (PlayerDemoTile | OpenTile | EmptyTile | SystemTile)[];
+  map: (PlayerDemoTile | OldOpenTile | OldEmptyTile | OldSystemTile)[];
   titles: string[];
 };
 
@@ -127,7 +127,7 @@ export default function DraftPrechoice() {
   const [numSlices, setNumSlices] = useState(6);
   const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
   const [randomizeMap, setRandomizeMap] = useState<boolean>(true);
-  const [players, setPlayers] = useState<DraftPlayer[]>([
+  const [players, setPlayers] = useState<Player[]>([
     ...[0, 1, 2, 3, 4, 5].map((i) => {
       const discordPlayer = discordData?.players.find(
         (discordPlayer) => discordPlayer.playerId === i,
@@ -520,7 +520,7 @@ function parseDemoMapString(config: DraftConfig, mapString: SystemId[]) {
         position,
         system: systemData[18],
         type: "SYSTEM",
-      } as SystemTile;
+      } as OldSystemTile;
     }
 
     if (player === "-1") {
@@ -528,7 +528,7 @@ function parseDemoMapString(config: DraftConfig, mapString: SystemId[]) {
         idx,
         position,
         type: "OPEN",
-      } as OpenTile;
+      } as OldOpenTile;
     }
 
     if (player === "-2") {
@@ -536,7 +536,7 @@ function parseDemoMapString(config: DraftConfig, mapString: SystemId[]) {
         idx,
         position,
         type: "EMPTY",
-      } as EmptyTile;
+      } as OldEmptyTile;
     }
 
     return {

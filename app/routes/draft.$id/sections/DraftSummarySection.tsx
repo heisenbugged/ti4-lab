@@ -1,11 +1,13 @@
 import { Tabs } from "@mantine/core";
 import { SectionTitle } from "~/components/Section";
 import { MidDraftSummary } from "../components/MidDraftSummary";
+import { useDraft } from "~/draftStore";
+import { SlicesTable } from "~/routes/draft/SlicesTable";
+import { useDraftedSlices } from "~/hooks/useDraftedSlices";
 
 export function DraftSummarySection() {
-  // const draftedSlices = draft.players
-  // .filter((p) => p.sliceIdx !== undefined)
-  // .map((p) => p.sliceIdx!);
+  const slices = useDraft((state) => state.draft.slices);
+  const draftedSlices = useDraftedSlices();
 
   return (
     <Tabs defaultValue="draft" variant="pills">
@@ -19,10 +21,7 @@ export function DraftSummarySection() {
         <MidDraftSummary />
       </Tabs.Panel>
       <Tabs.Panel value="slice">
-        {/* <SlicesTable
-            slices={draftV2.draft.slices}
-            draftedSlices={draftedSlices}
-          /> */}
+        <SlicesTable slices={slices} draftedSlices={draftedSlices} />
       </Tabs.Panel>
     </Tabs>
   );

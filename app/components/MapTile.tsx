@@ -1,4 +1,4 @@
-import { SystemTile as SystemTileType, Tile, TileRef } from "~/types";
+import { Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
 import { useContext, useEffect, useState } from "react";
@@ -13,7 +13,7 @@ import { MapContext } from "~/contexts/MapContext";
 
 type Props = {
   mapId: string;
-  tile: TileRef;
+  tile: Tile;
   modifiable?: boolean;
   homeSelectable?: boolean;
   onSelect?: () => void;

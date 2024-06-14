@@ -1,4 +1,4 @@
-import { Slice, SystemId, TilePosition } from "~/types";
+import { SystemIds, SystemId, TilePosition } from "~/types";
 
 export type Tier = "low" | "med" | "high" | "red" | "resolved";
 export type ChoosableTier = "low" | "med" | "high" | "red";
@@ -65,5 +65,8 @@ export type DraftConfig = {
    * @param sliceCount The number of slices to generate.
    * @param availableSystems
    */
-  generateSlices: (sliceCount: number, availableSystems: SystemId[]) => Slice[];
+  generateSlices: (
+    sliceCount: number,
+    availableSystems: SystemId[],
+  ) => SystemIds[];
 };

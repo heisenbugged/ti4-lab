@@ -3,7 +3,7 @@ import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
-import { DraftSlice, TileRef } from "~/types";
+import { Slice, Tile } from "~/types";
 import { useSlice } from "./useSlice";
 import { SliceFeatures } from "./SliceFeatures";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
@@ -12,13 +12,13 @@ import classes from "./Slice.module.css";
 
 type Props = {
   id: string;
-  slice: DraftSlice;
+  slice: Slice;
   mapModifiable?: boolean;
   greyOut?: boolean;
   titleLeft?: React.ReactNode;
   titleRight?: React.ReactNode;
-  onSelectTile?: (tile: TileRef) => void;
-  onDeleteTile?: (tile: TileRef) => void;
+  onSelectTile?: (tile: Tile) => void;
+  onDeleteTile?: (tile: Tile) => void;
 };
 
 export function BaseSlice({

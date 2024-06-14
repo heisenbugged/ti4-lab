@@ -1,6 +1,6 @@
 import { Box, Group, Text } from "@mantine/core";
 import { playerColors } from "~/data/factionData";
-import { DiscordPlayer, DraftPlayer } from "~/types";
+import { DiscordPlayer, Player } from "~/types";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
 
 import classes from "~/components/Surface.module.css";
@@ -9,7 +9,7 @@ import draftClasses from "./DraftOrder.module.css";
 type Props = {
   pickOrder: number[];
   currentPick: number;
-  players: DraftPlayer[];
+  players: Player[];
   discordPlayers: DiscordPlayer[];
 };
 

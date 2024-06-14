@@ -1,2 +1,2 @@
-export * from "./Slice";
 export * from "./useSlice";
+export * from "./BaseSlice";

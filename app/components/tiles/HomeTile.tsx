@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
 import { Button, Stack } from "@mantine/core";
-import { HomeTileRef } from "~/types";
+import type { HomeTile } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 import { FactionIcon } from "../icons/FactionIcon";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
@@ -13,7 +13,7 @@ import classes from "./Tiles.module.css";
 
 type Props = {
   mapId: string;
-  tile: HomeTileRef;
+  tile: HomeTile;
   selectable?: boolean;
   onSelect?: () => void;
 };

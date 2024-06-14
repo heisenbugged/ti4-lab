@@ -4,7 +4,7 @@
  * Has been adapted to 'typescript' and minor modifications to better fit
  * with the aesthetic of this project, but largely unchanged.
  */
-import { Slice, System, SystemId } from "~/types";
+import { SystemIds, System, SystemId } from "~/types";
 import { systemData } from "~/data/systemData";
 import { ChoosableTier, TieredSlice, TieredSystems } from "../types";
 import { neighbors } from "../hex";
@@ -135,7 +135,7 @@ function promote(
 export function fillSlicesWithRequiredTiles(
   tieredSlices: TieredSlice[],
   chosenSystems: TieredSystems,
-  slices: Slice[],
+  slices: SystemIds[],
 ) {
   // Spread already chosen tiles around.
   const tryAdd = (tierToAdd: ChoosableTier) => {
@@ -180,7 +180,7 @@ export function fillSlicesWithRequiredTiles(
 export function fillSlicesWithRemainingTiles(
   tieredSlices: TieredSlice[],
   remainingSystems: TieredSystems,
-  slices: Slice[],
+  slices: SystemIds[],
 ) {
   const remainingTiers = [
     remainingSystems.low,

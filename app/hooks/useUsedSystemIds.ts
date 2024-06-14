@@ -1,17 +1,17 @@
 import { useMemo } from "react";
 import { useDraft } from "~/draftStore";
-import { DraftSlice, SystemId, TileRef } from "~/types";
+import { Slice, SystemId, Tile } from "~/types";
 import { systemIdsInSlice } from "~/utils/slice";
 
-export function getUsedSystemIdsInMap(presetMap: TileRef[]): SystemId[] {
+export function getUsedSystemIdsInMap(presetMap: Tile[]): SystemId[] {
   return presetMap
     .map((t) => (t.type === "SYSTEM" ? t.systemId : undefined))
     .filter((t) => t !== undefined) as SystemId[];
 }
 
 export function getUsedSystemIds(
-  slices: DraftSlice[],
-  presetMap: TileRef[],
+  slices: Slice[],
+  presetMap: Tile[],
 ): SystemId[] {
   const sliceSystemIds = slices.map((s) => systemIdsInSlice(s));
   const mapSystemIds = getUsedSystemIdsInMap(presetMap);

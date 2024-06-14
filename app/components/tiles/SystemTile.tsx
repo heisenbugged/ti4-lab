@@ -1,8 +1,8 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
 import { Planet } from "../Planet";
-import { SystemTileRef, SystemTile as SystemTileType } from "~/types";
-import { Group, Text, useMantineTheme } from "@mantine/core";
+import type { SystemTile } from "~/types";
+import { Group } from "@mantine/core";
 import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
 import { GravityRift } from "../features/GravityRift";
@@ -13,7 +13,7 @@ import { SystemId } from "../SystemId";
 import classes from "./Tiles.module.css";
 import { systemData } from "~/data/systemData";
 
-type Props = { mapId: string; tile: SystemTileRef; hideValues?: boolean };
+type Props = { mapId: string; tile: SystemTile; hideValues?: boolean };
 
 export function SystemTile({ mapId, tile, hideValues = false }: Props) {
   const { radius } = useContext(MapContext);

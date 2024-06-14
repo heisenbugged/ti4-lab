@@ -1,18 +1,18 @@
 import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
 import { useDimensions } from "~/hooks/useDimensions";
 import { MapTile } from "../MapTile";
-import { TileRef } from "~/types";
+import { Tile } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 
 type Props = {
   id: string;
-  tiles: TileRef[];
+  tiles: Tile[];
   sliceHeight: number;
   sliceConcentricCircles?: number;
   wOffsetMultiplier?: number;
   mapModifiable?: boolean;
-  onSelectTile?: (tile: TileRef) => void;
-  onDeleteTile?: (tile: TileRef) => void;
+  onSelectTile?: (tile: Tile) => void;
+  onDeleteTile?: (tile: Tile) => void;
 };
 
 export function SliceMap({

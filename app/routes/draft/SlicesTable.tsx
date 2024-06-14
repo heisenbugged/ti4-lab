@@ -4,13 +4,13 @@ import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { valueSlice } from "~/stats";
 import { optimalStatsForSystems, totalStatsForSystems } from "~/utils/map";
 import { useSortedSlices } from "./useSortedSlices";
-import { DraftSlice } from "~/types";
+import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
 
 import classes from "~/components/Table.module.css";
 
 type Props = {
-  slices: DraftSlice[];
+  slices: Slice[];
   draftedSlices?: number[];
 };
 

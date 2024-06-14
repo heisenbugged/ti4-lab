@@ -6,7 +6,7 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import { IconBrandDiscord, IconBrandDiscordFilled } from "@tabler/icons-react";
+import { IconBrandDiscordFilled } from "@tabler/icons-react";
 import { Section, SectionTitle } from "~/components/Section";
 import { playerColors } from "~/data/factionData";
 import { DiscordData, Player } from "~/types";

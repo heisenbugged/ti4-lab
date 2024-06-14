@@ -1,7 +1,7 @@
 import {
-  EmptyTile,
-  OpenTile,
-  SystemTile,
+  OldEmptyTile,
+  OldOpenTile,
+  OldSystemTile,
   PlayerDemoTile as TPlayerDemoTile,
 } from "~/types";
 import {
@@ -22,7 +22,7 @@ import classes from "./tiles/Tiles.module.css";
 
 type Props = {
   id: string;
-  map: (TPlayerDemoTile | OpenTile | EmptyTile | SystemTile)[];
+  map: (TPlayerDemoTile | OldOpenTile | OldEmptyTile | OldSystemTile)[];
   padding: number;
   titles: string[];
   colors: string[];
@@ -69,7 +69,7 @@ export function DemoMap({ id, map, padding, titles, colors }: Props) {
 
 type DemoMapTileProps = {
   mapId: string;
-  tile: TPlayerDemoTile | OpenTile | EmptyTile | SystemTile;
+  tile: TPlayerDemoTile | OldOpenTile | OldEmptyTile | OldSystemTile;
   titles: string[];
   colors: string[];
 };

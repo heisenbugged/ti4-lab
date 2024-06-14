@@ -1,13 +1,13 @@
 import { Button, Group } from "@mantine/core";
-import { DraftSlice, TileRef } from "~/types";
+import { Slice, Tile } from "~/types";
 import { IconDice6Filled } from "@tabler/icons-react";
 import { BaseSlice } from "~/components/Slice/BaseSlice";
 
 type Props = {
   id: string;
-  slice: DraftSlice;
-  onSelectTile?: (tile: TileRef) => void;
-  onDeleteTile?: (tile: TileRef) => void;
+  slice: Slice;
+  onSelectTile?: (tile: Tile) => void;
+  onDeleteTile?: (tile: Tile) => void;
   onRandomizeSlice?: () => void;
   onClearSlize?: () => void;
 };

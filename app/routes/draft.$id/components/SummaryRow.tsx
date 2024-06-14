@@ -4,12 +4,12 @@ import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { DraftSlice, Player } from "~/types";
+import { Slice, HydratedPlayer } from "~/types";
 import { PlayerChip } from "./PlayerChip";
 
 type Props = {
-  player: Player;
-  slice: DraftSlice;
+  player: HydratedPlayer;
+  slice: Slice;
   draftSpeaker: Boolean;
 };
 
