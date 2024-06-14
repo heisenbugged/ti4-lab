@@ -14,7 +14,8 @@ type Props = {
   id: string;
   slice: Slice;
   mapModifiable?: boolean;
-  greyOut?: boolean;
+  selectedColor?: string;
+  // greyOut?: boolean;
   titleLeft?: React.ReactNode;
   titleRight?: React.ReactNode;
   onSelectTile?: (tile: Tile) => void;
@@ -27,20 +28,22 @@ export function BaseSlice({
   titleLeft,
   titleRight,
   mapModifiable = false,
-  greyOut = false,
+  selectedColor,
   onSelectTile,
   onDeleteTile,
 }: Props) {
   const config = useDraftConfig();
   const { total, optimal } = useSlice(slice);
   return (
-    <Paper shadow="sm">
+    <Paper
+      shadow="sm"
+      style={{ opacity: selectedColor ? 0.5 : 1 }}
+      className={selectedColor ? classes[selectedColor] : ""}
+    >
       <Stack flex={1} gap={0}>
-        <SliceHeader selected={greyOut} right={titleRight}>
+        <SliceHeader right={titleRight}>
           <Group>
-            <Titles.Slice
-              className={`${classes["slice-text"]} ${greyOut ? classes.selected : ""}`}
-            >
+            <Titles.Slice className={`${classes["slice-text"]}`}>
               {slice.name}
             </Titles.Slice>
             {titleLeft}
@@ -63,10 +66,7 @@ export function BaseSlice({
           />
         </Group>
 
-        <Box
-          style={{ filter: greyOut ? "grayscale(70%)" : "none" }}
-          className={classes.map}
-        >
+        <Box className={classes.map}>
           <SliceMap
             id={id}
             sliceHeight={config.sliceHeight}
