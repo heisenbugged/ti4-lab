@@ -65,7 +65,5 @@ export function generateSlices(
     slices[sliceIndex] = slice;
   }
 
-  console.log(`miltyEq.generateSlices: ${JSON.stringify(slices)}`);
-
   return slices;
 }

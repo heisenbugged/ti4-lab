@@ -60,7 +60,6 @@ export default function DraftNew() {
     if (location.state == null) return navigate("/draft/prechoice");
     const { draftSettings, players, discordData } = location.state;
     actions.initializeDraft(draftSettings, players, { discord: discordData });
-
     // a bit hacky, but once we 'consume' the state, we remove it from the history
     window.history.replaceState({ ...window.history.state, usr: null }, "");
   }, []);
@@ -208,11 +207,9 @@ export async function action({ request }: ActionFunctionArgs) {
     })
     .run();
 
-  // TODO: DISCORD: re-enable when ready
   if (body.integrations?.discord) {
     const discord = body.integrations.discord;
     const channel = await getChannel(discord.guildId, discord.channelId);
-
     await channel?.send(
       `Draft has started! Join here: ${global.env.baseUrl}/draft/${prettyUrl}`,
     );

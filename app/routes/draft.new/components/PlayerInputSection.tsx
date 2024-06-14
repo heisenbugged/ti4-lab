@@ -23,7 +23,6 @@ export function PlayerInputSection({
   onChangeName,
 }: Props) {
   const { colors } = useMantineTheme();
-  console.log("discordData", discordData);
   return (
     <Section>
       <SectionTitle title="Players" />
