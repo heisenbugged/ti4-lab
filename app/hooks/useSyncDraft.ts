@@ -1,5 +1,5 @@
 import { useFetcher } from "@remix-run/react";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { draftStore } from "~/draftStore";
 import { useSocket } from "~/socketContext";
 
@@ -12,16 +12,21 @@ export function useSyncDraftFetcher() {
   const fetcher = useFetcher({ key: "sync-draft" });
   const socket = useSocket();
 
+  useEffect(() => {
+    if ((fetcher.data as any)?.success === false) {
+      window.location.reload();
+    }
+  }, [fetcher.data]);
+
   return {
     syncDraft: async () => {
       const { draft, draftId } = draftStore.getState();
       if (!draft || !draftId) return;
 
-      await fetcher.submit(
+      fetcher.submit(
         { id: draftId, draft },
         { method: "POST", encType: "application/json" },
       );
-
       socket?.emit("syncDraft", draftId, JSON.stringify(draft));
     },
     syncing: fetcher.state === "submitting",

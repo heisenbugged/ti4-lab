@@ -158,6 +158,12 @@ export async function action({ request }: ActionFunctionArgs) {
     turnPassed: boolean;
   };
 
+  // if this draft data is the old legacy draft data,
+  // force a page reload instead
+  if ((draft as any)["mapString"] !== undefined) {
+    return { success: false };
+  }
+
   const existingDraft = await draftById(id);
   const existingDraftData = JSON.parse(existingDraft.data as string) as Draft;
 
