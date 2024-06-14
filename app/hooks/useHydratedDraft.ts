@@ -109,9 +109,10 @@ export const hydratedMapStringAtom = atom((get) => {
 });
 
 export function useHydratedDraft() {
-  const { pickForAnyone } = useOutletContext<{
+  const ctx = useOutletContext<{
     pickForAnyone: boolean;
   }>();
+  const pickForAnyone = ctx ? ctx.pickForAnyone : false;
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const selections = useDraft((state) => state.draft.selections);

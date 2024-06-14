@@ -1,28 +1,22 @@
 import { Text } from "@mantine/core";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { useEffect } from "react";
 import { Logo } from "~/components/Logo";
 import { RawMap } from "~/components/Map";
-import { draftConfig } from "~/draft";
+import { useDraft } from "~/draftStore";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
-import {
-  computePlayerSelections,
-  hydratePlayers,
-} from "~/hooks/useHydratedDraft";
+import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { Draft } from "~/types";
-import { hydrateMap } from "~/utils/map";
 
 export default function MapImage() {
   const result = useLoaderData<typeof loader>();
   const draft = result.data;
-  const config = draftConfig[draft.settings.type];
-  const hydratedPlayers = hydratePlayers(
-    draft.players,
-    draft.selections,
-    draft.settings.draftSpeaker,
-  );
-  const selections = computePlayerSelections(hydratedPlayers);
-  const map = hydrateMap(config, draft.presetMap, draft.slices, selections);
+  const draftStore = useDraft();
+  const { hydratedMap } = useHydratedDraft();
+  useEffect(() => {
+    draftStore.draftActions.hydrate(result.id, result.urlName!, draft);
+  }, []);
 
   return (
     <div
@@ -37,7 +31,7 @@ export default function MapImage() {
         <Logo />
       </div>
       <div style={{ top: 45 + 20, left: 60, position: "relative" }}>
-        <RawMap mapId="mapImage" map={map} width={900} height={900} />
+        <RawMap mapId="mapImage" map={hydratedMap} width={900} height={900} />
       </div>
       <div style={{ bottom: 12, right: 12, position: "absolute" }}>
         <Text c="white">ti4-lab.fly.dev/draft/{result.draftId}</Text>

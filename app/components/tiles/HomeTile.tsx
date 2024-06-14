@@ -21,7 +21,6 @@ type Props = {
 export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
   const { radius, disabled } = useContext(MapContext);
   const { hydratedPlayers } = useHydratedDraft();
-  tile.playerId;
   const player =
     tile.playerId !== undefined
       ? hydratedPlayers.find((p) => p.id === tile.playerId)
