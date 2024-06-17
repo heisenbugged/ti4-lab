@@ -1,21 +1,11 @@
 import { useFetcher } from "@remix-run/react";
-import { DraftType } from "~/draft";
-import { DiscordData, FactionId, Player, Slice } from "~/types";
+import { Draft } from "~/types";
 
-export type CreateDraftInput = {
-  mapType: DraftType;
-  players: Player[];
-  availableFactions: FactionId[];
-  mapString: string;
-  slices: Slice[];
-  numFactionsToDraft: number | null;
-  draftSpeaker: boolean;
-  discordData: DiscordData | null;
-};
+export type DraftInput = Omit<Draft, "pickOrder">;
 
 export function useCreateDraft() {
   const fetcher = useFetcher();
-  return (input: CreateDraftInput) => {
+  return (input: DraftInput) => {
     fetcher.submit(input, {
       method: "POST",
       encType: "application/json",

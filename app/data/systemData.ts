@@ -3,12 +3,13 @@ import {
   FactionId,
   PlanetTrait,
   System,
+  SystemId,
   TechSpecialty,
 } from "~/types";
 import { rawSystems } from "./rawSystemData";
 import { factions } from "./factionData";
 
-export const systemData: Record<number, System> = Object.entries(
+export const systemData: Record<SystemId, System> = Object.entries(
   rawSystems,
 ).reduce(
   (acc, [id, system]) => {
@@ -28,7 +29,7 @@ export const systemData: Record<number, System> = Object.entries(
       }
     });
 
-    acc[parseInt(id)] = {
+    acc[id] = {
       ...system,
       totalSpend,
       optimalSpend,
@@ -36,7 +37,7 @@ export const systemData: Record<number, System> = Object.entries(
 
     return acc;
   },
-  {} as Record<number, System>,
+  {} as Record<SystemId, System>,
 );
 
 export const factionSystems: Record<FactionId, System> = Object.values(
@@ -55,16 +56,17 @@ export const draftableSystemIds = Object.values(systemData)
   .filter(
     (system) =>
       (system.type === "BLUE" || system.type === "RED") &&
-      system.id < 100 &&
-      system.id !== 18 && // cannot draft mecatol
-      system.id !== 82, // cannot draft mallice
+      Number(system.id) < 100 &&
+      system.id !== "18" && // cannot draft mecatol
+      system.id !== "82", // cannot draft mallice
   )
   .map((system) => system.id);
 
 export const unchartedStarsSystemIds = Object.values(systemData)
   .filter(
     (system) =>
-      (system.type === "BLUE" || system.type === "RED") && system.id >= 100,
+      (system.type === "BLUE" || system.type === "RED") &&
+      Number(system.id) >= 100,
   )
   .map((system) => system.id);
 
@@ -132,5 +134,5 @@ export const searchableSystemData = Object.values(systemData).reduce(
     acc.push([nameParts.join(" "), system.id] as const);
     return acc;
   },
-  [] as [string, number][],
+  [] as [string, SystemId][],
 );

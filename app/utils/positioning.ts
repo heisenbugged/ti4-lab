@@ -84,3 +84,24 @@ export const calculateMaxHexWidthRadius = (
   const effectiveWidth = width - (numTiles - 1) * gap;
   return effectiveWidth / (numTiles * 2 - n);
 };
+
+/**
+ *
+ * For a given 'width', calculate the height of the map bounding box.
+ * Where it cannot exceed 'maxHeight'.
+ */
+export function getBoundedMapHeight(width: number, maxHeight: number) {
+  const gap = 6;
+  // Calculate preliminary height and radius bounded by width.
+  const initialRadius = calculateMaxHexWidthRadius(3, width, gap);
+  const initialHeight = 7 * calcHexHeight(initialRadius) + 6 * gap;
+
+  // Once preliminary height has been calculated.
+  // we impose a maximum height (so that the map does not overflow)
+  // and then recalculate the radius based on the new height.
+  const height = Math.min(initialHeight, maxHeight);
+  const newRadius = calculateMaxHexRadius(3, width, height, gap);
+  const newHeight = 7 * calcHexHeight(newRadius) + 6 * gap;
+
+  return newHeight;
+}

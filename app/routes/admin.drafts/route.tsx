@@ -1,17 +1,8 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Group,
-  Stack,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core";
-import { TypedResponse, json } from "@remix-run/node";
+import { Button, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { findDrafts } from "~/drizzle/draft.server";
-import { PersistedDraft } from "~/types";
+import { Draft } from "~/types";
 
 import classes from "~/components/Surface.module.css";
 
@@ -19,15 +10,19 @@ export default function AdminDraftsIndex() {
   const { drafts } = useLoaderData<{ drafts: SavedDraft[] }>();
   const totalDrafts = drafts.length;
   const completedDrafts = drafts.filter(
-    (d) => d.data.currentPick === d.data.pickOrder.length,
+    (d) => d.data.selections.length === d.data.pickOrder.length,
   ).length;
 
-  const totalNucleum = drafts.filter((d) => d.data.mapType === "heisen").length;
+  const totalNucleum = drafts.filter(
+    (d) => d.data.settings.type === "heisen",
+  ).length;
 
-  const totalMilty = drafts.filter((d) => d.data.mapType === "milty").length;
+  const totalMilty = drafts.filter(
+    (d) => d.data.settings.type === "milty",
+  ).length;
 
   const totalMiltyEq = drafts.filter(
-    (d) => d.data.mapType === "miltyeq",
+    (d) => d.data.settings.type === "miltyeq",
   ).length;
 
   return (
@@ -83,16 +78,17 @@ export default function AdminDraftsIndex() {
         </Table.Thead>
         <Table.Tbody>
           {drafts.map((d) => {
+            const currentPick = d.data.selections.length;
             const isComplete = (
-              d.data.currentPick === d.data.pickOrder.length
+              d.data.selections.length === d.data.pickOrder.length
             ).toString();
             return (
               <Table.Tr key={d.id}>
                 <Table.Td>{d.id}</Table.Td>
                 <Table.Td>{d.urlName}</Table.Td>
-                <Table.Td>{d.data.mapType}</Table.Td>
+                <Table.Td>{d.data.settings.type}</Table.Td>
                 <Table.Td>{isComplete}</Table.Td>
-                <Table.Td>{d.data.currentPick.toString()}</Table.Td>
+                <Table.Td>{currentPick.toString()}</Table.Td>
                 <Table.Td>
                   {d.data.players.map((p) => p.name).join(", ")}
                 </Table.Td>
@@ -115,16 +111,14 @@ export const loader = async () => {
   return json({
     drafts: drafts.map((d) => ({
       ...d,
-      data: JSON.parse(d.data as string) as PersistedDraft,
+      data: JSON.parse(d.data as string) as Draft,
     })),
   });
 };
 
-// TODO: Rename to PersistedDraft or just 'Draft'
-// and then call data: 'PersistedDraftData' or just 'DraftData'
 type SavedDraft = {
   id: string;
-  data: PersistedDraft;
+  data: Draft;
   urlName: string | null;
   createdAt: string;
   updatedAt: string;

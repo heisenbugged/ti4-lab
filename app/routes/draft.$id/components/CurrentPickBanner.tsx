@@ -1,19 +1,13 @@
-import { Stack, Text, useMantineTheme } from "@mantine/core";
+import { Stack, Text } from "@mantine/core";
 import { AnimatedText } from "~/components/AnimatedText/AnimatedText";
 import { playerColors } from "~/data/factionData";
-import { useIsLight } from "~/hooks/useIsLight";
-import { Player } from "~/types";
 
 import classes from "./CurrentPickBanner.module.css";
+import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 
-type Props = {
-  player: Player;
-  lastEvent?: string;
-};
-
-export function CurrentPickBanner({ player, lastEvent }: Props) {
-  const playerColor = playerColors[player.id];
-
+export function CurrentPickBanner() {
+  const { activePlayer, lastEvent } = useHydratedDraft();
+  const playerColor = playerColors[activePlayer.id];
   return (
     <Stack
       gap={8}
@@ -29,7 +23,7 @@ export function CurrentPickBanner({ player, lastEvent }: Props) {
       >
         {lastEvent ?? ""}
       </Text>
-      <AnimatedText text={`It's ${player?.name}'s turn to pick!`} />
+      <AnimatedText text={`It's ${activePlayer?.name}'s turn to pick!`} />
     </Stack>
   );
 }

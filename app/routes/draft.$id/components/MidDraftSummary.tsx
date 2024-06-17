@@ -2,64 +2,69 @@ import { Card, Group, Stack, Table, Text } from "@mantine/core";
 import { useDraft } from "~/draftStore";
 import { PlayerChip } from "./PlayerChip";
 import { factions } from "~/data/factionData";
-import {
-  optimalStatsForSystems,
-  systemsInSlice,
-  techSpecialtiesForSystems,
-  totalStatsForSystems,
-} from "~/utils/map";
-import { Faction, Player, Slice, System } from "~/types";
+import { optimalStatsForSystems, techSpecialtiesForSystems } from "~/utils/map";
+import { Slice, Faction, HydratedPlayer, System } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { DraftConfig } from "~/draft";
-import { useIsLight } from "~/hooks/useIsLight";
+import { useHydratedDraft } from "~/hooks/useHydratedDraft";
+import { useDraftConfig } from "~/hooks/useDraftConfig";
+import { systemsInSlice } from "~/utils/slice";
 
 import classes from "./MidDraftSummary.module.css";
 
 export function MidDraftSummary() {
-  const draft = useDraft();
-  const slices = draft.slices;
-  const players = draft.players;
-  const isLight = useIsLight();
-  const borderColor = isLight ? undefined : "var(--mantine-color-dark-5)";
+  const config = useDraftConfig();
+  const slices = useDraft((state) => state.draft.slices);
+  const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
+  const { hydratedPlayers } = useHydratedDraft();
+  const playerOrder = useDraft((state) => state.draft.pickOrder).slice(
+    0,
+    hydratedPlayers.length,
+  );
 
   return (
     <>
       <Stack mt="lg" hiddenFrom="sm">
-        {players.map((p) => (
+        {hydratedPlayers.map((p) => (
           <SummaryCard
-            config={draft.config}
+            config={config}
             key={p.id}
             player={p}
             slice={p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined}
-            showSeat={draft.draftSpeaker}
+            showSeat={draftSpeaker}
           />
         ))}
       </Stack>
-      <Table visibleFrom="sm" borderColor={borderColor}>
+      <Table visibleFrom="sm">
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
             <Table.Th>Faction</Table.Th>
-            <Table.Th>Slice</Table.Th>
             <Table.Th>Speaker Order</Table.Th>
-            {draft.draftSpeaker && <Table.Th>Seat</Table.Th>}
-            <Table.Th>Optimal Value</Table.Th>
-            <Table.Th visibleFrom="sm">Total Value</Table.Th>
-            <Table.Th>Features</Table.Th>
+            {draftSpeaker && <Table.Th>Seat</Table.Th>}
+            <Table.Th w="260px">Slice</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {players.map((p) => (
-            <SummaryRow
-              config={draft.config}
-              key={p.id}
-              player={p}
-              slice={p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined}
-              showSeat={draft.draftSpeaker}
-            />
-          ))}
+          {playerOrder.map((id) => {
+            const player = hydratedPlayers.find((p) => p.id === id);
+            if (!player) return null;
+            return (
+              <SummaryRow
+                config={config}
+                key={player.id}
+                player={player}
+                slice={
+                  player.sliceIdx !== undefined
+                    ? slices[player.sliceIdx]
+                    : undefined
+                }
+                showSeat={draftSpeaker}
+              />
+            );
+          })}
         </Table.Tbody>
       </Table>
     </>
@@ -68,21 +73,14 @@ export function MidDraftSummary() {
 
 type Props = {
   config: DraftConfig;
-  player: Player;
+  player: HydratedPlayer;
   slice?: Slice;
   showSeat: boolean;
-  showSlice?: boolean;
 };
 
-export function SummaryCard({
-  player,
-  slice,
-  showSeat,
-  showSlice = true,
-}: Props) {
+export function SummaryCard({ player, slice, showSeat }: Props) {
   let faction: Faction | undefined;
   let systems: System[] | undefined;
-  let total: { resources: number; influence: number } | undefined;
   let optimal:
     | { resources: number; influence: number; flex: number }
     | undefined;
@@ -91,7 +89,6 @@ export function SummaryCard({
   if (player.faction) faction = factions[player.faction];
   if (slice) {
     systems = systemsInSlice(slice);
-    total = totalStatsForSystems(systems);
     optimal = optimalStatsForSystems(systems);
     specialties = techSpecialtiesForSystems(systems);
   }
@@ -107,14 +104,6 @@ export function SummaryCard({
               resources={optimal.resources}
               influence={optimal.influence}
               flex={optimal.flex}
-            />
-          )}
-          {total && "/"}
-          {total && (
-            <PlanetStatsPill
-              size="sm"
-              resources={total.resources}
-              influence={total.influence}
             />
           )}
         </Group>
@@ -148,15 +137,6 @@ export function SummaryCard({
               {player.seatIdx !== undefined ? player.seatIdx + 1 : "Not Chosen"}
             </Text>
           )}
-
-          {showSlice && (
-            <Text size="sm" lh={1}>
-              Slice #:{" "}
-              {player.sliceIdx !== undefined
-                ? player.sliceIdx + 1
-                : "Not Chosen"}
-            </Text>
-          )}
         </Stack>
       </Group>
     </Card>
@@ -166,7 +146,6 @@ export function SummaryCard({
 function SummaryRow({ player, slice, showSeat }: Props) {
   let faction: Faction | undefined;
   let systems: System[] | undefined;
-  let total: { resources: number; influence: number } | undefined;
   let optimal:
     | { resources: number; influence: number; flex: number }
     | undefined;
@@ -175,7 +154,6 @@ function SummaryRow({ player, slice, showSeat }: Props) {
   if (player.faction) faction = factions[player.faction];
   if (slice) {
     systems = systemsInSlice(slice);
-    total = totalStatsForSystems(systems);
     optimal = optimalStatsForSystems(systems);
     specialties = techSpecialtiesForSystems(systems);
   }
@@ -196,9 +174,6 @@ function SummaryRow({ player, slice, showSeat }: Props) {
         ) : undefined}
       </Table.Td>
       <Table.Td>
-        {player.sliceIdx !== undefined && `${player.sliceIdx + 1}`}
-      </Table.Td>
-      <Table.Td>
         {player.speakerOrder !== undefined && player.speakerOrder + 1}
       </Table.Td>
       {showSeat && (
@@ -207,26 +182,17 @@ function SummaryRow({ player, slice, showSeat }: Props) {
         </Table.Td>
       )}
       <Table.Td>
-        {optimal && (
-          <PlanetStatsPill
-            size="sm"
-            resources={optimal.resources}
-            influence={optimal.influence}
-            flex={optimal.flex}
-          />
-        )}
-      </Table.Td>
-      <Table.Td visibleFrom="sm">
-        {total && (
-          <PlanetStatsPill
-            size="sm"
-            resources={total.resources}
-            influence={total.influence}
-          />
-        )}
-      </Table.Td>
-      <Table.Td>
-        {slice !== undefined && <SliceFeatures slice={slice} />}
+        <Group>
+          {optimal && (
+            <PlanetStatsPill
+              size="sm"
+              resources={optimal.resources}
+              influence={optimal.influence}
+              flex={optimal.flex}
+            />
+          )}
+          {slice !== undefined && <SliceFeatures slice={slice} />}
+        </Group>
       </Table.Td>
     </Table.Tr>
   );

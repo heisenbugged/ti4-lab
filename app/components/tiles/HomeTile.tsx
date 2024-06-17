@@ -1,38 +1,43 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
 import { Button, Stack } from "@mantine/core";
-import { HomeTile as THomeTile } from "~/types";
+import type { HomeTile } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 import { FactionIcon } from "../icons/FactionIcon";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
-
-import classes from "./Tiles.module.css";
 import { calcScale } from "./calcScale";
 import { SystemId } from "../SystemId";
 import { factionSystems } from "~/data/systemData";
+import { useHydratedDraft } from "~/hooks/useHydratedDraft";
+import classes from "./Tiles.module.css";
 
 type Props = {
   mapId: string;
-  tile: THomeTile;
+  tile: HomeTile;
   selectable?: boolean;
   onSelect?: () => void;
 };
 
 export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
   const { radius, disabled } = useContext(MapContext);
+  const { hydratedPlayers } = useHydratedDraft();
+  const player =
+    tile.playerId !== undefined
+      ? hydratedPlayers.find((p) => p.id === tile.playerId)
+      : undefined;
   const scale = calcScale(radius);
   const systemIdSize = radius >= 53 ? "10px" : "8px";
+
   return (
     <Hex id={`${mapId}-home`} radius={radius} colorClass={classes.home}>
-      {tile.player?.faction && (
+      {player?.faction && factionSystems[player.faction] && (
         <SystemId
-          id={factionSystems[tile.player.faction].id}
+          id={factionSystems[player.faction].id}
           size={systemIdSize}
           scale={scale}
         />
       )}
-
-      {!tile.player && selectable && (
+      {!player && selectable && (
         <Button
           ta="center"
           lh={1}
@@ -43,7 +48,7 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
           Select Seat
         </Button>
       )}
-      {tile.player && (
+      {player && (
         <Stack
           align="center"
           gap="6px"
@@ -51,15 +56,15 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
           justify="center"
           style={{ zIndex: 1 }}
         >
-          {tile.player.faction && (
+          {player.faction && (
             <FactionIcon
               visibleFrom="xs"
-              faction={tile.player.faction}
+              faction={player.faction}
               style={{ maxWidth: radius * 0.6, maxHeight: radius * 0.6 }}
             />
           )}
-          <PlayerChip player={tile.player} size="lg" visibleFrom="lg" />
-          <PlayerChip player={tile.player} size="md" hiddenFrom="lg" />
+          <PlayerChip player={player} size="lg" visibleFrom="lg" />
+          <PlayerChip player={player} size="md" hiddenFrom="lg" />
         </Stack>
       )}
     </Hex>

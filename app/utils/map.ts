@@ -1,15 +1,13 @@
 import { mapStringOrder } from "~/data/mapStringOrder";
-import { systemData } from "~/data/systemData";
 import { DraftConfig } from "~/draft/types";
 import {
+  Slice,
   HomeTile,
   Map,
-  Player,
-  Slice,
+  PlayerSelection,
   System,
   TechSpecialty,
   Tile,
-  TilePosition,
 } from "~/types";
 
 /**
@@ -30,25 +28,27 @@ export const playerLetters = ["a", "b", "c", "d", "e", "f"];
 export const isTileModifiable = (config: DraftConfig, tileIdx: number) =>
   config.modifiableMapTiles.includes(tileIdx);
 
-export const hydrateMap = (
+export function hydrateMap(
   config: DraftConfig,
   map: Map,
-  players: Player[],
   slices: Slice[],
-): Map => {
+  selections: PlayerSelection[],
+): Map {
   const hydrated: Map = [...map];
 
   // add player data to home systems
   forHomeTiles(config, hydrated, (tile, homeIdx) => {
     const tileIdx = config.homeIdxInMapString[homeIdx];
-    hydrated[tileIdx] = hydrateHomeTile(tile, players, homeIdx);
+    hydrated[tileIdx] = hydrateHomeTile(tile, homeIdx, selections);
   });
 
   // Iterate over home tiles to apply slices
   forHomeTiles(config, hydrated, (tile, homeIdx) => {
-    const player = players.find((p) => p.seatIdx === homeIdx);
-    if (!player || player.sliceIdx === undefined) return;
-    const slice = slices[player.sliceIdx];
+    const selection = selections.find((s) => s.seatIdx === homeIdx);
+    if (!selection || selection.sliceIdx === undefined) return;
+
+    const slice = slices[selection.sliceIdx];
+    if (!slice) return;
 
     config.seatTilePlacement[homeIdx]?.forEach(([x, y], sliceIdx) => {
       const pos = { x: tile.position.x + x, y: tile.position.y + y };
@@ -57,22 +57,26 @@ export const hydrateMap = (
         (t) => t.position.x === pos.x && t.position.y === pos.y,
       );
 
-      // replace with new tile from slice.
-      hydrated[idxToModify] = {
-        idx: idxToModify,
-        position: pos,
-        type: "SYSTEM",
-        system: systemData[slice[sliceIdx + 1]],
-      };
+      const sliceTile = slice.tiles[sliceIdx + 1];
+      if (sliceTile.type === "SYSTEM") {
+        // replace with new tile from slice.
+        hydrated[idxToModify] = {
+          idx: idxToModify,
+          position: pos,
+          type: "SYSTEM",
+          systemId: sliceTile.systemId,
+        };
+      }
     });
   });
 
   return hydrated;
-};
+}
 
 /**
  * Iterates over the home systems in the map, calling the provided function
  */
+
 const forHomeTiles = (
   config: DraftConfig,
   tiles: Tile[],
@@ -88,76 +92,58 @@ const forHomeTiles = (
 
 const hydrateHomeTile = (
   tile: Tile,
-  players: Player[],
   seatIdx: number,
+  selections: PlayerSelection[],
 ): HomeTile => {
-  const player = players.find((p) => p.seatIdx === seatIdx);
-  return { ...tile, type: "HOME", player, seatIdx };
-};
-
-export const sliceMap = (
-  config: DraftConfig,
-  map: Map,
-): { map: Map; slices: Slice[] } => {
-  const tiles = [...map];
-  const slices: Slice[] = [];
-  config.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
-    const homeTile = tiles[tileIdx];
-    const slice: Slice = [-1];
-    config.seatTilePlacement[seatIdx]?.forEach(([x, y]) => {
-      const pos = { x: homeTile.position.x + x, y: homeTile.position.y + y };
-      // find tile the matches the hexagonal coordinate position to modify
-      const tileToModify = tiles.find(
-        (t) => t.position.x === pos.x && t.position.y === pos.y,
-      )!;
-      if (tileToModify.system) {
-        slice.push(tileToModify.system?.id);
-      } else {
-        slice.push(0);
-      }
-
-      tiles[tileToModify.idx] = {
-        position: tileToModify.position,
-        type: "OPEN",
-        idx: tileToModify.idx,
-        system: undefined,
-      };
-    });
-    slices.push(slice);
-  });
-
-  return {
-    map: tiles,
-    slices,
+  const selection = selections.find((s) => s.seatIdx === seatIdx);
+  const homeTile: HomeTile = {
+    idx: tile.idx,
+    position: tile.position,
+    type: "HOME",
+    seat: seatIdx,
+    playerId: selection?.playerId,
   };
+
+  return homeTile;
 };
 
-export const parseMapString = (
-  config: DraftConfig,
-  systems: number[],
-  positionOrder: TilePosition[] = mapStringOrder,
-  includeMecatol = true,
-): Map => {
-  const rawSystems = includeMecatol ? [18, ...systems] : systems;
-  const map: Map = rawSystems
-    .map((n) => [n, systemData[n]] as const)
-    .map(([id, system], idx) => {
-      const position = positionOrder[idx];
-      const seatIdx = config.homeIdxInMapString.indexOf(idx);
-      const baseAttrs = { id, idx, seatIdx, position, system };
-      // TODO: -1 is generally interpreted as 'empty' by other tools.
-      // FIX THIS.
-      if (seatIdx >= 0 || id === -1) {
-        return { ...baseAttrs, type: "HOME" as const };
-      } else if (system) {
-        return { ...baseAttrs, type: "SYSTEM" };
-      } else {
-        return { ...baseAttrs, type: "OPEN" as const };
-      }
-    });
+// Legacy code for splitting map up
+// export const sliceMap = (
+//   config: DraftConfig,
+//   map: Map,
+// ): { map: Map; slices: SystemIds[] } => {
+//   const tiles = [...map];
+//   const slices: SystemIds[] = [];
+//   config.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
+//     const homeTile = tiles[tileIdx];
+//     const slice: SystemIds = ["-1"];
+//     config.seatTilePlacement[seatIdx]?.forEach(([x, y]) => {
+//       const pos = { x: homeTile.position.x + x, y: homeTile.position.y + y };
+//       // find tile the matches the hexagonal coordinate position to modify
+//       const tileToModify = tiles.find(
+//         (t) => t.position.x === pos.x && t.position.y === pos.y,
+//       )!;
+//       if (tileToModify.system) {
+//         slice.push(tileToModify.system?.id);
+//       } else {
+//         slice.push("0");
+//       }
 
-  return map;
-};
+//       tiles[tileToModify.idx] = {
+//         position: tileToModify.position,
+//         type: "OPEN",
+//         idx: tileToModify.idx,
+//         system: undefined,
+//       };
+//     });
+//     slices.push(slice);
+//   });
+
+//   return {
+//     map: tiles,
+//     slices,
+//   };
+// };
 
 export const totalStatsForSystems = (systems: System[]) =>
   systems.reduce(
@@ -189,18 +175,25 @@ export const techSpecialtiesForSystems = (systems: System[]) =>
     return acc;
   }, [] as TechSpecialty[]);
 
-export const systemsInSlice = (slice: Slice): System[] =>
-  slice.reduce((acc, t) => {
-    const system = systemData[t];
-    if (!system) return acc;
-    acc.push(system);
-    return acc;
-  }, [] as System[]);
+export function generateEmptyMap(config: DraftConfig): Map {
+  return Array.from({ length: 37 }, (_, idx) => {
+    if (idx === 0)
+      return {
+        idx,
+        type: "SYSTEM",
+        systemId: "18",
+        position: mapStringOrder[idx],
+      };
 
-export const emptySlice = (numSystems: number): Slice => [
-  -1,
-  ...Array.from({ length: numSystems }, () => 0),
-];
+    if (config.homeIdxInMapString.includes(idx)) {
+      return {
+        idx,
+        type: "HOME",
+        seat: config.homeIdxInMapString.indexOf(idx),
+        position: mapStringOrder[idx],
+      };
+    }
 
-export const emptySlices = (numSlices: number, numSystems: number): Slice[] =>
-  Array.from({ length: numSlices }, () => emptySlice(numSystems));
+    return { idx, type: "OPEN", position: mapStringOrder[idx] };
+  });
+}

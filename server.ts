@@ -25,6 +25,7 @@ const build = viteDevServer
   ? () => viteDevServer.ssrLoadModule("virtual:remix/server-build")
   : await import("./build/server/index.js");
 
+// @ts-ignore
 app.all("*", createRequestHandler({ build }));
 
 // Connect socket.io

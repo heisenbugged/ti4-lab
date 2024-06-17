@@ -1,22 +1,15 @@
-import { useMemo } from "react";
-import { DraftConfig } from "~/draft";
 import { Slice } from "~/types";
 import {
   optimalStatsForSystems,
-  parseMapString,
-  systemsInSlice,
   techSpecialtiesForSystems,
   totalStatsForSystems,
 } from "~/utils/map";
+import { systemsInSlice } from "~/utils/slice";
 
-export function useSlice(config: DraftConfig, slice: Slice) {
-  const tiles = useMemo(
-    () => parseMapString(config, slice, config.seatTilePositions, false),
-    [slice],
-  );
+export function useSlice(slice: Slice) {
   const systems = systemsInSlice(slice);
   const total = totalStatsForSystems(systems);
   const optimal = optimalStatsForSystems(systems);
   const specialties = techSpecialtiesForSystems(systems);
-  return { tiles, total, optimal, specialties };
+  return { total, optimal, specialties };
 }

@@ -1,36 +1,29 @@
 import { Text } from "@mantine/core";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { useEffect } from "react";
 import { Logo } from "~/components/Logo";
-import { Map, RawMap } from "~/components/Map";
-import { mapStringOrder } from "~/data/mapStringOrder";
-import { draftConfig } from "~/draft";
+import { RawMap } from "~/components/Map";
+import { useDraft } from "~/draftStore";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
-import { PersistedDraft } from "~/types";
-import { hydrateMap, parseMapString } from "~/utils/map";
+import { useHydratedDraft } from "~/hooks/useHydratedDraft";
+import { Draft } from "~/types";
 
 export default function MapImage() {
   const result = useLoaderData<typeof loader>();
   const draft = result.data;
-  const config = draftConfig[draft.mapType];
-  const rawMapString = draft.mapString.split(" ").map((n) => parseInt(n, 10));
-  const mapString = parseMapString(
-    config,
-    rawMapString,
-    mapStringOrder,
-    rawMapString[0] !== 18,
-  );
-
-  const map = hydrateMap(config, mapString, draft.players, draft.slices);
+  const draftStore = useDraft();
+  const { hydratedMap } = useHydratedDraft();
+  useEffect(() => {
+    draftStore.draftActions.hydrate(result.id, result.urlName!, draft);
+  }, []);
 
   return (
     <div
       style={{
         width: "100vw",
         height: "100vh",
-        // make a background image that repeates from /tilebg.png
         backgroundImage: "url(/tilebg.jpg)",
-        // but actually tile it
         backgroundSize: "1024px 1024px",
       }}
     >
@@ -38,7 +31,7 @@ export default function MapImage() {
         <Logo />
       </div>
       <div style={{ top: 45 + 20, left: 60, position: "relative" }}>
-        <RawMap mapId="mapImage" map={map} width={900} height={900} />
+        <RawMap mapId="mapImage" map={hydratedMap} width={900} height={900} />
       </div>
       <div style={{ bottom: 12, right: 12, position: "absolute" }}>
         <Text c="white">ti4-lab.fly.dev/draft/{result.draftId}</Text>
@@ -53,6 +46,6 @@ export const loader = async ({ params }: { params: { draftId: string } }) => {
   return json({
     ...result,
     draftId,
-    data: JSON.parse(result.data as string) as PersistedDraft,
+    data: JSON.parse(result.data as string) as Draft,
   });
 };

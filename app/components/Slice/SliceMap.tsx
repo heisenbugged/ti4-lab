@@ -10,7 +10,7 @@ type Props = {
   sliceHeight: number;
   sliceConcentricCircles?: number;
   wOffsetMultiplier?: number;
-  mode: "create" | "draft";
+  mapModifiable?: boolean;
   onSelectTile?: (tile: Tile) => void;
   onDeleteTile?: (tile: Tile) => void;
 };
@@ -21,7 +21,7 @@ export function SliceMap({
   sliceHeight,
   sliceConcentricCircles = 1,
   wOffsetMultiplier = 0,
-  mode = "create",
+  mapModifiable = false,
   onSelectTile,
   onDeleteTile,
 }: Props) {
@@ -38,6 +38,7 @@ export function SliceMap({
         gap,
         hOffset: height - calcHexHeight(radius) - 10, //padding
         wOffset: width * 0.5 - radius + radius * wOffsetMultiplier,
+        disabled: false,
       }}
     >
       <div
@@ -57,7 +58,7 @@ export function SliceMap({
               tile={t}
               onSelect={onSelectTile ? () => onSelectTile(t) : undefined}
               onDelete={onDeleteTile ? () => onDeleteTile(t) : undefined}
-              modifiable={mode === "create"}
+              modifiable={mapModifiable}
             />
           ))}
       </div>

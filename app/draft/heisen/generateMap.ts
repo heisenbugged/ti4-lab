@@ -9,7 +9,7 @@ import {
   fillSlicesWithRemainingTiles,
   fillSlicesWithRequiredTiles,
 } from "../helpers/sliceGeneration";
-import { PlanetTrait } from "~/types";
+import { PlanetTrait, SystemIds, SystemId } from "~/types";
 
 const MAP_WORMHOLES = [
   { weight: 1, value: { numAlphas: 3, numBetas: 3 } },
@@ -56,7 +56,7 @@ const SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "low", "high"] },
 ];
 
-export function generateMap(sliceCount: number, systemPool: number[]) {
+export function generateMap(sliceCount: number, systemPool: SystemId[]) {
   const targets: Record<ChoosableTier, number> = {
     high: 6,
     med: 6,
@@ -70,8 +70,8 @@ export function generateMap(sliceCount: number, systemPool: number[]) {
     slice.forEach((tier) => (targets[tier] += 1));
   }
 
-  const chosenMapLocations: Record<number, number> = {};
-  let chosenSliceSystems: number[] = [];
+  const chosenMapLocations: Record<number, SystemId> = {};
+  let chosenSliceSystems: SystemId[] = [];
 
   const remainingSystems = () => {
     const chosenMap = Object.values(chosenMapLocations);
@@ -219,10 +219,10 @@ export function generateMap(sliceCount: number, systemPool: number[]) {
   };
 }
 
-type Swap = { toRemove: number; toAdd: number };
+type Swap = { toRemove: SystemId; toAdd: SystemId };
 const rebalanceTraits = (
-  usedSystems: number[],
-  availableSystems: number[],
+  usedSystems: SystemId[],
+  availableSystems: SystemId[],
   swaps: Swap[] = [],
   attempts: number = 0,
   maxAttempts: number = 10,
@@ -283,7 +283,7 @@ const calculateSpread = (planetTraits: Record<PlanetTrait, number>) => {
 /**
  * Count the number of planet traits in the used systems.
  */
-const countPlanetTraits = (used: number[]) => {
+const countPlanetTraits = (used: SystemId[]) => {
   const planetTraits: Record<PlanetTrait, number> = {
     HAZARDOUS: 0,
     CULTURAL: 0,
@@ -301,7 +301,7 @@ const countPlanetTraits = (used: number[]) => {
 
 export function generateSlices(
   sliceCount: number,
-  availableSystems: number[],
+  availableSystems: SystemId[],
   minAlphaWormholes: number = 0,
   minBetaWormholes: number = 0,
   minLegendary: number = 0,
@@ -324,7 +324,7 @@ export function generateSlices(
 
   // distirbute the wormholes/legendaries in round robin fashion
   // on the slices.
-  const slices: number[][] = Array.from({ length: sliceCount }, () => []);
+  const slices: SystemIds[] = Array.from({ length: sliceCount }, () => []);
   fillSlicesWithRequiredTiles(tieredSlices, chosenTiles, slices);
 
   // fill slices with remaining tiles, respecting the 'tier' requirements
@@ -338,11 +338,11 @@ type Location = { mapIdx: number; position: { x: number; y: number } };
 
 function distributeByDistance(
   availableLocations: Location[],
-  availableSystems: number[],
+  availableSystems: SystemId[],
   numSpots: number,
   minDistance: number = 3,
 ) {
-  let chosen: { location: Location; systemId: number }[] = [];
+  let chosen: { location: Location; systemId: SystemId }[] = [];
 
   for (let i = 0; i < numSpots; i++) {
     // First tile gets placed randomly on any spot.

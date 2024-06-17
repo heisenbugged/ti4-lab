@@ -4,18 +4,18 @@ import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { Player } from "~/types";
+import { Slice, HydratedPlayer } from "~/types";
 import { PlayerChip } from "./PlayerChip";
-import { DraftConfig } from "~/draft";
 
 type Props = {
-  config: DraftConfig;
-  player: Player;
-  systems: number[];
+  player: HydratedPlayer;
+  slice: Slice;
+  draftSpeaker: Boolean;
 };
-export function SummaryRow({ config, player, systems }: Props) {
+
+export function SummaryRow({ player, slice, draftSpeaker = false }: Props) {
   const faction = factions[player.faction!];
-  const { total, optimal, specialties } = useSlice(config, systems);
+  const { total, optimal, specialties } = useSlice(slice);
   return (
     <Table.Tr>
       <Table.Td>
@@ -28,7 +28,7 @@ export function SummaryRow({ config, player, systems }: Props) {
         </Group>
       </Table.Td>
       <Table.Td>{player.speakerOrder! + 1}</Table.Td>
-      <Table.Td>{player.seatIdx! + 1}</Table.Td>
+      {draftSpeaker && <Table.Td>{player.seatIdx! + 1}</Table.Td>}
       <Table.Td>
         <PlanetStatsPill
           size="sm"
@@ -45,7 +45,7 @@ export function SummaryRow({ config, player, systems }: Props) {
         />
       </Table.Td>
       <Table.Td>
-        <SliceFeatures slice={systems} />
+        <SliceFeatures slice={slice} />
       </Table.Td>
     </Table.Tr>
   );

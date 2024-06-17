@@ -4,7 +4,7 @@
  * Has been adapted to 'typescript' and minor modifications to better fit
  * with the aesthetic of this project, but largely unchanged.
  */
-import { System } from "~/types";
+import { SystemIds, System, SystemId } from "~/types";
 import { systemData } from "~/data/systemData";
 import { ChoosableTier, TieredSlice, TieredSystems } from "../types";
 import { neighbors } from "../hex";
@@ -18,11 +18,10 @@ const DEBUG_SLICE_SCORING = false;
  * array based on the minimums provided.
  */
 export function chooseRequiredSystems(
-  availableSystems: number[],
+  availableSystems: SystemId[],
   { minAlphaWormholes = 0, minBetaWormholes = 0, minLegendary = 0 },
 ) {
-  // TODO: Remove 'as' casting
-  const tieredSystems = getTieredSystems(availableSystems) as TieredSystems;
+  const tieredSystems = getTieredSystems(availableSystems);
 
   // Get the initial set, before promoting anything.
   const remainingSystems: TieredSystems = shuffleTieredSystems(tieredSystems);
@@ -90,8 +89,8 @@ function filterTieredSystems(
   tieredSystems: TieredSystems,
   filter: (system: System) => boolean,
 ) {
-  const matchingSystems: number[] = [];
-  const runForTier = (systems: number[]) => {
+  const matchingSystems: SystemId[] = [];
+  const runForTier = (systems: SystemId[]) => {
     for (let i = 0; i < systems.length; i++) {
       const s = systems[i];
       const system = systemData[s];
@@ -107,14 +106,14 @@ function filterTieredSystems(
 }
 
 function promote(
-  system: number,
+  system: SystemId,
   chosenSystems: TieredSystems,
   remainingSystems: TieredSystems,
 ) {
   const runForTier = (
-    system: number,
-    dstArray: number[],
-    srcArray: number[],
+    system: SystemId,
+    dstArray: SystemId[],
+    srcArray: SystemId[],
   ) => {
     const srcIdx = srcArray.indexOf(system);
     if (srcIdx >= 0) {
@@ -136,7 +135,7 @@ function promote(
 export function fillSlicesWithRequiredTiles(
   tieredSlices: TieredSlice[],
   chosenSystems: TieredSystems,
-  slices: number[][],
+  slices: SystemIds[],
 ) {
   // Spread already chosen tiles around.
   const tryAdd = (tierToAdd: ChoosableTier) => {
@@ -181,7 +180,7 @@ export function fillSlicesWithRequiredTiles(
 export function fillSlicesWithRemainingTiles(
   tieredSlices: TieredSlice[],
   remainingSystems: TieredSystems,
-  slices: number[][],
+  slices: SystemIds[],
 ) {
   const remainingTiers = [
     remainingSystems.low,
@@ -238,7 +237,7 @@ export function fillSlicesWithRemainingTiles(
   });
 }
 
-function calculateSliceScore(sliceSoFar: number[], withNewSystem: number) {
+function calculateSliceScore(sliceSoFar: SystemId[], withNewSystem: SystemId) {
   // Consider a slice with the new tile added.
   const slice = [...sliceSoFar];
   slice.push(withNewSystem);
@@ -293,7 +292,7 @@ function calculateSliceScore(sliceSoFar: number[], withNewSystem: number) {
   return score;
 }
 
-function summarizeRaw(systems: number[]) {
+function summarizeRaw(systems: SystemId[]) {
   let res = 0;
   let optRes = 0;
   let inf = 0;
@@ -362,7 +361,7 @@ function summarizeRaw(systems: number[]) {
   };
 }
 
-export function separateAnomalies(origSlice: number[], shape: string[]) {
+export function separateAnomalies(origSlice: SystemId[], shape: string[]) {
   let slice = [...origSlice]; // work with a copy
 
   // First, shuffle a few times and see if we get a good setup.
@@ -374,7 +373,7 @@ export function separateAnomalies(origSlice: number[], shape: string[]) {
 
   // No luck.  Walk through slice permutations and use the first good one.
   // (This always fixes the same way, hence a few random stabs before this.)
-  const inspector = (candidate: number[]) => {
+  const inspector = (candidate: SystemId[]) => {
     return !hasAdjacentAnomalies(candidate, shape);
   };
   const goodSlice = permutator(slice, inspector);
@@ -385,7 +384,7 @@ export function separateAnomalies(origSlice: number[], shape: string[]) {
   return slice;
 }
 
-function hasAdjacentAnomalies(slice: number[], shape: string[]) {
+function hasAdjacentAnomalies(slice: SystemId[], shape: string[]) {
   const hexIsAnomalySet = new Set();
   for (let i = 0; i < slice.length; i++) {
     const hex = shape[i + 1]; // first is home system

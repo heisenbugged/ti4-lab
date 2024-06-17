@@ -15,12 +15,13 @@ export type SystemType = "GREEN" | "BLUE" | "RED" | "HYPERLANE";
 
 // System from data. To be processed into a proper 'System' object.
 export type RawSystem = {
-  id: number;
+  id: SystemId;
   faction?: FactionId;
   planets: Planet[];
   type: SystemType;
   anomalies: Anomaly[];
   wormholes: Wormhole[];
+  hyperlanes?: number[][];
 };
 
 export type System = RawSystem & {
@@ -50,52 +51,33 @@ export type MapSpaceType = "SYSTEM" | "HOME" | "OPEN" | "CLOSED" | "WARP";
 export type TilePosition = {
   x: number;
   y: number;
-  // z: number;
 };
 
-type BaseTile = {
+type OldBaseTile = {
   idx: number;
   position: TilePosition;
   system?: System;
 };
 
-export type SystemTile = BaseTile & {
-  position: TilePosition;
+export type OldSystemTile = OldBaseTile & {
   type: "SYSTEM";
   system: System;
 };
 
-export type HomeTile = BaseTile & {
-  type: "HOME";
-  seatIdx: number;
-  player?: Player;
+export type OldOpenTile = OldBaseTile & {
+  type: "OPEN";
 };
 
-export type PlayerDemoTile = BaseTile & {
+export type OldEmptyTile = OldBaseTile & {
+  type: "EMPTY";
+};
+
+export type PlayerDemoTile = OldBaseTile & {
   type: "PLAYER_DEMO";
   playerNumber: number;
   isHomeSystem: boolean;
 };
 
-export type OpenTile = BaseTile & {
-  type: "OPEN";
-};
-
-export type EmptyTile = BaseTile & {
-  type: "EMPTY";
-};
-
-export type Tile =
-  | HomeTile
-  | OpenTile
-  | ({ type: "CLOSED" } & BaseTile)
-  | ({ type: "WARP" } & BaseTile)
-  | PlayerDemoTile
-  | SystemTile;
-
-export type Map = Tile[];
-
-// TODO: Finish filling out
 export type FactionId =
   | "sardakk"
   | "arborec"
@@ -166,31 +148,6 @@ export type Faction = {
   set: GameSet;
 };
 
-export type Player = {
-  id: number;
-  name: string;
-  discordName?: string;
-  discordMemberId?: string;
-
-  faction?: FactionId;
-  seatIdx?: number;
-  sliceIdx?: number;
-  speakerOrder?: number;
-};
-
-export type PersistedDraft = {
-  mapType: DraftType;
-  factions: FactionId[];
-  players: Player[];
-  slices: Slice[];
-  mapString: string;
-  currentPick: number;
-  pickOrder: number[];
-  lastEvent?: string;
-  draftSpeaker: boolean;
-  discordData?: DiscordData;
-};
-
 export type SystemStats = {
   systemType: SystemType;
   totalResources: number;
@@ -212,18 +169,126 @@ export type MapStats = {
   blueTraits: number;
 };
 
-export type Variance = "low" | "medium" | "high" | "extreme";
-export type Opulence = "poverty" | "low" | "medium" | "high" | "wealthy";
+export type SystemIds = SystemId[];
+export type SystemId = string;
+export type PlayerId = number;
 
-export type Slice = number[];
+/// V2
+export type DraftSettings = {
+  type: DraftType;
+  gameSets: GameSet[];
+  draftSpeaker: boolean;
+  allowEmptyTiles: boolean;
+  allowHomePlanetSearch: boolean;
+  numFactions: number;
+  numSlices: number;
 
-export type DiscordPlayer = {
-  name: string;
-  memberId?: string;
+  randomizeMap: boolean;
+  randomizeSlices: boolean;
 };
 
+export type DiscordPlayer =
+  | {
+      type: "identified";
+      playerId: number;
+      username: string;
+      memberId?: string;
+      nickname?: string;
+    }
+  | {
+      type: "unidentified";
+      playerId: number;
+      name: string;
+    };
+
 export type DiscordData = {
-  players: DiscordPlayer[];
   guildId: string;
   channelId: string;
+  players: DiscordPlayer[];
+};
+
+export type DraftIntegrations = {
+  discord?: DiscordData;
+};
+
+export type Player = {
+  id: number;
+  name: string;
+};
+
+export type Slice = {
+  name: string;
+  tiles: Tile[];
+};
+
+type BaseTile = {
+  idx: number;
+  position: TilePosition;
+};
+
+export type SystemTile = BaseTile & {
+  type: "SYSTEM";
+  systemId: SystemId;
+};
+
+export type HomeTile = BaseTile & {
+  type: "HOME";
+  seat?: number;
+  playerId?: PlayerId;
+};
+
+export type OpenTile = BaseTile & {
+  type: "OPEN";
+};
+
+export type Tile = SystemTile | HomeTile | OpenTile;
+
+export type Map = Tile[];
+
+export type DraftSelection =
+  | {
+      type: "SELECT_SPEAKER_ORDER";
+      playerId: PlayerId;
+      speakerOrder: number;
+    }
+  | {
+      type: "SELECT_SLICE";
+      playerId: PlayerId;
+      sliceIdx: number;
+    }
+  | {
+      type: "SELECT_FACTION";
+      playerId: PlayerId;
+      factionId: FactionId;
+    }
+  | {
+      type: "SELECT_SEAT";
+      playerId: PlayerId;
+      seatIdx: number;
+    };
+
+export type Draft = {
+  settings: DraftSettings;
+  integrations: DraftIntegrations;
+  players: Player[];
+  slices: Slice[];
+  presetMap: Map;
+  availableFactions: FactionId[];
+  pickOrder: PlayerId[];
+  selections: DraftSelection[];
+};
+
+export type HydratedPlayer = {
+  id: number;
+  name: string;
+  faction?: FactionId;
+  seatIdx?: number;
+  sliceIdx?: number;
+  speakerOrder?: number;
+};
+
+export type PlayerSelection = {
+  playerId: PlayerId;
+  sliceIdx?: number;
+  seatIdx?: number;
 };

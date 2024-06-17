@@ -1,4 +1,4 @@
-import { HomeTile, Map as MapType } from "~/types";
+import type { HomeTile, Map, Tile } from "~/types";
 import { calculateMaxHexRadius } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
@@ -10,12 +10,11 @@ import { DraftConfig } from "~/draft";
 type Props = {
   id: string;
   config: DraftConfig;
-  map: MapType;
-  padding: number;
-  mode: "create" | "draft";
+  map: Map;
+  editable: boolean;
   disabled?: boolean;
-  onSelectSystemTile?: (tileIdx: number) => void;
-  onDeleteSystemTile?: (tileIdx: number) => void;
+  onSelectSystemTile?: (tile: Tile) => void;
+  onDeleteSystemTile?: (tile: Tile) => void;
   onSelectHomeTile?: (tile: HomeTile) => void;
 };
 
@@ -23,8 +22,7 @@ export function Map({
   id,
   config,
   map,
-  padding,
-  mode,
+  editable = false,
   disabled = false,
   onSelectSystemTile,
   onDeleteSystemTile,
@@ -42,8 +40,8 @@ export function Map({
         height,
         radius,
         gap,
-        hOffset: -radius + height * 0.5 + padding,
-        wOffset: -radius + width * 0.5 + padding,
+        hOffset: -radius + height * 0.5,
+        wOffset: -radius + width * 0.5,
         disabled,
       }}
     >
@@ -57,14 +55,14 @@ export function Map({
               tile={tile}
               onSelect={() => {
                 if (tile.type === "SYSTEM" || tile.type === "OPEN")
-                  onSelectSystemTile?.(idx);
+                  onSelectSystemTile?.(tile);
                 if (tile.type === "HOME") onSelectHomeTile?.(tile);
               }}
               onDelete={() => {
-                if (tile.type === "SYSTEM") onDeleteSystemTile?.(idx);
+                if (tile.type === "SYSTEM") onDeleteSystemTile?.(tile);
               }}
-              modifiable={mode === "create" && isTileModifiable(config, idx)}
-              homeSelectable={onSelectHomeTile && mode === "draft"}
+              modifiable={editable && isTileModifiable(config, idx)}
+              homeSelectable={!!onSelectHomeTile}
             />
           ))}
       </Box>
@@ -79,7 +77,7 @@ export function RawMap({
   height,
 }: {
   mapId: string;
-  map: MapType;
+  map: Map;
   width: number;
   height: number;
 }) {
@@ -96,6 +94,7 @@ export function RawMap({
         gap,
         hOffset: -radius + height * 0.5,
         wOffset: -radius + width * 0.5,
+        disabled: false,
       }}
     >
       <Box w="100%" h="100%">

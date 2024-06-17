@@ -1,5 +1,6 @@
 import { systemData } from "~/data/systemData";
-import { System } from "~/types";
+import { System, SystemId } from "~/types";
+import { ChoosableTier, TieredSystems } from "./types";
 
 const SYSTEM_TIER = {
   LOW: "low",
@@ -26,9 +27,9 @@ const SYSTEM_TIER = {
  */
 export function calculateTier(system: System) {
   // Handle some special cases before looking at blue systems.
-  if (system.id === 18) {
+  if (system.id === "18") {
     return SYSTEM_TIER.MECATOL;
-  } else if (system.id === 81) {
+  } else if (system.id === "81") {
     return SYSTEM_TIER.OTHER; // muaat hero supernova.id
   } else if (system.type === "GREEN") {
     return SYSTEM_TIER.HOME;
@@ -36,7 +37,7 @@ export function calculateTier(system: System) {
     return SYSTEM_TIER.RED;
   } else if (system.type === "HYPERLANE") {
     return SYSTEM_TIER.HYPERLANE;
-  } else if (system.id <= 0) {
+  } else if (system.id <= "0") {
     return SYSTEM_TIER.OTHER;
   }
 
@@ -46,7 +47,7 @@ export function calculateTier(system: System) {
     system.planets.filter((planet) => planet.legendary).length > 0;
 
   // Special case move Atlas/Lodor to med.
-  if (system.id === 26 || system.id === 64) {
+  if (system.id === "26" || system.id === "64") {
     return SYSTEM_TIER.HIGH;
   }
 
@@ -62,22 +63,20 @@ export function calculateTier(system: System) {
     return SYSTEM_TIER.LOW;
   }
 
-  // TODO: Make proper error
   throw new Error(`Could not determine tier for system ${system.id}`);
-  // see this:
-  //   throw new Error(`system ${system.id}: ${system.getSummaryStr()}`);
 }
 
-export function getTieredSystems(systems: number[]) {
-  const tiers = {
-    [SYSTEM_TIER.LOW]: [] as number[],
-    [SYSTEM_TIER.MED]: [] as number[],
-    [SYSTEM_TIER.HIGH]: [] as number[],
-    [SYSTEM_TIER.RED]: [] as number[],
+export function getTieredSystems(systems: SystemId[]) {
+  const tiers: TieredSystems = {
+    low: [] as SystemId[],
+    med: [] as SystemId[],
+    high: [] as SystemId[],
+    red: [] as SystemId[],
   };
 
   systems.forEach((s) => {
-    const tier = calculateTier(systemData[s]);
+    // TODO: Remove 'as ChoosableTier' casting here
+    const tier = calculateTier(systemData[s]) as ChoosableTier;
     tiers[tier]?.push(s);
   });
   return tiers;

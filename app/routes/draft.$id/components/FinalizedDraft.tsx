@@ -9,83 +9,63 @@ import {
 } from "@mantine/core";
 import { useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
-import { MapSection } from "~/routes/draft/MapSection";
 import { SummaryRow } from "./SummaryRow";
 import { useMemo, useState } from "react";
 import { SummaryCard } from "./MidDraftSummary";
-import { Link } from "@remix-run/react";
+import { Link, useOutletContext } from "@remix-run/react";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
-import { factionSystems, systemData } from "~/data/systemData";
+import {
+  hydratedMapStringAtom,
+  useHydratedDraft,
+} from "~/hooks/useHydratedDraft";
+import { useDraftConfig } from "~/hooks/useDraftConfig";
+import { MapSection } from "../sections";
+import { useAtom } from "jotai";
+import { useSyncDraft } from "~/hooks/useSyncDraft";
+import { PlanetFinder } from "./PlanetFinder";
 
-type Props = {
-  adminMode: boolean;
-  onSelectSystemTile: (systemId: number) => void;
-  onSavePlayerNames: () => void;
-};
+export function FinalizedDraft() {
+  const { adminMode } = useOutletContext<{
+    adminMode: boolean;
+  }>();
 
-export function FinalizedDraft({
-  adminMode,
-  onSelectSystemTile,
-  onSavePlayerNames,
-}: Props) {
-  const draft = useDraft();
-  const slices = draft.slices;
-  const players = draft.players;
+  const config = useDraftConfig();
+  const draftUrl = useDraft((state) => state.draftUrl);
+  const draft = useDraft((state) => state.draft);
+  const { updatePlayerName } = useDraft((state) => state.actions);
+  const {
+    slices,
+    players,
+    settings: { draftSpeaker },
+  } = draft;
+  const { hydratedPlayers } = useHydratedDraft();
+  const { syncDraft } = useSyncDraft();
+
   const [exportingImage, setExportingImage] = useState(false);
-
   const sortedPlayers = useMemo(
-    () => players.sort((a, b) => a.speakerOrder! - b.speakerOrder!),
-    [players],
+    () => hydratedPlayers.sort((a, b) => a.speakerOrder! - b.speakerOrder!),
+    [hydratedPlayers],
   );
-
-  // TODO: Move this to an actual reusable function
-  const mapString = draft.hydratedMap
-    .slice(1, draft.hydratedMap.length)
-    .map((t) => {
-      if (t.type === "HOME") {
-        if (t.player?.faction === undefined) return "0";
-        return factionSystems[t.player.faction].id;
-      }
-      if (t.system) return t.system.id;
-      return "-1";
-    })
-    .join(" ");
+  const [mapString] = useAtom(hydratedMapStringAtom);
 
   return (
     <Stack mt="lg" gap={30}>
+      <PlanetFinder onSystemSelected={syncDraft} />
       <Title>Draft complete!</Title>
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 60 }}>
-        {adminMode && (
-          <>
-            <div />
-            {adminMode && (
-              <Box>
-                <PlayerInputSection
-                  players={draft.players}
-                  onChangeName={(playerIdx, name) => {
-                    draft.updatePlayer(playerIdx, { name });
-                  }}
-                />
-                <Button mt="lg" onClick={onSavePlayerNames}>
-                  Save
-                </Button>
-              </Box>
-            )}
-          </>
-        )}
         <Stack flex={1} gap="xl">
           <Section>
             <SectionTitle title="Draft Summary" />
             <Stack mt="lg" gap="md" hiddenFrom="sm">
-              {players.map((p) => (
+              {hydratedPlayers.map((p) => (
                 <SummaryCard
-                  config={draft.config}
+                  config={config}
                   key={p.id}
                   player={p}
                   slice={
                     p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined
                   }
-                  showSeat={draft.draftSpeaker}
+                  showSeat={draftSpeaker}
                 />
               ))}
             </Stack>
@@ -95,7 +75,7 @@ export function FinalizedDraft({
                   <Table.Th>Name</Table.Th>
                   <Table.Th>Faction</Table.Th>
                   <Table.Th>Speaker Order</Table.Th>
-                  <Table.Th>Seat</Table.Th>
+                  {draftSpeaker && <Table.Th>Seat</Table.Th>}
                   <Table.Th>Optimal Value</Table.Th>
                   <Table.Th>Total Value</Table.Th>
                   <Table.Th>Features</Table.Th>
@@ -104,10 +84,10 @@ export function FinalizedDraft({
               <Table.Tbody>
                 {sortedPlayers.map((p) => (
                   <SummaryRow
-                    config={draft.config}
                     key={p.id}
                     player={p}
-                    systems={slices[p.sliceIdx!]}
+                    slice={slices[p.sliceIdx!]}
+                    draftSpeaker={draftSpeaker}
                   />
                 ))}
               </Table.Tbody>
@@ -120,7 +100,7 @@ export function FinalizedDraft({
           <Section>
             <SectionTitle title="Export image" />
             <Link
-              to={`/map-image/draft/${draft.draftUrl}/generate`}
+              to={`/map-image/draft/${draftUrl}/generate`}
               reloadDocument
               onClick={() => {
                 setExportingImage(true);
@@ -132,16 +112,23 @@ export function FinalizedDraft({
               <Button loading={exportingImage}>Download image</Button>
             </Link>
           </Section>
+
+          {adminMode && (
+            <Box>
+              <PlayerInputSection
+                players={players}
+                onChangeName={(playerIdx, name) => {
+                  updatePlayerName(playerIdx, name);
+                }}
+              />
+              <Button mt="lg" onClick={syncDraft}>
+                Save
+              </Button>
+            </Box>
+          )}
         </Stack>
         <Stack flex={1} gap="xl">
-          <MapSection
-            config={draft.config}
-            map={draft.hydratedMap}
-            allowSeatSelection={false}
-            mode={adminMode ? "create" : "draft"}
-            onDeleteSystemTile={(tile) => draft.removeSystemFromMap(tile)}
-            onSelectSystemTile={onSelectSystemTile}
-          />
+          <MapSection />
         </Stack>
       </SimpleGrid>
     </Stack>

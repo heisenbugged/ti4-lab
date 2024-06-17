@@ -2,37 +2,58 @@ import { Box, Group, Input, Modal, Stack, Text } from "@mantine/core";
 import { Fragment, useEffect, useState } from "react";
 import { searchableSystemData, systemData } from "~/data/systemData";
 import { PlanetStatsPill } from "../../../../components/Slice/PlanetStatsPill";
-import { FactionId, System } from "~/types";
+import { System } from "~/types";
 import { bgColor } from "../../../../components/Planet";
 import { useArrowFocus } from "~/hooks/useArrowFocus";
 import { TechIcon } from "~/components/icons/TechIcon";
+import { factions } from "~/data/factionData";
+import { useDraft } from "~/draftStore";
+import { useUsedSystemIds } from "~/hooks/useUsedSystemIds";
 
 import "./PlanetFinder.css";
-import { factions } from "~/data/factionData";
 
 type Props = {
-  opened?: boolean;
-  allowHomePlanetSearch?: boolean;
-  availableSystemIds: number[];
-  factionPool: FactionId[];
-  usedSystemIds: number[];
-  onClose: () => void;
-  onSelectSystem: (system: System) => void;
+  onSystemSelected?: (system: System) => void;
 };
 
-export function PlanetFinder({
-  availableSystemIds,
-  allowHomePlanetSearch = false,
-  usedSystemIds,
-  factionPool,
-  opened,
-  onClose,
-  onSelectSystem,
-}: Props) {
+export function PlanetFinder({ onSystemSelected }: Props) {
+  const planetFinderModal = useDraft((state) => state.planetFinderModal);
+  const availableSystemIds = useDraft((state) => state.systemPool);
+  const factionPool = useDraft((state) => state.factionPool);
+  const allowHomePlanetSearch = useDraft(
+    (state) => state.draft.settings.allowHomePlanetSearch,
+  );
+  const usedSystemIds = useUsedSystemIds();
+  const opened = !!planetFinderModal;
+  const { addSystemToMap, addSystemToSlice, closePlanetFinder } = useDraft(
+    (state) => state.actions,
+  );
+
+  const handleSelectSystem = (system: System) => {
+    if (!planetFinderModal) return;
+
+    if (planetFinderModal.mode === "map") {
+      addSystemToMap(planetFinderModal.tileIdx, system);
+    }
+
+    if (planetFinderModal.mode === "slice") {
+      addSystemToSlice(
+        planetFinderModal.sliceIdx,
+        planetFinderModal.tileIdx,
+        system,
+      );
+    }
+
+    onSystemSelected?.(system);
+    closePlanetFinder();
+  };
+
   const [searchString, setSearchString] = useState<string>("");
 
   const isValidSystem = (system: System) =>
     availableSystemIds.includes(system.id) ||
+    // TODO: re-enable hyperlanes when ready
+    // system.type === "HYPERLANE" ||
     (allowHomePlanetSearch &&
       system.faction &&
       system.type === "GREEN" &&
@@ -60,7 +81,7 @@ export function PlanetFinder({
   const { itemRefs, resetFocus } = useArrowFocus(systems, (idx) => {
     // 0 is reserved for search bar
     if (idx <= 0) return;
-    onSelectSystem(systems[idx - 1]);
+    handleSelectSystem(systems[idx - 1]);
   });
 
   useEffect(() => {
@@ -75,7 +96,7 @@ export function PlanetFinder({
   return (
     <Modal
       opened={!!opened}
-      onClose={onClose}
+      onClose={closePlanetFinder}
       size="lg"
       title="Search systems"
       removeScrollProps={{ removeScrollBar: false }}
@@ -109,7 +130,7 @@ export function PlanetFinder({
               if (!itemRefs.current || !el) return;
               itemRefs.current[idx + 1] = el;
             }}
-            onMouseDown={() => onSelectSystem(system)}
+            onMouseDown={() => handleSelectSystem(system)}
           >
             <Group gap="sm">
               <Text size="xs" tt="uppercase" c="dimmed">

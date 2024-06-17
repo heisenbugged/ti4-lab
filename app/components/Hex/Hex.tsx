@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
-import { hexVertices, interpolatePoint } from "./hexUtils";
+import { hexSides, hexVertices, interpolatePoint } from "./hexUtils";
 import { AnomalyBorder } from "./AnomalyBorder";
 import { HexBorder } from "./HexBorder";
 import { FactionId } from "~/types";
 import { FactionIcon } from "../icons/FactionIcon";
+import { HexFactionIndicator } from "./HexFactionIndicator";
+import { HyperlaneLine } from "./HyperlaneLine";
 
 interface Props {
   id: string;
@@ -17,6 +19,7 @@ interface Props {
   borderRadius?: number;
   borderColorClass?: string;
   faction?: FactionId;
+  hyperlanes?: number[][];
 }
 
 export function Hex({
@@ -31,9 +34,11 @@ export function Hex({
   borderRadius,
   borderColorClass,
   faction,
+  hyperlanes,
 }: Props) {
   const points = hexVertices(radius);
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
+
   return (
     <>
       <div style={{ position: "absolute" }}>
@@ -42,6 +47,23 @@ export function Hex({
           height={2 * radius}
           viewBox={`-${radius} -${radius} ${2 * radius} ${2 * radius}`}
         >
+          <defs>
+            {hyperlanes && (
+              <filter id="glow" y="-100%" height="400%">
+                <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            )}
+            {image && (
+              <clipPath id={`hexClip-${id}`}>
+                <polygon points={pointsString} />
+              </clipPath>
+            )}
+          </defs>
+
           <polygon points={pointsString} fill={color} className={colorClass} />
           {showBorder && (
             <HexBorder
@@ -50,16 +72,42 @@ export function Hex({
               className={borderColorClass}
             />
           )}
-          <defs>
-            <clipPath id={`hexClip-${id}`}>
-              <polygon points={pointsString} />
-            </clipPath>
-          </defs>
-          <g clipPath={`url(#hexClip-${id})`}>{image}</g>
-          {anomaly && <AnomalyBorder radius={radius} points={points} />}
-          {faction && (
-            <HexFactionIndicator radius={radius} hexPoints={points} />
+          {hyperlanes && (
+            <>
+              {/* Show blue glow */}
+              <g filter="url(#glow)">
+                {hyperlanes?.map(([start, end], idx) => {
+                  const sides = hexSides(points);
+                  return (
+                    <HyperlaneLine
+                      key={idx}
+                      p1={sides[start]}
+                      p2={sides[end]}
+                      color="blue"
+                    />
+                  );
+                })}
+              </g>
+              {/* Show white hyperlane */}
+              <g>
+                {hyperlanes?.map(([start, end], idx) => {
+                  const sides = hexSides(points);
+                  return (
+                    <HyperlaneLine
+                      key={idx}
+                      p1={sides[start]}
+                      p2={sides[end]}
+                      color="white"
+                    />
+                  );
+                })}
+              </g>
+            </>
           )}
+
+          {image && <g clipPath={`url(#hexClip-${id})`}>{image}</g>}
+          {anomaly && <AnomalyBorder radius={radius} points={points} />}
+          {faction && <HexFactionIndicator hexPoints={points} />}
         </svg>
       </div>
 
@@ -87,35 +135,6 @@ export function Hex({
         )}
         {children}
       </div>
-    </>
-  );
-}
-
-function HexFactionIndicator({
-  radius,
-  hexPoints,
-}: {
-  radius: number;
-  hexPoints: { x: number; y: number }[];
-}) {
-  // interpolate points 1 and 2
-  const point1 = interpolatePoint(hexPoints[1], hexPoints[2], 0.45);
-
-  // interpolate the y of point1 and hexPoints[3]
-  const point2 = {
-    x: interpolatePoint(point1, hexPoints[3], 0.25).x,
-    y: interpolatePoint(point1, hexPoints[3], 0.45).y,
-  };
-
-  const point3 = interpolatePoint(hexPoints[2], hexPoints[3], 0.45);
-
-  const points = [point1, point2, point3, hexPoints[2]];
-
-  const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
-
-  return (
-    <>
-      <polygon points={pointsString} fill="rgba(0, 0, 0, 0.6)" />
     </>
   );
 }

@@ -3,7 +3,7 @@ import {
   Interaction,
   SlashCommandBuilder,
 } from "discord.js";
-import { DiscordData } from "~/types";
+import { DiscordData, DiscordPlayer } from "~/types";
 
 const data = new SlashCommandBuilder()
   .setName("startdraft")
@@ -56,19 +56,29 @@ async function execute(interaction: ChatInputCommandInteraction) {
     data.find((option) => option.name === "player4")?.value as string,
     data.find((option) => option.name === "player5")?.value as string,
     data.find((option) => option.name === "player6")?.value as string,
-  ].map((name) => {
+  ].map((name, idx) => {
     if (name.startsWith("<@")) {
       const memberId = name.substring(2, name.length - 1);
       const member = interaction.guild?.members.cache.get(memberId)!;
       const nickname = member.nickname;
       const username = member.user.username;
 
-      return {
-        name: nickname ?? username,
+      const discordPlayer: DiscordPlayer = {
+        type: "identified",
+        playerId: idx,
         memberId,
+        nickname: nickname ?? undefined,
+        username,
       };
+      return discordPlayer;
     }
-    return { name, memberId: undefined };
+
+    const discordPlayer: DiscordPlayer = {
+      playerId: idx,
+      type: "unidentified",
+      name,
+    };
+    return discordPlayer;
   });
 
   const discordData: DiscordData = {

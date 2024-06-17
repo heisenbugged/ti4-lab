@@ -1,5 +1,5 @@
 import { Hex } from "../Hex";
-import { Tile } from "~/types";
+import { OpenTile } from "~/types";
 import { useContext } from "react";
 import { MapContext } from "~/contexts/MapContext";
 
@@ -7,7 +7,7 @@ import classes from "./Tiles.module.css";
 
 type Props = {
   mapId: string;
-  tile: Tile;
+  tile: OpenTile;
   modifiable?: boolean;
   onSelect?: () => void;
 };
