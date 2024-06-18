@@ -65,6 +65,7 @@ type DraftV2State = {
     selectSlice: (playerId: number, sliceIdx: number) => void;
     selectFaction: (playerId: number, factionId: FactionId) => void;
     selectSeat: (playerId: number, seatIdx: number) => void;
+    undoLastSelection: () => void;
   };
   actions: {
     initializeDraft: (
@@ -166,6 +167,12 @@ export const draftStore = createStore<DraftV2State>()(
           state.hydrated = true;
         });
       },
+      undoLastSelection: () =>
+        set((state) => {
+          if (state.draft.selections.length > 0) {
+            state.draft.selections.pop();
+          }
+        }),
       update: (draftId: string, draft: Draft) =>
         set((state) => {
           if (draftId === state.draftId) {

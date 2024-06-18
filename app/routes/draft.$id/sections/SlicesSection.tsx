@@ -14,25 +14,6 @@ export function SlicesSection() {
   const { activePlayer, hydratedPlayers, currentlyPicking } =
     useHydratedDraft();
 
-  const sortedSlices = useMemo(() => {
-    const draftedSlices = hydratedPlayers
-      .map((p) => p.sliceIdx)
-      .filter((i) => i !== undefined) as number[];
-
-    return [...slices]
-      .map((slice, idx) => ({ slice, idx }))
-      .sort((a, b) => {
-        if (draftedSlices.includes(a.idx) && !draftedSlices.includes(b.idx)) {
-          return 1;
-        }
-        if (draftedSlices.includes(b.idx) && !draftedSlices.includes(a.idx)) {
-          return -1;
-        }
-
-        return a.idx - b.idx;
-      });
-  }, [slices, hydratedPlayers]);
-
   const canSelect = currentlyPicking && activePlayer?.sliceIdx === undefined;
 
   return (
@@ -47,7 +28,7 @@ export function SlicesSection() {
         spacing="lg"
         style={{ alignItems: "flex-start" }}
       >
-        {sortedSlices.map(({ slice, idx }) => (
+        {slices.map((slice, idx) => (
           <DraftableSlice
             key={idx}
             id={`slice-${idx}`}

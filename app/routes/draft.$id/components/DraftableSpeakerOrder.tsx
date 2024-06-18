@@ -3,6 +3,7 @@ import { Player } from "~/types";
 import { PlayerChip } from "./PlayerChip";
 
 import classes from "~/components/Surface.module.css";
+import { playerColors } from "~/data/factionData";
 
 type Props = {
   speakerOrder: string;
@@ -19,6 +20,7 @@ export function DraftableSpeakerOrder({
   disabled = false,
   onSelect,
 }: Props) {
+  const playerColor = player ? playerColors[player.id] : undefined;
   return (
     <Stack
       key={speakerOrder}
@@ -26,8 +28,9 @@ export function DraftableSpeakerOrder({
       p="sm"
       style={{
         borderRadius: "var(--mantine-radius-md)",
+        opacity: player ? 0.5 : 1,
       }}
-      className={`${classes.surface} ${classes.withBorder}`}
+      className={`${classes.surface} ${classes.withBorder} ${playerColor ? classes[playerColor] : ""}`}
       pos="relative"
       gap={6}
       justify="stretch"

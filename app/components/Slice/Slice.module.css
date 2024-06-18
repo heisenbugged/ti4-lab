@@ -30,10 +30,18 @@
     @mixin dark { color: var(--mantine-color-dark-0) }
 }
 
-.slice-text.selected {
+
+.magenta .slice-text,
+.orange .slice-text,
+.blue .slice-text,
+.red .slice-text,
+.green .slice-text,
+.violet .slice-text {
     @mixin light { color: var(--mantine-color-gray-8) }
     @mixin dark { color: var(--mantine-color-dark-3) }
 }
+
+
 
 .header {
     gap: 0;
@@ -46,8 +54,59 @@
     @mixin dark { background-color: var(--mantine-color-dark-6); }
 }
 
-.header.selected {
-    @mixin light { background-color: var(--mantine-color-gray-3); }
+
+
+.magenta .header, .magenta .features {
+    background-color: color-mix(in srgb, var(--mantine-color-magenta-filled) 10%, transparent);
+
 }
 
+.magenta {
+    border-radius: 8px;
+    border: 1px solid var(--mantine-color-magenta-filled);
+}
 
+.orange .header, .orange .features {
+    background-color: color-mix(in srgb, var(--mantine-color-orange-filled) 10%, transparent);
+}
+
+.orange {
+    border-radius: 8px;
+    border: 1px solid var(--mantine-color-orange-filled);
+}
+
+.blue .header, .blue .features {
+    background-color: color-mix(in srgb, var(--mantine-color-blue-filled) 10%, transparent);
+}
+
+.blue {
+    border-radius: 8px;
+    border: 1px solid var(--mantine-color-blue-filled);
+}
+
+.red .header, .red .features {
+    background-color: color-mix(in srgb, var(--mantine-color-red-filled) 10%, transparent);
+}
+
+.red {
+    border-radius: 8px;
+    border: 1px solid var(--mantine-color-red-filled);
+}
+
+.green .header, .green .features {
+    background-color: color-mix(in srgb, var(--mantine-color-green-filled) 10%, transparent);
+}
+
+.green {
+    border-radius: 8px;
+    border: 1px solid var(--mantine-color-green-filled);
+}
+
+.violet .header, .violet .features {
+    background-color: color-mix(in srgb, var(--mantine-color-violet-filled) 10%, transparent);
+}
+
+.violet {
+    border-radius: 8px;
+    border: 1px solid var(--mantine-color-violet-filled);
+}

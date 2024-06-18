@@ -6,6 +6,7 @@ import { IconEye } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 
 import classes from "~/components/Surface.module.css";
+import { playerColors } from "~/data/factionData";
 
 type Props = {
   faction: Faction;
@@ -21,13 +22,15 @@ export function DraftableFaction({
   onSelect,
 }: Props) {
   const [opened, { open, close }] = useDisclosure();
+  const playerColor =
+    player?.id !== undefined ? playerColors[player.id] : undefined;
   return (
     <Stack
       gap={4}
       px="sm"
       py={8}
       pb={4}
-      className={`${classes.surface} ${classes.withBorder}`}
+      className={`${classes.surface} ${classes.withBorder} ${playerColor ? classes[playerColor] : ""}`}
       style={{
         borderRadius: "var(--mantine-radius-md)",
         cursor: "pointer",
