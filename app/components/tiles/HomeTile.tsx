@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
-import { Button, Stack } from "@mantine/core";
+import { Button, Stack, Text } from "@mantine/core";
 import type { HomeTile } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 import { FactionIcon } from "../icons/FactionIcon";
@@ -9,6 +9,8 @@ import { calcScale } from "./calcScale";
 import { SystemId } from "../SystemId";
 import { factionSystems } from "~/data/systemData";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
+import { useDraft } from "~/draftStore";
+
 import classes from "./Tiles.module.css";
 
 type Props = {
@@ -18,8 +20,12 @@ type Props = {
   onSelect?: () => void;
 };
 
+const seatLabel = ["1st", "2nd", "3rd", "4th", "5th", "6th"];
+
 export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
   const { radius, disabled } = useContext(MapContext);
+  const hydrated = useDraft((state) => state.hydrated);
+  const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
   const { hydratedPlayers } = useHydratedDraft();
   const player =
     tile.playerId !== undefined
@@ -37,16 +43,25 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
           scale={scale}
         />
       )}
-      {!player && selectable && (
-        <Button
-          ta="center"
-          lh={1}
-          size="xs"
-          onMouseDown={onSelect}
-          disabled={disabled}
-        >
-          Select Seat
-        </Button>
+      {!player && (
+        <Stack align="center" gap={2}>
+          {!draftSpeaker && hydrated && tile.seat !== undefined && (
+            <Text size="xl" fw="bold" className={classes.seatLabel}>
+              {seatLabel[tile.seat]}
+            </Text>
+          )}
+          {selectable && (
+            <Button
+              ta="center"
+              lh={1}
+              size="xs"
+              onMouseDown={onSelect}
+              disabled={disabled}
+            >
+              Select Seat
+            </Button>
+          )}
+        </Stack>
       )}
       {player && (
         <Stack

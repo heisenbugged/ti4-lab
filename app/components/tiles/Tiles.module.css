@@ -63,3 +63,8 @@
     @mixin dark { fill: var(--mantine-color-orange-6);}
 
 }
+
+.seatLabel {
+    @mixin light { color: black; }
+    @mixin dark { color: white; }
+}
