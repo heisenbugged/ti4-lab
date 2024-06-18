@@ -20,7 +20,7 @@ type Props = {
   onSelect?: () => void;
 };
 
-const seatLabel = ["1st", "2nd", "3rd", "4th", "5th", "6th"];
+const seatLabel = ["Speaker", "2nd", "3rd", "4th", "5th", "6th"];
 
 export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
   const { radius, disabled } = useContext(MapContext);
