@@ -1,13 +1,18 @@
 import { Button, Group, Stack, Table, Text, Title } from "@mantine/core";
-import { json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { ActionFunctionArgs, json } from "@remix-run/node";
+import { Form, Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { findDrafts } from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 
 import classes from "~/components/Surface.module.css";
+import { db } from "~/drizzle/config.server";
+import { drafts } from "~/drizzle/schema.server";
+import { eq } from "drizzle-orm";
+import { FormEvent } from "react";
 
 export default function AdminDraftsIndex() {
   const { drafts } = useLoaderData<{ drafts: SavedDraft[] }>();
+  const submit = useSubmit();
   const totalDrafts = drafts.length;
   const completedDrafts = drafts.filter(
     (d) => d.data.selections.length === d.data.pickOrder.length,
@@ -24,6 +29,14 @@ export default function AdminDraftsIndex() {
   const totalMiltyEq = drafts.filter(
     (d) => d.data.settings.type === "miltyeq",
   ).length;
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const result = confirm("Are you sure you want to delete this draft?");
+    if (result) {
+      submit(new FormData(e.currentTarget), { method: "delete" });
+    }
+  };
 
   return (
     <>
@@ -73,7 +86,7 @@ export default function AdminDraftsIndex() {
             <Table.Th>Complete?</Table.Th>
             <Table.Th>Current Pick #</Table.Th>
             <Table.Th>Players</Table.Th>
-            <Table.Th>Actions</Table.Th>
+            <Table.Th w="160px">Actions</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -93,9 +106,22 @@ export default function AdminDraftsIndex() {
                   {d.data.players.map((p) => p.name).join(", ")}
                 </Table.Td>
                 <Table.Td>
-                  <Link to={`/draft/${d.urlName ?? d.id}`}>
-                    <Button size="compact-md">View</Button>
-                  </Link>
+                  <Group>
+                    <Link to={`/draft/${d.urlName ?? d.id}`}>
+                      <Button size="compact-sm">View</Button>
+                    </Link>
+                    <Form method="delete" onSubmit={handleSubmit}>
+                      <input type="hidden" value={d.id} name="id" />
+                      <Button
+                        type="submit"
+                        size="compact-sm"
+                        color="red"
+                        variant="filled"
+                      >
+                        Delete
+                      </Button>
+                    </Form>
+                  </Group>
                 </Table.Td>
               </Table.Tr>
             );
@@ -104,6 +130,13 @@ export default function AdminDraftsIndex() {
       </Table>
     </>
   );
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const body = await request.formData();
+  const id = body.get("id")!;
+  await db.delete(drafts).where(eq(drafts.id, id.toString()));
+  return json({ ok: true });
 }
 
 export const loader = async () => {
