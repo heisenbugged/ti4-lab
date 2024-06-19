@@ -1,36 +1,32 @@
-# Welcome to Remix + Vite!
+# TI4 Lab
 
-📖 See the [Remix docs](https://remix.run/docs) and the [Remix Vite docs](https://remix.run/docs/en/main/guides/vite) for details on supported features.
+TI4 lab is a Twilight Imperium 4 drafting and map building tool. It supports multiple draft formats, has browser notifications, discord integration, and many other fun things.
 
-## Development
+## Prerequisites
 
-Run the Vite dev server:
+### Dependencies
 
-```shellscript
-npm run dev
+- Node.js
+- Sqlite3
+
+### Environment setup
+
+In your shell configuration, add the following
+
+```
+export TI4_LAB_DATABASE_PATH="file:///ABSOLUTE_PATH_HERE"
 ```
 
-## Deployment
+_NOTE_: The path must be an absolute path.
 
-First, build your app for production:
+## Installing / running
 
-```sh
-npm run build
+Assuming all the prerequisites are met, you can run the following commands to install and run the app:
+
+```shell
+npm install --global yarn
+yarn install
+yarn run dev
 ```
 
-Then run the app in production mode:
-
-```sh
-npm start
-```
-
-Now you'll need to pick a host to deploy it to.
-
-### DIY
-
-If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-- `build/server`
-- `build/client`
+Open `https://localhost:3000/` in your browser and you're good to go.
