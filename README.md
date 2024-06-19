@@ -14,7 +14,7 @@ TI4 lab is a Twilight Imperium 4 drafting and map building tool. It supports mul
 In your shell configuration, add the following
 
 ```
-export TI4_LAB_DATABASE_PATH="file:///ABSOLUTE_PATH_HERE"
+export TI4_LAB_DATABASE_PATH="file:///ABSOLUTE_PATH_HERE.sqlite"
 ```
 
 _NOTE_: The path must be an absolute path.
