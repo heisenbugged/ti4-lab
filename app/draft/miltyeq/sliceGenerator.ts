@@ -74,6 +74,11 @@ export function generateSlices(
   // of the spots in each slice.
   fillSlicesWithRemainingTiles(tieredSlices, remainingTiles, slices);
 
+  // do a shuffle of the tiles in each slice
+  for (let i = 0; i < slices.length; i++) {
+    slices[i] = shuffle(slices[i]);
+  }
+
   // finally, we separate anomalies
   for (let sliceIndex = 0; sliceIndex < slices.length; sliceIndex++) {
     let slice = slices[sliceIndex];

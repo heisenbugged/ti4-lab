@@ -1,5 +1,5 @@
 import { SystemIds, SystemId } from "~/types";
-import { weightedChoice } from "../helpers/randomization";
+import { shuffle, weightedChoice } from "../helpers/randomization";
 import {
   fillSlicesWithRemainingTiles,
   fillSlicesWithRequiredTiles,
@@ -57,6 +57,11 @@ export function generateSlices(
   // fill slices with remaining tiles, respecting the 'tier' requirements
   // of the spots in each slice.
   fillSlicesWithRemainingTiles(tieredSlices, remainingTiles, slices);
+
+  // do a shuffle of the tiles in each slice
+  for (let i = 0; i < slices.length; i++) {
+    slices[i] = shuffle(slices[i]);
+  }
 
   // finally, we separate anomalies
   for (let sliceIndex = 0; sliceIndex < slices.length; sliceIndex++) {
