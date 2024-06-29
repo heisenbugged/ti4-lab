@@ -36,7 +36,9 @@
 .blue .slice-text,
 .red .slice-text,
 .green .slice-text,
-.violet .slice-text {
+.violet .slice-text,
+.grey .slice-text,
+.cyan .slice-text {
     @mixin light { color: var(--mantine-color-gray-8) }
     @mixin dark { color: var(--mantine-color-dark-3) }
 }
@@ -100,6 +102,24 @@
 .green {
     border-radius: 8px;
     border: 1px solid var(--mantine-color-green-filled);
+}
+
+.grey .header, .grey .features {
+    background-color: color-mix(in srgb, var(--mantine-color-gray-4) 10%, transparent);
+}
+
+.grey {
+    border-radius: 8px;
+    border: 1px solid var(--mantine-color-gray-4);
+}
+
+.cyan .header, .cyan .features {
+    background-color: color-mix(in srgb, var(--mantine-color-cyan-filled) 10%, transparent);
+}
+
+.cyan {
+    border-radius: 8px;
+    border: 1px solid var(--mantine-color-cyan-filled);
 }
 
 .violet .header, .violet .features {

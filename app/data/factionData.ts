@@ -415,4 +415,6 @@ export const playerColors = [
   "magenta",
   "violet",
   "orange",
+  "grey",
+  "cyan",
 ];

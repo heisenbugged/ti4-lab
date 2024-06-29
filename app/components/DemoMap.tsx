@@ -1,11 +1,7 @@
-import {
-  OldEmptyTile,
-  OldOpenTile,
-  OldSystemTile,
-  PlayerDemoTile as TPlayerDemoTile,
-} from "~/types";
+import { DemoTile, PlayerDemoTile as TPlayerDemoTile } from "~/types";
 import {
   calcHexHeight,
+  calculateConcentricCircles,
   calculateMaxHexRadius,
   calculateMaxHexWidthRadius,
   getHexPosition,
@@ -19,18 +15,19 @@ import { Hex } from "./Hex";
 import { MecatolTile } from "./tiles/MecatolTile";
 
 import classes from "./tiles/Tiles.module.css";
+import { SystemTile } from "./tiles/SystemTile";
+import { playerColors } from "~/data/factionData";
 
 type Props = {
   id: string;
-  map: (TPlayerDemoTile | OldOpenTile | OldEmptyTile | OldSystemTile)[];
+  map: DemoTile[];
   padding: number;
   titles: string[];
-  colors: string[];
 };
 
-export function DemoMap({ id, map, padding, titles, colors }: Props) {
+export function DemoMap({ id, map, padding, titles }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
-  const n = 3;
+  const n = calculateConcentricCircles(map.length);
   const gap = 6;
   const initRadius = calculateMaxHexWidthRadius(n, width, gap);
   const initHeight = calcHexHeight(initRadius) * 7 + 6 * gap;
@@ -54,13 +51,7 @@ export function DemoMap({ id, map, padding, titles, colors }: Props) {
           map
             .filter((t) => !!t.position)
             .map((tile, idx) => (
-              <DemoMapTile
-                key={idx}
-                mapId={id}
-                tile={tile}
-                titles={titles}
-                colors={colors}
-              />
+              <DemoMapTile key={idx} mapId={id} tile={tile} titles={titles} />
             ))}
       </Box>
     </MapContext.Provider>
@@ -69,9 +60,8 @@ export function DemoMap({ id, map, padding, titles, colors }: Props) {
 
 type DemoMapTileProps = {
   mapId: string;
-  tile: TPlayerDemoTile | OldOpenTile | OldEmptyTile | OldSystemTile;
+  tile: DemoTile;
   titles: string[];
-  colors: string[];
 };
 
 export function DemoMapTile({
@@ -79,22 +69,25 @@ export function DemoMapTile({
   tile,
   tile: { position },
   titles,
-  colors,
 }: DemoMapTileProps) {
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
 
-  let Tile: JSX.Element;
+  let Tile: JSX.Element | null;
   if (tile.type === "PLAYER_DEMO") {
     Tile = (
       <PlayerDemoTile
         tile={tile}
         title={titles[tile.playerNumber]}
-        color={colors[tile.playerNumber]}
+        color={playerColors[tile.playerNumber]}
       />
     );
-  } else if (tile.type === "SYSTEM" && tile.system?.id === "18") {
+  } else if (tile.type === "SYSTEM" && tile.systemId === "18") {
     Tile = <MecatolTile mapId={`${mapId}-mecatol`} tile={tile} hideValues />;
+  } else if (tile.type === "SYSTEM") {
+    Tile = <SystemTile mapId={`${mapId}-system`} tile={tile} hideValues />;
+  } else if (tile.type === "CLOSED") {
+    Tile = null;
   } else {
     Tile = (
       <Hex

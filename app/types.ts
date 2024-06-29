@@ -53,30 +53,13 @@ export type TilePosition = {
   y: number;
 };
 
-type OldBaseTile = {
-  idx: number;
-  position: TilePosition;
-  system?: System;
-};
-
-export type OldSystemTile = OldBaseTile & {
-  type: "SYSTEM";
-  system: System;
-};
-
-export type OldOpenTile = OldBaseTile & {
-  type: "OPEN";
-};
-
-export type OldEmptyTile = OldBaseTile & {
-  type: "EMPTY";
-};
-
-export type PlayerDemoTile = OldBaseTile & {
+export type PlayerDemoTile = BaseTile & {
   type: "PLAYER_DEMO";
   playerNumber: number;
   isHomeSystem: boolean;
 };
+
+export type DemoTile = PlayerDemoTile | SystemTile | OpenTile | ClosedTile;
 
 export type FactionId =
   | "sardakk"
@@ -229,6 +212,7 @@ type BaseTile = {
 export type SystemTile = BaseTile & {
   type: "SYSTEM";
   systemId: SystemId;
+  rotation?: number;
 };
 
 export type HomeTile = BaseTile & {
@@ -241,7 +225,11 @@ export type OpenTile = BaseTile & {
   type: "OPEN";
 };
 
-export type Tile = SystemTile | HomeTile | OpenTile;
+export type ClosedTile = BaseTile & {
+  type: "CLOSED";
+};
+
+export type Tile = SystemTile | HomeTile | OpenTile | ClosedTile;
 
 export type Map = Tile[];
 

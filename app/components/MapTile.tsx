@@ -5,7 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
-import { Button, Stack, alpha } from "@mantine/core";
+import { Button, Stack, Text, alpha } from "@mantine/core";
 import { Hex } from "./Hex";
 
 import "./MapTile.css";
@@ -45,7 +45,7 @@ export function MapTile(props: Props) {
     }
   };
 
-  let Tile: JSX.Element;
+  let Tile: JSX.Element | null;
   switch (tile.type) {
     case "HOME":
       Tile = (
@@ -62,6 +62,9 @@ export function MapTile(props: Props) {
       break;
     case "OPEN":
       Tile = <EmptyTile {...props} tile={tile} />;
+      break;
+    case "CLOSED":
+      Tile = null;
       break;
   }
 
@@ -88,6 +91,20 @@ export function MapTile(props: Props) {
       onMouseOut={() => setHovered(false)}
     >
       {Tile}
+
+      {/* debug information */}
+      {/* <div
+        style={{
+          position: "absolute",
+          top: radius * 0.5,
+          left: radius * 0.5,
+          color: "white",
+          backgroundColor: "black",
+          padding: "2px",
+        }}
+      >
+        <Text>{tile.idx}</Text>
+      </div> */}
 
       {showOverlay && (
         <div className="modify-tile-overlay" onMouseDown={onSelect}>

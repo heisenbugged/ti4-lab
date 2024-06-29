@@ -9,6 +9,8 @@ export const wekker: DraftConfig = {
   wOffsetMultiplier: -0.75,
   homeIdxInMapString: [19, 22, 25, 28, 31, 34],
   modifiableMapTiles: [],
+  presetTiles: {},
+  closedMapTiles: [],
   seatTilePositions: [
     { x: 0, y: 0 },
     { x: 1, y: -1 },

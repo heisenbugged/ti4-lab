@@ -8,6 +8,8 @@ export const heisen: DraftConfig = {
   sliceConcentricCircles: 1,
   homeIdxInMapString: [19, 22, 25, 28, 31, 34],
   modifiableMapTiles: [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18],
+  presetTiles: {},
+  closedMapTiles: [],
   seatTilePositions: [
     { x: 0, y: 0 },
     { x: -1, y: 0 },

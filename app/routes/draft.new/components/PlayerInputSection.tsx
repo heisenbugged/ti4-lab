@@ -7,6 +7,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
+import { NumberStepper } from "~/components/NumberStepper";
 import { Section, SectionTitle } from "~/components/Section";
 import { playerColors } from "~/data/factionData";
 import { DiscordData, Player } from "~/types";
@@ -15,17 +16,31 @@ type Props = {
   players: Player[];
   discordData?: DiscordData;
   onChangeName: (playerIdx: number, name: string) => void;
+  onIncreasePlayers?: () => void;
+  onDecreasePlayers?: () => void;
 };
 
 export function PlayerInputSection({
   players,
   discordData,
+  onIncreasePlayers,
+  onDecreasePlayers,
   onChangeName,
 }: Props) {
   const { colors } = useMantineTheme();
   return (
     <Section>
-      <SectionTitle title="Players" />
+      <SectionTitle title="Players">
+        {onIncreasePlayers && onDecreasePlayers && (
+          <NumberStepper
+            value={players.length}
+            decrease={onDecreasePlayers}
+            increase={onIncreasePlayers}
+            decreaseDisabled={players.length <= 6}
+            increaseDisabled={players.length >= 8}
+          />
+        )}
+      </SectionTitle>
       <Group align="flex-start">
         <Stack gap="xs" flex={1}>
           {players.map((player, idx) => {

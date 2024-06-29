@@ -20,6 +20,7 @@ interface Props {
   borderColorClass?: string;
   faction?: FactionId;
   hyperlanes?: number[][];
+  style?: React.CSSProperties;
 }
 
 export function Hex({
@@ -35,13 +36,14 @@ export function Hex({
   borderColorClass,
   faction,
   hyperlanes,
+  style = {},
 }: Props) {
   const points = hexVertices(radius);
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
 
   return (
     <>
-      <div style={{ position: "absolute" }}>
+      <div style={{ position: "absolute", ...style }}>
         <svg
           width={2 * radius}
           height={2 * radius}
@@ -97,7 +99,21 @@ export function Hex({
                       key={idx}
                       p1={sides[start]}
                       p2={sides[end]}
+                      color="#7ca8ff"
+                    />
+                  );
+                })}
+              </g>
+              <g>
+                {hyperlanes?.map(([start, end], idx) => {
+                  const sides = hexSides(points);
+                  return (
+                    <HyperlaneLine
+                      key={idx}
+                      p1={sides[start]}
+                      p2={sides[end]}
                       color="white"
+                      width="0.5"
                     />
                   );
                 })}

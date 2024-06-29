@@ -20,13 +20,23 @@ export type DraftType =
   | "miltyeq"
   | "miltyeqless"
   | "milty"
+  | "milty7p"
+  | "milty8p"
   | "wekker";
+
+export type MapSize = 3 | 4;
 
 export type DraftConfig = {
   /**
    * The type of draft this configuration is for.
    */
   type: DraftType;
+
+  /**
+   * The number of concentric circles in the map.
+   */
+  mapSize?: MapSize;
+
   /**
    * The 'index locations' of each home screen (clockwise order from 12 o'clock) in the map string.
    */
@@ -35,6 +45,20 @@ export type DraftConfig = {
    * The index 'locations' of tiles on the map (i.e. not slices) that can be modified during the drafting building process.
    */
   modifiableMapTiles: number[];
+  /**
+   * Tiles that are preset on the map. (Mostly used for preset hyperlanes for 7p and 8p variants)
+   */
+  presetTiles: Record<
+    number,
+    {
+      systemId: SystemId;
+      rotation?: number;
+    }
+  >;
+  /**
+   * The index locations of tiles on the map that are closed off
+   */
+  closedMapTiles: number[];
   /**
    * The **slice** relative axial positions of each tile in a slice.
    */

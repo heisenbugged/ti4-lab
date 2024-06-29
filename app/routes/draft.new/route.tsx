@@ -54,7 +54,9 @@ export default function DraftNew() {
     { close: closeValidationErrors, open: openValidationErrors },
   ] = useDisclosure(false);
 
-  const showFullMap = config.modifiableMapTiles.length > 0;
+  const showFullMap =
+    config.modifiableMapTiles.length > 0 ||
+    Object.keys(config.presetTiles).length > 0;
 
   useEffect(() => {
     if (location.state == null) return navigate("/draft/prechoice");

@@ -34,37 +34,50 @@ export function SystemTile({ mapId, tile, hideValues = false }: Props) {
   const systemIdSize = radius >= 53 ? "10px" : "8px";
 
   return (
-    <Hex
-      id={`${mapId}-${system.id}`}
-      radius={radius}
-      colorClass={classes.system}
-      image={image}
-      anomaly={system.anomalies.length > 0}
-      faction={system.faction}
-      hyperlanes={system.hyperlanes}
+    <div
+      style={{
+        transform: tile.rotation ? `rotate(${tile.rotation}deg)` : undefined,
+      }}
     >
-      {!hideValues && (
-        <SystemId id={system.id} size={systemIdSize} scale={scale} />
-      )}
-      <Group
-        gap={4}
-        justify="center"
-        style={{ scale: scale.toString(), minWidth: 125, maxWidth: 125 }}
+      <Hex
+        id={`${mapId}-${system.id}`}
+        radius={radius}
+        colorClass={classes.system}
+        image={image}
+        anomaly={system.anomalies.length > 0}
+        faction={system.faction}
+        hyperlanes={system.hyperlanes}
       >
-        {system.planets.map((planet) => (
-          <Planet
-            planet={planet}
-            showName={radius >= 53}
-            largeFonts={radius < 53}
-            key={planet.name}
-            hasLegendaryImage={hasLegendaryImage(system.id)}
+        {!hideValues && (
+          <SystemId
+            id={system.id}
+            size={systemIdSize}
+            scale={scale}
+            rotation={tile.rotation ? -tile.rotation : 0}
+            highlight={system.type === "HYPERLANE"}
+            radius={radius}
           />
-        ))}
-        {system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}
-        {system.wormholes.map((wormhole) => (
-          <Wormhole key={wormhole} wormhole={wormhole} />
-        ))}
-      </Group>
-    </Hex>
+        )}
+        <Group
+          gap={4}
+          justify="center"
+          style={{ scale: scale.toString(), minWidth: 125, maxWidth: 125 }}
+        >
+          {system.planets.map((planet) => (
+            <Planet
+              planet={planet}
+              showName={radius >= 53}
+              largeFonts={radius < 53}
+              key={planet.name}
+              hasLegendaryImage={hasLegendaryImage(system.id)}
+            />
+          ))}
+          {system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}
+          {system.wormholes.map((wormhole) => (
+            <Wormhole key={wormhole} wormhole={wormhole} />
+          ))}
+        </Group>
+      </Hex>
+    </div>
   );
 }

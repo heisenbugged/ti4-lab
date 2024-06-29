@@ -39,6 +39,7 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
       {player?.faction && factionSystems[player.faction] && (
         <SystemId
           id={factionSystems[player.faction].id}
+          radius={radius}
           size={systemIdSize}
           scale={scale}
         />

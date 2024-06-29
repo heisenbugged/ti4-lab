@@ -1,5 +1,8 @@
 import type { HomeTile, Map, Tile } from "~/types";
-import { calculateMaxHexRadius } from "~/utils/positioning";
+import {
+  calculateConcentricCircles,
+  calculateMaxHexRadius,
+} from "~/utils/positioning";
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
@@ -29,7 +32,7 @@ export function Map({
   onSelectHomeTile,
 }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
-  const n = 3;
+  const n = calculateConcentricCircles(map.length);
   const gap = Math.min(width, height) * 0.01;
   const radius = calculateMaxHexRadius(n, width, height, gap);
 
@@ -81,7 +84,7 @@ export function RawMap({
   width: number;
   height: number;
 }) {
-  const n = 3;
+  const n = calculateConcentricCircles(map.length);
   const gap = Math.min(width, height) * 0.01;
   const radius = calculateMaxHexRadius(n, width, height, gap);
 

@@ -10,8 +10,9 @@ import {
   PlayerId,
   System,
   SystemId,
+  PlayerSelection,
 } from "./types";
-import { generateEmptyMap } from "./utils/map";
+import { generateEmptyMap, hydrateMap } from "./utils/map";
 import { fisherYatesShuffle } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig } from "./draft/types";

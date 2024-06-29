@@ -176,7 +176,9 @@ export const techSpecialtiesForSystems = (systems: System[]) =>
   }, [] as TechSpecialty[]);
 
 export function generateEmptyMap(config: DraftConfig): Map {
-  return Array.from({ length: 37 }, (_, idx) => {
+  const length = config.mapSize === 4 ? 61 : 37;
+
+  const map: Map = Array.from({ length }, (_, idx) => {
     if (idx === 0)
       return {
         idx,
@@ -196,4 +198,21 @@ export function generateEmptyMap(config: DraftConfig): Map {
 
     return { idx, type: "OPEN", position: mapStringOrder[idx] };
   });
+
+  // close off tiles
+  config.closedMapTiles.forEach((idx) => {
+    map[idx].type = "CLOSED";
+  });
+
+  // add preset tiles
+  Object.entries(config.presetTiles).forEach(([idx, preset]) => {
+    map[Number(idx)] = {
+      ...map[Number(idx)],
+      type: "SYSTEM",
+      systemId: preset.systemId,
+      rotation: preset.rotation,
+    };
+  });
+
+  return map;
 }

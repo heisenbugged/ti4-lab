@@ -23,12 +23,13 @@ import {
   DiscordData,
   Player,
   DraftSettings,
-  OldEmptyTile,
   GameSet,
-  OldOpenTile,
   PlayerDemoTile,
   SystemId,
-  OldSystemTile,
+  SystemTile,
+  OpenTile,
+  ClosedTile,
+  DemoTile,
 } from "~/types";
 import { useEffect, useState } from "react";
 import { mapStringOrder } from "~/data/mapStringOrder";
@@ -55,11 +56,10 @@ type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 type PrechoiceMap = {
   title: string;
   description: string;
-  map: (PlayerDemoTile | OldOpenTile | OldEmptyTile | OldSystemTile)[];
+  map: DemoTile[];
   titles: string[];
+  playerCount: number;
 };
-
-const colors = ["blue", "red", "green", "magenta", "violet", "orange"];
 
 const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
   milty: {
@@ -73,6 +73,33 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
       ),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
+    playerCount: 6,
+  },
+  milty7p: {
+    title: "Milty (7P)",
+    description:
+      "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
+    map: parseDemoMapString(
+      draftConfig.milty7p,
+      "18 S83B 2 3 S84B S89B 6 1 1 2 2 3 3 4 5 5 6 6 7 1 S85B 2 2 2 3 3 3 S86B 4 4 5 5 6 S88B:120 7 7 7 1 1 x x x x x x x x x 4 4 4 5 5 x x 6 6 x 7 7 1".split(
+        " ",
+      ),
+    ),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th"],
+    playerCount: 7,
+  },
+  milty8p: {
+    title: "Milty (8P)",
+    description:
+      "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
+    map: parseDemoMapString(
+      draftConfig.milty8p,
+      "18 S87A:60 S89B:180 3 S88A:120 S90B 7 1 2 2 3 3 4 5 6 6 7 7 8 1 1 2 2 3 S83B:120 4 4 4 5 5 6 6 7 S85B:120 8 8 8 1 1 2 2 x x 3 3 x 4 4 5 5 5 6 6 x x 7 7 x 8 8 1".split(
+        " ",
+      ),
+    ),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"],
+    playerCount: 8,
   },
   miltyeq: {
     title: "Milty EQ",
@@ -85,6 +112,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
       ),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
+    playerCount: 6,
   },
   heisen: {
     title: "Nucleus",
@@ -97,6 +125,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
       ),
     ),
     titles: ["P1", "P2", "P3", "P4", "P5", "P6"],
+    playerCount: 6,
   },
   wekker: {
     title: "Wekker",
@@ -109,6 +138,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
       ),
     ),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
+    playerCount: 6,
   },
 };
 
@@ -123,10 +153,7 @@ export default function DraftPrechoice() {
   >();
   const [selectedMapType, setSelectedMapType] =
     useState<ChoosableDraftType>("milty");
-  const [numFactions, setNumFactions] = useState(6);
-  const [numSlices, setNumSlices] = useState(6);
-  const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
-  const [randomizeMap, setRandomizeMap] = useState<boolean>(true);
+
   const [players, setPlayers] = useState<Player[]>([
     ...[0, 1, 2, 3, 4, 5].map((i) => {
       const discordPlayer = discordData?.players.find(
@@ -141,9 +168,47 @@ export default function DraftPrechoice() {
       };
     }),
   ]);
+  const playerCount = players.length;
+
+  const [numFactions, setNumFactions] = useState(playerCount);
+  const [numSlices, setNumSlices] = useState(playerCount);
+  const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
+  const [randomizeMap, setRandomizeMap] = useState<boolean>(true);
+
   const [withDiscordant, setWithDiscordant] = useState<boolean>(false);
   const [withDiscordantExp, setWithDiscordantExp] = useState<boolean>(false);
   const [withUnchartedStars, setWithUnchartedStars] = useState<boolean>(false);
+
+  const resetSelectedMap = (numPlayers: number) => {
+    if (MAPS[selectedMapType].playerCount !== numPlayers) {
+      // find first eligible map type
+      const newMapType = Object.keys(MAPS).find(
+        (key) => MAPS[key as ChoosableDraftType].playerCount === numPlayers,
+      ) as ChoosableDraftType;
+      setSelectedMapType(newMapType);
+    }
+  };
+
+  const handleAddPlayer = () => {
+    setPlayers((players) => [
+      ...players,
+      {
+        id: players.length,
+        name: "",
+      },
+    ]);
+
+    const numPlayers = players.length + 1;
+    if (numFactions < numPlayers) setNumFactions(numPlayers);
+    if (numSlices < numPlayers) setNumSlices(numPlayers);
+    resetSelectedMap(numPlayers);
+  };
+
+  const handleRemovePlayer = () => {
+    const numPlayers = players.length - 1;
+    setPlayers((players) => players.slice(0, numPlayers));
+    resetSelectedMap(numPlayers);
+  };
 
   let gameSets: GameSet[] = ["base", "pok"];
   if (withDiscordant) gameSets.push("discordant");
@@ -306,24 +371,28 @@ export default function DraftPrechoice() {
               onMouseLeave={() => setHoveredMapType(undefined)}
               mt="sm"
             >
-              {Object.entries(MAPS).map(([type, { title }]) => (
-                <Button
-                  key={type}
-                  miw="150px"
-                  color="blue"
-                  size="md"
-                  variant={selectedMapType === type ? "filled" : "outline"}
-                  ff="heading"
-                  onMouseOver={() =>
-                    setHoveredMapType(type as ChoosableDraftType)
-                  }
-                  onMouseDown={() =>
-                    setSelectedMapType(type as ChoosableDraftType)
-                  }
-                >
-                  {title}
-                </Button>
-              ))}
+              {Object.entries(MAPS).map(([type, { title, playerCount }]) => {
+                if (playerCount !== players.length) return null;
+
+                return (
+                  <Button
+                    key={type}
+                    miw="150px"
+                    color="blue"
+                    size="md"
+                    variant={selectedMapType === type ? "filled" : "outline"}
+                    ff="heading"
+                    onMouseOver={() =>
+                      setHoveredMapType(type as ChoosableDraftType)
+                    }
+                    onMouseDown={() =>
+                      setSelectedMapType(type as ChoosableDraftType)
+                    }
+                  >
+                    {title}
+                  </Button>
+                );
+              })}
               <Divider />
               <Button
                 color="orange"
@@ -349,7 +418,6 @@ export default function DraftPrechoice() {
                     id="prechoice-map"
                     map={MAPS[mapType].map}
                     titles={MAPS[mapType].titles}
-                    colors={colors}
                     padding={0}
                   />
                 )}
@@ -366,7 +434,6 @@ export default function DraftPrechoice() {
               id="prechoice-map"
               map={MAPS[mapType].map}
               titles={MAPS[mapType].titles}
-              colors={colors}
               padding={0}
             />
           )}
@@ -378,6 +445,8 @@ export default function DraftPrechoice() {
             players={players}
             discordData={discordData}
             onChangeName={handleChangeName}
+            onIncreasePlayers={handleAddPlayer}
+            onDecreasePlayers={handleRemovePlayer}
           />
           <Stack>
             <SectionTitle title="Configuration" />
@@ -391,7 +460,7 @@ export default function DraftPrechoice() {
                   value={numFactions}
                   decrease={() => setNumFactions((v) => v - 1)}
                   increase={() => setNumFactions((v) => v + 1)}
-                  decreaseDisabled={numFactions <= 6}
+                  decreaseDisabled={numFactions <= playerCount}
                   increaseDisabled={numFactions >= maxFactionCount}
                 />
               </Box>
@@ -406,7 +475,7 @@ export default function DraftPrechoice() {
                   value={numSlices}
                   decrease={() => setNumSlices((v) => v - 1)}
                   increase={() => setNumSlices((v) => v + 1)}
-                  decreaseDisabled={numSlices <= 6}
+                  decreaseDisabled={numSlices <= playerCount}
                   increaseDisabled={numSlices >= 9}
                 />
               </Box>
@@ -510,17 +579,28 @@ export default function DraftPrechoice() {
 }
 
 function parseDemoMapString(config: DraftConfig, mapString: SystemId[]) {
-  const tiles = mapString.map((player, idx) => {
+  const tiles: DemoTile[] = mapString.map((entry, idx) => {
+    const [player, rotation] = entry.split(":");
     const position = mapStringOrder[idx];
     const isHomeSystem = config.homeIdxInMapString.includes(idx);
+
+    if (player.startsWith("S")) {
+      return {
+        idx,
+        position,
+        systemId: player.slice(1),
+        type: "SYSTEM",
+        rotation: rotation ? Number(rotation) : undefined,
+      } as SystemTile;
+    }
 
     if (player === "18") {
       return {
         idx,
         position,
-        system: systemData[18],
+        systemId: systemData[18].id,
         type: "SYSTEM",
-      } as OldSystemTile;
+      } as SystemTile;
     }
 
     if (player === "-1") {
@@ -528,15 +608,15 @@ function parseDemoMapString(config: DraftConfig, mapString: SystemId[]) {
         idx,
         position,
         type: "OPEN",
-      } as OldOpenTile;
+      } as OpenTile;
     }
 
-    if (player === "-2") {
+    if (player === "x") {
       return {
         idx,
         position,
-        type: "EMPTY",
-      } as OldEmptyTile;
+        type: "CLOSED",
+      } as ClosedTile;
     }
 
     return {

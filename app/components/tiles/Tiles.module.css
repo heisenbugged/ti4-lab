@@ -61,7 +61,16 @@
 .orange {
     @mixin light { fill: var(--mantine-color-orange-3); }
     @mixin dark { fill: var(--mantine-color-orange-6);}
+}
 
+.grey {
+    @mixin light { fill: var(--mantine-color-gray-3); }
+    @mixin dark { fill: var(--mantine-color-gray-7); }
+}
+
+.cyan {
+    @mixin light { fill: var(--mantine-color-cyan-3); }
+    @mixin dark { fill: var(--mantine-color-cyan-7); }
 }
 
 .seatLabel {

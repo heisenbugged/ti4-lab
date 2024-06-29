@@ -50,13 +50,17 @@ export const calcHexHeight = (r: number) => Math.sqrt(3) * r;
  *
  */
 export const calculateMaxHexRadius = (
-  n: number, // number of concentric circles
+  concentricCircles: number, // number of concentric circles
   width: number,
   height: number,
   gap: number,
 ) => {
-  const radiusFromWidth = calculateMaxHexWidthRadius(n, width, gap);
-  const numTiles = n * 2 + 1;
+  const radiusFromWidth = calculateMaxHexWidthRadius(
+    concentricCircles,
+    width,
+    gap,
+  );
+  const numTiles = concentricCircles * 2 + 1;
   // a tile height is radius * sqrt(3)
   // so total height = numTiles * radius * sqrt(3)
   // solving for r, we get: r = height / (numTiles * sqrt(3))
@@ -68,7 +72,7 @@ export const calculateMaxHexRadius = (
 };
 
 export const calculateMaxHexWidthRadius = (
-  n: number, // number of concentric circles
+  concentricCircles: number, // number of concentric circles
   width: number,
   gap: number,
 ) => {
@@ -79,10 +83,10 @@ export const calculateMaxHexWidthRadius = (
   //   width = (2n + 1) * 2r - r * n
   //   width = (2n + 1) * r(2 - n)
   // Solving for r, we get: r = width / (numTiles * 2 - n)
-  const numTiles = n * 2 + 1;
+  const numTiles = concentricCircles * 2 + 1;
   // Adjust effective width to account for gaps between hexagons
   const effectiveWidth = width - (numTiles - 1) * gap;
-  return effectiveWidth / (numTiles * 2 - n);
+  return effectiveWidth / (numTiles * 2 - concentricCircles);
 };
 
 /**
@@ -90,18 +94,38 @@ export const calculateMaxHexWidthRadius = (
  * For a given 'width', calculate the height of the map bounding box.
  * Where it cannot exceed 'maxHeight'.
  */
-export function getBoundedMapHeight(width: number, maxHeight: number) {
+export function getBoundedMapHeight(
+  width: number,
+  maxHeight: number,
+  concentricCircles: number = 4,
+) {
+  const numVerticalTiles = concentricCircles * 2 + 1;
+  const numGaps = numVerticalTiles - 1;
   const gap = 6;
   // Calculate preliminary height and radius bounded by width.
-  const initialRadius = calculateMaxHexWidthRadius(3, width, gap);
-  const initialHeight = 7 * calcHexHeight(initialRadius) + 6 * gap;
+  const initialRadius = calculateMaxHexWidthRadius(
+    concentricCircles,
+    width,
+    gap,
+  );
+  const initialHeight =
+    numVerticalTiles * calcHexHeight(initialRadius) + numGaps * gap;
 
   // Once preliminary height has been calculated.
   // we impose a maximum height (so that the map does not overflow)
   // and then recalculate the radius based on the new height.
   const height = Math.min(initialHeight, maxHeight);
-  const newRadius = calculateMaxHexRadius(3, width, height, gap);
-  const newHeight = 7 * calcHexHeight(newRadius) + 6 * gap;
-
+  const newRadius = calculateMaxHexRadius(
+    concentricCircles,
+    width,
+    height,
+    gap,
+  );
+  const newHeight = numVerticalTiles * calcHexHeight(newRadius) + numGaps * gap;
   return newHeight;
 }
+
+export const calculateConcentricCircles = (length: number) => {
+  if (length > 37) return 4;
+  return 3;
+};
