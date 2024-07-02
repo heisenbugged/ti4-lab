@@ -13,6 +13,9 @@ export function AvailableFactionsSection() {
     randomizeFactions,
     removeFaction,
   } = useDraft((state) => state.actions);
+  const numPreassignedFactions = useDraft(
+    (state) => state.draft.settings.numPreassignedFactions,
+  );
   const factionPool = useDraft((state) => state.factionPool);
   const { numFactions, availableFactions } = useDraft((state) => ({
     numFactions: state.draft.settings.numFactions,
@@ -33,12 +36,15 @@ export function AvailableFactionsSection() {
           </Button>
 
           <Text># factions: {numFactions}</Text>
-          <NumberStepper
-            decrease={removeLastFaction}
-            increase={addRandomFaction}
-            decreaseDisabled={numFactions <= 6}
-            increaseDisabled={numFactions >= factionPool.length}
-          />
+          {/* cannot change number of factions if using 'bag draft' method */}
+          {numPreassignedFactions === undefined && (
+            <NumberStepper
+              decrease={removeLastFaction}
+              increase={addRandomFaction}
+              decreaseDisabled={numFactions <= 6}
+              increaseDisabled={numFactions >= factionPool.length}
+            />
+          )}
         </Group>
       </SectionTitle>
       <SimpleGrid
@@ -49,7 +55,11 @@ export function AvailableFactionsSection() {
           <NewDraftFaction
             key={factionId}
             faction={factions[factionId]}
-            onRemove={() => removeFaction(factionId)}
+            onRemove={
+              numPreassignedFactions === undefined
+                ? () => removeFaction(factionId)
+                : undefined
+            }
             removeEnabled={availableFactions.length > 6}
           />
         ))}

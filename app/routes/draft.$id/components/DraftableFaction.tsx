@@ -35,7 +35,7 @@ export function DraftableFaction({
         borderRadius: "var(--mantine-radius-md)",
         cursor: "pointer",
         position: "relative",
-        opacity: player ? 0.5 : 1,
+        opacity: disabled ? 0.5 : 1,
       }}
     >
       <Modal

@@ -179,6 +179,38 @@ export default function DraftPrechoice() {
   const [withDiscordantExp, setWithDiscordantExp] = useState<boolean>(false);
   const [withUnchartedStars, setWithUnchartedStars] = useState<boolean>(false);
 
+  const [numPreassignedFactions, setNumPreassignedFactions] = useState<
+    number | undefined
+  >();
+
+  const handleTogglePreassignedFactions = () => {
+    if (numPreassignedFactions === undefined) {
+      handleIncreasePreassignedFactions(2);
+    } else {
+      setNumPreassignedFactions(undefined);
+      setNumFactions(playerCount);
+    }
+  };
+
+  const handleIncreasePreassignedFactions = (num = 1) => {
+    const preassignedNo =
+      numPreassignedFactions !== undefined
+        ? Number(numPreassignedFactions) + num
+        : num;
+
+    setNumPreassignedFactions(preassignedNo);
+    setNumFactions(preassignedNo * playerCount);
+  };
+
+  const handleDecreasePreassignedFactions = (num = 1) => {
+    const preassignedNo =
+      numPreassignedFactions !== undefined
+        ? Number(numPreassignedFactions) - num
+        : num;
+    setNumPreassignedFactions(preassignedNo);
+    setNumFactions(preassignedNo * playerCount);
+  };
+
   const resetSelectedMap = (numPlayers: number) => {
     if (MAPS[selectedMapType].playerCount !== numPlayers) {
       // find first eligible map type
@@ -216,6 +248,8 @@ export default function DraftPrechoice() {
   if (withUnchartedStars) gameSets.push("unchartedstars");
 
   const maxFactionCount = getFactionCount(gameSets);
+  const maxPreassigned = Math.floor(maxFactionCount / playerCount);
+
   useEffect(() => {
     if (numFactions > maxFactionCount) {
       setNumFactions(maxFactionCount);
@@ -246,6 +280,7 @@ export default function DraftPrechoice() {
       draftSpeaker: config?.type === "heisen",
       allowHomePlanetSearch,
       allowEmptyTiles: allowEmptyMapTiles,
+      numPreassignedFactions: numPreassignedFactions,
     };
 
     navigate("/draft/new", {
@@ -460,8 +495,12 @@ export default function DraftPrechoice() {
                   value={numFactions}
                   decrease={() => setNumFactions((v) => v - 1)}
                   increase={() => setNumFactions((v) => v + 1)}
-                  decreaseDisabled={numFactions <= playerCount}
-                  increaseDisabled={numFactions >= maxFactionCount}
+                  decreaseDisabled={
+                    !!numPreassignedFactions || numFactions <= playerCount
+                  }
+                  increaseDisabled={
+                    !!numPreassignedFactions || numFactions >= maxFactionCount
+                  }
                 />
               </Box>
             </Input.Wrapper>
@@ -542,6 +581,25 @@ export default function DraftPrechoice() {
           <Collapse in={showAdvancedSettings}>
             <Stack>
               <SectionTitle title="Advanced Options" />
+
+              <Group>
+                <Switch
+                  label="Faction Bags"
+                  description="If turned on, will pre-assign a 'bag' of # factions to each player. A player then chooses a faction only from their assigned 'bag' during the draft."
+                  checked={Number(numPreassignedFactions) > 0}
+                  onChange={handleTogglePreassignedFactions}
+                />
+
+                {numPreassignedFactions !== undefined && (
+                  <NumberStepper
+                    value={numPreassignedFactions}
+                    decrease={() => handleDecreasePreassignedFactions(1)}
+                    increase={() => handleIncreasePreassignedFactions(1)}
+                    decreaseDisabled={numPreassignedFactions <= 1}
+                    increaseDisabled={numPreassignedFactions >= maxPreassigned}
+                  />
+                )}
+              </Group>
 
               <Switch
                 label="Allow search of home planets"

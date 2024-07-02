@@ -165,9 +165,9 @@ export type DraftSettings = {
   allowHomePlanetSearch: boolean;
   numFactions: number;
   numSlices: number;
-
   randomizeMap: boolean;
   randomizeSlices: boolean;
+  numPreassignedFactions?: number;
 };
 
 export type DiscordPlayer =
@@ -264,6 +264,7 @@ export type Draft = {
   availableFactions: FactionId[];
   pickOrder: PlayerId[];
   selections: DraftSelection[];
+  playerFactionPool?: Record<PlayerId, FactionId[]>;
 };
 
 export type HydratedPlayer = {

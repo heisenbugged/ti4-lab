@@ -18,7 +18,7 @@ import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
-import { Draft } from "~/types";
+import { Draft, FactionId, PlayerId } from "~/types";
 import { DraftInput, useCreateDraft } from "./useCreateDraft";
 import { ImportMapInput } from "~/components/ImportMapInput";
 import { ExportMapModal } from "./components/ExportMapModal";
@@ -38,6 +38,7 @@ import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraftSettings } from "~/hooks/useDraftSettings";
 import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
+import { shuffle } from "~/draft/helpers/randomization";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -190,6 +191,17 @@ export async function action({ request }: ActionFunctionArgs) {
     pickOrder.push(...reversedPlayerIds);
   }
 
+  // if using bag draft, create the 'bags' for each player
+  let playerFactionPool: Record<PlayerId, FactionId[]> | undefined = undefined;
+  if (body.settings.numPreassignedFactions !== undefined) {
+    playerFactionPool = {};
+    const available = shuffle(body.availableFactions);
+    body.players.forEach((player) => {
+      const bag = available.splice(0, body.settings.numPreassignedFactions);
+      playerFactionPool![player.id] = bag;
+    });
+  }
+
   const draft: Draft = {
     ...body,
     players: body.players.map((p) => ({
@@ -197,6 +209,7 @@ export async function action({ request }: ActionFunctionArgs) {
       name: p.name.length > 0 ? p.name : `Player ${p.id + 1}`,
     })),
     pickOrder,
+    playerFactionPool,
   };
 
   const prettyUrl = await generateUniquePrettyUrl();
