@@ -157,6 +157,15 @@ export type SystemId = string;
 export type PlayerId = number;
 
 /// V2
+export type DraftModifier =
+  | {
+      type: "banFactions";
+      numFactions: number;
+    }
+  | {
+      type: "anyFactionFirstPick";
+    };
+
 export type DraftSettings = {
   type: DraftType;
   gameSets: GameSet[];
@@ -168,6 +177,7 @@ export type DraftSettings = {
   randomizeMap: boolean;
   randomizeSlices: boolean;
   numPreassignedFactions?: number;
+  modifiers?: DraftModifier[];
 };
 
 export type DiscordPlayer =
@@ -265,6 +275,7 @@ export type Draft = {
   pickOrder: PlayerId[];
   selections: DraftSelection[];
   playerFactionPool?: Record<PlayerId, FactionId[]>;
+  bannnedFactions?: Record<PlayerId, FactionId[]>;
 };
 
 export type HydratedPlayer = {

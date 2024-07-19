@@ -36,7 +36,7 @@ export function PlayerInputSection({
             value={players.length}
             decrease={onDecreasePlayers}
             increase={onIncreasePlayers}
-            decreaseDisabled={players.length <= 6}
+            decreaseDisabled={players.length <= 5}
             increaseDisabled={players.length >= 8}
           />
         )}

@@ -75,6 +75,19 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     playerCount: 6,
   },
+  milty5p: {
+    title: "Milty 5p",
+    description:
+      "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
+    map: parseDemoMapString(
+      draftConfig.milty,
+      "18 1 2 3 S85A 4 5 1 1 2 2 3 S87A:120 3 S87A 4 4 5 5 1 1 2 2 2 3 3 3 S83A S85A S83A:240 4 4 4 5 5 5 1".split(
+        " ",
+      ),
+    ),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th"],
+    playerCount: 5,
+  },
   milty7p: {
     title: "Milty (7P)",
     description:
