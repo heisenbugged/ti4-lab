@@ -34,6 +34,7 @@ import {
 } from "./hooks/useUsedSystemIds";
 import { atomWithStore } from "jotai-zustand";
 import { createStore } from "zustand/vanilla";
+import { systemData } from "./data/systemData";
 
 /// V2
 type DraftV2State = {
@@ -430,10 +431,18 @@ export const draftStore = createStore<DraftV2State>()(
           const config = draftConfig[draft.settings.type];
           const systemsInSlice = systemIdsInSlice(draft.slices[sliceIdx]);
           const usedIds = getUsedSystemIds(draft.slices, draft.presetMap);
+
           const availableSystems = systemPool.filter(
             (s) => !usedIds.includes(s) || systemsInSlice.includes(s),
           );
-          const rawSlice = config.generateSlices(1, availableSystems)[0];
+
+          const rawSlice = config.generateSlices(
+            1,
+            availableSystems,
+            0,
+            0,
+            0,
+          )[0];
 
           draft.slices[sliceIdx] = systemIdsToSlice(
             config,
@@ -543,3 +552,10 @@ function randomizeMap(
   });
   return map;
 }
+
+const findNumAlphas = (systems: SystemId[]) =>
+  systems.filter((s) => systemData[s].wormholes.includes("ALPHA")).length;
+const findNumBetas = (systems: SystemId[]) =>
+  systems.filter((s) => systemData[s].wormholes.includes("BETA")).length;
+const findNumLegendaries = (systems: SystemId[]) =>
+  systems.filter((s) => systemData[s].planets.find((p) => p.legendary)).length;

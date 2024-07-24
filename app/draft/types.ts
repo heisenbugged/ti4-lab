@@ -93,5 +93,8 @@ export type DraftConfig = {
   generateSlices: (
     sliceCount: number,
     availableSystems: SystemId[],
+    numAlphas?: number,
+    numBetas?: number,
+    numLegendaries?: number,
   ) => SystemIds[];
 };

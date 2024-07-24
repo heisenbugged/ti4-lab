@@ -29,6 +29,9 @@ const MIN_LEGENDARY_CHOICES = [
 export function generateSlices(
   sliceCount: number,
   availableSystems: SystemId[],
+  numAlphas?: number,
+  numBetas?: number,
+  numLegendaries?: number,
   sliceShape: string[] = SLICE_SHAPES.milty,
 ) {
   // miltydraft only has one slice choice
@@ -37,9 +40,10 @@ export function generateSlices(
   ]);
 
   // Enforce a minimum number of wormholes and legendary planets
-  const minAlphaWormholes = weightedChoice(MIN_WORMHOLE_CHOICES);
-  const minBetaWormholes = weightedChoice(MIN_WORMHOLE_CHOICES);
-  const minLegendary = weightedChoice(MIN_LEGENDARY_CHOICES);
+  const minAlphaWormholes = numAlphas ?? weightedChoice(MIN_WORMHOLE_CHOICES);
+  const minBetaWormholes = numBetas ?? weightedChoice(MIN_WORMHOLE_CHOICES);
+  const minLegendary = numLegendaries ?? weightedChoice(MIN_LEGENDARY_CHOICES);
+
   const { chosenTiles, remainingTiles } = chooseRequiredSystems(
     availableSystems,
     {

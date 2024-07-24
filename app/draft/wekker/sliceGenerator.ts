@@ -8,6 +8,9 @@ function generateSlices(sliceCount: number, availableSystems: SystemId[]) {
   const miltySlices = miltyGenerateSlices(
     sliceCount,
     availableSystems,
+    undefined,
+    undefined,
+    undefined,
     SLICE_SHAPES.wekker,
   );
 
