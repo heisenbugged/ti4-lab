@@ -10,9 +10,8 @@ import {
   PlayerId,
   System,
   SystemId,
-  PlayerSelection,
 } from "./types";
-import { generateEmptyMap, hydrateMap } from "./utils/map";
+import { generateEmptyMap } from "./utils/map";
 import { fisherYatesShuffle } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig } from "./draft/types";
@@ -276,7 +275,9 @@ export const draftStore = createStore<DraftV2State>()(
             draft.presetMap = map;
             draft.slices = slices;
           } else {
-            draft.slices = initializeSlices(settings, state.systemPool);
+            const slices = initializeSlices(settings, state.systemPool);
+            if (slices) draft.slices = slices;
+
             draft.presetMap = initializeMap(
               settings,
               draft.slices,
@@ -436,13 +437,17 @@ export const draftStore = createStore<DraftV2State>()(
             (s) => !usedIds.includes(s) || systemsInSlice.includes(s),
           );
 
-          const rawSlice = config.generateSlices(
-            1,
-            availableSystems,
-            0,
-            0,
-            0,
-          )[0];
+          const generated = config.generateSlices(1, availableSystems, {
+            numAlphas: 0,
+            numBetas: 0,
+            numLegendaries: 0,
+          });
+
+          if (generated == undefined) {
+            alert("Could not generate slice with given parameters");
+            return;
+          }
+          const rawSlice = generated[0];
 
           draft.slices[sliceIdx] = systemIdsToSlice(
             config,
@@ -461,8 +466,15 @@ export const draftStore = createStore<DraftV2State>()(
           const rawSlices = config.generateSlices(
             draft.settings.numSlices,
             availableSystems,
+            {
+              minOptimal: draft.settings.minOptimal,
+              maxOptimal: draft.settings.maxOptimal,
+            },
           );
-          draft.slices = systemIdsToSlices(config, rawSlices);
+
+          if (rawSlices) {
+            draft.slices = systemIdsToSlices(config, rawSlices);
+          }
         }),
     },
   })),
@@ -510,7 +522,12 @@ function initializeSlices(settings: DraftSettings, systemPool: SystemId[]) {
   const config = draftConfig[settings.type];
   if (!settings.randomizeSlices) return emptySlices(config, settings.numSlices);
 
-  const rawSlices = config.generateSlices(settings.numSlices, systemPool);
+  const rawSlices = config.generateSlices(settings.numSlices, systemPool, {
+    maxOptimal: settings.maxOptimal,
+    minOptimal: settings.minOptimal,
+  });
+
+  if (!rawSlices) return undefined;
   return systemIdsToSlices(config, rawSlices);
 }
 

@@ -9,12 +9,10 @@ function generateSlices(sliceCount: number, availableSystems: SystemId[]) {
     sliceCount,
     availableSystems,
     undefined,
-    undefined,
-    undefined,
     SLICE_SHAPES.wekker,
   );
 
-  // ensure at least one blue adjacnet to home system,
+  // ensure at least one blue adjacent to home system,
   miltySlices.forEach((slice) => {
     const candidates: SystemId[] = [slice[0], slice[2]];
     const allRed = candidates.every(

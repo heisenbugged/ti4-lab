@@ -27,6 +27,14 @@ export type DraftType =
 
 export type MapSize = 3 | 4;
 
+export type SliceGenerationConfig = {
+  numAlphas?: number;
+  numBetas?: number;
+  numLegendaries?: number;
+  maxOptimal?: number;
+  minOptimal?: number;
+};
+
 export type DraftConfig = {
   /**
    * The type of draft this configuration is for.
@@ -93,8 +101,6 @@ export type DraftConfig = {
   generateSlices: (
     sliceCount: number,
     availableSystems: SystemId[],
-    numAlphas?: number,
-    numBetas?: number,
-    numLegendaries?: number,
-  ) => SystemIds[];
+    configuration?: SliceGenerationConfig,
+  ) => SystemIds[] | undefined;
 };

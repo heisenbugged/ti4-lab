@@ -7,7 +7,7 @@ import {
   separateAnomalies,
 } from "../helpers/sliceGeneration";
 import { SLICE_SHAPES } from "../sliceShapes";
-import { TieredSlice } from "../types";
+import { SliceGenerationConfig, TieredSlice } from "../types";
 
 const HIGH = "high";
 const MED = "med";
@@ -29,9 +29,7 @@ const MIN_LEGENDARY_CHOICES = [
 export function generateSlices(
   sliceCount: number,
   availableSystems: SystemId[],
-  numAlphas?: number,
-  numBetas?: number,
-  numLegendaries?: number,
+  config: SliceGenerationConfig = {},
   sliceShape: string[] = SLICE_SHAPES.milty,
 ) {
   // miltydraft only has one slice choice
@@ -40,9 +38,12 @@ export function generateSlices(
   ]);
 
   // Enforce a minimum number of wormholes and legendary planets
-  const minAlphaWormholes = numAlphas ?? weightedChoice(MIN_WORMHOLE_CHOICES);
-  const minBetaWormholes = numBetas ?? weightedChoice(MIN_WORMHOLE_CHOICES);
-  const minLegendary = numLegendaries ?? weightedChoice(MIN_LEGENDARY_CHOICES);
+  const minAlphaWormholes =
+    config.numAlphas ?? weightedChoice(MIN_WORMHOLE_CHOICES);
+  const minBetaWormholes =
+    config.numBetas ?? weightedChoice(MIN_WORMHOLE_CHOICES);
+  const minLegendary =
+    config.numLegendaries ?? weightedChoice(MIN_LEGENDARY_CHOICES);
 
   const { chosenTiles, remainingTiles } = chooseRequiredSystems(
     availableSystems,

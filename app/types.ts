@@ -178,6 +178,8 @@ export type DraftSettings = {
   randomizeSlices: boolean;
   numPreassignedFactions?: number;
   modifiers?: DraftModifier[];
+  minOptimal?: number;
+  maxOptimal?: number;
 };
 
 export type DiscordPlayer =

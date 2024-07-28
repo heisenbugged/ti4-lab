@@ -2,7 +2,12 @@ import { mapStringOrder } from "~/data/mapStringOrder";
 import { draftConfig } from "../draftConfig";
 import { shuffle, weightedChoice } from "../helpers/randomization";
 import { systemData } from "~/data/systemData";
-import { ChoosableTier, SliceChoice, TieredSlice } from "../types";
+import {
+  ChoosableTier,
+  SliceChoice,
+  SliceGenerationConfig,
+  TieredSlice,
+} from "../types";
 import { calculateTier, getTieredSystems } from "../tieredSystems";
 import {
   chooseRequiredSystems,
@@ -150,13 +155,11 @@ export function generateMap(sliceCount: number, systemPool: SystemId[]) {
   // ---------------------------------------------------------------------------------
   // Step 2: Generate slices, distributing remaining alphas/betas/legendaries equally
   // ---------------------------------------------------------------------------------
-  const slices = generateSlices(
-    sliceCount,
-    remainingSystems(),
-    remainingAlphas,
-    remainingBetas,
-    remainingLegendaries,
-  );
+  const slices = generateSlices(sliceCount, remainingSystems(), {
+    numAlphas: remainingAlphas,
+    numBetas: remainingBetas,
+    numLegendaries: remainingLegendaries,
+  });
   // promote the chosen slice systems.
   chosenSliceSystems = slices.flat(1);
 
@@ -302,9 +305,11 @@ const countPlanetTraits = (used: SystemId[]) => {
 export function generateSlices(
   sliceCount: number,
   availableSystems: SystemId[],
-  minAlphaWormholes: number = 0,
-  minBetaWormholes: number = 0,
-  minLegendary: number = 0,
+  config: SliceGenerationConfig = {
+    numAlphas: 0,
+    numBetas: 0,
+    numLegendaries: 0,
+  },
 ) {
   const tieredSlices: TieredSlice[] = [];
   for (let i = 0; i < sliceCount; i++) {
@@ -316,9 +321,9 @@ export function generateSlices(
   const { chosenTiles, remainingTiles } = chooseRequiredSystems(
     availableSystems,
     {
-      minAlphaWormholes,
-      minBetaWormholes,
-      minLegendary,
+      minAlphaWormholes: config.numAlphas,
+      minBetaWormholes: config.numBetas,
+      minLegendary: config.numLegendaries,
     },
   );
 

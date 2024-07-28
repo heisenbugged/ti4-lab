@@ -1,5 +1,6 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -36,7 +37,12 @@ import { mapStringOrder } from "~/data/mapStringOrder";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "./draft.new/components/PlayerInputSection";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+} from "@remix-run/react";
 import { DraftConfig, DraftType, draftConfig } from "~/draft";
 import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
@@ -45,6 +51,7 @@ import {
   IconBrandDiscordFilled,
   IconChevronDown,
   IconChevronUp,
+  IconInfoCircle,
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
 
@@ -156,6 +163,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
 };
 
 export default function DraftPrechoice() {
+  const location = useLocation();
   const { discordData } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [allowEmptyMapTiles, setAllowEmptyMapTiles] = useState(false);
@@ -187,6 +195,9 @@ export default function DraftPrechoice() {
   const [numSlices, setNumSlices] = useState(playerCount);
   const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
   const [randomizeMap, setRandomizeMap] = useState<boolean>(true);
+
+  const [minOptimalTotal, setMinOptimalTotal] = useState<number>(9);
+  const [maxOptimalTotal, setMaxOptimalTotal] = useState<number>(13);
 
   const [withDiscordant, setWithDiscordant] = useState<boolean>(false);
   const [withDiscordantExp, setWithDiscordantExp] = useState<boolean>(false);
@@ -294,6 +305,8 @@ export default function DraftPrechoice() {
       allowHomePlanetSearch,
       allowEmptyTiles: allowEmptyMapTiles,
       numPreassignedFactions: numPreassignedFactions,
+      minOptimal: minOptimalTotal,
+      maxOptimal: maxOptimalTotal,
     };
 
     navigate("/draft/new", {
@@ -406,6 +419,19 @@ export default function DraftPrechoice() {
       {discordData && (
         <Grid.Col span={12}>
           <DiscordBanner />
+        </Grid.Col>
+      )}
+      {location.state?.invalidDraftParameters && (
+        <Grid.Col span={12}>
+          <Alert
+            variant="light"
+            color="red"
+            title="Invalid Draft Parameters"
+            icon={<IconInfoCircle />}
+          >
+            Could not generate a draft with the given parameters. Please try
+            different minimal/total optimal values.
+          </Alert>
         </Grid.Col>
       )}
       <Grid.Col span={{ base: 12, md: 7 }}>
@@ -595,6 +621,38 @@ export default function DraftPrechoice() {
             <Stack>
               <SectionTitle title="Advanced Options" />
 
+              {mapType === "milty" && (
+                <Group>
+                  <NumberStepper
+                    value={minOptimalTotal}
+                    decrease={() => setMinOptimalTotal((v) => v - 1)}
+                    increase={() => setMinOptimalTotal((v) => v + 1)}
+                    decreaseDisabled={minOptimalTotal <= 0}
+                    increaseDisabled={
+                      minOptimalTotal >= maxOptimalTotal ||
+                      minOptimalTotal >= 11
+                    }
+                  />
+                  <Text>Minimum optimal total</Text>
+                </Group>
+              )}
+
+              {mapType === "milty" && (
+                <Group>
+                  <NumberStepper
+                    value={maxOptimalTotal}
+                    decrease={() => setMaxOptimalTotal((v) => v - 1)}
+                    increase={() => setMaxOptimalTotal((v) => v + 1)}
+                    decreaseDisabled={
+                      maxOptimalTotal <= minOptimalTotal ||
+                      maxOptimalTotal <= 10
+                    }
+                    increaseDisabled={maxOptimalTotal >= 20}
+                  />
+                  <Text>Maximum optimal total</Text>
+                </Group>
+              )}
+
               <Group>
                 <Switch
                   label="Faction Bags"
@@ -620,6 +678,7 @@ export default function DraftPrechoice() {
                 checked={allowHomePlanetSearch}
                 onChange={() => setAllowHomePlanetSearch((v) => !v)}
               />
+
               <Switch
                 label="Allow empty map tiles"
                 description="Will allow starting a draft even if not every tile is filled"

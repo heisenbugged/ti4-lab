@@ -15,7 +15,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect, useLocation, useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
-import { useDraft } from "~/draftStore";
+import { draftStore, useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { Draft, FactionId, PlayerId } from "~/types";
@@ -63,6 +63,13 @@ export default function DraftNew() {
     if (location.state == null) return navigate("/draft/prechoice");
     const { draftSettings, players, discordData } = location.state;
     actions.initializeDraft(draftSettings, players, { discord: discordData });
+
+    if (draftStore.getState().draft.slices.length === 0) {
+      return navigate("/draft/prechoice", {
+        state: { invalidDraftParameters: true },
+      });
+    }
+
     // a bit hacky, but once we 'consume' the state, we remove it from the history
     window.history.replaceState({ ...window.history.state, usr: null }, "");
   }, []);

@@ -1,5 +1,6 @@
 import { DraftConfig } from "../types";
-import { generateSlices } from "./sliceGenerator";
+import { generateSlices } from "./altSliceGenerator";
+// import { generateSlices } from "./sliceGenerator";
 
 export const milty: DraftConfig = {
   type: "milty",

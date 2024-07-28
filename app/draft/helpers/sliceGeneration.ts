@@ -36,13 +36,13 @@ export function chooseRequiredSystems(
     minAlphaWormholes,
     remainingSystems,
     chosenSystems,
-    (system) => system.wormholes.includes("ALPHA"),
+    isAlpha,
   );
   sampleAndPromoteSystems(
     minBetaWormholes,
     remainingSystems,
     chosenSystems,
-    (system) => system.wormholes.includes("BETA"),
+    isBeta,
   );
 
   sampleAndPromoteSystems(
@@ -75,17 +75,19 @@ function sampleAndPromoteSystems(
   }
 }
 
-const shuffleTieredSystems = (tieredSystems: TieredSystems) => ({
+export const shuffleTieredSystems = (tieredSystems: TieredSystems) => ({
   high: shuffle(tieredSystems.high),
   med: shuffle(tieredSystems.med),
   low: shuffle(tieredSystems.low),
   red: shuffle(tieredSystems.red),
 });
 
-const isLegendary = (system: System) =>
+export const isAlpha = (system: System) => system.wormholes.includes("ALPHA");
+export const isBeta = (system: System) => system.wormholes.includes("BETA");
+export const isLegendary = (system: System) =>
   !!system.planets.find((p) => p.legendary);
 
-function filterTieredSystems(
+export function filterTieredSystems(
   tieredSystems: TieredSystems,
   filter: (system: System) => boolean,
 ) {
