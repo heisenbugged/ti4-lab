@@ -43,6 +43,13 @@ export function hydratePlayers(
         };
       }
 
+      if (selection.type === "SELECT_MINOR_FACTION") {
+        acc[playerIdx] = {
+          ...acc[playerIdx],
+          minorFaction: selection.minorFactionId,
+        };
+      }
+
       if (selection.type === "SELECT_SEAT") {
         const updated = {
           ...acc[playerIdx],
@@ -66,6 +73,7 @@ export const computePlayerSelections = (hydratedPlayers: HydratedPlayer[]) =>
     playerId: p.id,
     sliceIdx: p.sliceIdx,
     seatIdx: p.seatIdx,
+    minorFaction: p.minorFaction,
   }));
 
 export const hydratedPlayersAtom = atom((get) => {

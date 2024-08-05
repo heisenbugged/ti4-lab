@@ -65,6 +65,7 @@ type DraftV2State = {
     selectSpeakerOrder: (playerId: number, speakerOrder: number) => void;
     selectSlice: (playerId: number, sliceIdx: number) => void;
     selectFaction: (playerId: number, factionId: FactionId) => void;
+    selectMinorFaction: (playerId: number, minorFactionId: FactionId) => void;
     selectSeat: (playerId: number, seatIdx: number) => void;
     undoLastSelection: () => void;
   };
@@ -84,6 +85,13 @@ type DraftV2State = {
     addRandomFaction: () => void;
     removeLastFaction: () => void;
     removeFaction: (id: FactionId) => void;
+
+    // minor faction actions
+    randomizeMinorFactions: () => void;
+    setNumMinorFactionsToDraft: (num: number) => void;
+    addRandomMinorFaction: () => void;
+    removeLastMinorFaction: () => void;
+    removeMinorFaction: (id: FactionId) => void;
 
     // planet finding actions
     openPlanetFinderForMap: (tileIdx: number) => void;
@@ -227,6 +235,20 @@ export const draftStore = createStore<DraftV2State>()(
           });
         }),
 
+      selectMinorFaction: (playerId: number, minorFactionId: FactionId) =>
+        set((state) => {
+          const alreadySelected = state.draft.selections.find(
+            (s) => s.playerId === playerId && s.type === "SELECT_FACTION",
+          );
+          if (alreadySelected) return;
+
+          state.draft.selections.push({
+            type: "SELECT_MINOR_FACTION",
+            playerId,
+            minorFactionId,
+          });
+        }),
+
       selectSeat: (playerId: number, seatIdx: number) =>
         set((state) => {
           const alreadySelected = state.draft.selections.find(
@@ -265,6 +287,17 @@ export const draftStore = createStore<DraftV2State>()(
             settings.numFactions,
           );
 
+          const numMinorFactions = settings.numMinorFactions;
+          if (!!numMinorFactions) {
+            const otherFactions = state.factionPool.filter(
+              (f) => !draft.availableFactions.includes(f),
+            );
+            draft.availableMinorFactions = fisherYatesShuffle(
+              otherFactions,
+              numMinorFactions,
+            );
+          }
+
           // pre-fill map and slices
           if (config.type === "heisen") {
             // nucleus has a special draft format.
@@ -298,11 +331,66 @@ export const draftStore = createStore<DraftV2State>()(
           draft.players[playerIdx].name = name;
         }),
 
+      // minor faction actions
+      setNumMinorFactionsToDraft: (num: number) =>
+        set(({ draft }) => {
+          draft.settings.numMinorFactions = num;
+        }),
+      randomizeMinorFactions: () =>
+        set(({ draft, factionPool }) => {
+          if (!draft.settings.numMinorFactions) return;
+          const availableFactions = factionPool.filter(
+            (f) => !draft.availableFactions.includes(f),
+          );
+
+          draft.availableMinorFactions = fisherYatesShuffle(
+            availableFactions,
+            draft.settings.numMinorFactions,
+          );
+        }),
+
+      addRandomMinorFaction: () =>
+        set(({ draft, factionPool }) => {
+          if (!draft.settings.numMinorFactions) return;
+          const availableMinorFactions = factionPool.filter(
+            (f) =>
+              !draft.availableFactions.includes(f) &&
+              !draft.availableMinorFactions?.includes(f),
+          );
+          const idx = Math.floor(Math.random() * availableMinorFactions.length);
+          draft.availableMinorFactions?.push(availableMinorFactions[idx]);
+          draft.settings.numMinorFactions += 1;
+        }),
+
+      removeLastMinorFaction: () =>
+        set(({ draft }) => {
+          if (!draft.availableMinorFactions) return;
+          const availableMinorFactions = draft.availableMinorFactions?.slice(
+            0,
+            -1,
+          );
+          draft.settings.numMinorFactions = availableMinorFactions.length;
+          draft.availableMinorFactions = availableMinorFactions;
+        }),
+
+      removeMinorFaction: (id: FactionId) =>
+        set(({ draft }) => {
+          if (!draft.availableMinorFactions) return;
+          draft.settings.numMinorFactions =
+            draft.availableMinorFactions.length - 1;
+          draft.availableMinorFactions = draft.availableMinorFactions.filter(
+            (f) => f !== id,
+          );
+        }),
+
       // faction actions
       randomizeFactions: () =>
         set(({ draft, factionPool }) => {
+          const availableFactions = factionPool.filter(
+            (f) => !draft.availableMinorFactions?.includes(f),
+          );
           draft.availableFactions = fisherYatesShuffle(
-            factionPool,
+            availableFactions,
             draft.settings.numFactions,
           );
         }),
@@ -314,7 +402,9 @@ export const draftStore = createStore<DraftV2State>()(
       addRandomFaction: () =>
         set(({ draft, factionPool }) => {
           const availableFactions = factionPool.filter(
-            (f) => !draft.availableFactions.includes(f),
+            (f) =>
+              !draft.availableFactions.includes(f) &&
+              !draft.availableMinorFactions?.includes(f),
           );
           const idx = Math.floor(Math.random() * availableFactions.length);
           draft.availableFactions.push(availableFactions[idx]);

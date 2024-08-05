@@ -32,6 +32,7 @@ import { useNotifyActivePlayer } from "~/hooks/useNotifyActivePlayer";
 import { FinalizedDraft } from "./components/FinalizedDraft";
 import { SyncDraftContext, useSyncDraftFetcher } from "~/hooks/useSyncDraft";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
+import { DraftableMinorFactionsSection } from "./sections/DraftableMinorFactionsSection";
 
 export default function RunningDraft() {
   const { adminMode } = useOutletContext<{ adminMode: boolean }>();
@@ -121,7 +122,10 @@ export default function RunningDraft() {
           <DraftOrderSection />
         </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 4, sm: 4, lg: 3 }}>
-          <DraftableFactionsSection />
+          <Stack gap="lg">
+            <DraftableFactionsSection />
+            <DraftableMinorFactionsSection />
+          </Stack>
         </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 2, sm: 3, lg: 4 }}>
           <DraftSummarySection />

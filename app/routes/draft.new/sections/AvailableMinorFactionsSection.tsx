@@ -6,33 +6,35 @@ import { IconDice6Filled } from "@tabler/icons-react";
 import { NewDraftFaction } from "../components/NewDraftFaction";
 import { useDraft } from "~/draftStore";
 
-export function AvailableFactionsSection() {
+export function AvailableMinorFactionsSection() {
   const {
-    addRandomFaction,
-    removeLastFaction,
-    randomizeFactions,
-    removeFaction,
+    addRandomMinorFaction,
+    removeLastMinorFaction,
+    randomizeMinorFactions,
+    removeMinorFaction,
   } = useDraft((state) => state.actions);
   const numPreassignedFactions = useDraft(
     (state) => state.draft.settings.numPreassignedFactions,
   );
   const factionPool = useDraft((state) =>
-    state.factionPool.filter(
-      (f) => !state.draft.availableMinorFactions?.includes(f),
-    ),
+    state.factionPool.filter((f) => !state.draft.availableFactions.includes(f)),
   );
-  const { numFactions, availableFactions } = useDraft((state) => ({
-    numFactions: state.draft.settings.numFactions,
-    availableFactions: state.draft.availableFactions,
-  }));
+  const numFactions = useDraft(
+    (state) => state.draft.settings.numMinorFactions,
+  );
+  const availableFactions = useDraft(
+    (state) => state.draft.availableMinorFactions,
+  );
+
+  if (!numFactions || !availableFactions) return null;
 
   return (
     <Section>
-      <SectionTitle title="Faction Pool">
+      <SectionTitle title="Minor Faction Pool">
         <Group>
           <Button
             size="xs"
-            onMouseDown={randomizeFactions}
+            onMouseDown={randomizeMinorFactions}
             color="gray.7"
             variant="filled"
           >
@@ -43,8 +45,8 @@ export function AvailableFactionsSection() {
           {/* cannot change number of factions if using 'bag draft' method */}
           {numPreassignedFactions === undefined && (
             <NumberStepper
-              decrease={removeLastFaction}
-              increase={addRandomFaction}
+              decrease={removeLastMinorFaction}
+              increase={addRandomMinorFaction}
               decreaseDisabled={numFactions <= 6}
               increaseDisabled={numFactions >= factionPool.length}
             />
@@ -61,7 +63,7 @@ export function AvailableFactionsSection() {
             faction={factions[factionId]}
             onRemove={
               numPreassignedFactions === undefined
-                ? () => removeFaction(factionId)
+                ? () => removeMinorFaction(factionId)
                 : undefined
             }
             removeEnabled={availableFactions.length > 6}

@@ -177,6 +177,7 @@ export type DraftSettings = {
   randomizeMap: boolean;
   randomizeSlices: boolean;
   numPreassignedFactions?: number;
+  numMinorFactions?: number;
   modifiers?: DraftModifier[];
   minOptimal?: number;
   maxOptimal?: number;
@@ -262,6 +263,11 @@ export type DraftSelection =
       factionId: FactionId;
     }
   | {
+      type: "SELECT_MINOR_FACTION";
+      playerId: PlayerId;
+      minorFactionId: FactionId;
+    }
+  | {
       type: "SELECT_SEAT";
       playerId: PlayerId;
       seatIdx: number;
@@ -274,6 +280,7 @@ export type Draft = {
   slices: Slice[];
   presetMap: Map;
   availableFactions: FactionId[];
+  availableMinorFactions?: FactionId[];
   pickOrder: PlayerId[];
   selections: DraftSelection[];
   playerFactionPool?: Record<PlayerId, FactionId[]>;
@@ -284,6 +291,7 @@ export type HydratedPlayer = {
   id: number;
   name: string;
   faction?: FactionId;
+  minorFaction?: FactionId;
   seatIdx?: number;
   sliceIdx?: number;
   speakerOrder?: number;
@@ -293,4 +301,5 @@ export type PlayerSelection = {
   playerId: PlayerId;
   sliceIdx?: number;
   seatIdx?: number;
+  minorFaction?: FactionId;
 };

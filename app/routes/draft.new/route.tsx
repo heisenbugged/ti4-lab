@@ -39,6 +39,7 @@ import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraftSettings } from "~/hooks/useDraftSettings";
 import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
 import { shuffle } from "~/draft/helpers/randomization";
+import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -154,7 +155,11 @@ export default function DraftNew() {
 
       <PlanetFinder />
 
-      <AvailableFactionsSection />
+      <Stack>
+        <AvailableFactionsSection />
+        <AvailableMinorFactionsSection />
+      </Stack>
+
       <Box mt="lg">
         <SlicesSection />
       </Box>
@@ -193,8 +198,13 @@ export async function action({ request }: ActionFunctionArgs) {
   );
   const reversedPlayerIds = [...playerIds].reverse();
   const pickOrder = [...playerIds, ...reversedPlayerIds, ...playerIds];
-  // 4th stage to snake draft if picking speaker order separately
+  // add stage to snake draft if picking speaker order separately
   if (body.settings.draftSpeaker) {
+    pickOrder.push(...reversedPlayerIds);
+  }
+
+  // add stage to snake draft if picking minor factions separately
+  if (body.settings.numMinorFactions !== undefined) {
     pickOrder.push(...reversedPlayerIds);
   }
 

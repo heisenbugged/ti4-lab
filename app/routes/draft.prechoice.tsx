@@ -175,6 +175,17 @@ export default function DraftPrechoice() {
   const [selectedMapType, setSelectedMapType] =
     useState<ChoosableDraftType>("milty");
 
+  const handleChangeSelectedMapType = (mapType: ChoosableDraftType) => {
+    setSelectedMapType(mapType);
+
+    // reset all other settings when changing map type
+    setNumPreassignedFactions(undefined);
+    setNumMinorFactions(undefined);
+    setAllowEmptyMapTiles(false);
+    setRandomizeMap(true);
+    setAllowHomePlanetSearch(false);
+  };
+
   const [players, setPlayers] = useState<Player[]>([
     ...[0, 1, 2, 3, 4, 5].map((i) => {
       const discordPlayer = discordData?.players.find(
@@ -206,6 +217,32 @@ export default function DraftPrechoice() {
   const [numPreassignedFactions, setNumPreassignedFactions] = useState<
     number | undefined
   >();
+
+  const [numMinorFactions, setNumMinorFactions] = useState<number | undefined>(
+    undefined,
+  );
+
+  const handleToggleMinorFactions = () => {
+    if (numMinorFactions === undefined) {
+      setNumMinorFactions(7);
+      setAllowEmptyMapTiles(true);
+      setRandomizeMap(false);
+    } else {
+      setNumMinorFactions(undefined);
+      setAllowEmptyMapTiles(false);
+      setRandomizeMap(true);
+    }
+  };
+
+  const handleAddMinorFaction = () => {
+    if (numMinorFactions === undefined) return;
+    setNumMinorFactions(numMinorFactions + 1);
+  };
+
+  const handleRemoveMinorFaction = () => {
+    if (numMinorFactions === undefined) return;
+    setNumMinorFactions(numMinorFactions - 1);
+  };
 
   const handleTogglePreassignedFactions = () => {
     if (numPreassignedFactions === undefined) {
@@ -305,6 +342,7 @@ export default function DraftPrechoice() {
       allowHomePlanetSearch,
       allowEmptyTiles: allowEmptyMapTiles,
       numPreassignedFactions: numPreassignedFactions,
+      numMinorFactions,
       minOptimal: minOptimalTotal,
       maxOptimal: maxOptimalTotal,
     };
@@ -337,24 +375,16 @@ export default function DraftPrechoice() {
         <Text size="lg" fw="bold">
           TI4 Lab supports minor factions (unofficially)!
         </Text>
-        <Text>
-          Due to there being no official rules, minor factions are not directly
-          integrated into the draft, but you can still run a draft with them.
-        </Text>
+
         <Text mt="lg">To run a minor factions draft:</Text>
         <List mt="lg" mx="sm">
-          <List.Item>
-            Enable 'Allow search of home planets' in advanced settings.
-          </List.Item>
-          <List.Item>
-            Enable 'Allow empty map tiles' in advanced settings.
-          </List.Item>
           <List.Item>Use Milty EQ as the draft format.</List.Item>
+          <List.Item>Click 'Minor factions' in advanced settings.</List.Item>
+          <List.Item>Specify the number of minor factions to draft.</List.Item>
         </List>
         <Text mt="lg">
-          You can place home systems on the map before the draft begins, or
-          during the draft by flipping 'admin mode' on. The actual process of
-          drafting the minor factions is up to you.
+          Minor factions are drafted like regular factions, but they are placed
+          in the left equidistant system slots.
         </Text>
       </Modal>
       <Modal
@@ -460,7 +490,7 @@ export default function DraftPrechoice() {
                       setHoveredMapType(type as ChoosableDraftType)
                     }
                     onMouseDown={() =>
-                      setSelectedMapType(type as ChoosableDraftType)
+                      handleChangeSelectedMapType(type as ChoosableDraftType)
                     }
                   >
                     {title}
@@ -538,7 +568,8 @@ export default function DraftPrechoice() {
                     !!numPreassignedFactions || numFactions <= playerCount
                   }
                   increaseDisabled={
-                    !!numPreassignedFactions || numFactions >= maxFactionCount
+                    !!numPreassignedFactions ||
+                    numFactions >= maxFactionCount - (numMinorFactions ?? 0)
                   }
                 />
               </Box>
@@ -559,6 +590,36 @@ export default function DraftPrechoice() {
               </Box>
             </Input.Wrapper>
 
+            {mapType === "miltyeq" && (
+              <Group>
+                <Switch
+                  label="Minor factions"
+                  description="Will provide a pool of 'minor factions' to draft. Minor factions are placed in the left equidistant system slots."
+                  checked={Number(numMinorFactions) > 0}
+                  onChange={handleToggleMinorFactions}
+                />
+
+                {numMinorFactions !== undefined && (
+                  <Input.Wrapper
+                    label="# of Minor Factions"
+                    // description="The number factions available for the draft. Recommended is player count + 3. Can be changed during draft building."
+                  >
+                    <Box mt="xs">
+                      <NumberStepper
+                        value={numMinorFactions}
+                        decrease={handleRemoveMinorFaction}
+                        increase={handleAddMinorFaction}
+                        decreaseDisabled={numMinorFactions <= playerCount}
+                        increaseDisabled={
+                          numMinorFactions >= maxFactionCount - numFactions
+                        }
+                      />
+                    </Box>
+                  </Input.Wrapper>
+                )}
+              </Group>
+            )}
+
             <Switch
               label="Randomize slices"
               description="Prepopulate the slices with random systems. Setting can be changed during draft building. All slices are manually editable."
@@ -571,7 +632,9 @@ export default function DraftPrechoice() {
               description="Prepopulate the map with random systems. All map systems are manually editable."
               checked={randomizeMap}
               onChange={() => setRandomizeMap((v) => !v)}
-              disabled={!showRandomizeMapTiles}
+              disabled={
+                !showRandomizeMapTiles || numMinorFactions !== undefined
+              }
             />
 
             <Stack>
@@ -684,6 +747,7 @@ export default function DraftPrechoice() {
                 description="Will allow starting a draft even if not every tile is filled"
                 checked={allowEmptyMapTiles}
                 onChange={() => setAllowEmptyMapTiles((v) => !v)}
+                disabled={!!numMinorFactions}
               />
             </Stack>
           </Collapse>

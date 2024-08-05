@@ -1,4 +1,6 @@
+import { factions } from "~/data/factionData";
 import { mapStringOrder } from "~/data/mapStringOrder";
+import { factionSystems, systemData } from "~/data/systemData";
 import { DraftConfig } from "~/draft/types";
 import {
   Slice,
@@ -23,6 +25,7 @@ export const playerSpeakerOrder = [
   "5th",
   "6th",
 ];
+const miltyEqLeftEquidistants = [8, 10, 12, 14, 16, 18];
 export const playerLetters = ["a", "b", "c", "d", "e", "f"];
 
 export const isTileModifiable = (config: DraftConfig, tileIdx: number) =>
@@ -68,6 +71,18 @@ export function hydrateMap(
         };
       }
     });
+  });
+
+  // add minor factions to left equidistsant
+  selections.forEach((selection) => {
+    if (selection.minorFaction && selection.seatIdx !== undefined) {
+      const idx = miltyEqLeftEquidistants[selection.seatIdx];
+      hydrated[idx] = {
+        ...hydrated[idx],
+        type: "SYSTEM",
+        systemId: factionSystems[selection.minorFaction].id,
+      };
+    }
   });
 
   return hydrated;
