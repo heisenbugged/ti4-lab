@@ -75,13 +75,20 @@ export function hydrateMap(
 
   // add minor factions to left equidistsant
   selections.forEach((selection) => {
-    if (selection.minorFaction && selection.seatIdx !== undefined) {
+    if (
+      selection.minorFaction !== undefined &&
+      selection.seatIdx !== undefined
+    ) {
       const idx = miltyEqLeftEquidistants[selection.seatIdx];
-      hydrated[idx] = {
-        ...hydrated[idx],
-        type: "SYSTEM",
-        systemId: factionSystems[selection.minorFaction].id,
-      };
+      const factionSystem = factionSystems[selection.minorFaction];
+      // council keleres has no system, so we skip it.
+      if (factionSystem) {
+        hydrated[idx] = {
+          ...hydrated[idx],
+          type: "SYSTEM",
+          systemId: factionSystems[selection.minorFaction].id,
+        };
+      }
     }
   });
 

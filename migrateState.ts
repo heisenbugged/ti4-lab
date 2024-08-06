@@ -9,8 +9,6 @@ import { DiscordData, Draft, DraftSelection, Slice, Tile } from "~/types";
 async function migrateState() {
   const records = await findDrafts();
   records.forEach(async (draft) => {
-    //
-
     // parce updated-at as utc string
     const updatedAt = new Date(draft.updatedAt);
     // calculate how many days ago updatedAt is

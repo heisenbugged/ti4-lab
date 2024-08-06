@@ -238,7 +238,7 @@ export const draftStore = createStore<DraftV2State>()(
       selectMinorFaction: (playerId: number, minorFactionId: FactionId) =>
         set((state) => {
           const alreadySelected = state.draft.selections.find(
-            (s) => s.playerId === playerId && s.type === "SELECT_FACTION",
+            (s) => s.playerId === playerId && s.type === "SELECT_MINOR_FACTION",
           );
           if (alreadySelected) return;
 

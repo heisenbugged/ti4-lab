@@ -204,7 +204,10 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   // add stage to snake draft if picking minor factions separately
-  if (body.settings.numMinorFactions !== undefined) {
+  if (
+    body.settings.numMinorFactions !== undefined ||
+    body.settings.minorFactionsInSharedPool
+  ) {
     pickOrder.push(...reversedPlayerIds);
   }
 

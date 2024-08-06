@@ -218,19 +218,45 @@ export default function DraftPrechoice() {
     number | undefined
   >();
 
+  const [minorFactionsEnabled, setMinorFactionsEnabled] =
+    useState<boolean>(false);
   const [numMinorFactions, setNumMinorFactions] = useState<number | undefined>(
     undefined,
   );
+  const [minorFactionsInSharedPool, setMinorFactionsInSharedPool] =
+    useState<boolean>(false);
 
   const handleToggleMinorFactions = () => {
-    if (numMinorFactions === undefined) {
-      setNumMinorFactions(7);
+    // toggling to true
+    if (!minorFactionsEnabled) {
+      setMinorFactionsEnabled(true);
+      setMinorFactionsInSharedPool(false);
+      setNumMinorFactions(playerCount);
       setAllowEmptyMapTiles(true);
       setRandomizeMap(false);
     } else {
+      // toggling to false
+      setMinorFactionsEnabled(false);
+      setMinorFactionsInSharedPool(false);
       setNumMinorFactions(undefined);
       setAllowEmptyMapTiles(false);
       setRandomizeMap(true);
+    }
+  };
+
+  const handleToggleMinorFactionsInSharedPool = () => {
+    // if toggling to true, we need at least 2*player count in factions
+    if (minorFactionsInSharedPool === false) {
+      setNumFactions(playerCount * 2);
+      setNumMinorFactions(undefined);
+      setMinorFactionsInSharedPool(true);
+    } else {
+      // toggling to false
+      if (minorFactionsEnabled) {
+        setNumMinorFactions(playerCount);
+      }
+      setNumPreassignedFactions(undefined);
+      setMinorFactionsInSharedPool(false);
     }
   };
 
@@ -310,6 +336,11 @@ export default function DraftPrechoice() {
 
   const maxFactionCount = getFactionCount(gameSets);
   const maxPreassigned = Math.floor(maxFactionCount / playerCount);
+  const minNumFactions = minorFactionsInSharedPool
+    ? playerCount * 2
+    : playerCount;
+
+  const maxNumFactions = maxFactionCount - (numMinorFactions ?? 0);
 
   useEffect(() => {
     if (numFactions > maxFactionCount) {
@@ -341,11 +372,17 @@ export default function DraftPrechoice() {
       draftSpeaker: config?.type === "heisen",
       allowHomePlanetSearch,
       allowEmptyTiles: allowEmptyMapTiles,
-      numPreassignedFactions: numPreassignedFactions,
-      numMinorFactions,
+      numPreassignedFactions,
       minOptimal: minOptimalTotal,
       maxOptimal: maxOptimalTotal,
     };
+
+    // both cannot be set at the same time
+    if (minorFactionsInSharedPool) {
+      draftSettings.minorFactionsInSharedPool = true;
+    } else if (numMinorFactions !== undefined) {
+      draftSettings.numMinorFactions = numMinorFactions;
+    }
 
     navigate("/draft/new", {
       state: {
@@ -565,7 +602,7 @@ export default function DraftPrechoice() {
                   decrease={() => setNumFactions((v) => v - 1)}
                   increase={() => setNumFactions((v) => v + 1)}
                   decreaseDisabled={
-                    !!numPreassignedFactions || numFactions <= playerCount
+                    !!numPreassignedFactions || numFactions <= minNumFactions
                   }
                   increaseDisabled={
                     !!numPreassignedFactions ||
@@ -574,6 +611,48 @@ export default function DraftPrechoice() {
                 />
               </Box>
             </Input.Wrapper>
+
+            {mapType === "miltyeq" && (
+              <Group>
+                <Switch
+                  label="Minor factions"
+                  description="Will provide a pool of 'minor factions' to draft. Minor factions are placed in the left equidistant system slots."
+                  checked={minorFactionsEnabled}
+                  onChange={handleToggleMinorFactions}
+                />
+
+                {minorFactionsEnabled && (
+                  <Group align="center" justify="center" mb="lg" mx="md">
+                    <Input.Wrapper
+                      label="# of Minor Factions"
+                      opacity={minorFactionsInSharedPool ? 0.5 : 1}
+                    >
+                      <Box mt="xs">
+                        <NumberStepper
+                          value={numMinorFactions}
+                          decrease={handleRemoveMinorFaction}
+                          increase={handleAddMinorFaction}
+                          decreaseDisabled={
+                            minorFactionsInSharedPool ||
+                            Number(numMinorFactions) <= playerCount
+                          }
+                          increaseDisabled={
+                            minorFactionsInSharedPool ||
+                            Number(numMinorFactions) >= maxNumFactions
+                          }
+                        />
+                      </Box>
+                    </Input.Wrapper>
+                    <Text>OR</Text>
+                    <Checkbox
+                      label="Minor factions in shared pool"
+                      checked={minorFactionsInSharedPool}
+                      onChange={handleToggleMinorFactionsInSharedPool}
+                    />
+                  </Group>
+                )}
+              </Group>
+            )}
 
             <Input.Wrapper
               label="# of Slices"
@@ -589,53 +668,6 @@ export default function DraftPrechoice() {
                 />
               </Box>
             </Input.Wrapper>
-
-            {mapType === "miltyeq" && (
-              <Group>
-                <Switch
-                  label="Minor factions"
-                  description="Will provide a pool of 'minor factions' to draft. Minor factions are placed in the left equidistant system slots."
-                  checked={Number(numMinorFactions) > 0}
-                  onChange={handleToggleMinorFactions}
-                />
-
-                {numMinorFactions !== undefined && (
-                  <Input.Wrapper
-                    label="# of Minor Factions"
-                    // description="The number factions available for the draft. Recommended is player count + 3. Can be changed during draft building."
-                  >
-                    <Box mt="xs">
-                      <NumberStepper
-                        value={numMinorFactions}
-                        decrease={handleRemoveMinorFaction}
-                        increase={handleAddMinorFaction}
-                        decreaseDisabled={numMinorFactions <= playerCount}
-                        increaseDisabled={
-                          numMinorFactions >= maxFactionCount - numFactions
-                        }
-                      />
-                    </Box>
-                  </Input.Wrapper>
-                )}
-              </Group>
-            )}
-
-            <Switch
-              label="Randomize slices"
-              description="Prepopulate the slices with random systems. Setting can be changed during draft building. All slices are manually editable."
-              checked={randomizeSlices}
-              onChange={() => setRandomizeSlices((v) => !v)}
-            />
-
-            <Switch
-              label="Randomize Map Tiles"
-              description="Prepopulate the map with random systems. All map systems are manually editable."
-              checked={randomizeMap}
-              onChange={() => setRandomizeMap((v) => !v)}
-              disabled={
-                !showRandomizeMapTiles || numMinorFactions !== undefined
-              }
-            />
 
             <Stack>
               <Checkbox
@@ -722,6 +754,7 @@ export default function DraftPrechoice() {
                   description="If turned on, will pre-assign a 'bag' of # factions to each player. A player then chooses a faction only from their assigned 'bag' during the draft."
                   checked={Number(numPreassignedFactions) > 0}
                   onChange={handleTogglePreassignedFactions}
+                  disabled={minorFactionsInSharedPool}
                 />
 
                 {numPreassignedFactions !== undefined && (
@@ -747,7 +780,24 @@ export default function DraftPrechoice() {
                 description="Will allow starting a draft even if not every tile is filled"
                 checked={allowEmptyMapTiles}
                 onChange={() => setAllowEmptyMapTiles((v) => !v)}
-                disabled={!!numMinorFactions}
+                disabled={!!minorFactionsEnabled}
+              />
+
+              <Switch
+                label="Randomize slices"
+                description="Prepopulate the slices with random systems. Setting can be changed during draft building. All slices are manually editable."
+                checked={randomizeSlices}
+                onChange={() => setRandomizeSlices((v) => !v)}
+              />
+
+              <Switch
+                label="Randomize Map Tiles"
+                description="Prepopulate the map with random systems. All map systems are manually editable."
+                checked={randomizeMap}
+                onChange={() => setRandomizeMap((v) => !v)}
+                disabled={
+                  !showRandomizeMapTiles || numMinorFactions !== undefined
+                }
               />
             </Stack>
           </Collapse>

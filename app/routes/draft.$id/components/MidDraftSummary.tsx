@@ -19,6 +19,11 @@ export function MidDraftSummary() {
   const slices = useDraft((state) => state.draft.slices);
   const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
   const { hydratedPlayers } = useHydratedDraft();
+  const usingMinorFactions = useDraft(
+    (state) =>
+      state.draft.settings.minorFactionsInSharedPool ||
+      state.draft.availableMinorFactions !== undefined,
+  );
   const playerOrder = useDraft((state) => state.draft.pickOrder).slice(
     0,
     hydratedPlayers.length,
@@ -42,6 +47,7 @@ export function MidDraftSummary() {
           <Table.Tr>
             <Table.Th>Name</Table.Th>
             <Table.Th>Faction</Table.Th>
+            {usingMinorFactions && <Table.Th>Minor Faction</Table.Th>}
             <Table.Th>Speaker Order</Table.Th>
             {draftSpeaker && <Table.Th>Seat</Table.Th>}
             <Table.Th w="260px">Slice</Table.Th>
@@ -62,6 +68,7 @@ export function MidDraftSummary() {
                     : undefined
                 }
                 showSeat={draftSpeaker}
+                showMinorFaction={usingMinorFactions}
               />
             );
           })}
@@ -76,10 +83,12 @@ type Props = {
   player: HydratedPlayer;
   slice?: Slice;
   showSeat: boolean;
+  showMinorFaction: boolean;
 };
 
 export function SummaryCard({ player, slice, showSeat }: Props) {
   let faction: Faction | undefined;
+  let minorFaction: Faction | undefined;
   let systems: System[] | undefined;
   let optimal:
     | { resources: number; influence: number; flex: number }
@@ -87,6 +96,7 @@ export function SummaryCard({ player, slice, showSeat }: Props) {
   let specialties: string[] | undefined;
 
   if (player.faction) faction = factions[player.faction];
+  if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
     optimal = optimalStatsForSystems(systems);
@@ -123,6 +133,19 @@ export function SummaryCard({ player, slice, showSeat }: Props) {
         {slice !== undefined && <SliceFeatures slice={slice} />}
       </Group>
 
+      {minorFaction && (
+        <Group justify="space-between" mt="lg">
+          <Stack gap="xs">
+            <Text size="sm" lh={1}>
+              Minor Faction:{" "}
+              {player.minorFaction !== undefined
+                ? minorFaction.name
+                : "Not Chosen"}
+            </Text>
+          </Stack>
+        </Group>
+      )}
+
       <Group justify="space-between" mt="lg">
         <Stack gap="xs">
           <Text size="sm" lh={1}>
@@ -143,8 +166,9 @@ export function SummaryCard({ player, slice, showSeat }: Props) {
   );
 }
 
-function SummaryRow({ player, slice, showSeat }: Props) {
+function SummaryRow({ player, slice, showSeat, showMinorFaction }: Props) {
   let faction: Faction | undefined;
+  let minorFaction: Faction | undefined;
   let systems: System[] | undefined;
   let optimal:
     | { resources: number; influence: number; flex: number }
@@ -152,6 +176,7 @@ function SummaryRow({ player, slice, showSeat }: Props) {
   let specialties: string[] | undefined;
 
   if (player.faction) faction = factions[player.faction];
+  if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
     optimal = optimalStatsForSystems(systems);
@@ -173,6 +198,21 @@ function SummaryRow({ player, slice, showSeat }: Props) {
           </Group>
         ) : undefined}
       </Table.Td>
+      {showMinorFaction && (
+        <Table.Td>
+          {minorFaction ? (
+            <Group>
+              <FactionIcon
+                faction={player.minorFaction!}
+                style={{ height: 18 }}
+              />
+              <Text size="sm" lh={1}>
+                {minorFaction.name}
+              </Text>
+            </Group>
+          ) : undefined}
+        </Table.Td>
+      )}
       <Table.Td>
         {player.speakerOrder !== undefined && player.speakerOrder + 1}
       </Table.Td>

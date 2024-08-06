@@ -178,6 +178,7 @@ export type DraftSettings = {
   randomizeSlices: boolean;
   numPreassignedFactions?: number;
   numMinorFactions?: number;
+  minorFactionsInSharedPool?: boolean;
   modifiers?: DraftModifier[];
   minOptimal?: number;
   maxOptimal?: number;

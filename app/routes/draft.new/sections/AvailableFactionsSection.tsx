@@ -21,6 +21,7 @@ export function AvailableFactionsSection() {
       (f) => !state.draft.availableMinorFactions?.includes(f),
     ),
   );
+
   const { numFactions, availableFactions } = useDraft((state) => ({
     numFactions: state.draft.settings.numFactions,
     availableFactions: state.draft.availableFactions,

@@ -25,16 +25,27 @@ export function DraftableFactionsSection() {
 
 function PoolFactionSelection() {
   const factions = useDraft((state) => state.draft.availableFactions);
-  const { selectFaction } = useDraft((state) => state.draftActions);
+  const minorFactionsInSharedPool = useDraft(
+    (state) => state.draft.settings.minorFactionsInSharedPool,
+  );
+  const { selectFaction, selectMinorFaction } = useDraft(
+    (state) => state.draftActions,
+  );
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
 
   const { syncDraft } = useSyncDraft();
   const canSelect = currentlyPicking && activePlayer?.faction === undefined;
+  const canSelectMinor =
+    currentlyPicking && activePlayer?.minorFaction === undefined;
+
   return (
     <SimpleGrid cols={{ base: 2, sm: 3, md: 4, lg: 3, xl: 4 }}>
       {factions.map((factionId) => {
-        const player = hydratedPlayers.find((p) => p.faction === factionId);
+        const player = hydratedPlayers.find(
+          (p) => p.faction === factionId || p.minorFaction === factionId,
+        );
+
         return (
           <DraftableFaction
             key={factionId}
@@ -45,6 +56,14 @@ function PoolFactionSelection() {
               canSelect
                 ? () => {
                     selectFaction(activePlayer.id, factionId);
+                    syncDraft();
+                  }
+                : undefined
+            }
+            onSelectMinor={
+              canSelectMinor && minorFactionsInSharedPool
+                ? () => {
+                    selectMinorFaction(activePlayer.id, factionId);
                     syncDraft();
                   }
                 : undefined

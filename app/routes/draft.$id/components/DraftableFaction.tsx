@@ -1,6 +1,6 @@
 import { Box, Button, Flex, Group, Modal, Stack, Text } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
-import { Player, Faction } from "~/types";
+import { Player, Faction, HydratedPlayer } from "~/types";
 import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
 import { IconEye } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -10,9 +10,10 @@ import { playerColors } from "~/data/factionData";
 
 type Props = {
   faction: Faction;
-  player?: Player;
+  player?: HydratedPlayer;
   disabled?: boolean;
   onSelect?: () => void;
+  onSelectMinor?: () => void;
 };
 
 export function DraftableFaction({
@@ -20,6 +21,7 @@ export function DraftableFaction({
   player,
   disabled = false,
   onSelect,
+  onSelectMinor,
 }: Props) {
   const [opened, { open, close }] = useDisclosure();
   const playerColor =
@@ -87,7 +89,9 @@ export function DraftableFaction({
       <PlayerChipOrSelect
         player={player}
         onSelect={onSelect}
+        onSelectMinor={onSelectMinor}
         disabled={disabled}
+        isMinor={player?.minorFaction === faction.id}
       />
     </Stack>
   );
