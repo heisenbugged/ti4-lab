@@ -20,15 +20,17 @@ function generateSlices(sliceCount: number, availableSystems: SystemId[]) {
     );
 
     if (allRed) {
-      const blueSystems = availableSystems.filter(
+      const blueSystems = slice.filter(
         (systemId) => systemData[systemId].type === "BLUE",
       );
       const candidate = shuffle(blueSystems)[0];
       const blueIdx = slice.findIndex((s) => s === candidate);
-      const redIdx = Math.random() > 0.5 ? 0 : 2;
+      const redSystem = candidates[Math.random() > 0.5 ? 0 : 1];
+      const redIdx = slice.findIndex((s) => s === redSystem);
+      const blueSystem = slice[blueIdx];
 
-      slice[blueIdx] = candidates[redIdx];
-      slice[redIdx] = candidate;
+      slice[redIdx] = blueSystem;
+      slice[blueIdx] = redSystem;
     }
   });
 
