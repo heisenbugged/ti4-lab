@@ -55,16 +55,28 @@ function PoolFactionSelection() {
             onSelect={
               canSelect
                 ? () => {
-                    selectFaction(activePlayer.id, factionId);
-                    syncDraft();
+                    if (
+                      confirm(
+                        `Selecting faction ${allFactions[factionId].name}`,
+                      )
+                    ) {
+                      selectFaction(activePlayer.id, factionId);
+                      syncDraft();
+                    }
                   }
                 : undefined
             }
             onSelectMinor={
               canSelectMinor && minorFactionsInSharedPool
                 ? () => {
-                    selectMinorFaction(activePlayer.id, factionId);
-                    syncDraft();
+                    if (
+                      confirm(
+                        `Selecting minor faction ${allFactions[factionId].name}`,
+                      )
+                    ) {
+                      selectMinorFaction(activePlayer.id, factionId);
+                      syncDraft();
+                    }
                   }
                 : undefined
             }
@@ -125,8 +137,14 @@ function GroupedFactionSelection({
                   onSelect={
                     canSelect && player.id === activePlayer.id
                       ? () => {
-                          selectFaction(activePlayer.id, factionId);
-                          syncDraft();
+                          if (
+                            confirm(
+                              `Selecting faction ${allFactions[factionId].name}`,
+                            )
+                          ) {
+                            selectFaction(activePlayer.id, factionId);
+                            syncDraft();
+                          }
                         }
                       : undefined
                   }

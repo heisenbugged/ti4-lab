@@ -45,8 +45,10 @@ export function MapSection() {
           onSelectHomeTile={
             canSelect
               ? (tile) => {
-                  selectSeat(activePlayer.id, tile.seat!);
-                  syncDraft();
+                  if (confirm(`Selecting seat ${(tile.seat ?? 0) + 1}`)) {
+                    selectSeat(activePlayer.id, tile.seat!);
+                    syncDraft();
+                  }
                 }
               : undefined
           }

@@ -37,8 +37,10 @@ export function SlicesSection() {
             onSelect={
               canSelect
                 ? () => {
-                    selectSlice(activePlayer.id, idx);
-                    syncDraft();
+                    if (confirm(`Selecting ${slice.name}`)) {
+                      selectSlice(activePlayer.id, idx);
+                      syncDraft();
+                    }
                   }
                 : undefined
             }

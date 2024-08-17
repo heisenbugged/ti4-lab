@@ -34,8 +34,10 @@ export function SpeakerOrderSection() {
               speakerOrder={so}
               player={player}
               onSelect={() => {
-                selectSpeakerOrder(activePlayer.id, idx);
-                syncDraft();
+                if (confirm(`Selecting speaker order position ${so}`)) {
+                  selectSpeakerOrder(activePlayer.id, idx);
+                  syncDraft();
+                }
               }}
               canSelectSpeakerOrder={canSelect}
             />

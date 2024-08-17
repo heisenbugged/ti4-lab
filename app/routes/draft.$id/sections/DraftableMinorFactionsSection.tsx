@@ -34,8 +34,14 @@ export function DraftableMinorFactionsSection() {
               onSelect={
                 canSelect
                   ? () => {
-                      selectMinorFaction(activePlayer.id, factionId);
-                      syncDraft();
+                      if (
+                        confirm(
+                          `Selecting minor faction ${allFactions[factionId].name}`,
+                        )
+                      ) {
+                        selectMinorFaction(activePlayer.id, factionId);
+                        syncDraft();
+                      }
                     }
                   : undefined
               }
