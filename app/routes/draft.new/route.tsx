@@ -40,6 +40,7 @@ import { useDraftSettings } from "~/hooks/useDraftSettings";
 import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
 import { shuffle } from "~/draft/helpers/randomization";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
+import { FactionSettingsModal } from "./components/FactionSettingsModal";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -144,6 +145,8 @@ export default function DraftNew() {
           <DiscordBanner />
         </Box>
       )}
+
+      <FactionSettingsModal />
 
       <ExportMapModal
         // TODO: Implement actual map string

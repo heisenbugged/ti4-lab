@@ -45,9 +45,12 @@ type DraftV2State = {
   draft: Draft;
 
   factionPool: FactionId[];
+  requiredFactions: FactionId[] | null;
+  allowedFactions: FactionId[] | null;
   systemPool: SystemId[];
 
   selectedPlayer?: PlayerId;
+  factionSettingsModal: boolean;
   planetFinderModal?:
     | {
         mode: "map";
@@ -78,6 +81,14 @@ type DraftV2State = {
 
     setDraftSpeaker: (draftSpeaker: boolean) => void;
     updatePlayerName: (playerIdx: number, name: string) => void;
+
+    // faction settings
+    openFactionSettings: () => void;
+    closeFactionSettings: () => void;
+    changeFactionSettings: (
+      availableFactions: FactionId[],
+      requiredFactions: FactionId[],
+    ) => void;
 
     // faction actions
     randomizeFactions: () => void;
@@ -148,21 +159,18 @@ const initialState = {
   initialized: false,
   hydrated: false,
   factionPool: [],
+  requiredFactions: null,
+  allowedFactions: null,
   systemPool: [],
   planetFinderModal: undefined,
+  factionSettingsModal: false,
   selectedPlayer: undefined,
   draft: emptyDraft(),
 };
 
 export const draftStore = createStore<DraftV2State>()(
   immer((set) => ({
-    initialized: false,
-    hydrated: false,
-    factionPool: [],
-    systemPool: [],
-    planetFinderModal: undefined,
-    selectedPlayer: undefined,
-    draft: emptyDraft(),
+    ...initialState,
     draftActions: {
       hydrate: (draftId: string, draftUrl: string, draft: Draft) => {
         // reset before changing
@@ -264,6 +272,33 @@ export const draftStore = createStore<DraftV2State>()(
         }),
     },
     actions: {
+      openFactionSettings: () =>
+        set((state) => {
+          state.factionSettingsModal = true;
+        }),
+
+      closeFactionSettings: () =>
+        set((state) => {
+          state.factionSettingsModal = false;
+        }),
+
+      changeFactionSettings: (
+        availableFactions: FactionId[],
+        requiredFactions: FactionId[],
+      ) =>
+        set((state) => {
+          state.requiredFactions = requiredFactions;
+          state.allowedFactions = availableFactions;
+          state.factionSettingsModal = false;
+
+          state.draft.availableFactions = randomizeFactions(
+            state.draft.settings.numFactions,
+            state.factionPool,
+            state.draft.availableMinorFactions ?? [],
+            requiredFactions,
+            availableFactions,
+          );
+        }),
       initializeDraft: (
         settings: DraftSettings,
         players: Player[],
@@ -282,9 +317,12 @@ export const draftStore = createStore<DraftV2State>()(
           state.factionPool = getFactionPool(settings.gameSets);
           state.systemPool = getSystemPool(settings.gameSets);
 
-          draft.availableFactions = fisherYatesShuffle(
-            state.factionPool,
+          draft.availableFactions = randomizeFactions(
             settings.numFactions,
+            state.factionPool,
+            [],
+            state.requiredFactions,
+            state.allowedFactions,
           );
 
           const numMinorFactions = settings.numMinorFactions;
@@ -385,13 +423,13 @@ export const draftStore = createStore<DraftV2State>()(
 
       // faction actions
       randomizeFactions: () =>
-        set(({ draft, factionPool }) => {
-          const availableFactions = factionPool.filter(
-            (f) => !draft.availableMinorFactions?.includes(f),
-          );
-          draft.availableFactions = fisherYatesShuffle(
-            availableFactions,
+        set(({ draft, factionPool, requiredFactions, allowedFactions }) => {
+          draft.availableFactions = randomizeFactions(
             draft.settings.numFactions,
+            factionPool,
+            draft.availableMinorFactions ?? [],
+            requiredFactions,
+            allowedFactions,
           );
         }),
 
@@ -400,8 +438,10 @@ export const draftStore = createStore<DraftV2State>()(
           draft.settings.numFactions = num;
         }),
       addRandomFaction: () =>
-        set(({ draft, factionPool }) => {
-          const availableFactions = factionPool.filter(
+        set((state) => {
+          const { draft, factionPool } = state;
+          const pool = state.allowedFactions ?? factionPool;
+          const availableFactions = pool.filter(
             (f) =>
               !draft.availableFactions.includes(f) &&
               !draft.availableMinorFactions?.includes(f),
@@ -660,9 +700,29 @@ function randomizeMap(
   return map;
 }
 
-const findNumAlphas = (systems: SystemId[]) =>
-  systems.filter((s) => systemData[s].wormholes.includes("ALPHA")).length;
-const findNumBetas = (systems: SystemId[]) =>
-  systems.filter((s) => systemData[s].wormholes.includes("BETA")).length;
-const findNumLegendaries = (systems: SystemId[]) =>
-  systems.filter((s) => systemData[s].planets.find((p) => p.legendary)).length;
+function randomizeFactions(
+  numFactions: number,
+  factionPool: FactionId[],
+  availableMinorFactions: FactionId[],
+  requiredFactions: FactionId[] | null,
+  allowedFactions: FactionId[] | null,
+) {
+  const availableFactions = [...(requiredFactions ?? [])];
+  const remainingToPull = numFactions - availableFactions.length;
+
+  if (remainingToPull > 0) {
+    const toPullFrom = allowedFactions ? allowedFactions : factionPool;
+    availableFactions.push(
+      ...fisherYatesShuffle(
+        toPullFrom.filter(
+          (f) =>
+            !availableFactions.includes(f) &&
+            !availableMinorFactions.includes(f),
+        ),
+        remainingToPull,
+      ),
+    );
+  }
+
+  return availableFactions;
+}

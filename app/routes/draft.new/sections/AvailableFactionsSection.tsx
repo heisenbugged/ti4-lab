@@ -2,7 +2,7 @@ import { Button, Group, SimpleGrid, Text } from "@mantine/core";
 import { factions } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
 import { NumberStepper } from "~/components/NumberStepper";
-import { IconDice6Filled } from "@tabler/icons-react";
+import { IconDice6Filled, IconSettings } from "@tabler/icons-react";
 import { NewDraftFaction } from "../components/NewDraftFaction";
 import { useDraft } from "~/draftStore";
 
@@ -12,12 +12,14 @@ export function AvailableFactionsSection() {
     removeLastFaction,
     randomizeFactions,
     removeFaction,
+    openFactionSettings,
   } = useDraft((state) => state.actions);
+
   const numPreassignedFactions = useDraft(
     (state) => state.draft.settings.numPreassignedFactions,
   );
   const factionPool = useDraft((state) =>
-    state.factionPool.filter(
+    (state.allowedFactions ?? state.factionPool).filter(
       (f) => !state.draft.availableMinorFactions?.includes(f),
     ),
   );
@@ -38,6 +40,15 @@ export function AvailableFactionsSection() {
             variant="filled"
           >
             <IconDice6Filled size={24} />
+          </Button>
+
+          <Button
+            size="xs"
+            onMouseDown={openFactionSettings}
+            color="gray.7"
+            variant="filled"
+          >
+            <IconSettings size={24} />
           </Button>
 
           <Text># factions: {numFactions}</Text>
