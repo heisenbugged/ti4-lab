@@ -950,7 +950,7 @@ export const rawSystems: Record<string, RawSystem> = {
     id: "73",
     planets: [
       {
-        name: "Lisis",
+        name: "Cealdri",
         resources: 0,
         influence: 2,
         tech: "CYBERNETIC",
