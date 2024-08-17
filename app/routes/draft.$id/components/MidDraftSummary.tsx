@@ -17,6 +17,9 @@ import classes from "./MidDraftSummary.module.css";
 export function MidDraftSummary() {
   const config = useDraftConfig();
   const slices = useDraft((state) => state.draft.slices);
+  const draftPlayerColors = useDraft(
+    (state) => state.draft.settings.draftPlayerColors,
+  );
   const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
   const { hydratedPlayers } = useHydratedDraft();
   const usingMinorFactions = useDraft(
@@ -39,6 +42,8 @@ export function MidDraftSummary() {
             player={p}
             slice={p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined}
             showSeat={draftSpeaker}
+            showMinorFaction={usingMinorFactions}
+            showPlayerColor={!!draftPlayerColors}
           />
         ))}
       </Stack>
@@ -51,6 +56,7 @@ export function MidDraftSummary() {
             <Table.Th>Speaker Order</Table.Th>
             {draftSpeaker && <Table.Th>Seat</Table.Th>}
             <Table.Th w="260px">Slice</Table.Th>
+            {draftPlayerColors && <Table.Th>Color</Table.Th>}
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -69,6 +75,7 @@ export function MidDraftSummary() {
                 }
                 showSeat={draftSpeaker}
                 showMinorFaction={usingMinorFactions}
+                showPlayerColor={!!draftPlayerColors}
               />
             );
           })}
@@ -84,9 +91,15 @@ type Props = {
   slice?: Slice;
   showSeat: boolean;
   showMinorFaction: boolean;
+  showPlayerColor: boolean;
 };
 
-export function SummaryCard({ player, slice, showSeat }: Props) {
+export function SummaryCard({
+  player,
+  slice,
+  showSeat,
+  showPlayerColor,
+}: Props) {
   let faction: Faction | undefined;
   let minorFaction: Faction | undefined;
   let systems: System[] | undefined;
@@ -146,6 +159,12 @@ export function SummaryCard({ player, slice, showSeat }: Props) {
         </Group>
       )}
 
+      {showPlayerColor && (
+        <Text size="sm" lh={1}>
+          Color: {player.factionColor}
+        </Text>
+      )}
+
       <Group justify="space-between" mt="lg">
         <Stack gap="xs">
           <Text size="sm" lh={1}>
@@ -166,7 +185,13 @@ export function SummaryCard({ player, slice, showSeat }: Props) {
   );
 }
 
-function SummaryRow({ player, slice, showSeat, showMinorFaction }: Props) {
+function SummaryRow({
+  player,
+  slice,
+  showSeat,
+  showMinorFaction,
+  showPlayerColor,
+}: Props) {
   let faction: Faction | undefined;
   let minorFaction: Faction | undefined;
   let systems: System[] | undefined;
@@ -234,6 +259,7 @@ function SummaryRow({ player, slice, showSeat, showMinorFaction }: Props) {
           {slice !== undefined && <SliceFeatures slice={slice} />}
         </Group>
       </Table.Td>
+      {showPlayerColor && <Table.Td>{player.factionColor}</Table.Td>}
     </Table.Tr>
   );
 }

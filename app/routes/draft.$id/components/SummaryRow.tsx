@@ -11,9 +11,15 @@ type Props = {
   player: HydratedPlayer;
   slice: Slice;
   draftSpeaker: Boolean;
+  showPlayerColor: boolean;
 };
 
-export function SummaryRow({ player, slice, draftSpeaker = false }: Props) {
+export function SummaryRow({
+  player,
+  slice,
+  draftSpeaker = false,
+  showPlayerColor = false,
+}: Props) {
   const faction = factions[player.faction!];
   const { total, optimal, specialties } = useSlice(slice);
   return (
@@ -29,6 +35,7 @@ export function SummaryRow({ player, slice, draftSpeaker = false }: Props) {
       </Table.Td>
       <Table.Td>{player.speakerOrder! + 1}</Table.Td>
       {draftSpeaker && <Table.Td>{player.seatIdx! + 1}</Table.Td>}
+
       <Table.Td>
         <PlanetStatsPill
           size="sm"
@@ -47,6 +54,7 @@ export function SummaryRow({ player, slice, draftSpeaker = false }: Props) {
       <Table.Td>
         <SliceFeatures slice={slice} />
       </Table.Td>
+      {showPlayerColor && <Table.Td>{player.factionColor}</Table.Td>}
     </Table.Tr>
   );
 }

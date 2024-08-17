@@ -62,6 +62,13 @@ export function hydratePlayers(
         acc[playerIdx] = updated;
       }
 
+      if (selection.type === "SELECT_PLAYER_COLOR") {
+        acc[playerIdx] = {
+          ...acc[playerIdx],
+          factionColor: selection.color,
+        };
+      }
+
       return acc;
     },
     [...players] as HydratedPlayer[],

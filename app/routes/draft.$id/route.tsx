@@ -33,6 +33,7 @@ import { FinalizedDraft } from "./components/FinalizedDraft";
 import { SyncDraftContext, useSyncDraftFetcher } from "~/hooks/useSyncDraft";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import { DraftableMinorFactionsSection } from "./sections/DraftableMinorFactionsSection";
+import { DraftablePlayerColorsSection } from "./sections/DraftablePlayerColorsSection";
 
 export default function RunningDraft() {
   const { adminMode } = useOutletContext<{ adminMode: boolean }>();
@@ -125,6 +126,7 @@ export default function RunningDraft() {
           <Stack gap="lg">
             <DraftableFactionsSection />
             <DraftableMinorFactionsSection />
+            <DraftablePlayerColorsSection />
           </Stack>
         </Grid.Col>
         <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 2, sm: 3, lg: 4 }}>

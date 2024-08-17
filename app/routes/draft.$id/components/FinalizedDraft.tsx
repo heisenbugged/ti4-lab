@@ -36,8 +36,13 @@ export function FinalizedDraft() {
   const {
     slices,
     players,
-    settings: { draftSpeaker },
+    settings: { draftSpeaker, draftPlayerColors },
   } = draft;
+  const usingMinorFactions = useDraft(
+    (state) =>
+      state.draft.settings.minorFactionsInSharedPool ||
+      state.draft.availableMinorFactions !== undefined,
+  );
   const { hydratedPlayers } = useHydratedDraft();
   const { syncDraft } = useSyncDraft();
 
@@ -48,11 +53,13 @@ export function FinalizedDraft() {
   );
   const [mapString] = useAtom(hydratedMapStringAtom);
 
+  console.log("draftPlayerColors", draftPlayerColors);
+
   return (
     <Stack mt="lg" gap={30}>
       <PlanetFinder onSystemSelected={syncDraft} />
       <Title>Draft complete!</Title>
-      <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 60 }}>
+      <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <Stack flex={1} gap="xl">
           <Section>
             <SectionTitle title="Draft Summary" />
@@ -66,6 +73,8 @@ export function FinalizedDraft() {
                     p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined
                   }
                   showSeat={draftSpeaker}
+                  showPlayerColor={!!draftPlayerColors}
+                  showMinorFaction={usingMinorFactions}
                 />
               ))}
             </Stack>
@@ -79,6 +88,7 @@ export function FinalizedDraft() {
                   <Table.Th>Optimal Value</Table.Th>
                   <Table.Th>Total Value</Table.Th>
                   <Table.Th>Features</Table.Th>
+                  {draftPlayerColors && <Table.Th>Color</Table.Th>}
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -88,6 +98,7 @@ export function FinalizedDraft() {
                     player={p}
                     slice={slices[p.sliceIdx!]}
                     draftSpeaker={draftSpeaker}
+                    showPlayerColor={!!draftPlayerColors}
                   />
                 ))}
               </Table.Tbody>

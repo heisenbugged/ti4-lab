@@ -10,6 +10,7 @@ import {
   PlayerId,
   System,
   SystemId,
+  InGameColor,
 } from "./types";
 import { generateEmptyMap } from "./utils/map";
 import { fisherYatesShuffle } from "./stats";
@@ -33,7 +34,6 @@ import {
 } from "./hooks/useUsedSystemIds";
 import { atomWithStore } from "jotai-zustand";
 import { createStore } from "zustand/vanilla";
-import { systemData } from "./data/systemData";
 
 /// V2
 type DraftV2State = {
@@ -69,6 +69,7 @@ type DraftV2State = {
     selectSlice: (playerId: number, sliceIdx: number) => void;
     selectFaction: (playerId: number, factionId: FactionId) => void;
     selectMinorFaction: (playerId: number, minorFactionId: FactionId) => void;
+    selectPlayerColor: (playerId: number, color: InGameColor) => void;
     selectSeat: (playerId: number, seatIdx: number) => void;
     undoLastSelection: () => void;
   };
@@ -254,6 +255,20 @@ export const draftStore = createStore<DraftV2State>()(
             type: "SELECT_MINOR_FACTION",
             playerId,
             minorFactionId,
+          });
+        }),
+
+      selectPlayerColor: (playerId: number, color: InGameColor) =>
+        set((state) => {
+          const alreadySelected = state.draft.selections.find(
+            (s) => s.playerId === playerId && s.type === "SELECT_PLAYER_COLOR",
+          );
+          if (alreadySelected) return;
+
+          state.draft.selections.push({
+            type: "SELECT_PLAYER_COLOR",
+            playerId,
+            color,
           });
         }),
 

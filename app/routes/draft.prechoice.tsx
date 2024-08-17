@@ -166,6 +166,7 @@ export default function DraftPrechoice() {
   const location = useLocation();
   const { discordData } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
+  const [draftPlayerColors, setDraftPlayerColors] = useState(false);
   const [allowEmptyMapTiles, setAllowEmptyMapTiles] = useState(false);
   const [allowHomePlanetSearch, setAllowHomePlanetSearch] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
@@ -375,6 +376,7 @@ export default function DraftPrechoice() {
       numPreassignedFactions,
       minOptimal: minOptimalTotal,
       maxOptimal: maxOptimalTotal,
+      draftPlayerColors,
     };
 
     // both cannot be set at the same time
@@ -798,6 +800,12 @@ export default function DraftPrechoice() {
                 disabled={
                   !showRandomizeMapTiles || numMinorFactions !== undefined
                 }
+              />
+              <Switch
+                label="Draft Player Colors"
+                description="Allows players to choose their in-game color via final round of draft."
+                checked={draftPlayerColors}
+                onChange={() => setDraftPlayerColors((v) => !v)}
               />
             </Stack>
           </Collapse>

@@ -182,6 +182,7 @@ export type DraftSettings = {
   modifiers?: DraftModifier[];
   minOptimal?: number;
   maxOptimal?: number;
+  draftPlayerColors?: boolean;
 };
 
 export type DiscordPlayer =
@@ -272,6 +273,11 @@ export type DraftSelection =
       type: "SELECT_SEAT";
       playerId: PlayerId;
       seatIdx: number;
+    }
+  | {
+      type: "SELECT_PLAYER_COLOR";
+      playerId: PlayerId;
+      color: InGameColor;
     };
 
 export type Draft = {
@@ -296,6 +302,7 @@ export type HydratedPlayer = {
   seatIdx?: number;
   sliceIdx?: number;
   speakerOrder?: number;
+  factionColor?: string;
 };
 
 export type PlayerSelection = {
@@ -304,3 +311,13 @@ export type PlayerSelection = {
   seatIdx?: number;
   minorFaction?: FactionId;
 };
+
+export type InGameColor =
+  | "Green"
+  | "Blue"
+  | "Yellow"
+  | "Red"
+  | "Purple"
+  | "Black"
+  | "Orange"
+  | "Magenta";

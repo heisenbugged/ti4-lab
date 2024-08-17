@@ -203,7 +203,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const pickOrder = [...playerIds, ...reversedPlayerIds, ...playerIds];
   // add stage to snake draft if picking speaker order separately
   if (body.settings.draftSpeaker) {
-    pickOrder.push(...reversedPlayerIds);
+    pickOrder.push(...playerIds.reverse());
   }
 
   // add stage to snake draft if picking minor factions separately
@@ -211,7 +211,12 @@ export async function action({ request }: ActionFunctionArgs) {
     body.settings.numMinorFactions !== undefined ||
     body.settings.minorFactionsInSharedPool
   ) {
-    pickOrder.push(...reversedPlayerIds);
+    pickOrder.push(...playerIds.reverse());
+  }
+
+  // add stage to snake draft if picking player colors separately
+  if (body.settings.draftPlayerColors) {
+    pickOrder.push(...playerIds.reverse());
   }
 
   // if using bag draft, create the 'bags' for each player
