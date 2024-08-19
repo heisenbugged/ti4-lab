@@ -8,7 +8,7 @@ export const milty7p: DraftConfig = {
   sliceHeight: 3,
   sliceConcentricCircles: 1,
   homeIdxInMapString: [37, 22, 25, 49, 52, 55, 58],
-  modifiableMapTiles: [1],
+  modifiableMapTiles: [],
   presetTiles: {
     4: { systemId: "84B" },
     5: { systemId: "89B" },
