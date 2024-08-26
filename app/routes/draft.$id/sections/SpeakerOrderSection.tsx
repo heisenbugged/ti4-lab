@@ -12,6 +12,8 @@ export const playerSpeakerOrder = [
   "4th",
   "5th",
   "6th",
+  "7th",
+  "8th",
 ];
 
 export function SpeakerOrderSection() {
@@ -27,6 +29,8 @@ export function SpeakerOrderSection() {
       <SectionTitle title="Speaker Order" />
       <SimpleGrid cols={{ base: 3, sm: 3, md: 3, lg: 3, xl: 6 }}>
         {playerSpeakerOrder.map((so, idx) => {
+          if (idx >= hydratedPlayers.length) return null;
+
           const player = hydratedPlayers.find((p) => p.speakerOrder === idx);
           return (
             <DraftableSpeakerOrder
