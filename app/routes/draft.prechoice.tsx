@@ -99,6 +99,19 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     titles: ["Speaker", "2nd", "3rd", "4th", "5th"],
     playerCount: 5,
   },
+  miltyeq5p: {
+    title: "Milty EQ 5p",
+    description:
+      "Like milty, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board. Slices are biased towards having one red, but some have two. Equidistants are fully randomized.",
+    map: parseDemoMapString(
+      draftConfig.milty,
+      "18 1 2 3 S85A 4 5 1 -1 2 -1 3 S87A:120 -1 S87A 4 -1 5 -1 1 1 2 2 2 3 3 3 S83A S85A S83A:240 4 4 4 5 5 5 1".split(
+        " ",
+      ),
+    ),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th"],
+    playerCount: 5,
+  },
   milty7p: {
     title: "Milty (7P)",
     description:

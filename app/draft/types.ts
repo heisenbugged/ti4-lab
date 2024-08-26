@@ -18,6 +18,7 @@ export type TieredSlice = Tier[];
 export type DraftType =
   | "heisen"
   | "miltyeq"
+  | "miltyeq5p"
   | "miltyeqless"
   | "milty"
   | "milty7p"

@@ -31,6 +31,7 @@ export function MapTile(props: Props) {
     onDelete,
   } = props;
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
+
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
 
   useEffect(() => {

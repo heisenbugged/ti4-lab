@@ -8,6 +8,7 @@ import { milty5p } from "./milty5p";
 import { milty7p } from "./milty7p";
 import { milty8p } from "./milty8p";
 import { miltyeq } from "./miltyeq";
+import { miltyeq5p } from "./miltyeq5p";
 import { miltyeqless } from "./miltyeqless";
 import { DraftConfig, DraftType } from "./types";
 import { wekker } from "./wekker";
@@ -17,6 +18,7 @@ import { wekker } from "./wekker";
  */
 export const draftConfig: Record<DraftType, DraftConfig> = {
   miltyeq,
+  miltyeq5p,
   wekker,
   miltyeqless,
   milty,
