@@ -19,6 +19,7 @@ import {
   Stepper,
   Switch,
   Text,
+  Textarea,
 } from "@mantine/core";
 import {
   DiscordData,
@@ -31,6 +32,7 @@ import {
   OpenTile,
   ClosedTile,
   DemoTile,
+  Draft,
 } from "~/types";
 import { useEffect, useState } from "react";
 import { mapStringOrder } from "~/data/mapStringOrder";
@@ -51,7 +53,9 @@ import {
   IconBrandDiscordFilled,
   IconChevronDown,
   IconChevronUp,
+  IconFile,
   IconInfoCircle,
+  IconPlayerPlay,
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
 
@@ -403,8 +407,49 @@ export default function DraftPrechoice() {
     { open: openMinorFactions, close: closeMinorFactions },
   ] = useDisclosure(false);
 
+  const [savedStateOpened, { open: openSavedState, close: closeSavedState }] =
+    useDisclosure(false);
+  const [savedStateJson, setSavedStateJson] = useState("");
+
+  const handleContinueFromSavedState = () => {
+    try {
+      const savedState = JSON.parse(savedStateJson);
+      debugger;
+      navigate("/draft/new", {
+        state: {
+          savedDraftState: {
+            ...savedState,
+            integrations: { discord: discordData },
+            players,
+            selections: [],
+            pickOrder: [],
+          } as Draft,
+        },
+      });
+    } catch (error) {
+      console.error("Invalid JSON:", error);
+    }
+  };
+
   return (
     <Grid mt="lg">
+      <Modal
+        opened={savedStateOpened}
+        onClose={closeSavedState}
+        title="Continue from saved state"
+      >
+        <Stack>
+          <Textarea
+            placeholder="Paste your saved draft state JSON here"
+            autosize
+            minRows={15}
+            maxRows={30}
+            value={savedStateJson}
+            onChange={(event) => setSavedStateJson(event.currentTarget.value)}
+          />
+          <Button onClick={handleContinueFromSavedState}>Continue</Button>
+        </Stack>
+      </Modal>
       <Modal
         size="lg"
         opened={minorFactionsOpened}
@@ -810,20 +855,36 @@ export default function DraftPrechoice() {
             </Stack>
           </Collapse>
 
-          <Button size="lg" w="100%" onMouseDown={handleContinue}>
+          <Button
+            size="lg"
+            onMouseDown={handleContinue}
+            leftSection={<IconPlayerPlay />}
+          >
             Continue
           </Button>
-          {!discordData && (
+          <Group>
             <Button
               size="md"
-              variant="filled"
-              color="discordBlue.5"
-              leftSection={<IconBrandDiscordFilled />}
-              onMouseDown={openDiscord}
+              flex={1}
+              onMouseDown={openSavedState}
+              variant="outline"
+              color="purple.3"
+              leftSection={<IconFile />}
             >
-              Integrate with Discord (BETA)
+              Continue from saved state
             </Button>
-          )}
+            {!discordData && (
+              <Button
+                size="md"
+                variant="filled"
+                color="discordBlue.5"
+                leftSection={<IconBrandDiscordFilled />}
+                onMouseDown={openDiscord}
+              >
+                Integrate with Discord (BETA)
+              </Button>
+            )}
+          </Group>
         </Stack>
       </Grid.Col>
     </Grid>

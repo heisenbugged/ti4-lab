@@ -131,6 +131,7 @@ export function useHydratedDraft() {
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const selections = useDraft((state) => state.draft.selections);
+  const hydrated = useDraft((state) => state.hydrated);
 
   const [hydratedPlayers] = useAtom(hydratedPlayersAtom);
   const [hydratedMap] = useAtom(hydratedMapAtom);
@@ -138,7 +139,7 @@ export function useHydratedDraft() {
   const currentPick = selections.length;
   const activePlayerId = pickOrder[currentPick];
   const activePlayer = hydratedPlayers.find((p) => p.id === activePlayerId)!;
-  const draftFinished = currentPick >= pickOrder.length;
+  const draftFinished = hydrated && currentPick >= pickOrder.length;
 
   return {
     hydratedMap,

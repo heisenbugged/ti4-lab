@@ -5,6 +5,7 @@ import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useOutletContext } from "@remix-run/react";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
+import { ExportDraftState } from "../components/ExportDraftState";
 
 export function DraftOrderSection() {
   const { adminMode } = useOutletContext<{ adminMode: boolean }>();
@@ -36,6 +37,7 @@ export function DraftOrderSection() {
           >
             Undo Last Selection
           </Button>
+          <ExportDraftState />
         </Box>
       )}
     </Stack>

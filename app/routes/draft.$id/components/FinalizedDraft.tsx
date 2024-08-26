@@ -53,8 +53,6 @@ export function FinalizedDraft() {
   );
   const [mapString] = useAtom(hydratedMapStringAtom);
 
-  console.log("draftPlayerColors", draftPlayerColors);
-
   return (
     <Stack mt="lg" gap={30}>
       <PlanetFinder onSystemSelected={syncDraft} />

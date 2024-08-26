@@ -34,6 +34,7 @@ export function emptySlice(
 }
 
 export const systemsInSlice = (slice: Slice): System[] => {
+  if (slice === undefined) debugger;
   return slice.tiles.reduce((acc, t) => {
     if (t.type !== "SYSTEM") return acc;
     acc.push(systemData[t.systemId]);

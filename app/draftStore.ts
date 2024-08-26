@@ -79,6 +79,7 @@ type DraftV2State = {
       players: Player[],
       integrations: DraftIntegrations,
     ) => void;
+    initializeDraftFromSavedState: (draft: Draft) => void;
 
     setDraftSpeaker: (draftSpeaker: boolean) => void;
     updatePlayerName: (playerIdx: number, name: string) => void;
@@ -313,6 +314,13 @@ export const draftStore = createStore<DraftV2State>()(
             requiredFactions,
             availableFactions,
           );
+        }),
+
+      initializeDraftFromSavedState: (draft: Draft) =>
+        set((state) => {
+          state.draft = draft;
+          state.initialized = true;
+          state.hydrated = false;
         }),
       initializeDraft: (
         settings: DraftSettings,

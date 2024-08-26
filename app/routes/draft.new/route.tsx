@@ -20,7 +20,6 @@ import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { Draft, FactionId, PlayerId } from "~/types";
 import { DraftInput, useCreateDraft } from "./useCreateDraft";
-import { ImportMapInput } from "~/components/ImportMapInput";
 import { ExportMapModal } from "./components/ExportMapModal";
 import { fisherYatesShuffle } from "~/stats";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
@@ -63,6 +62,13 @@ export default function DraftNew() {
 
   useEffect(() => {
     if (location.state == null) return navigate("/draft/prechoice");
+
+    if (location.state.savedDraftState) {
+      const savedState = location.state.savedDraftState;
+      actions.initializeDraftFromSavedState(savedState);
+      return;
+    }
+
     const { draftSettings, players, discordData } = location.state;
     actions.initializeDraft(draftSettings, players, { discord: discordData });
 
@@ -93,9 +99,6 @@ export default function DraftNew() {
         label="Draft Speaker order separately"
         description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
       />
-
-      {/* TODO: Re-enable when ready */}
-      {/* <ImportMapInput onImport={actions.importMap} /> */}
 
       <Divider mt="md" mb="md" />
       <Group gap="sm">
