@@ -19,27 +19,30 @@ export function DraftOrderSection() {
 
   return (
     <Stack>
-      <SectionTitle title="Draft Order" />
+      <SectionTitle title="Draft Order">
+        <Box>
+          <Button
+            onClick={() => {
+              if (
+                confirm("Are you sure you want to undo the last selection?")
+              ) {
+                undoLastSelection();
+                syncDraft();
+              }
+            }}
+            disabled={selections.length === 0}
+          >
+            Undo Last Selection
+          </Button>
+          {adminMode && <ExportDraftState />}
+        </Box>
+      </SectionTitle>
       <DraftOrder
         players={players}
         pickOrder={pickOrder}
         currentPick={currentPick}
         discordPlayers={discord?.players ?? []}
       />
-      {adminMode && (
-        <Box>
-          <Button
-            onClick={() => {
-              undoLastSelection();
-              syncDraft();
-            }}
-            disabled={selections.length === 0}
-          >
-            Undo Last Selection
-          </Button>
-          <ExportDraftState />
-        </Box>
-      )}
     </Stack>
   );
 }
