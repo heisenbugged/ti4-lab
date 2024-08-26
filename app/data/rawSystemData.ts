@@ -678,7 +678,7 @@ export const rawSystems: Record<string, RawSystem> = {
     type: "GREEN",
     faction: "empyrean",
     wormholes: [],
-    anomalies: [],
+    anomalies: ["NEBULA"],
   },
   57: {
     id: "57",
