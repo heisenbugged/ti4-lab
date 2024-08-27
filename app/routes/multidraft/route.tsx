@@ -1,5 +1,8 @@
-import { ActionFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/react";
+import { Button, Group, useMantineColorScheme } from "@mantine/core";
+import { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
+import { Outlet, redirect } from "@remix-run/react";
+import { IconMoon, IconSun } from "@tabler/icons-react";
+import { MainAppShell } from "~/components/MainAppShell";
 import {
   initializeMap,
   initializeSlices,
@@ -76,3 +79,43 @@ export async function action({ request }: ActionFunctionArgs) {
 
   return redirect(`/multidraft/${multiDraftUrlName}`);
 }
+
+export default function MultiDraft() {
+  const { setColorScheme } = useMantineColorScheme();
+
+  return (
+    <MainAppShell
+      headerRightSection={
+        <Group>
+          <Button
+            variant="light"
+            color="gray"
+            onMouseDown={() => setColorScheme("dark")}
+            size="compact-xs"
+            darkHidden
+          >
+            <IconMoon />
+          </Button>
+          <Button
+            variant="light"
+            color="gray"
+            onMouseDown={() => setColorScheme("light")}
+            lightHidden
+            size="compact-xs"
+          >
+            <IconSun />
+          </Button>
+        </Group>
+      }
+    >
+      <Outlet />
+    </MainAppShell>
+  );
+}
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "TI4 Lab Multidraft" },
+    { name: "description", content: "TI4 Lab, for drafting and map creation." },
+  ];
+};
