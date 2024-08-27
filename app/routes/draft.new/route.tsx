@@ -16,17 +16,13 @@ import { redirect, useLocation, useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { draftStore, useDraft } from "~/draftStore";
-import { db } from "~/drizzle/config.server";
-import { drafts } from "~/drizzle/schema.server";
-import { Draft, FactionId, PlayerId } from "~/types";
+import { Draft } from "~/types";
 import { DraftInput, useCreateDraft } from "./useCreateDraft";
 import { ExportMapModal } from "./components/ExportMapModal";
-import { fisherYatesShuffle } from "~/stats";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
-import { v4 as uuidv4 } from "uuid";
 import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
-import { generateUniquePrettyUrl } from "~/drizzle/draft.server";
+import { createDraft } from "~/drizzle/draft.server";
 import { DiscordBanner } from "~/components/DiscordBanner";
 import {
   AvailableFactionsSection,
@@ -37,9 +33,9 @@ import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraftSettings } from "~/hooks/useDraftSettings";
 import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
-import { shuffle } from "~/draft/helpers/randomization";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
 import { FactionSettingsModal } from "./components/FactionSettingsModal";
+import { createDraftOrder } from "~/utils/draftOrder.server";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -198,61 +194,12 @@ export default function DraftNew() {
 export async function action({ request }: ActionFunctionArgs) {
   const body = (await request.json()) as DraftInput;
 
-  const playerIds = fisherYatesShuffle(
-    body.players.map((p) => p.id),
-    body.players.length,
-  );
-  const reversedPlayerIds = [...playerIds].reverse();
-  const pickOrder = [...playerIds, ...reversedPlayerIds, ...playerIds];
-  // add stage to snake draft if picking speaker order separately
-  if (body.settings.draftSpeaker) {
-    pickOrder.push(...playerIds.reverse());
-  }
-
-  // add stage to snake draft if picking minor factions separately
-  if (
-    body.settings.numMinorFactions !== undefined ||
-    body.settings.minorFactionsInSharedPool
-  ) {
-    pickOrder.push(...playerIds.reverse());
-  }
-
-  // add stage to snake draft if picking player colors separately
-  if (body.settings.draftPlayerColors) {
-    pickOrder.push(...playerIds.reverse());
-  }
-
-  // if using bag draft, create the 'bags' for each player
-  let playerFactionPool: Record<PlayerId, FactionId[]> | undefined = undefined;
-  if (body.settings.numPreassignedFactions !== undefined) {
-    playerFactionPool = {};
-    const available = shuffle(body.availableFactions);
-    body.players.forEach((player) => {
-      const bag = available.splice(0, body.settings.numPreassignedFactions);
-      playerFactionPool![player.id] = bag;
-    });
-  }
-
   const draft: Draft = {
     ...body,
-    players: body.players.map((p) => ({
-      ...p,
-      name: p.name.length > 0 ? p.name : `Player ${p.id + 1}`,
-    })),
-    pickOrder,
-    playerFactionPool,
+    ...createDraftOrder(body.players, body.settings, body.availableFactions),
   };
 
-  const prettyUrl = await generateUniquePrettyUrl();
-  // TODO: Handle error if insert fails
-  db.insert(drafts)
-    .values({
-      id: uuidv4().toString(),
-      urlName: prettyUrl,
-      data: JSON.stringify(draft),
-    })
-    .run();
-
+  const prettyUrl = await createDraft(draft);
   if (body.integrations?.discord) {
     const discord = body.integrations.discord;
     const channel = await getChannel(discord.guildId, discord.channelId);

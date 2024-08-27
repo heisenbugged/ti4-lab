@@ -15,6 +15,13 @@
       "when": 1717164087619,
       "tag": "0001_tricky_blazing_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1724730016292,
+      "tag": "0002_condemned_jasper_sitwell",
+      "breakpoints": true
     }
   ]
 }

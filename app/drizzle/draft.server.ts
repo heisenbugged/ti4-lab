@@ -1,7 +1,9 @@
+import { v4 as uuidv4 } from "uuid";
 import { desc, eq } from "drizzle-orm";
 import { db } from "./config.server";
 import { drafts } from "./schema.server";
 import { generatePrettyUrlName } from "~/data/urlWords.server";
+import { Draft } from "~/types";
 
 export async function draftById(id: string) {
   const results = await db
@@ -32,13 +34,23 @@ export async function generateUniquePrettyUrl() {
   let prettyUrl = "";
   while (exists) {
     prettyUrl = generatePrettyUrlName();
-
-    // TODO: This has a race condition where two drafts could be created with the same pretty url
-    // (extremely unlikely given current traffic)
     console.log("pretty url candidate is", prettyUrl);
     const existingRecord = await draftByPrettyUrl(prettyUrl);
     exists = !!existingRecord;
-    console.log("candidate already exists?", exists);
   }
+  return prettyUrl;
+}
+
+export async function createDraft(draft: Draft) {
+  const prettyUrl = await generateUniquePrettyUrl();
+  // TODO: Handle error if insert fails
+  db.insert(drafts)
+    .values({
+      id: uuidv4().toString(),
+      urlName: prettyUrl,
+      data: JSON.stringify(draft),
+    })
+    .run();
+
   return prettyUrl;
 }

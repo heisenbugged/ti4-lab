@@ -9,9 +9,11 @@ import { SliceFeatures } from "./SliceFeatures";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 
 import classes from "./Slice.module.css";
+import { DraftConfig } from "~/draft";
 
 type Props = {
   id: string;
+  config: DraftConfig;
   slice: Slice;
   mapModifiable?: boolean;
   selectedColor?: string;
@@ -24,6 +26,7 @@ type Props = {
 
 export function BaseSlice({
   id,
+  config,
   slice,
   titleLeft,
   titleRight,
@@ -32,7 +35,6 @@ export function BaseSlice({
   onSelectTile,
   onDeleteTile,
 }: Props) {
-  const config = useDraftConfig();
   const { total, optimal } = useSlice(slice);
   return (
     <Paper

@@ -671,7 +671,10 @@ function initializeHeisen(settings: DraftSettings, systemPool: SystemId[]) {
   return { map, slices: systemIdsToSlices(config, rawSlices) };
 }
 
-function initializeSlices(settings: DraftSettings, systemPool: SystemId[]) {
+export function initializeSlices(
+  settings: DraftSettings,
+  systemPool: SystemId[],
+) {
   const config = draftConfig[settings.type];
   if (!settings.randomizeSlices) return emptySlices(config, settings.numSlices);
 
@@ -684,7 +687,7 @@ function initializeSlices(settings: DraftSettings, systemPool: SystemId[]) {
   return systemIdsToSlices(config, rawSlices);
 }
 
-function initializeMap(
+export function initializeMap(
   settings: DraftSettings,
   slices: Slice[],
   systemPool: SystemId[],
@@ -694,7 +697,7 @@ function initializeMap(
   return randomizeMap(config, slices, systemPool);
 }
 
-function randomizeMap(
+export function randomizeMap(
   config: DraftConfig,
   slices: Slice[],
   systemPool: SystemId[],
@@ -723,7 +726,7 @@ function randomizeMap(
   return map;
 }
 
-function randomizeFactions(
+export function randomizeFactions(
   numFactions: number,
   factionPool: FactionId[],
   availableMinorFactions: FactionId[],

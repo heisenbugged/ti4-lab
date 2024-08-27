@@ -11,6 +11,7 @@ export function PlayerSelectionScreen({ onDraftJoined }: Props) {
   const players = useDraft((state) => state.draft.players);
   const discord = useDraft((state) => state.draft.integrations.discord);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+
   return (
     <Stack flex={1} mih="calc(100vh - 60px)" align="center" justify="center">
       <Title mb="xl">Identify Thyself!</Title>

@@ -19,3 +19,21 @@ export const drafts = sqliteTable(
     urlNameIdx: index("urlName_index").on(table.urlName),
   }),
 );
+
+export const multiDrafts = sqliteTable(
+  "multiDrafts",
+  {
+    id: text("id").primaryKey(),
+    urlName: text("urlName"),
+    draftUrlNames: text("draftUrlNames"),
+    createdAt: text("createdAt")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updatedAt")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    urlNameIdx: index("multiDrafts_urlName_index").on(table.urlName),
+  }),
+);

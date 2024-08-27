@@ -3,6 +3,7 @@ import { Slice, HydratedPlayer } from "~/types";
 import { BaseSlice } from "~/components/Slice/BaseSlice";
 import { PlayerChip } from "./PlayerChip";
 import { playerColors } from "~/data/factionData";
+import { useDraftConfig } from "~/hooks/useDraftConfig";
 
 type Props = {
   id: string;
@@ -13,10 +14,12 @@ type Props = {
 
 export function DraftableSlice({ id, slice, player, onSelect }: Props) {
   const playerColor = player ? playerColors[player.id] : undefined;
+  const config = useDraftConfig();
   return (
     <div style={{ position: "relative" }}>
       <BaseSlice
         id={id}
+        config={config}
         slice={slice}
         mapModifiable={false}
         selectedColor={playerColor}

@@ -2,6 +2,7 @@ import { Button, Group } from "@mantine/core";
 import { Slice, Tile } from "~/types";
 import { IconDice6Filled } from "@tabler/icons-react";
 import { BaseSlice } from "~/components/Slice/BaseSlice";
+import { useDraftConfig } from "~/hooks/useDraftConfig";
 
 type Props = {
   id: string;
@@ -20,9 +21,11 @@ export function BuildableSlice({
   onRandomizeSlice,
   onClearSlize,
 }: Props) {
+  const config = useDraftConfig();
   return (
     <BaseSlice
       id={id}
+      config={config}
       slice={slice}
       mapModifiable
       titleRight={

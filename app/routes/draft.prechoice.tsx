@@ -44,6 +44,7 @@ import {
   useLoaderData,
   useLocation,
   useNavigate,
+  useSubmit,
 } from "@remix-run/react";
 import { DraftConfig, DraftType, draftConfig } from "~/draft";
 import { NumberStepper } from "~/components/NumberStepper";
@@ -180,6 +181,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
 };
 
 export default function DraftPrechoice() {
+  const submit = useSubmit();
   const location = useLocation();
   const { discordData } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
@@ -192,6 +194,8 @@ export default function DraftPrechoice() {
   >();
   const [selectedMapType, setSelectedMapType] =
     useState<ChoosableDraftType>("milty");
+  const [isMultidraft, setIsMultidraft] = useState(false);
+  const [numDrafts, setNumDrafts] = useState(2);
 
   const handleChangeSelectedMapType = (mapType: ChoosableDraftType) => {
     setSelectedMapType(mapType);
@@ -401,6 +405,23 @@ export default function DraftPrechoice() {
       draftSettings.minorFactionsInSharedPool = true;
     } else if (numMinorFactions !== undefined) {
       draftSettings.numMinorFactions = numMinorFactions;
+    }
+
+    if (isMultidraft) {
+      const formData = new FormData();
+      formData.append("draftSettings", JSON.stringify(draftSettings));
+      formData.append("players", JSON.stringify(players));
+      formData.append(
+        "discordData",
+        discordData ? JSON.stringify(discordData) : "",
+      );
+      formData.append("numDrafts", numDrafts.toString());
+
+      submit(formData, {
+        method: "post",
+        action: "/multidraft",
+      });
+      return;
     }
 
     navigate("/draft/new", {
@@ -759,6 +780,28 @@ export default function DraftPrechoice() {
               )}
             </Stack>
           </Stack>
+
+          <Group>
+            <Switch
+              label="Multidraft"
+              checked={isMultidraft}
+              onChange={(event) => setIsMultidraft(event.currentTarget.checked)}
+            />
+            {isMultidraft && (
+              <Input.Wrapper label="Number of drafts">
+                <Box mt="xs">
+                  <NumberStepper
+                    value={numDrafts}
+                    decrease={() => setNumDrafts((v) => Math.max(1, v - 1))}
+                    increase={() => setNumDrafts((v) => v + 1)}
+                    increaseDisabled={numDrafts >= 9}
+                    decreaseDisabled={numDrafts <= 2}
+                  />
+                </Box>
+              </Input.Wrapper>
+            )}
+          </Group>
+
           <Box mt="md">
             <Button
               variant="outline"
