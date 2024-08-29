@@ -319,6 +319,8 @@ export const draftStore = createStore<DraftV2State>()(
       initializeDraftFromSavedState: (draft: Draft) =>
         set((state) => {
           state.draft = draft;
+          state.factionPool = getFactionPool(draft.settings.gameSets);
+          state.systemPool = getSystemPool(draft.settings.gameSets);
           state.initialized = true;
           state.hydrated = false;
         }),
