@@ -1,4 +1,5 @@
 import { Box, Group, Text } from "@mantine/core";
+import { useOutletContext } from "@remix-run/react";
 
 type Props = {
   legendary?: boolean;
@@ -13,6 +14,16 @@ export function PlanetStats({
   influence,
   fontSize = "25px",
 }: Props) {
+  const { accessibleColors } = useOutletContext<{
+    accessibleColors: boolean;
+  }>();
+
+  const accessibleShadow = accessibleColors
+    ? {
+        ["-webkit-text-stroke"]: "2px rgba(255, 255, 255, 0.5)",
+        paintOrder: "stroke fill",
+      }
+    : undefined;
   if (legendary) {
     return (
       <Group gap={3}>
@@ -42,7 +53,7 @@ export function PlanetStats({
       >
         {resources}
       </Text>
-      <Text size={fontSize} c="blue.9" fw="bolder">
+      <Text size={fontSize} c="blue.9" fw="bolder" style={accessibleShadow}>
         {influence}
       </Text>
     </Group>

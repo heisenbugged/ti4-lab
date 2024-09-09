@@ -5,6 +5,7 @@ import { PlanetStats } from "./PlanetStats";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
 import { hasLegendaryImage } from "../LegendaryImage";
+import { useOutletContext } from "@remix-run/react";
 
 export type PlanetFormat =
   | "STREAMLINED"
@@ -25,17 +26,27 @@ export const bgColor: Record<PlanetTrait, string> = {
   INDUSTRIAL: "green.5",
 };
 
+export const accessibleBgColor: Record<PlanetTrait, string> = {
+  CULTURAL: "blue.4",
+  HAZARDOUS: "rgb(255 40 40)",
+  INDUSTRIAL: "green.5",
+};
+
 export function Planet({
   planet,
   hasLegendaryImage = false,
   showName = true,
   largeFonts = false,
 }: Props) {
+  const { accessibleColors } = useOutletContext<{
+    accessibleColors: boolean;
+  }>();
+  const bgColors = accessibleColors ? accessibleBgColor : bgColor;
   const { trait, tech: techSpecialty } = planet;
 
   const fontSize = largeFonts ? "35px" : "24px";
   const size = 50 + (planet.legendary ? 20 : 0);
-  const planetColor = trait ? bgColor[trait] : "gray.6";
+  const planetColor = trait ? bgColors[trait] : "gray.6";
 
   return (
     <Flex

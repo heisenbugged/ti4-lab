@@ -6,6 +6,7 @@ import { useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
 
 export default function Draft() {
+  const [accessibleColors, setAccessibleColors] = useState(false);
   const [adminMode, setAdminMode] = useState(false);
   const [pickForAnyone, setPickForAnyone] = useState(false);
   const { setColorScheme } = useMantineColorScheme();
@@ -33,6 +34,13 @@ export default function Draft() {
             <IconSun />
           </Button>
           <Switch
+            label="A11Y"
+            checked={accessibleColors}
+            onChange={(e) => {
+              setAccessibleColors(e.currentTarget.checked);
+            }}
+          />
+          <Switch
             label="Pick for anyone"
             checked={pickForAnyone}
             onChange={(e) => {
@@ -56,7 +64,7 @@ export default function Draft() {
         </Group>
       }
     >
-      <Outlet context={{ adminMode, pickForAnyone }} />
+      <Outlet context={{ adminMode, pickForAnyone, accessibleColors }} />
     </MainAppShell>
   );
 }
