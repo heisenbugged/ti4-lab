@@ -5,7 +5,8 @@ export type GameSet =
   | "pok"
   | "discordant"
   | "discordantexp"
-  | "unchartedstars";
+  | "unchartedstars"
+  | "drahn";
 
 // green = home
 // blue = planet tile
@@ -121,7 +122,8 @@ export type FactionId =
   | "vaden"
   | "vaylerian"
   | "veldyr"
-  | "zelian";
+  | "zelian"
+  | "drahn";
 
 export type Faction = {
   id: FactionId;

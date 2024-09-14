@@ -235,6 +235,7 @@ export default function DraftPrechoice() {
   const [withDiscordant, setWithDiscordant] = useState<boolean>(false);
   const [withDiscordantExp, setWithDiscordantExp] = useState<boolean>(false);
   const [withUnchartedStars, setWithUnchartedStars] = useState<boolean>(false);
+  const [withDrahn, setWithDrahn] = useState<boolean>(false);
 
   const [numPreassignedFactions, setNumPreassignedFactions] = useState<
     number | undefined
@@ -355,6 +356,7 @@ export default function DraftPrechoice() {
   if (withDiscordant) gameSets.push("discordant");
   if (withDiscordantExp) gameSets.push("discordantexp");
   if (withUnchartedStars) gameSets.push("unchartedstars");
+  if (withDrahn) gameSets.push("drahn");
 
   const maxFactionCount = getFactionCount(gameSets);
   const maxPreassigned = Math.floor(maxFactionCount / playerCount);
@@ -780,6 +782,14 @@ export default function DraftPrechoice() {
               )}
             </Stack>
           </Stack>
+
+          <Checkbox
+            label="Drahn"
+            checked={withDrahn}
+            onChange={() => {
+              setWithDrahn((v) => !v);
+            }}
+          />
 
           <Group>
             <Switch

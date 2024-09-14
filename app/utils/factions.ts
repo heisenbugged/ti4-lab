@@ -2,6 +2,7 @@ import {
   baseFactionIds,
   factionDiscordantExpIds,
   factionDiscordantIds,
+  factions,
 } from "~/data/factionData";
 import { GameSet } from "~/types";
 
@@ -12,6 +13,9 @@ export function getFactionPool(sets: GameSet[]) {
   }
   if (sets.includes("discordantexp")) {
     factionPool.push(...factionDiscordantExpIds);
+  }
+  if (sets.includes("drahn")) {
+    factionPool.push(factions.drahn.id);
   }
   return factionPool.flat(1);
 }

@@ -390,6 +390,13 @@ export const factions: Record<FactionId, Faction> = {
     wiki: "https://twilight-imperium.fandom.com/wiki/Nokar_Sellships_(UNOFFICIAL)",
     set: "discordantexp",
   },
+  drahn: {
+    id: "drahn",
+    iconPath: "/factions/ti_drahn.png",
+    name: "Drahn Consortium",
+    wiki: "https://twilight-imperium.fandom.com/",
+    set: "drahn",
+  },
 } as const;
 
 export const allFactionIds = Object.keys(factions) as FactionId[];
