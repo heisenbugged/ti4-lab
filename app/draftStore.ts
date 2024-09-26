@@ -362,7 +362,7 @@ export const draftStore = createStore<DraftV2State>()(
           }
 
           // pre-fill map and slices
-          if (config.type === "heisen") {
+          if (config.type === "heisen" || config.type === "heisen8p") {
             // nucleus has a special draft format.
             const { map, slices } = initializeHeisen(
               settings,
@@ -570,7 +570,12 @@ export const draftStore = createStore<DraftV2State>()(
       // randomization
       randomizeAll: () =>
         set(({ draft, systemPool }) => {
-          if (draft.settings.type !== "heisen") return {};
+          if (
+            draft.settings.type !== "heisen" &&
+            draft.settings.type !== "heisen8p"
+          ) {
+            return {};
+          }
           const { map, slices } = initializeHeisen(draft.settings, systemPool);
           draft.presetMap = map;
           draft.slices = slices;
@@ -645,7 +650,6 @@ export function useDraft<T>(selector?: (state: DraftV2State) => T) {
 export const draftStoreAtom = atomWithStore(draftStore);
 
 // Random functions to be moved elsewhere
-
 function initializeHeisen(settings: DraftSettings, systemPool: SystemId[]) {
   const config = draftConfig[settings.type];
   const map = generateEmptyMap(config);
@@ -657,6 +661,7 @@ function initializeHeisen(settings: DraftSettings, systemPool: SystemId[]) {
   }
 
   const { chosenSpots, slices: rawSlices } = generateHeisenMap(
+    config,
     settings.numSlices,
     systemPool,
   );

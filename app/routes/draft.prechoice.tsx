@@ -139,6 +139,19 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"],
     playerCount: 8,
   },
+  heisen8p: {
+    title: "Nucleus (8P)",
+    description:
+      "Features a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order. Beneficial for players who want to design their own maps while still running a draft. Randomization prioritizes high wormholes, and separates them for maximum impact.",
+    map: parseDemoMapString(
+      draftConfig.milty8p,
+      "18 S87A:60 S89B:180 -1 S88A:120 S90B -1 -1 -1 -1 3 -1 -1 -1 -1 -1 7 -1 -1 1 -1 2 2 3 S83B:120 4 4 -1 5 -1 6 6 7 S85B:120 8 8 -1 1 1 2 2 x x 3 3 x 4 4 5 5 5 6 6 x x 7 7 x 8 8 1".split(
+        " ",
+      ),
+    ),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"],
+    playerCount: 8,
+  },
   miltyeq: {
     title: "Milty EQ",
     description:

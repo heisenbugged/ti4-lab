@@ -3,6 +3,7 @@
  * during the drafting process.
  */
 import { heisen } from "./heisen";
+import { heisen8p } from "./heisen8p";
 import { milty } from "./milty";
 import { milty5p } from "./milty5p";
 import { milty7p } from "./milty7p";
@@ -23,6 +24,7 @@ export const draftConfig: Record<DraftType, DraftConfig> = {
   miltyeqless,
   milty,
   heisen,
+  heisen8p,
   milty7p,
   milty8p,
   milty5p,

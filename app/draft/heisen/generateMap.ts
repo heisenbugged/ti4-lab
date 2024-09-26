@@ -4,6 +4,7 @@ import { shuffle, weightedChoice } from "../helpers/randomization";
 import { systemData } from "~/data/systemData";
 import {
   ChoosableTier,
+  DraftConfig,
   SliceChoice,
   SliceGenerationConfig,
   TieredSlice,
@@ -61,13 +62,26 @@ const SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "low", "high"] },
 ];
 
-export function generateMap(sliceCount: number, systemPool: SystemId[]) {
-  const targets: Record<ChoosableTier, number> = {
-    high: 6,
-    med: 6,
-    low: 6,
-    red: 12,
-  };
+export function generateMap(
+  config: DraftConfig,
+  sliceCount: number,
+  systemPool: SystemId[],
+) {
+  // a bit hacky, but works for now
+  const targets: Record<ChoosableTier, number> =
+    config.type === "heisen"
+      ? {
+          high: 6,
+          med: 6,
+          low: 6,
+          red: 12,
+        }
+      : {
+          high: 7,
+          med: 8,
+          low: 7,
+          red: 15,
+        };
 
   // if we have more than 6 slices, we boost the 'targets'
   for (let i = 6; i < sliceCount; i++) {
@@ -114,7 +128,7 @@ export function generateMap(sliceCount: number, systemPool: SystemId[]) {
   );
 
   const tileLocations = shuffle(
-    draftConfig.heisen.modifiableMapTiles.map((idx) => ({
+    config.modifiableMapTiles.map((idx) => ({
       mapIdx: idx - 1,
       position: mapStringOrder[idx],
     })),
