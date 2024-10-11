@@ -76,6 +76,8 @@ export default function DraftNew() {
 
     // a bit hacky, but once we 'consume' the state, we remove it from the history
     window.history.replaceState({ ...window.history.state, usr: null }, "");
+
+    return () => actions?.reset();
   }, []);
 
   const [mapExportOpened, { open: openMapExport, close: closeMapExport }] =

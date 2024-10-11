@@ -249,6 +249,9 @@ export default function DraftPrechoice() {
   const [withDiscordantExp, setWithDiscordantExp] = useState<boolean>(false);
   const [withUnchartedStars, setWithUnchartedStars] = useState<boolean>(false);
   const [withDrahn, setWithDrahn] = useState<boolean>(false);
+  const [excludeBaseFactions, setExcludeBaseFactions] =
+    useState<boolean>(false);
+  const [excludePokFactions, setExcludePokFactions] = useState<boolean>(false);
 
   const [numPreassignedFactions, setNumPreassignedFactions] = useState<
     number | undefined
@@ -365,13 +368,19 @@ export default function DraftPrechoice() {
     resetSelectedMap(numPlayers);
   };
 
-  let gameSets: GameSet[] = ["base", "pok"];
-  if (withDiscordant) gameSets.push("discordant");
-  if (withDiscordantExp) gameSets.push("discordantexp");
-  if (withUnchartedStars) gameSets.push("unchartedstars");
-  if (withDrahn) gameSets.push("drahn");
+  let tileGameSets: GameSet[] = ["base", "pok"];
+  if (withDiscordant) tileGameSets.push("discordant");
+  if (withDiscordantExp) tileGameSets.push("discordantexp");
+  if (withUnchartedStars) tileGameSets.push("unchartedstars");
 
-  const maxFactionCount = getFactionCount(gameSets);
+  let factionGameSets: GameSet[] = [];
+  if (!excludeBaseFactions) factionGameSets.push("base");
+  if (!excludePokFactions) factionGameSets.push("pok");
+  if (withDiscordant) factionGameSets.push("discordant");
+  if (withDiscordantExp) factionGameSets.push("discordantexp");
+  if (withDrahn) factionGameSets.push("drahn");
+
+  const maxFactionCount = getFactionCount(factionGameSets);
   const maxPreassigned = Math.floor(maxFactionCount / playerCount);
   const minNumFactions = minorFactionsInSharedPool
     ? playerCount * 2
@@ -400,7 +409,8 @@ export default function DraftPrechoice() {
   };
   const handleContinue = () => {
     const draftSettings: DraftSettings = {
-      gameSets,
+      factionGameSets,
+      tileGameSets,
       type: selectedMapType,
       numFactions: Number(numFactions),
       numSlices: Number(numSlices),
@@ -780,6 +790,17 @@ export default function DraftPrechoice() {
               />
               {withDiscordant && (
                 <Group mx="lg">
+                  <Checkbox
+                    label="Base factions"
+                    checked={!excludeBaseFactions}
+                    onChange={() => setExcludeBaseFactions((v) => !v)}
+                  />
+
+                  <Checkbox
+                    label="POK factions"
+                    checked={!excludePokFactions}
+                    onChange={() => setExcludePokFactions((v) => !v)}
+                  />
                   <Checkbox
                     label="(+10 factions)"
                     checked={withDiscordantExp}

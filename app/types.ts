@@ -170,7 +170,8 @@ export type DraftModifier =
 
 export type DraftSettings = {
   type: DraftType;
-  gameSets: GameSet[];
+  factionGameSets: GameSet[];
+  tileGameSets: GameSet[];
   draftSpeaker: boolean;
   allowEmptyTiles: boolean;
   allowHomePlanetSearch: boolean;

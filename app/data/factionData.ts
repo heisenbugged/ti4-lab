@@ -401,8 +401,13 @@ export const factions: Record<FactionId, Faction> = {
 
 export const allFactionIds = Object.keys(factions) as FactionId[];
 export const baseFactionIds = Object.values(factions)
-  .filter((faction) => faction.set === "base" || faction.set === "pok")
+  .filter((faction) => faction.set === "base")
   .map((faction) => faction.id);
+
+export const pokFactionIds = Object.values(factions)
+  .filter((faction) => faction.set === "pok")
+  .map((faction) => faction.id);
+
 export const factionDiscordantIds = Object.values(factions)
   .filter((faction) => faction.set === "discordant")
   .map((faction) => faction.id);

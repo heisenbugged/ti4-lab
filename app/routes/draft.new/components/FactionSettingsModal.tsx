@@ -7,7 +7,7 @@ import {
   Stack,
 } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { factions } from "~/data/factionData";
 import { useDraft } from "~/draftStore";
 import { FactionId } from "~/types";
@@ -31,6 +31,7 @@ export function FactionSettingsModal() {
 
   const [allowedFactions, setAllowedFactions] =
     useState<FactionId[]>(factionPool);
+
   const [requiredFactions, setRequiredFactions] = useState<FactionId[]>([]);
 
   return (

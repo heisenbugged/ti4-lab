@@ -80,6 +80,7 @@ type DraftV2State = {
       integrations: DraftIntegrations,
     ) => void;
     initializeDraftFromSavedState: (draft: Draft) => void;
+    reset: () => void;
 
     setDraftSpeaker: (draftSpeaker: boolean) => void;
     updatePlayerName: (playerIdx: number, name: string) => void;
@@ -143,7 +144,8 @@ const emptyDraft = (): Draft => ({
     draftSpeaker: false,
     randomizeMap: false,
     randomizeSlices: false,
-    gameSets: [],
+    factionGameSets: [],
+    tileGameSets: [],
     numFactions: 6,
     numSlices: 6,
     type: "heisen",
@@ -181,8 +183,8 @@ export const draftStore = createStore<DraftV2State>()(
           state.draftId = draftId;
           state.draftUrl = draftUrl;
           state.draft = draft;
-          state.factionPool = getFactionPool(draft.settings.gameSets);
-          state.systemPool = getSystemPool(draft.settings.gameSets);
+          state.factionPool = getFactionPool(draft.settings.factionGameSets);
+          state.systemPool = getSystemPool(draft.settings.tileGameSets);
           state.hydrated = true;
         });
       },
@@ -319,8 +321,8 @@ export const draftStore = createStore<DraftV2State>()(
       initializeDraftFromSavedState: (draft: Draft) =>
         set((state) => {
           state.draft = draft;
-          state.factionPool = getFactionPool(draft.settings.gameSets);
-          state.systemPool = getSystemPool(draft.settings.gameSets);
+          state.factionPool = getFactionPool(draft.settings.factionGameSets);
+          state.systemPool = getSystemPool(draft.settings.tileGameSets);
           state.initialized = true;
           state.hydrated = false;
         }),
@@ -339,8 +341,8 @@ export const draftStore = createStore<DraftV2State>()(
           draft.integrations = integrations;
 
           // intialize pools based on game sets.
-          state.factionPool = getFactionPool(settings.gameSets);
-          state.systemPool = getSystemPool(settings.gameSets);
+          state.factionPool = getFactionPool(settings.factionGameSets);
+          state.systemPool = getSystemPool(settings.tileGameSets);
 
           draft.availableFactions = randomizeFactions(
             settings.numFactions,
@@ -385,6 +387,7 @@ export const draftStore = createStore<DraftV2State>()(
           state.initialized = true;
         });
       },
+      reset: () => set(initialState),
       setDraftSpeaker: (draftSpeaker: boolean) =>
         set(({ draft }) => {
           draft.settings.draftSpeaker = draftSpeaker;
