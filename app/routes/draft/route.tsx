@@ -5,6 +5,13 @@ import { IconMoon, IconSun } from "@tabler/icons-react";
 import { useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
 
+export type DraftOrderContext = {
+  adminMode: boolean;
+  pickForAnyone: boolean;
+  setAdminMode: (value: boolean) => void;
+  setPickForAnyone: (value: boolean) => void;
+};
+
 export default function Draft() {
   const [accessibleColors, setAccessibleColors] = useState(false);
   const [adminMode, setAdminMode] = useState(false);
@@ -40,31 +47,18 @@ export default function Draft() {
               setAccessibleColors(e.currentTarget.checked);
             }}
           />
-          <Switch
-            label="Pick for anyone"
-            checked={pickForAnyone}
-            onChange={(e) => {
-              setPickForAnyone(e.currentTarget.checked);
-              if (e.currentTarget.checked) {
-                setAdminMode(false);
-              }
-            }}
-          />
-          <Switch
-            visibleFrom="sm"
-            label="Admin mode"
-            checked={adminMode}
-            onChange={(e) => {
-              setAdminMode(e.currentTarget.checked);
-              if (e.currentTarget.checked) {
-                setPickForAnyone(false);
-              }
-            }}
-          />
         </Group>
       }
     >
-      <Outlet context={{ adminMode, pickForAnyone, accessibleColors }} />
+      <Outlet
+        context={{
+          adminMode,
+          pickForAnyone,
+          accessibleColors,
+          setAdminMode,
+          setPickForAnyone,
+        }}
+      />
     </MainAppShell>
   );
 }
