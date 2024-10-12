@@ -34,9 +34,10 @@ import { SyncDraftContext, useSyncDraftFetcher } from "~/hooks/useSyncDraft";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import { DraftableMinorFactionsSection } from "./sections/DraftableMinorFactionsSection";
 import { DraftablePlayerColorsSection } from "./sections/DraftablePlayerColorsSection";
+import { DraftOrderContext } from "../draft/route";
 
 export default function RunningDraft() {
-  const { adminMode } = useOutletContext<{ adminMode: boolean }>();
+  const { adminMode } = useOutletContext<DraftOrderContext>();
   useNotifyActivePlayer();
   const result = useLoaderData<typeof loader>();
   const { syncDraft, syncing } = useSyncDraftFetcher();

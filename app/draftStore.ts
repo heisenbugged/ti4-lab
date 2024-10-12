@@ -352,13 +352,15 @@ export const draftStore = createStore<DraftV2State>()(
           draft.players = players;
           draft.integrations = integrations;
 
+          console.log("settings", settings);
+
           // intialize pools based on game sets.
-          if (draft.settings.gameSets !== undefined) {
-            state.factionPool = getFactionPool(draft.settings.gameSets);
-            state.systemPool = getSystemPool(draft.settings.gameSets);
+          if (settings.gameSets !== undefined) {
+            state.factionPool = getFactionPool(settings.gameSets);
+            state.systemPool = getSystemPool(settings.gameSets);
           } else {
-            state.factionPool = getFactionPool(draft.settings.factionGameSets);
-            state.systemPool = getSystemPool(draft.settings.tileGameSets);
+            state.factionPool = getFactionPool(settings.factionGameSets);
+            state.systemPool = getSystemPool(settings.tileGameSets);
           }
 
           draft.availableFactions = randomizeFactions(

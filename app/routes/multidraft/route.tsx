@@ -36,8 +36,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const draftUrlNames: string[] = [];
   for (let i = 0; i < numDrafts; i++) {
-    const factionPool = getFactionPool(settings.gameSets);
-    const systemPool = getSystemPool(settings.gameSets);
+    const factionPool = getFactionPool(settings.factionGameSets);
+    const systemPool = getSystemPool(settings.tileGameSets);
+
     const availableFactions = randomizeFactions(
       settings.numFactions,
       factionPool,
