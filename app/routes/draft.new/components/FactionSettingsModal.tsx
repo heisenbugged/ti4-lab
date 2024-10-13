@@ -1,16 +1,19 @@
-import {
-  Button,
-  Checkbox,
-  Group,
-  Modal,
-  SimpleGrid,
-  Stack,
-} from "@mantine/core";
+import { Button, Checkbox, Group, Modal, SimpleGrid } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { SectionTitle } from "~/components/Section";
 import { factions } from "~/data/factionData";
 import { useDraft } from "~/draftStore";
-import { FactionId } from "~/types";
+import { FactionId, GameSet } from "~/types";
+
+const gameSetLabel: Record<GameSet, string> = {
+  base: "Base",
+  pok: "Prophecy of Kings",
+  discordant: "Discordant Stars",
+  discordantexp: "Discordant Expansion",
+  drahn: "Drahn",
+  unchartedstars: "Uncharted Stars",
+};
 
 export function FactionSettingsModal() {
   const opened = useDraft((state) => state.factionSettingsModal);
@@ -20,13 +23,24 @@ export function FactionSettingsModal() {
 
   const factionPool = useDraft((state) => state.factionPool);
   const sortedFactionPool = useMemo(() => {
-    return [...factionPool].sort((a, b) => {
-      const aName = factions[a].name.toLowerCase();
-      const bName = factions[b].name.toLowerCase();
-      if (aName < bName) return -1;
-      if (aName > bName) return 1;
-      return 0;
-    });
+    const grouped = factionPool.reduce(
+      (acc, factionId) => {
+        const gameSet = factions[factionId].set;
+        if (!acc[gameSet]) {
+          acc[gameSet] = [];
+        }
+        acc[gameSet].push(factionId);
+        return acc;
+      },
+      {} as Record<string, FactionId[]>,
+    );
+
+    return Object.entries(grouped).map(([gameSet, factionIds]) => ({
+      gameSet: gameSet as GameSet,
+      factionIds: factionIds.sort((a, b) =>
+        factions[a].name.localeCompare(factions[b].name),
+      ),
+    }));
   }, [factionPool]);
 
   const [allowedFactions, setAllowedFactions] =
@@ -45,75 +59,79 @@ export function FactionSettingsModal() {
         paddingBottom: 0,
       }}
     >
-      <Stack>
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 2, lg: 3, xl: 3 }}>
-          {sortedFactionPool.map((factionId) => {
-            const required = requiredFactions.includes(factionId);
-            return (
-              <Group
-                key={factionId}
-                style={{
-                  border: "1px solid rgba(0, 0, 0, 0.6)",
-                  borderRadius: "var(--mantine-radius-md)",
-                  backgroundColor: required
-                    ? "rgba(0, 255, 0, 0.05)"
-                    : undefined,
-                }}
-                p="sm"
-              >
-                {required && (
-                  <Button
-                    variant="filled"
-                    color="red"
-                    size="compact-xs"
-                    onClick={() => {
-                      setRequiredFactions((factions) =>
-                        factions.filter((f) => f !== factionId),
-                      );
-                    }}
-                  >
-                    unforce
-                  </Button>
-                )}
-                {!required && (
-                  <Button
-                    variant="filled"
-                    color="green"
-                    size="compact-xs"
-                    onClick={() => {
-                      setRequiredFactions((factions) => [
-                        ...factions,
-                        factionId,
-                      ]);
-                    }}
-                  >
-                    force
-                  </Button>
-                )}
-
-                <Checkbox
-                  label={factions[factionId].name}
-                  color={required ? "green" : undefined}
-                  checked={allowedFactions.includes(factionId) || required}
-                  onChange={() => {
-                    if (required) return;
-                    if (allowedFactions.includes(factionId)) {
-                      setAllowedFactions((factions) =>
-                        factions.filter((f) => f !== factionId),
-                      );
-                    } else {
-                      setAllowedFactions((factions) => [
-                        ...factions,
-                        factionId,
-                      ]);
-                    }
+      {sortedFactionPool.map(({ gameSet, factionIds }) => (
+        <>
+          <SectionTitle title={gameSetLabel[gameSet]} />
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 2, lg: 3, xl: 3 }} mt={24}>
+            {factionIds.map((factionId) => {
+              const required = requiredFactions.includes(factionId);
+              return (
+                <Group
+                  key={factionId}
+                  style={{
+                    border: "1px solid rgba(0, 0, 0, 0.6)",
+                    borderRadius: "var(--mantine-radius-md)",
+                    backgroundColor: required
+                      ? "rgba(0, 255, 0, 0.05)"
+                      : undefined,
                   }}
-                />
-              </Group>
-            );
-          })}
-        </SimpleGrid>
-      </Stack>
+                  p="sm"
+                >
+                  {required && (
+                    <Button
+                      variant="filled"
+                      color="red"
+                      size="compact-xs"
+                      onClick={() => {
+                        setRequiredFactions((factions) =>
+                          factions.filter((f) => f !== factionId),
+                        );
+                      }}
+                    >
+                      unforce
+                    </Button>
+                  )}
+                  {!required && (
+                    <Button
+                      variant="filled"
+                      color="green"
+                      size="compact-xs"
+                      onClick={() => {
+                        setRequiredFactions((factions) => [
+                          ...factions,
+                          factionId,
+                        ]);
+                      }}
+                    >
+                      force
+                    </Button>
+                  )}
+
+                  <Checkbox
+                    label={factions[factionId].name}
+                    color={required ? "green" : undefined}
+                    checked={allowedFactions.includes(factionId) || required}
+                    onChange={() => {
+                      if (required) return;
+                      if (allowedFactions.includes(factionId)) {
+                        setAllowedFactions((factions) =>
+                          factions.filter((f) => f !== factionId),
+                        );
+                      } else {
+                        setAllowedFactions((factions) => [
+                          ...factions,
+                          factionId,
+                        ]);
+                      }
+                    }}
+                  />
+                </Group>
+              );
+            })}
+          </SimpleGrid>
+        </>
+      ))}
+
       <div
         style={{
           position: "sticky",
