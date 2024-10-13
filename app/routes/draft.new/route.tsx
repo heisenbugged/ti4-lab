@@ -151,7 +151,7 @@ export default function DraftNew() {
   );
 
   return (
-    <Flex p="lg" direction="column">
+    <Flex py="lg" direction="column">
       {draft.integrations.discord && (
         <Box mb="lg">
           <DiscordBanner />
