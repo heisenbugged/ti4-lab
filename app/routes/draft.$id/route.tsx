@@ -89,12 +89,12 @@ export default function RunningDraft() {
   if (selectedPlayer === undefined) {
     return (
       <PlayerSelectionScreen
-        onDraftJoined={(player) => {
+        onDraftJoined={(playerId) => {
           localStorage.setItem(
             `draft:player:${result.id}`,
-            player.id.toString(),
+            playerId.toString(),
           );
-          draftActions.setSelectedPlayer(player.id);
+          draftActions.setSelectedPlayer(playerId);
         }}
       />
     );
