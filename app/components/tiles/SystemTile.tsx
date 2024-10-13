@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Hex } from "../Hex";
 import { Planet } from "../Planet";
 import type { SystemTile } from "~/types";
@@ -10,8 +10,10 @@ import { Wormhole } from "../features/Wormhole";
 import { MapContext } from "~/contexts/MapContext";
 import { LegendaryImage, hasLegendaryImage } from "../LegendaryImage";
 import { SystemId } from "../SystemId";
-import classes from "./Tiles.module.css";
 import { systemData } from "~/data/systemData";
+
+import classes from "./Tiles.module.css";
+import { OriginalArtTile } from "./OriginalArtTile";
 
 type Props = { mapId: string; tile: SystemTile; hideValues?: boolean };
 

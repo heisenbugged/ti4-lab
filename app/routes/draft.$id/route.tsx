@@ -35,6 +35,7 @@ import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import { DraftableMinorFactionsSection } from "./sections/DraftableMinorFactionsSection";
 import { DraftablePlayerColorsSection } from "./sections/DraftablePlayerColorsSection";
 import { DraftOrderContext } from "../draft/route";
+import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 
 export default function RunningDraft() {
   const { adminMode } = useOutletContext<DraftOrderContext>();

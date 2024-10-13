@@ -10,6 +10,9 @@ import { Hex } from "./Hex";
 
 import "./MapTile.css";
 import { MapContext } from "~/contexts/MapContext";
+import { useOutletContext } from "@remix-run/react";
+import { DraftOrderContext } from "~/routes/draft/route";
+import { OriginalArtTile } from "./tiles/OriginalArtTile";
 
 type Props = {
   mapId: string;
@@ -19,9 +22,60 @@ type Props = {
   onSelect?: () => void;
   onDelete?: () => void;
 };
-
 const MECATOL_REX_ID = "18";
+
 export function MapTile(props: Props) {
+  const { originalArt } = useOutletContext<DraftOrderContext>();
+  if (originalArt) return <OriginalArtMapTile {...props} />;
+  return <AbstractArtMapTile {...props} />;
+}
+
+function OriginalArtMapTile(props: Props) {
+  const {
+    mapId,
+    tile,
+    tile: { position },
+  } = props;
+  const { hOffset, wOffset, radius, gap } = useContext(MapContext);
+  const { x, y } = getHexPosition(position.x, position.y, radius, gap);
+
+  let Tile: JSX.Element | null;
+  switch (tile.type) {
+    case "HOME":
+      Tile = (
+        <HomeTile
+          mapId={mapId}
+          tile={tile}
+          selectable={!!props.homeSelectable}
+          onSelect={props.onSelect}
+        />
+      );
+      break;
+    case "SYSTEM":
+      Tile = <OriginalArtTile {...props} tile={tile} />;
+      break;
+    case "OPEN":
+      Tile = <EmptyTile {...props} tile={tile} />;
+      break;
+    case "CLOSED":
+      Tile = null;
+      break;
+  }
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: x + wOffset,
+        top: y + hOffset,
+      }}
+    >
+      {Tile}
+    </div>
+  );
+}
+
+function AbstractArtMapTile(props: Props) {
   const [hovered, setHovered] = useState(false);
   const {
     tile,
@@ -31,7 +85,6 @@ export function MapTile(props: Props) {
     onDelete,
   } = props;
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
-
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
 
   useEffect(() => {

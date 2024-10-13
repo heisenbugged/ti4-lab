@@ -3,6 +3,7 @@ import { useDimensions } from "~/hooks/useDimensions";
 import { MapTile } from "../MapTile";
 import { Tile } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
+import { OriginalArtTile } from "../tiles/OriginalArtTile";
 
 type Props = {
   id: string;

@@ -8,11 +8,14 @@ import { MainAppShell } from "~/components/MainAppShell";
 export type DraftOrderContext = {
   adminMode: boolean;
   pickForAnyone: boolean;
+  originalArt: boolean;
   setAdminMode: (value: boolean) => void;
   setPickForAnyone: (value: boolean) => void;
+  setOriginalArt: (value: boolean) => void;
 };
 
 export default function Draft() {
+  const [originalArt, setOriginalArt] = useState(false);
   const [accessibleColors, setAccessibleColors] = useState(false);
   const [adminMode, setAdminMode] = useState(false);
   const [pickForAnyone, setPickForAnyone] = useState(false);
@@ -54,9 +57,11 @@ export default function Draft() {
         context={{
           adminMode,
           pickForAnyone,
+          originalArt,
           accessibleColors,
           setAdminMode,
           setPickForAnyone,
+          setOriginalArt,
         }}
       />
     </MainAppShell>

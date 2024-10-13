@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
 import { Button, Stack, Text } from "@mantine/core";
-import type { HomeTile } from "~/types";
+import type { HomeTile, SystemTile } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 import { FactionIcon } from "../icons/FactionIcon";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
@@ -12,6 +12,9 @@ import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useDraft } from "~/draftStore";
 
 import classes from "./Tiles.module.css";
+import { useOutletContext } from "@remix-run/react";
+import { DraftOrderContext } from "~/routes/draft/route";
+import { OriginalArtTile } from "./OriginalArtTile";
 
 type Props = {
   mapId: string;
@@ -23,6 +26,7 @@ type Props = {
 const seatLabel = ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
 export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
+  const { originalArt } = useOutletContext<DraftOrderContext>();
   const { radius, disabled } = useContext(MapContext);
   const hydrated = useDraft((state) => state.hydrated);
   const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
@@ -33,6 +37,24 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
       : undefined;
   const scale = calcScale(radius);
   const systemIdSize = radius >= 53 ? "10px" : "8px";
+
+  if (originalArt && player?.faction && factionSystems[player.faction]) {
+    return (
+      <OriginalArtTile
+        mapId={mapId}
+        tile={
+          {
+            ...tile,
+            systemId: factionSystems[player.faction].id,
+            type: "SYSTEM",
+          } as SystemTile
+        }
+      >
+        <PlayerChip player={player} size="lg" visibleFrom="lg" />
+        <PlayerChip player={player} size="md" hiddenFrom="lg" />
+      </OriginalArtTile>
+    );
+  }
 
   return (
     <Hex id={`${mapId}-home`} radius={radius} colorClass={classes.home}>

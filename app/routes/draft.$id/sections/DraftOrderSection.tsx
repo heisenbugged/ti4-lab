@@ -7,6 +7,7 @@ import { useOutletContext } from "@remix-run/react";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { ExportDraftState } from "../components/ExportDraftState";
 import { DraftOrderContext } from "~/routes/draft/route";
+import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 
 export function DraftOrderSection() {
   const { adminMode, pickForAnyone, setAdminMode, setPickForAnyone } =
@@ -62,6 +63,9 @@ export function DraftOrderSection() {
   return (
     <Stack>
       <Group hiddenFrom="sm" justify="flex-end">
+        <OriginalArtToggle />
+      </Group>
+      <Group hiddenFrom="sm" justify="flex-end">
         {pickForAnyoneControl}
         {adminControl}
       </Group>
@@ -72,7 +76,8 @@ export function DraftOrderSection() {
       </Group>
 
       <SectionTitle title="Draft Order">
-        <Group visibleFrom="sm">
+        <Group visibleFrom="sm" align="center">
+          <OriginalArtToggle />
           {adminMode && <ExportDraftState />}
           {UndoLastSelection}
           {pickForAnyoneControl}
