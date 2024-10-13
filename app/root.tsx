@@ -24,7 +24,7 @@ import type { Socket } from "socket.io-client";
 import io from "socket.io-client";
 import { SocketProvider } from "./socketContext";
 import { getSafeWindow } from "./hooks/useWindowDimensions";
-import { LoaderFunctionArgs } from "@remix-run/node";
+import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 
 const mantineTheme = createTheme({
   colors: {
@@ -221,6 +221,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
+
+  if (url.hostname === "ti4-lab.fly.dev") {
+    // Construct the new URL, preserving the path and query parameters
+    const newUrl = new URL(url.pathname + url.search, "https://tidraft.com");
+    return redirect(newUrl.toString(), 301);
+  }
+
   const forcedColorScheme = url.searchParams.get("FORCED_COLOR_SCHEME") as
     | "dark"
     | "light";
