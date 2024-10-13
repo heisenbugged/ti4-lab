@@ -11,7 +11,7 @@ export function MainAppShell({ children, headerRightSection }: Props) {
     <AppShell header={{ height: 60 }} px="md">
       <AppShell.Header>
         <Group align="center" h="100%" px="sm" gap="sm">
-          <Box visibleFrom="xs">
+          <Box>
             <Link
               to="/draft/prechoice"
               className="logo"
