@@ -183,13 +183,9 @@ export const draftStore = createStore<DraftV2State>()(
           state.draftId = draftId;
           state.draftUrl = draftUrl;
           state.draft = draft;
-          if (draft.settings.gameSets !== undefined) {
-            state.factionPool = getFactionPool(draft.settings.gameSets);
-            state.systemPool = getSystemPool(draft.settings.gameSets);
-          } else {
-            state.factionPool = getFactionPool(draft.settings.factionGameSets);
-            state.systemPool = getSystemPool(draft.settings.tileGameSets);
-          }
+
+          state.factionPool = getFactionPool(draft.settings.factionGameSets);
+          state.systemPool = getSystemPool(draft.settings.tileGameSets);
 
           state.hydrated = true;
         });
@@ -327,14 +323,8 @@ export const draftStore = createStore<DraftV2State>()(
       initializeDraftFromSavedState: (draft: Draft) =>
         set((state) => {
           state.draft = draft;
-          if (draft.settings.gameSets !== undefined) {
-            state.factionPool = getFactionPool(draft.settings.gameSets);
-            state.systemPool = getSystemPool(draft.settings.gameSets);
-          } else {
-            state.factionPool = getFactionPool(draft.settings.factionGameSets);
-            state.systemPool = getSystemPool(draft.settings.tileGameSets);
-          }
-
+          state.factionPool = getFactionPool(draft.settings.factionGameSets);
+          state.systemPool = getSystemPool(draft.settings.tileGameSets);
           state.initialized = true;
           state.hydrated = false;
         }),
@@ -355,13 +345,8 @@ export const draftStore = createStore<DraftV2State>()(
           console.log("settings", settings);
 
           // intialize pools based on game sets.
-          if (settings.gameSets !== undefined) {
-            state.factionPool = getFactionPool(settings.gameSets);
-            state.systemPool = getSystemPool(settings.gameSets);
-          } else {
-            state.factionPool = getFactionPool(settings.factionGameSets);
-            state.systemPool = getSystemPool(settings.tileGameSets);
-          }
+          state.factionPool = getFactionPool(settings.factionGameSets);
+          state.systemPool = getSystemPool(settings.tileGameSets);
 
           draft.availableFactions = randomizeFactions(
             settings.numFactions,

@@ -172,8 +172,6 @@ export type DraftSettings = {
   type: DraftType;
   factionGameSets: GameSet[];
   tileGameSets: GameSet[];
-  // todo: remove completely.
-  gameSets?: GameSet[];
   draftSpeaker: boolean;
   allowEmptyTiles: boolean;
   allowHomePlanetSearch: boolean;
