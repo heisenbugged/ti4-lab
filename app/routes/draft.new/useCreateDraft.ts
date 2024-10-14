@@ -9,6 +9,7 @@ export function useCreateDraft() {
     fetcher.submit(input, {
       method: "POST",
       encType: "application/json",
+      action: "/draft/new",
     });
   };
 }

@@ -44,8 +44,6 @@ import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
 import { FactionSettingsModal } from "./components/FactionSettingsModal";
 import { createDraftOrder } from "~/utils/draftOrder.server";
-import { IconPalette } from "@tabler/icons-react";
-import { DraftOrderContext } from "../draft/route";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 
 export default function DraftNew() {
