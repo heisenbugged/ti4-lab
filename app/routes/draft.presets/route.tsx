@@ -245,7 +245,7 @@ function PresetCard({ sliceIDs, title, badge, onClick }: PresetCardProps) {
     <Card shadow="sm" padding="lg" radius="md" withBorder miw={300}>
       <Group justify="space-between" mb="xs">
         <Text fw={500}>{title}</Text>
-        <Badge color="blue">{badge}</Badge>
+        {/* <Badge color="blue">{badge}</Badge> */}
       </Group>
 
       <Table verticalSpacing={4}>
@@ -482,7 +482,9 @@ export default function DraftPresets() {
         community events, and other sources.
       </Text>
 
-      <Group align="flex-start" px="lg">
+      <SectionTitle title="SCPT Tournaments" />
+
+      <Group align="flex-start" px="lg" mt="lg">
         {pastDrafts.map((draft) => (
           <PresetCard
             sliceIDs={draft.sliceIDs}
