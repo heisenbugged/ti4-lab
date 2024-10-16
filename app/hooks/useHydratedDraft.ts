@@ -4,6 +4,7 @@ import {
   DraftSelection,
   HydratedPlayer,
   PlayerSelection,
+  DiscordPlayer,
 } from "~/types";
 import { hydrateMap } from "~/utils/map";
 import { useOutletContext } from "@remix-run/react";
@@ -12,11 +13,35 @@ import { useAtom } from "jotai";
 import { draftConfig } from "~/draft";
 import { factionSystems } from "~/data/systemData";
 
+// check if the player name is either empty or Player N where 'n' is a number
+const isDefaultName = (name: string) => {
+  return name === "" || name.startsWith("Player ");
+};
+
 export function hydratePlayers(
   players: Player[],
   selections: DraftSelection[],
   draftSpeaker: boolean = false,
+  discordPlayers: DiscordPlayer[] = [],
 ): HydratedPlayer[] {
+  const hydratedPlayers = players.map((p) => {
+    const discordPlayer = discordPlayers.find((dp) => dp.playerId === p.id);
+
+    let name = p.name;
+    if (
+      discordPlayer &&
+      discordPlayer.type === "identified" &&
+      isDefaultName(name)
+    ) {
+      name = discordPlayer.nickname ?? discordPlayer.username;
+    }
+    return {
+      ...p,
+      name,
+      hasDiscord: discordPlayer?.type === "identified",
+    } as HydratedPlayer;
+  });
+
   return selections.reduce(
     (acc, selection) => {
       const playerIdx = acc.findIndex((p) => p.id === selection.playerId);
@@ -71,7 +96,7 @@ export function hydratePlayers(
 
       return acc;
     },
-    [...players] as HydratedPlayer[],
+    [...hydratedPlayers],
   );
 }
 
@@ -89,6 +114,7 @@ export const hydratedPlayersAtom = atom((get) => {
     draft.players,
     draft.selections,
     draft.settings.draftSpeaker,
+    draft.integrations.discord?.players,
   );
 });
 

@@ -300,6 +300,7 @@ export type Draft = {
 export type HydratedPlayer = {
   id: number;
   name: string;
+  hasDiscord?: boolean;
   faction?: FactionId;
   minorFaction?: FactionId;
   seatIdx?: number;

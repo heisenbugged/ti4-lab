@@ -1,12 +1,8 @@
-import {
-  ChatInputCommandInteraction,
-  Interaction,
-  SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { DiscordData, DiscordPlayer } from "~/types";
 
 const data = new SlashCommandBuilder()
-  .setName("startdraft")
+  .setName("labdraft")
   .setDescription(
     "Will provide a TI4 link. Once  created, notifications will be sent to this channel.",
   )
@@ -85,12 +81,14 @@ async function execute(interaction: ChatInputCommandInteraction) {
     players,
     channelId: interaction.channelId!,
     guildId: interaction.guildId!,
+    pickMessageIds: {},
   };
 
   const discordString = btoa(JSON.stringify(discordData));
+  const draftUrl = `${global.env.baseUrl}/draft/prechoice?discord=${discordString}`;
 
   await interaction.reply({
-    content: `Draft link: ${global.env.baseUrl}/draft/prechoice?discord=${discordString}`,
+    content: `Draft link: [Click here to start the draft](${draftUrl})`,
     ephemeral: true,
   });
 }

@@ -196,7 +196,8 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
 export default function DraftPrechoice() {
   const submit = useSubmit();
   const location = useLocation();
-  const { discordData } = useLoaderData<typeof loader>();
+  const { discordData, discordOauthUrl } = useLoaderData<typeof loader>();
+
   const navigate = useNavigate();
   const [draftPlayerColors, setDraftPlayerColors] = useState(false);
   const [allowEmptyMapTiles, setAllowEmptyMapTiles] = useState(false);
@@ -548,7 +549,7 @@ export default function DraftPrechoice() {
           </Text>
           <Text c="dimmed" size="sm">
             NOTE: Any players that you <Code>@mention</Code> during{" "}
-            <Code>/startdraft</Code> will be mentioned in the notification when
+            <Code>/labdraft</Code> will be mentioned in the notification when
             it's their turn.
           </Text>
         </Stack>
@@ -557,10 +558,7 @@ export default function DraftPrechoice() {
           <Stepper.Step
             label="Add the discord bot to your server"
             description={
-              <Link
-                to="https://discord.com/oauth2/authorize?client_id=1247915595551477850&permissions=2048&integration_type=0&scope=bot"
-                reloadDocument
-              >
+              <Link to={discordOauthUrl} reloadDocument>
                 <Button
                   mt={4}
                   size="sm"
@@ -1052,5 +1050,5 @@ export const loader = async (args: LoaderFunctionArgs) => {
     discordData = JSON.parse(atob(discordString)) as DiscordData;
   }
 
-  return { discordData };
+  return { discordData, discordOauthUrl: env.discordOauthUrl };
 };

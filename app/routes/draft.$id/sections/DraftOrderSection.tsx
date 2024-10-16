@@ -14,11 +14,9 @@ export function DraftOrderSection() {
     useOutletContext<DraftOrderContext>();
   const { undoLastSelection } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
-  const players = useDraft((state) => state.draft.players);
+  const { hydratedPlayers, currentPick } = useHydratedDraft();
   const pickOrder = useDraft((state) => state.draft.pickOrder);
-  const discord = useDraft((state) => state.draft.integrations.discord);
   const selections = useDraft((state) => state.draft.selections);
-  const currentPick = useHydratedDraft().currentPick;
 
   const UndoLastSelection = (
     <Button
@@ -85,10 +83,9 @@ export function DraftOrderSection() {
         </Group>
       </SectionTitle>
       <DraftOrder
-        players={players}
+        players={hydratedPlayers}
         pickOrder={pickOrder}
         currentPick={currentPick}
-        discordPlayers={discord?.players ?? []}
       />
     </Stack>
   );

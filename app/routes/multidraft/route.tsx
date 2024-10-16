@@ -72,7 +72,7 @@ export async function action({ request }: ActionFunctionArgs) {
       slices,
       ...createDraftOrder(players, settings, availableFactions),
     };
-    const prettyUrl = await createDraft(draft);
+    const { prettyUrl } = await createDraft(draft);
     draftUrlNames.push(prettyUrl);
   }
 

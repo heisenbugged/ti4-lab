@@ -16,8 +16,9 @@ import {
   draftById,
   draftByPrettyUrl,
   generateUniquePrettyUrl,
+  updateDraft,
 } from "~/drizzle/draft.server";
-import { notifyCurrentPick } from "~/discord/bot.server";
+import { notifyPick } from "~/discord/bot.server";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import {
   SlicesSection,
@@ -174,17 +175,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const existingDraft = await draftById(id);
   const existingDraftData = JSON.parse(existingDraft.data as string) as Draft;
-
-  // TODO: Handle if not successful
-  const result = db
-    .update(drafts)
-    .set({ data: JSON.stringify(draft) })
-    .where(eq(drafts.id, id))
-    .run();
+  await updateDraft(id, draft);
 
   // only notify if a selection was made
   if (existingDraftData.selections.length != draft.selections.length) {
-    await notifyCurrentPick(draft);
+    await notifyPick(id, existingDraft.urlName!, draft);
   }
 
   return { success: true };

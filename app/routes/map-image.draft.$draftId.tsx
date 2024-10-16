@@ -34,7 +34,7 @@ export default function MapImage() {
         <RawMap mapId="mapImage" map={hydratedMap} width={900} height={900} />
       </div>
       <div style={{ bottom: 12, right: 12, position: "absolute" }}>
-        <Text c="white">ti4-lab.fly.dev/draft/{result.draftId}</Text>
+        <Text c="white">tidraft.com/draft/{result.draftId}</Text>
       </div>
     </div>
   );

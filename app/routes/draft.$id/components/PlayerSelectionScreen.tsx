@@ -3,6 +3,7 @@ import { IconEye } from "@tabler/icons-react";
 import { useState } from "react";
 import { playerColors } from "~/data/factionData";
 import { useDraft } from "~/draftStore";
+import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { Player } from "~/types";
 
 type Props = {
@@ -12,8 +13,8 @@ type Props = {
 const SPECTATOR_ID = -1;
 
 export function PlayerSelectionScreen({ onDraftJoined }: Props) {
-  const players = useDraft((state) => state.draft.players);
-  const discord = useDraft((state) => state.draft.integrations.discord);
+  const { hydratedPlayers } = useHydratedDraft();
+
   const [selectedPlayer, setSelectedPlayer] = useState<number | undefined>(
     undefined,
   );
@@ -22,12 +23,7 @@ export function PlayerSelectionScreen({ onDraftJoined }: Props) {
     <Stack flex={1} mih="calc(100vh - 60px)" align="center" justify="center">
       <Title mb="xl">Identify Yourself</Title>
       <Grid w="75vw" maw="1200px" gutter="xl">
-        {players.map((player) => {
-          const discordPlayer = discord?.players.find(
-            (discordPlayer) => discordPlayer.playerId === player.id,
-          );
-          const discordMember =
-            discordPlayer?.type === "identified" ? discordPlayer : undefined;
+        {hydratedPlayers.map((player) => {
           return (
             <Grid.Col key={player.id} span={{ base: 12, sm: 6 }}>
               <Button
@@ -37,9 +33,7 @@ export function PlayerSelectionScreen({ onDraftJoined }: Props) {
                 color={playerColors[player.id]}
                 onMouseDown={() => setSelectedPlayer(player.id)}
               >
-                {discordMember?.nickname ??
-                  discordMember?.username ??
-                  player.name}
+                {player.name}
               </Button>
             </Grid.Col>
           );

@@ -42,15 +42,22 @@ export async function generateUniquePrettyUrl() {
 }
 
 export async function createDraft(draft: Draft) {
+  const id = uuidv4().toString();
   const prettyUrl = await generateUniquePrettyUrl();
-  // TODO: Handle error if insert fails
   db.insert(drafts)
     .values({
-      id: uuidv4().toString(),
+      id,
       urlName: prettyUrl,
       data: JSON.stringify(draft),
     })
     .run();
 
-  return prettyUrl;
+  return { id, prettyUrl };
+}
+
+export async function updateDraft(id: string, draftData: Draft) {
+  db.update(drafts)
+    .set({ data: JSON.stringify(draftData) })
+    .where(eq(drafts.id, id))
+    .run();
 }

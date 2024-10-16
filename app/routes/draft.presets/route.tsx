@@ -204,6 +204,7 @@ function PresetDraftStart({
                 guildId: "",
                 channelId: "",
                 players: [],
+                pickMessageIds: {},
               }}
               onChangeName={(id, name) => {
                 setPlayers((p) =>

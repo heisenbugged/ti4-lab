@@ -7,7 +7,12 @@ import {
   TextChannel,
 } from "discord.js";
 import startDraft from "./commands/startDraft";
-import { Draft } from "~/types";
+import { DiscordData, Draft, DraftSelection, Player } from "~/types";
+import {
+  getDiscordPickMessage,
+  addDiscordPickMessage,
+} from "~/drizzle/discordMessages.server";
+import { factions } from "~/data/factionData";
 
 const commands = [startDraft];
 
@@ -75,22 +80,112 @@ export async function getChannel(guildId: string, channelId: string) {
   return (cachedChannel ?? guild.channels.fetch(channelId)) as TextChannel;
 }
 
-export async function notifyCurrentPick(draft: Draft) {
+export async function notifyPick(
+  draftId: string,
+  draftUrl: string,
+  draft: Draft,
+) {
   if (!draft.integrations.discord) return;
   if (draft.selections.length === draft.pickOrder.length) return;
 
-  const discord = draft.integrations.discord;
-  const currentPlayer = draft.players[draft.pickOrder[draft.selections.length]];
+  const {
+    integrations: { discord },
+    players,
+    pickOrder,
+    selections,
+  } = draft;
+
+  // Edit existing message to reflect the pick.
+  const previousMessageId = await getDiscordPickMessage(
+    draftId,
+    draft.selections.length - 1,
+  );
+  if (previousMessageId) {
+    const previousPlayerName = playerName(
+      players[pickOrder[draft.selections.length - 1]],
+      discord,
+    );
+    const previousPick = draft.selections[draft.selections.length - 1];
+
+    console.log("Editing previous message to reflect the pick made");
+    await editMessage(
+      draft,
+      previousMessageId,
+      draftSelectionToMessage(previousPlayerName, previousPick),
+    );
+  }
+
+  // Add new message prompting the next player to make a pick.
+  const currentPlayer = players[pickOrder[selections.length]];
   const channel = await getChannel(discord.guildId, discord.channelId);
+
   const discordPlayer = discord.players.find(
     (p) => p.playerId === currentPlayer.id,
   );
   const discordMemberId =
     discordPlayer?.type === "identified" ? discordPlayer.memberId : undefined;
 
-  if (discordMemberId) {
-    channel?.send(`It's your turn to draft, <@${discordMemberId}>!`);
-  } else {
-    channel?.send(`It's your turn to draft, ${currentPlayer.name}!`);
+  const message = discordMemberId
+    ? `It's your turn to draft, <@${discordMemberId}>! [Draft link](${global.env.baseUrl}/draft/${draftUrl})`
+    : `It's your turn to draft, ${currentPlayer.name}! [Draft link](${global.env.baseUrl}/draft/${draftUrl})`;
+
+  const sentMessage = await channel?.send(message);
+  await addDiscordPickMessage(draftId, draft.selections.length, sentMessage.id);
+}
+
+const playerName = (player: Player, discordData: DiscordData) => {
+  const discordPlayer = discordData.players.find(
+    (p) => p.playerId === player.id,
+  );
+  const discordMemberId =
+    discordPlayer?.type === "identified" ? discordPlayer.memberId : undefined;
+
+  return discordMemberId ? `<@${discordMemberId}>` : player.name;
+};
+
+export async function editMessage(
+  draft: Draft,
+  messageId: string,
+  newContent: string,
+) {
+  if (!draft.integrations.discord) return;
+
+  const discord = draft.integrations.discord;
+  const channel = await getChannel(discord.guildId, discord.channelId);
+
+  try {
+    const message = await channel.messages.fetch(messageId);
+    await message.edit(newContent);
+    console.log(`Message ${messageId} successfully edited.`);
+  } catch (error) {
+    console.error(`Error editing message ${messageId}:`, error);
   }
+}
+
+function draftSelectionToMessage(
+  playerName: string,
+  selection: DraftSelection,
+) {
+  if (selection.type === "SELECT_SPEAKER_ORDER") {
+    return `${playerName} selected speaker order: ${selection.speakerOrder + 1}`;
+  }
+  if (selection.type === "SELECT_SLICE") {
+    return `${playerName} selected slice: ${selection.sliceIdx + 1}`;
+  }
+  if (selection.type === "SELECT_FACTION") {
+    const faction = factions[selection.factionId];
+    return `${playerName} selected faction: ${faction.name}`;
+  }
+  if (selection.type === "SELECT_MINOR_FACTION") {
+    const minorFaction = factions[selection.minorFactionId];
+    return `${playerName} selected minor faction: ${minorFaction.name}`;
+  }
+  if (selection.type === "SELECT_SEAT") {
+    return `${playerName} selected seat: ${selection.seatIdx + 1}`;
+  }
+  if (selection.type === "SELECT_PLAYER_COLOR") {
+    return `${playerName} selected color: ${selection.color}`;
+  }
+
+  return "";
 }

@@ -40,7 +40,7 @@ import {
 import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraftSettings } from "~/hooks/useDraftSettings";
-import { getChannel, notifyCurrentPick } from "~/discord/bot.server";
+import { getChannel, notifyPick } from "~/discord/bot.server";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
 import { FactionSettingsModal } from "./components/FactionSettingsModal";
 import { createDraftOrder } from "~/utils/draftOrder.server";
@@ -213,14 +213,14 @@ export async function action({ request }: ActionFunctionArgs) {
     ...createDraftOrder(body.players, body.settings, body.availableFactions),
   };
 
-  const prettyUrl = await createDraft(draft);
+  const { prettyUrl, id } = await createDraft(draft);
   if (body.integrations?.discord) {
     const discord = body.integrations.discord;
     const channel = await getChannel(discord.guildId, discord.channelId);
     await channel?.send(
       `Draft has started! Join here: ${global.env.baseUrl}/draft/${prettyUrl}`,
     );
-    await notifyCurrentPick(draft);
+    await notifyPick(id, prettyUrl, draft);
   }
 
   return redirect(`/draft/${prettyUrl}`);

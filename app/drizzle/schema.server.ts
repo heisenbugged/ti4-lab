@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm";
-import { sqliteTable, text, blob, index } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  text,
+  blob,
+  index,
+  integer,
+  unique,
+} from "drizzle-orm/sqlite-core";
 
 // Define a function to generate UUIDs for default values
 export const drafts = sqliteTable(
@@ -17,6 +24,26 @@ export const drafts = sqliteTable(
   },
   (table) => ({
     urlNameIdx: index("urlName_index").on(table.urlName),
+  }),
+);
+
+export const draftDiscordMessages = sqliteTable(
+  "draftDiscordMessages",
+  {
+    messageId: text("messageId").primaryKey(),
+    draftId: text("draftId")
+      .notNull()
+      .references(() => drafts.id),
+    pick: integer("pick").notNull(),
+  },
+  (table) => ({
+    draftIdIdx: index("draft_discord_messages_draft_id_index").on(
+      table.draftId,
+    ),
+    draftIdPickUnique: unique("draft_id_pick_unique").on(
+      table.draftId,
+      table.pick,
+    ),
   }),
 );
 
