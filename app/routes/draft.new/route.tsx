@@ -215,11 +215,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const { prettyUrl, id } = await createDraft(draft);
   if (body.integrations?.discord) {
-    const discord = body.integrations.discord;
-    const channel = await getChannel(discord.guildId, discord.channelId);
-    await channel?.send(
-      `Draft has started! Join here: ${global.env.baseUrl}/draft/${prettyUrl}`,
-    );
     await notifyPick(id, prettyUrl, draft);
   }
 
