@@ -5,7 +5,7 @@ import { PlanetStats } from "./PlanetStats";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
 import { hasLegendaryImage } from "../LegendaryImage";
-import { useOutletContext } from "@remix-run/react";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 export type PlanetFormat =
   | "STREAMLINED"
@@ -38,9 +38,7 @@ export function Planet({
   showName = true,
   largeFonts = false,
 }: Props) {
-  const { accessibleColors } = useOutletContext<{
-    accessibleColors: boolean;
-  }>();
+  const { accessibleColors } = useSafeOutletContext();
   const bgColors = accessibleColors ? accessibleBgColor : bgColor;
   const { trait, tech: techSpecialty } = planet;
 

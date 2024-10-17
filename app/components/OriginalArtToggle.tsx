@@ -1,8 +1,7 @@
 import { Box, Group, Modal, SegmentedControl, Text } from "@mantine/core";
 import { useDisclosure, useLocalStorage } from "@mantine/hooks";
-import { useOutletContext } from "@remix-run/react";
 import { IconPalette } from "@tabler/icons-react";
-import { DraftOrderContext } from "~/routes/draft/route";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 type Props = {
   showWarning?: boolean;
@@ -16,7 +15,7 @@ export function OriginalArtToggle({ showWarning = false }: Props) {
     });
   const [showWarningModal, setShowWarningModal] = useDisclosure(false);
 
-  const { originalArt, setOriginalArt } = useOutletContext<DraftOrderContext>();
+  const { originalArt, setOriginalArt } = useSafeOutletContext();
   return (
     <Box>
       <SegmentedControl

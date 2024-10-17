@@ -1,5 +1,5 @@
 import { Box, Group, Text } from "@mantine/core";
-import { useOutletContext } from "@remix-run/react";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 type Props = {
   legendary?: boolean;
@@ -14,9 +14,7 @@ export function PlanetStats({
   influence,
   fontSize = "25px",
 }: Props) {
-  const { accessibleColors } = useOutletContext<{
-    accessibleColors: boolean;
-  }>();
+  const { accessibleColors } = useSafeOutletContext();
 
   const accessibleShadow = accessibleColors
     ? {

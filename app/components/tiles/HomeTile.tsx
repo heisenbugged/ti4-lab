@@ -10,11 +10,9 @@ import { SystemId } from "../SystemId";
 import { factionSystems } from "~/data/systemData";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useDraft } from "~/draftStore";
-
-import classes from "./Tiles.module.css";
-import { useOutletContext } from "@remix-run/react";
-import { DraftOrderContext } from "~/routes/draft/route";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { OriginalArtTile } from "./OriginalArtTile";
+import classes from "./Tiles.module.css";
 
 type Props = {
   mapId: string;
@@ -26,7 +24,7 @@ type Props = {
 const seatLabel = ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
 export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
-  const { originalArt } = useOutletContext<DraftOrderContext>();
+  const { originalArt } = useSafeOutletContext();
   const { radius, disabled } = useContext(MapContext);
   const hydrated = useDraft((state) => state.hydrated);
   const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);

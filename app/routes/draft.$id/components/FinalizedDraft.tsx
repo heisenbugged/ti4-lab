@@ -12,7 +12,7 @@ import { Section, SectionTitle } from "~/components/Section";
 import { SummaryRow } from "./SummaryRow";
 import { useMemo, useState } from "react";
 import { SummaryCard } from "./MidDraftSummary";
-import { Link, useOutletContext } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import {
   hydratedMapStringAtom,
@@ -23,11 +23,10 @@ import { MapSection } from "../sections";
 import { useAtom } from "jotai";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { PlanetFinder } from "./PlanetFinder";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 export function FinalizedDraft() {
-  const { adminMode } = useOutletContext<{
-    adminMode: boolean;
-  }>();
+  const { adminMode } = useSafeOutletContext();
 
   const config = useDraftConfig();
   const draftUrl = useDraft((state) => state.draftUrl);

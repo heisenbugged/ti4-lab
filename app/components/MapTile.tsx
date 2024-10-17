@@ -10,9 +10,8 @@ import { Hex } from "./Hex";
 
 import "./MapTile.css";
 import { MapContext } from "~/contexts/MapContext";
-import { useOutletContext } from "@remix-run/react";
-import { DraftOrderContext } from "~/routes/draft/route";
 import { OriginalArtTile } from "./tiles/OriginalArtTile";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 type Props = {
   mapId: string;
@@ -25,7 +24,7 @@ type Props = {
 const MECATOL_REX_ID = "18";
 
 export function MapTile(props: Props) {
-  const { originalArt } = useOutletContext<DraftOrderContext>();
+  const { originalArt } = useSafeOutletContext();
   if (originalArt) return <OriginalArtMapTile {...props} />;
   return <AbstractArtMapTile {...props} />;
 }

@@ -9,9 +9,11 @@ export type DraftOrderContext = {
   adminMode: boolean;
   pickForAnyone: boolean;
   originalArt: boolean;
+  accessibleColors: boolean;
   setAdminMode: (value: boolean) => void;
   setPickForAnyone: (value: boolean) => void;
   setOriginalArt: (value: boolean) => void;
+  setAccessibleColors: (value: boolean) => void;
 };
 
 export default function Draft() {
@@ -62,6 +64,7 @@ export default function Draft() {
           setAdminMode,
           setPickForAnyone,
           setOriginalArt,
+          setAccessibleColors,
         }}
       />
     </MainAppShell>

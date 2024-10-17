@@ -1,6 +1,6 @@
 import { Button, Grid, Stack } from "@mantine/core";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
-import { useLoaderData, useOutletContext } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { useEffect } from "react";
 import { useDraft } from "~/draftStore";
@@ -35,11 +35,10 @@ import { SyncDraftContext, useSyncDraftFetcher } from "~/hooks/useSyncDraft";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import { DraftableMinorFactionsSection } from "./sections/DraftableMinorFactionsSection";
 import { DraftablePlayerColorsSection } from "./sections/DraftablePlayerColorsSection";
-import { DraftOrderContext } from "../draft/route";
-import { OriginalArtToggle } from "~/components/OriginalArtToggle";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 export default function RunningDraft() {
-  const { adminMode } = useOutletContext<DraftOrderContext>();
+  const { adminMode } = useSafeOutletContext();
   useNotifyActivePlayer();
   const result = useLoaderData<typeof loader>();
   const { syncDraft, syncing } = useSyncDraftFetcher();

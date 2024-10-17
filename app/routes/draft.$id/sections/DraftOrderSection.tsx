@@ -3,15 +3,15 @@ import { SectionTitle } from "~/components/Section";
 import { DraftOrder } from "../components/DraftOrder";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
-import { useOutletContext } from "@remix-run/react";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { ExportDraftState } from "../components/ExportDraftState";
 import { DraftOrderContext } from "~/routes/draft/route";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 export function DraftOrderSection() {
   const { adminMode, pickForAnyone, setAdminMode, setPickForAnyone } =
-    useOutletContext<DraftOrderContext>();
+    useSafeOutletContext();
   const { undoLastSelection } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
   const { hydratedPlayers, currentPick } = useHydratedDraft();

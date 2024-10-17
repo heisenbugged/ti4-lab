@@ -8,10 +8,10 @@ import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraft } from "~/draftStore";
-import { useOutletContext } from "@remix-run/react";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 export function MapSection() {
-  const { adminMode } = useOutletContext<{ adminMode: boolean }>();
+  const { adminMode } = useSafeOutletContext();
   const { ref, width } = useDimensions<HTMLDivElement>();
   const { height: windowHeight } = useWindowDimensions();
   const height = getBoundedMapHeight(width, windowHeight - 150);

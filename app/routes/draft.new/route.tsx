@@ -6,21 +6,13 @@ import {
   Grid,
   Group,
   List,
-  Modal,
   Popover,
-  SegmentedControl,
   Stack,
   Switch,
-  Text,
 } from "@mantine/core";
-import { useDisclosure, useLocalStorage } from "@mantine/hooks";
+import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs } from "@remix-run/node";
-import {
-  redirect,
-  useLocation,
-  useNavigate,
-  useOutletContext,
-} from "@remix-run/react";
+import { redirect, useLocation, useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { draftStore, useDraft } from "~/draftStore";

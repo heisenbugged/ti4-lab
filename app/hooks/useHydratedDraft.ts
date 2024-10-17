@@ -1,17 +1,11 @@
 import { draftStoreAtom, useDraft } from "~/draftStore";
-import {
-  Player,
-  DraftSelection,
-  HydratedPlayer,
-  PlayerSelection,
-  DiscordPlayer,
-} from "~/types";
+import { Player, DraftSelection, HydratedPlayer, DiscordPlayer } from "~/types";
 import { hydrateMap } from "~/utils/map";
-import { useOutletContext } from "@remix-run/react";
 import { atom } from "jotai/vanilla";
 import { useAtom } from "jotai";
 import { draftConfig } from "~/draft";
 import { factionSystems } from "~/data/systemData";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 // check if the player name is either empty or Player N where 'n' is a number
 const isDefaultName = (name: string) => {
@@ -150,10 +144,7 @@ export const hydratedMapStringAtom = atom((get) => {
 });
 
 export function useHydratedDraft() {
-  const ctx = useOutletContext<{
-    pickForAnyone: boolean;
-  }>();
-  const pickForAnyone = ctx ? ctx.pickForAnyone : false;
+  const { pickForAnyone } = useSafeOutletContext();
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const selections = useDraft((state) => state.draft.selections);
