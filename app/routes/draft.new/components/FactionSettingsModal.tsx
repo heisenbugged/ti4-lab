@@ -1,6 +1,6 @@
 import { Button, Checkbox, Group, Modal, SimpleGrid } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { SectionTitle } from "~/components/Section";
 import { factions } from "~/data/factionData";
 import { useDraft } from "~/draftStore";
@@ -60,7 +60,7 @@ export function FactionSettingsModal() {
       }}
     >
       {sortedFactionPool.map(({ gameSet, factionIds }) => (
-        <>
+        <Fragment key={gameSet}>
           <SectionTitle title={gameSetLabel[gameSet]} />
           <SimpleGrid cols={{ base: 1, sm: 2, md: 2, lg: 3, xl: 3 }} mt={24}>
             {factionIds.map((factionId) => {
@@ -129,7 +129,7 @@ export function FactionSettingsModal() {
               );
             })}
           </SimpleGrid>
-        </>
+        </Fragment>
       ))}
 
       <div

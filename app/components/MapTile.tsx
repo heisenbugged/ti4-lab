@@ -1,3 +1,5 @@
+import { createPortal } from "react-dom";
+
 import { Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
@@ -12,6 +14,13 @@ import "./MapTile.css";
 import { MapContext } from "~/contexts/MapContext";
 import { OriginalArtTile } from "./tiles/OriginalArtTile";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
+import {
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 
 type Props = {
   mapId: string;
@@ -86,6 +95,40 @@ function AbstractArtMapTile(props: Props) {
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDraggableNodeRef,
+    transform,
+    isDragging,
+  } = useDraggable({
+    id: `${props.mapId}-${tile.idx}-draggable`,
+    data: { tile },
+    disabled: tile.type !== "SYSTEM",
+  });
+
+  const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({
+    id: `${props.mapId}-${tile.idx}-droppable`,
+    data: { tile },
+    disabled: tile.type !== "SYSTEM",
+  });
+
+  useEffect(() => {
+    setHovered(false);
+  }, [isOver, isDragging]);
+
+  const setNodeRef = (node: HTMLElement | null) => {
+    setDraggableNodeRef(node);
+    setDroppableNodeRef(node);
+  };
+
+  const dragStyle = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        zIndex: isDragging ? 2 : undefined,
+      }
+    : undefined;
+
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -134,19 +177,24 @@ function AbstractArtMapTile(props: Props) {
     : "rgba(0, 0, 0, 0)";
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        left: x + wOffset,
-        top: y + hOffset,
-      }}
-      onMouseOver={() => setHovered(true)}
-      onMouseOut={() => setHovered(false)}
-    >
-      {Tile}
+    <>
+      <div
+        ref={setNodeRef}
+        style={{
+          position: "absolute",
+          left: x + wOffset,
+          top: y + hOffset,
+          ...dragStyle,
+        }}
+        onMouseOver={() => setHovered(true)}
+        onMouseOut={() => setHovered(false)}
+        {...listeners}
+        {...attributes}
+      >
+        {Tile}
 
-      {/* debug information */}
-      {/* <div
+        {/* debug information */}
+        {/* <div
         style={{
           position: "absolute",
           top: radius * 0.5,
@@ -159,37 +207,38 @@ function AbstractArtMapTile(props: Props) {
         <Text>{tile.idx}</Text>
       </div> */}
 
-      {showOverlay && (
-        <div className="modify-tile-overlay" onMouseDown={onSelect}>
-          <Hex
-            id={`${props.mapId}-${tile.idx}-overlay`}
-            color={overlayColor}
-            radius={radius}
-          >
-            <Stack gap={2}>
-              <Button px="6" py="4" h="auto" variant="filled">
-                +
-              </Button>
-              {tile.type === "SYSTEM" && (
-                <Button
-                  px="6"
-                  py="4"
-                  h="auto"
-                  variant="filled"
-                  bg="red"
-                  size="xs"
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    onDelete?.();
-                  }}
-                >
-                  Del
+        {showOverlay && !isDragging && !isOver && (
+          <div className="modify-tile-overlay" onMouseUp={onSelect}>
+            <Hex
+              id={`${props.mapId}-${tile.idx}-overlay`}
+              color={overlayColor}
+              radius={radius}
+            >
+              <Stack gap={2}>
+                <Button px="6" py="4" h="auto" variant="filled">
+                  +
                 </Button>
-              )}
-            </Stack>
-          </Hex>
-        </div>
-      )}
-    </div>
+                {tile.type === "SYSTEM" && (
+                  <Button
+                    px="6"
+                    py="4"
+                    h="auto"
+                    variant="filled"
+                    bg="red"
+                    size="xs"
+                    onMouseUp={(e) => {
+                      e.stopPropagation();
+                      onDelete?.();
+                    }}
+                  >
+                    Del
+                  </Button>
+                )}
+              </Stack>
+            </Hex>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

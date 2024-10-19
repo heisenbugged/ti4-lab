@@ -1,11 +1,6 @@
 import { Box, Button, Group, Stack, Text } from "@mantine/core";
 import { useDimensions } from "~/hooks/useDimensions";
-import {
-  calcHexHeight,
-  calculateMaxHexRadius,
-  calculateMaxHexWidthRadius,
-  getBoundedMapHeight,
-} from "~/utils/positioning";
+import { getBoundedMapHeight } from "~/utils/positioning";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 import { Map } from "~/components/Map";
 import { SectionTitle } from "~/components/Section";
@@ -13,6 +8,16 @@ import { IconDice6Filled } from "@tabler/icons-react";
 import { useDraft } from "~/draftStore";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useFullMapStats } from "~/hooks/useFullMapStats";
+import {
+  DndContext,
+  DragEndEvent,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { Tile } from "~/types";
+import { systemData } from "~/data/systemData";
 
 export function MapSection() {
   const config = useDraftConfig();
@@ -21,6 +26,7 @@ export function MapSection() {
     randomizeMap,
     clearMap,
     removeSystemFromMap,
+    addSystemToMap,
     openPlanetFinderForMap,
   } = useDraft((state) => state.actions);
   const stats = useFullMapStats();
@@ -28,6 +34,32 @@ export function MapSection() {
   const { ref, width } = useDimensions<HTMLDivElement>();
   const { height: windowHeight } = useWindowDimensions();
   const height = getBoundedMapHeight(width, windowHeight - 150);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const [, originTileIdx] = (event.active!.id as string).split("-");
+    const [, destTileIdx] = (event.over!.id as string).split("-");
+
+    const destTile: Tile = event.over!.data.current!.tile;
+    const originTile: Tile = event.active!.data.current!.tile;
+
+    if (destTile.type !== "SYSTEM") return;
+    if (originTile.type !== "SYSTEM") return;
+    // do not allow move of mecatol rex!
+    if (destTile.systemId === "18") return;
+
+    const originSystem = systemData[originTile.systemId];
+    const destinationSystem = systemData[destTile.systemId];
+
+    removeSystemFromMap(parseInt(originTileIdx));
+    removeSystemFromMap(parseInt(destTileIdx));
+    addSystemToMap(parseInt(destTileIdx), originSystem);
+    addSystemToMap(parseInt(originTileIdx), destinationSystem);
+  };
+
+  const delayedPointerSensor = useSensor(PointerSensor, {
+    activationConstraint: { distance: 5 },
+  });
+  const sensors = useSensors(delayedPointerSensor);
 
   return (
     <div style={{ position: "sticky", width: "auto", top: 60 }}>
@@ -68,14 +100,16 @@ export function MapSection() {
             </Text>
           </Stack>
         )}
-        <Map
-          id="full-map"
-          map={map}
-          config={config}
-          editable
-          onSelectSystemTile={(t) => openPlanetFinderForMap(t.idx)}
-          onDeleteSystemTile={(t) => removeSystemFromMap(t.idx)}
-        />
+        <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+          <Map
+            id="fullmap"
+            map={map}
+            config={config}
+            editable
+            onSelectSystemTile={(t) => openPlanetFinderForMap(t.idx)}
+            onDeleteSystemTile={(t) => removeSystemFromMap(t.idx)}
+          />
+        </DndContext>
       </Box>
     </div>
   );
