@@ -104,13 +104,13 @@ function AbstractArtMapTile(props: Props) {
   } = useDraggable({
     id: `${props.mapId}-${tile.idx}-draggable`,
     data: { tile },
-    disabled: tile.type !== "SYSTEM",
+    disabled: tile.type !== "SYSTEM" || isTouchDevice(),
   });
 
   const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({
     id: `${props.mapId}-${tile.idx}-droppable`,
     data: { tile },
-    disabled: tile.type !== "SYSTEM",
+    disabled: tile.type !== "SYSTEM" || isTouchDevice(),
   });
 
   useEffect(() => {
@@ -241,4 +241,8 @@ function AbstractArtMapTile(props: Props) {
       </div>
     </>
   );
+}
+
+function isTouchDevice() {
+  return "ontouchstart" in window || navigator.maxTouchPoints > 0;
 }
