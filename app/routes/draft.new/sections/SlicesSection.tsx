@@ -12,7 +12,7 @@ import { Section, SectionTitle } from "~/components/Section";
 import { draftConfig } from "~/draft";
 import { useDraft } from "~/draftStore";
 import { BuildableSlice } from "../components/BuildableSlice";
-import { SystemTile, Tile } from "~/types";
+import { Tile } from "~/types";
 import { systemData } from "~/data/systemData";
 import { useState } from "react";
 
