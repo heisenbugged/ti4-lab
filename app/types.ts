@@ -28,6 +28,7 @@ export type RawSystem = {
 export type System = RawSystem & {
   totalSpend: { resources: number; influence: number };
   optimalSpend: { resources: number; influence: number; flex: number };
+  rotation?: number; // only for hyperlanes
 };
 
 export type TechSpecialty = "BIOTIC" | "WARFARE" | "PROPULSION" | "CYBERNETIC";

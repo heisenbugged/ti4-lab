@@ -529,6 +529,7 @@ export const draftStore = createStore<DraftV2State>()(
             position: draft.presetMap[tileIdx].position,
             type: "SYSTEM",
             systemId: system.id,
+            rotation: system.rotation,
           };
         }),
       removeSystemFromMap: (tileIdx: number) =>
@@ -547,6 +548,7 @@ export const draftStore = createStore<DraftV2State>()(
             ...draft.slices[sliceIdx].tiles[tileIdx],
             type: "SYSTEM",
             systemId: system.id,
+            rotation: system.rotation,
           };
         }),
       removeSystemFromSlice: (sliceIdx: number, tileIdx: number) =>

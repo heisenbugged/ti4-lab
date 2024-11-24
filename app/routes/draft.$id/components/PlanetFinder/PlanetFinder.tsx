@@ -50,23 +50,38 @@ export function PlanetFinder({ onSystemSelected }: Props) {
 
   const [searchString, setSearchString] = useState<string>("");
 
-  const isValidSystem = (system: System) =>
-    availableSystemIds.includes(system.id) ||
-    // TODO: re-enable hyperlanes when ready
-    // system.type === "HYPERLANE" ||
-    (allowHomePlanetSearch &&
-      system.faction &&
-      system.type === "GREEN" &&
-      factionPool.includes(system.faction));
+  const isValidSystem = (system: System, searchString: string) => {
+    return (
+      availableSystemIds.includes(system.id) ||
+      (system.type === "HYPERLANE" &&
+        searchString === system.id.toLowerCase()) ||
+      (allowHomePlanetSearch &&
+        system.faction &&
+        system.type === "GREEN" &&
+        factionPool.includes(system.faction))
+    );
+  };
 
   const systems =
     searchString.length > 0
       ? searchableSystemData
           .filter(
             ([name, id]) =>
-              name.includes(searchString) && isValidSystem(systemData[id]),
+              name.toLowerCase().includes(searchString) &&
+              isValidSystem(systemData[id], searchString),
           )
-          .map(([, system]) => systemData[system])
+          .map(([, system]) => {
+            const data = systemData[system];
+            if (!data.hyperlanes) return data;
+
+            // for hyperlanes, add an entry per "20" degrees of rotation all the way to 300
+            const rotations = [];
+            for (let i = 0; i < 300; i += 60) {
+              rotations.push({ ...data, rotation: i });
+            }
+            return rotations;
+          })
+          .flat(1)
           .sort((a, b) => {
             if (usedSystemIds.includes(a.id) && !usedSystemIds.includes(b.id))
               return 1;
@@ -164,11 +179,16 @@ export function PlanetFinder({ onSystemSelected }: Props) {
               ))}
               {system.planets.length === 0 &&
                 system.anomalies.length === 0 &&
-                system.wormholes.length === 0 && (
+                system.wormholes.length === 0 &&
+                !system.hyperlanes && (
                   <Text size="sm" c="dimmed">
                     EMPTY
                   </Text>
                 )}
+
+              {system.hyperlanes && (
+                <Text size="sm">HYPERLANE ({system.rotation}°)</Text>
+              )}
 
               {system.wormholes.map((wormhole) => (
                 <Text size="sm" c="dimmed" key={wormhole}>

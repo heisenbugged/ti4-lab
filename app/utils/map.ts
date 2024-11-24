@@ -68,6 +68,7 @@ export function hydrateMap(
           position: pos,
           type: "SYSTEM",
           systemId: sliceTile.systemId,
+          rotation: sliceTile.rotation,
         };
       }
     });
