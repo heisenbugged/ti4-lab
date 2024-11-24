@@ -126,6 +126,19 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th"],
     playerCount: 7,
   },
+  miltyeq7plarge: {
+    title: "Milty EQ (7P) Large",
+    description:
+      "Large map, 'even' slices, equidistants are preset on the board.",
+    map: parseDemoMapString(
+      draftConfig.miltyeq7plarge,
+      "18 -1 -1 -1 -1 -1 -1 -1 6 -1 7 -1 1 2 3 -1 4 -1 5 -1 6 6 7 7 -1 1 1 -1 2 -1 3 3 -1 4 4 5 5 x x 6 6 x 7 7 x x 1 1 2 2 2 3 3 x x 4 4 x 5 5".split(
+        " ",
+      ),
+    ),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th"],
+    playerCount: 7,
+  },
   milty8p: {
     title: "Milty (8P)",
     description:

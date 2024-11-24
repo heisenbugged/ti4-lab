@@ -23,6 +23,7 @@ export type DraftType =
   | "miltyeqless"
   | "milty"
   | "milty7p"
+  | "miltyeq7plarge"
   | "milty8p"
   | "milty5p"
   | "wekker";

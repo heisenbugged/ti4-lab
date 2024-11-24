@@ -1,5 +1,14 @@
 import { DraftConfig } from "../types";
 import { generateSlices } from "../milty/sliceGenerator";
+import { rotateSlice } from "~/utils/hexagonal";
+
+const slice: [number, number][] = [
+  [1, 0],
+  [0, 1],
+  [-1, 1],
+  [1, 1],
+  [0, 2],
+];
 
 export const milty5p: DraftConfig = {
   type: "milty5p",
@@ -27,20 +36,8 @@ export const milty5p: DraftConfig = {
     { x: 0, y: -2 },
   ],
   seatTilePlacement: {
-    0: [
-      [1, 0],
-      [0, 1],
-      [-1, 1],
-      [1, 1],
-      [0, 2],
-    ],
-    1: [
-      [0, 1],
-      [-1, 1],
-      [-1, 0],
-      [-1, 2],
-      [-2, 2],
-    ],
+    0: slice,
+    1: rotateSlice(slice, 1),
     2: [
       [-1, 1],
       [-1, 0],
@@ -48,20 +45,8 @@ export const milty5p: DraftConfig = {
       [-3, 2],
       [-2, 0],
     ],
-    3: [
-      [0, -1],
-      [1, -1],
-      [1, 0],
-      [1, -2],
-      [2, -2],
-    ],
-    4: [
-      [1, -1],
-      [1, 0],
-      [0, 1],
-      [2, -1],
-      [2, 0],
-    ],
+    3: rotateSlice(slice, 4),
+    4: rotateSlice(slice, 5),
   } as Record<number, [number, number][]>,
   generateSlices,
 };
