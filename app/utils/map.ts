@@ -1,4 +1,3 @@
-import { factions } from "~/data/factionData";
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { factionSystems, systemData } from "~/data/systemData";
 import { DraftConfig } from "~/draft/types";
@@ -10,6 +9,12 @@ import {
   System,
   TechSpecialty,
   Tile,
+  SystemTile,
+  SystemId,
+  DemoTile,
+  OpenTile,
+  ClosedTile,
+  PlayerDemoTile,
 } from "~/types";
 
 /**
@@ -30,6 +35,69 @@ export const playerLetters = ["a", "b", "c", "d", "e", "f"];
 
 export const isTileModifiable = (config: DraftConfig, tileIdx: number) =>
   config.modifiableMapTiles.includes(tileIdx);
+
+export function hydrateDemoMap(config: DraftConfig) {
+  const hydrated = generateEmptyMap(config);
+  const demoTiles: DemoTile[] = Array.from(
+    { length: hydrated.length },
+    (_, idx) => ({
+      idx,
+      position: hydrated[idx].position,
+      type: "OPEN",
+    }),
+  );
+  // add mecatol
+  demoTiles[0] = { ...(hydrated[0] as SystemTile) };
+
+  forHomeTiles(config, hydrated, (tile, homeIdx) => {
+    const playerDemoTile: PlayerDemoTile = {
+      idx: tile.idx,
+      position: tile.position,
+      type: "PLAYER_DEMO",
+      playerNumber: homeIdx,
+      isHomeSystem: false,
+    };
+
+    const homeTileIdx = config.homeIdxInMapString[homeIdx];
+    demoTiles[homeTileIdx] = {
+      ...playerDemoTile,
+      isHomeSystem: true,
+    };
+
+    config.seatTilePlacement[homeIdx]?.forEach(([x, y]) => {
+      const pos = { x: tile.position.x + x, y: tile.position.y + y };
+      const idxToModify = hydrated.findIndex(
+        (t) => t.position.x === pos.x && t.position.y === pos.y,
+      );
+      demoTiles[idxToModify] = {
+        ...playerDemoTile,
+        idx: idxToModify,
+        position: pos,
+      };
+    });
+  });
+
+  // insert preset tiles
+  Object.entries(config.presetTiles).forEach(([idx, preset]) => {
+    demoTiles[Number(idx)] = {
+      ...hydrated[Number(idx)],
+      type: "SYSTEM",
+      systemId: preset.systemId,
+      rotation: preset.rotation,
+    };
+  });
+
+  // set closed tiles to 'x'
+  config.closedMapTiles.forEach((idx) => {
+    demoTiles[idx] = {
+      idx: hydrated[idx].idx,
+      position: hydrated[idx].position,
+      type: "CLOSED",
+    };
+  });
+
+  return demoTiles;
+}
 
 export function hydrateMap(
   config: DraftConfig,
@@ -129,44 +197,6 @@ const hydrateHomeTile = (
 
   return homeTile;
 };
-
-// Legacy code for splitting map up
-// export const sliceMap = (
-//   config: DraftConfig,
-//   map: Map,
-// ): { map: Map; slices: SystemIds[] } => {
-//   const tiles = [...map];
-//   const slices: SystemIds[] = [];
-//   config.homeIdxInMapString.forEach((tileIdx, seatIdx) => {
-//     const homeTile = tiles[tileIdx];
-//     const slice: SystemIds = ["-1"];
-//     config.seatTilePlacement[seatIdx]?.forEach(([x, y]) => {
-//       const pos = { x: homeTile.position.x + x, y: homeTile.position.y + y };
-//       // find tile the matches the hexagonal coordinate position to modify
-//       const tileToModify = tiles.find(
-//         (t) => t.position.x === pos.x && t.position.y === pos.y,
-//       )!;
-//       if (tileToModify.system) {
-//         slice.push(tileToModify.system?.id);
-//       } else {
-//         slice.push("0");
-//       }
-
-//       tiles[tileToModify.idx] = {
-//         position: tileToModify.position,
-//         type: "OPEN",
-//         idx: tileToModify.idx,
-//         system: undefined,
-//       };
-//     });
-//     slices.push(slice);
-//   });
-
-//   return {
-//     map: tiles,
-//     slices,
-//   };
-// };
 
 export const totalStatsForSystems = (systems: System[]) =>
   systems.reduce(

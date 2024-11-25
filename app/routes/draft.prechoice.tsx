@@ -26,16 +26,10 @@ import {
   Player,
   DraftSettings,
   GameSet,
-  PlayerDemoTile,
-  SystemId,
-  SystemTile,
-  OpenTile,
-  ClosedTile,
   DemoTile,
   Draft,
 } from "~/types";
 import { useEffect, useState } from "react";
-import { mapStringOrder } from "~/data/mapStringOrder";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "./draft.new/components/PlayerInputSection";
@@ -46,10 +40,9 @@ import {
   useNavigate,
   useSubmit,
 } from "@remix-run/react";
-import { DraftConfig, DraftType, draftConfig } from "~/draft";
+import { DraftType, draftConfig } from "~/draft";
 import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
-import { systemData } from "~/data/systemData";
 import {
   IconBrandDiscordFilled,
   IconChevronDown,
@@ -59,9 +52,10 @@ import {
   IconPlayerPlay,
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
+import { useDisclosure } from "@mantine/hooks";
+import { hydrateDemoMap } from "~/utils/map";
 
 import "../components/draftprechoice.css";
-import { useDisclosure } from "@mantine/hooks";
 
 type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 
@@ -78,12 +72,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Milty",
     description:
       "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
-    map: parseDemoMapString(
-      draftConfig.milty,
-      "18 1 2 3 4 5 6 1 1 2 2 3 3 4 4 5 5 6 6 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.milty),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     playerCount: 6,
   },
@@ -91,12 +80,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Milty 5p",
     description:
       "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
-    map: parseDemoMapString(
-      draftConfig.milty,
-      "18 1 2 3 S85A 4 5 1 1 2 2 3 S87A:120 3 S87A 4 4 5 5 1 1 2 2 2 3 3 3 S83A S85A S83A:240 4 4 4 5 5 5 1".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.milty5p),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th"],
     playerCount: 5,
   },
@@ -104,12 +88,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Milty EQ 5p",
     description:
       "Like milty, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board. Slices are biased towards having one red, but some have two. Equidistants are fully randomized.",
-    map: parseDemoMapString(
-      draftConfig.milty,
-      "18 1 2 3 S85A 4 5 1 -1 2 -1 3 S87A:120 -1 S87A 4 -1 5 -1 1 1 2 2 2 3 3 3 S83A S85A S83A:240 4 4 4 5 5 5 1".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.miltyeq5p),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th"],
     playerCount: 5,
   },
@@ -117,12 +96,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Milty (7P)",
     description:
       "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
-    map: parseDemoMapString(
-      draftConfig.milty7p,
-      "18 S83B 2 3 S84B S89B 6 1 1 2 2 3 3 4 5 5 6 6 7 1 S85B 2 2 2 3 3 3 S86B 4 4 5 5 6 S88B:120 7 7 7 1 1 x x x x x x x x x 4 4 4 5 5 x x 6 6 x 7 7 1".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.milty7p),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th"],
     playerCount: 7,
   },
@@ -130,12 +104,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Milty EQ (7P) Large",
     description:
       "Large map, 'even' slices, equidistants are preset on the board.",
-    map: parseDemoMapString(
-      draftConfig.miltyeq7plarge,
-      "18 -1 -1 -1 -1 -1 -1 -1 6 -1 7 -1 1 2 3 -1 4 -1 5 -1 6 6 7 7 -1 1 1 -1 2 -1 3 3 -1 4 4 5 5 x x 6 6 x 7 7 x x 1 1 2 2 2 3 3 x x 4 4 x 5 5".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.miltyeq7plarge),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th"],
     playerCount: 7,
   },
@@ -143,12 +112,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Milty (8P)",
     description:
       "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
-    map: parseDemoMapString(
-      draftConfig.milty8p,
-      "18 S87A:60 S89B:180 3 S88A:120 S90B 7 1 2 2 3 3 4 5 6 6 7 7 8 1 1 2 2 3 S83B:120 4 4 4 5 5 6 6 7 S85B:120 8 8 8 1 1 2 2 x x 3 3 x 4 4 5 5 5 6 6 x x 7 7 x 8 8 1".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.milty8p),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"],
     playerCount: 8,
   },
@@ -156,12 +120,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Nucleus (8P)",
     description:
       "Features a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order. Beneficial for players who want to design their own maps while still running a draft. Randomization prioritizes high wormholes, and separates them for maximum impact.",
-    map: parseDemoMapString(
-      draftConfig.milty8p,
-      "18 S87A:60 S89B:180 -1 S88A:120 S90B -1 -1 -1 -1 3 -1 -1 -1 -1 -1 7 -1 -1 1 -1 2 2 3 S83B:120 4 4 -1 5 -1 6 6 7 S85B:120 8 8 -1 1 1 2 2 x x 3 3 x 4 4 5 5 5 6 6 x x 7 7 x 8 8 1".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.heisen8p),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"],
     playerCount: 8,
   },
@@ -169,12 +128,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Milty EQ",
     description:
       "Like milty, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board. Slices are biased towards having one red, but some have two. Equidistants are fully randomized.",
-    map: parseDemoMapString(
-      draftConfig.miltyeq,
-      "18 1 2 3 4 5 6 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.miltyeq),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     playerCount: 6,
   },
@@ -182,12 +136,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Nucleus",
     description:
       "Features a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order. Beneficial for players who want to design their own maps while still running a draft. Randomization prioritizes high wormholes, and separates them for maximum impact.",
-    map: parseDemoMapString(
-      draftConfig.heisen,
-      "18 -1 -1 -1 -1 -1 -1 1 -1 2 -1 3 -1 4 -1 5 -1 6 -1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.heisen),
     titles: ["P1", "P2", "P3", "P4", "P5", "P6"],
     playerCount: 6,
   },
@@ -195,12 +144,7 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     title: "Wekker",
     description:
       "Also known as 'spiral draft'. Slices contained tiles that are close to other players. Slice generation follows 'milty draft' rules (2 red tiles, 3 blue tiles). Fun for players who want to have a more chaotic draft result.",
-    map: parseDemoMapString(
-      draftConfig.miltyeq,
-      "18 6 1 2 3 4 5 1 1 2 2 3 3 4 4 5 5 6 6 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 1 1".split(
-        " ",
-      ),
-    ),
+    map: hydrateDemoMap(draftConfig.wekker),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     playerCount: 6,
   },
@@ -1000,59 +944,6 @@ export default function DraftPrechoice() {
       </Grid.Col>
     </Grid>
   );
-}
-
-function parseDemoMapString(config: DraftConfig, mapString: SystemId[]) {
-  const tiles: DemoTile[] = mapString.map((entry, idx) => {
-    const [player, rotation] = entry.split(":");
-    const position = mapStringOrder[idx];
-    const isHomeSystem = config.homeIdxInMapString.includes(idx);
-
-    if (player.startsWith("S")) {
-      return {
-        idx,
-        position,
-        systemId: player.slice(1),
-        type: "SYSTEM",
-        rotation: rotation ? Number(rotation) : undefined,
-      } as SystemTile;
-    }
-
-    if (player === "18") {
-      return {
-        idx,
-        position,
-        systemId: systemData[18].id,
-        type: "SYSTEM",
-      } as SystemTile;
-    }
-
-    if (player === "-1") {
-      return {
-        idx,
-        position,
-        type: "OPEN",
-      } as OpenTile;
-    }
-
-    if (player === "x") {
-      return {
-        idx,
-        position,
-        type: "CLOSED",
-      } as ClosedTile;
-    }
-
-    return {
-      idx,
-      position,
-      isHomeSystem,
-      playerNumber: Number(player) - 1,
-      type: "PLAYER_DEMO",
-      system: undefined,
-    } as PlayerDemoTile;
-  });
-  return tiles;
 }
 
 export const loader = async (args: LoaderFunctionArgs) => {
