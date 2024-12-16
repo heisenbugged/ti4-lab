@@ -2,9 +2,7 @@ import { Button, Grid, Stack, Title } from "@mantine/core";
 import { IconEye } from "@tabler/icons-react";
 import { useState } from "react";
 import { playerColors } from "~/data/factionData";
-import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
-import { Player } from "~/types";
 
 type Props = {
   onDraftJoined: (playerId: number) => void;

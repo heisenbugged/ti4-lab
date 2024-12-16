@@ -47,7 +47,7 @@ export function systemStats(system: System): SystemStats {
 }
 
 export function getSystemPool(sets: GameSet[]) {
-  let systemPool = [...draftableSystemIds];
+  const systemPool = [...draftableSystemIds];
   if (sets.includes("unchartedstars")) {
     systemPool.push(...unchartedStarsSystemIds);
   }

@@ -1,4 +1,4 @@
-import { DemoTile, PlayerDemoTile as TPlayerDemoTile } from "~/types";
+import { DemoTile } from "~/types";
 import {
   calcHexHeight,
   calculateConcentricCircles,
@@ -109,6 +109,21 @@ export function DemoMapTile({
         top: y + hOffset,
       }}
     >
+      {/* debug information */}
+      {/* <div
+        style={{
+          position: "absolute",
+          top: radius * 0.5,
+          left: radius * 0.5,
+          color: "white",
+          backgroundColor: "black",
+          padding: "2px",
+          zIndex: 1000,
+        }}
+      >
+        <Text>{tile.idx}</Text>
+      </div> */}
+
       {Tile}
     </div>
   );

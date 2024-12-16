@@ -12,6 +12,7 @@ import { miltyeq } from "./miltyeq";
 import { miltyeq5p } from "./miltyeq5p";
 import { miltyeq7plarge } from "./miltyeq7plarge";
 import { miltyeqless } from "./miltyeqless";
+import { std4p } from "./std4p";
 import { DraftConfig, DraftType } from "./types";
 import { wekker } from "./wekker";
 
@@ -30,4 +31,5 @@ export const draftConfig: Record<DraftType, DraftConfig> = {
   miltyeq7plarge,
   milty8p,
   milty5p,
+  std4p,
 };

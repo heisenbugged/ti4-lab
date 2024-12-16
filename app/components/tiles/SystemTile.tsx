@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { Hex } from "../Hex";
 import { Planet } from "../Planet";
 import type { SystemTile } from "~/types";
@@ -13,7 +13,6 @@ import { SystemId } from "../SystemId";
 import { systemData } from "~/data/systemData";
 
 import classes from "./Tiles.module.css";
-import { OriginalArtTile } from "./OriginalArtTile";
 
 type Props = { mapId: string; tile: SystemTile; hideValues?: boolean };
 

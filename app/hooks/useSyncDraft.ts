@@ -1,5 +1,5 @@
 import { useFetcher } from "@remix-run/react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { draftStore } from "~/draftStore";
 import { useSocket } from "~/socketContext";
 

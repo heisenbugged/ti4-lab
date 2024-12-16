@@ -49,7 +49,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const numMinorFactions = settings.numMinorFactions;
     let availableMinorFactions: FactionId[] | undefined = undefined;
-    if (!!numMinorFactions) {
+    if (numMinorFactions !== undefined) {
       const otherFactions = factionPool.filter(
         (f) => !availableFactions.includes(f),
       );

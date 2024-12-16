@@ -8,7 +8,7 @@ import {
 import { FactionId, GameSet } from "~/types";
 
 export function getFactionPool(sets: GameSet[]) {
-  let factionPool: FactionId[] = [];
+  const factionPool: FactionId[] = [];
   if (sets.includes("base")) {
     factionPool.push(...baseFactionIds);
   }

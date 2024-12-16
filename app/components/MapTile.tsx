@@ -1,5 +1,3 @@
-import { createPortal } from "react-dom";
-
 import { Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
@@ -7,20 +5,14 @@ import { useContext, useEffect, useState } from "react";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
-import { Button, Stack, Text, alpha } from "@mantine/core";
+import { Button, Stack, alpha } from "@mantine/core";
 import { Hex } from "./Hex";
 
 import "./MapTile.css";
 import { MapContext } from "~/contexts/MapContext";
 import { OriginalArtTile } from "./tiles/OriginalArtTile";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
-import {
-  PointerSensor,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 type Props = {
   mapId: string;

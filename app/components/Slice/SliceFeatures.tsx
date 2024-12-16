@@ -3,7 +3,7 @@ import { techSpecialtiesForSystems } from "~/utils/map";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
 import { Wormhole } from "../features/Wormhole";
-import { Slice, SystemIds } from "~/types";
+import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
 
 type Props = {

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { hexSides, hexVertices, interpolatePoint } from "./hexUtils";
+import { hexSides, hexVertices } from "./hexUtils";
 import { AnomalyBorder } from "./AnomalyBorder";
 import { HexBorder } from "./HexBorder";
 import { FactionId } from "~/types";

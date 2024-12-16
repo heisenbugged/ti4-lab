@@ -32,7 +32,7 @@ import {
 import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraftSettings } from "~/hooks/useDraftSettings";
-import { getChannel, notifyPick } from "~/discord/bot.server";
+import { notifyPick } from "~/discord/bot.server";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
 import { FactionSettingsModal } from "./components/FactionSettingsModal";
 import { createDraftOrder } from "~/utils/draftOrder.server";

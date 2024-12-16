@@ -1,7 +1,6 @@
 import { Group, SimpleGrid, Stack, Text } from "@mantine/core";
-import { factions as allFactions, playerColors } from "~/data/factionData";
+import { playerColors } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
-import { DraftableFaction } from "../components/DraftableFaction";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
@@ -51,6 +50,7 @@ export function DraftablePlayerColorsSection() {
 
           return (
             <Stack
+              key={color}
               gap={4}
               px="sm"
               py={8}

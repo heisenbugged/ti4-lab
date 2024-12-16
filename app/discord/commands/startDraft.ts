@@ -81,7 +81,6 @@ async function execute(interaction: ChatInputCommandInteraction) {
     players,
     channelId: interaction.channelId!,
     guildId: interaction.guildId!,
-    pickMessageIds: {},
   };
 
   const discordString = btoa(JSON.stringify(discordData));

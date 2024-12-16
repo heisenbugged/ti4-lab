@@ -40,7 +40,7 @@ import {
   useNavigate,
   useSubmit,
 } from "@remix-run/react";
-import { DraftType, draftConfig } from "~/draft";
+import { DraftConfig, DraftType, draftConfig } from "~/draft";
 import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
 import {
@@ -54,8 +54,11 @@ import {
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { useDisclosure } from "@mantine/hooks";
 import { hydrateDemoMap } from "~/utils/map";
+import { generateSlices } from "~/draft/heisen/generateMap";
+import { rotateSlice } from "~/utils/hexagonal";
 
 import "../components/draftprechoice.css";
+import { std4p } from "~/draft/std4p";
 
 type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 
@@ -67,6 +70,35 @@ type PrechoiceMap = {
   playerCount: number;
 };
 
+const slice: [number, number][] = [
+  [1, 0],
+  [0, 1],
+  [-1, 1],
+];
+
+export const heisen: DraftConfig = {
+  type: "heisen",
+  numSystemsInSlice: 3,
+  sliceHeight: 2,
+  sliceConcentricCircles: 1,
+  homeIdxInMapString: [27, 32, 36, 23],
+  modifiableMapTiles: [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18],
+  presetTiles: {},
+  closedMapTiles: [21, 22, 25, 31, 34, 28, 29, 30, 19, 20],
+  seatTilePositions: [
+    { x: 0, y: 0 },
+    { x: -1, y: 0 },
+    { x: 0, y: -1 },
+  ],
+  seatTilePlacement: {
+    0: rotateSlice(slice, 3),
+    1: rotateSlice(slice, 4),
+    2: rotateSlice(slice, 6),
+    3: rotateSlice(slice, 1),
+  } as Record<number, [number, number][]>,
+  generateSlices,
+};
+
 const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
   milty: {
     title: "Milty",
@@ -75,6 +107,14 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     map: hydrateDemoMap(draftConfig.milty),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     playerCount: 6,
+  },
+  std4p: {
+    title: "4P Standard",
+    description:
+      "A standard 4 player draft. Slices are biased towards having one red, but some have two. Other tiles fully randomized.",
+    map: hydrateDemoMap(std4p),
+    titles: ["P1", "P2", "P3", "P4"],
+    playerCount: 4,
   },
   milty5p: {
     title: "Milty 5p",
@@ -326,12 +366,12 @@ export default function DraftPrechoice() {
     resetSelectedMap(numPlayers);
   };
 
-  let tileGameSets: GameSet[] = ["base", "pok"];
+  const tileGameSets: GameSet[] = ["base", "pok"];
   if (withDiscordant) tileGameSets.push("discordant");
   if (withDiscordantExp) tileGameSets.push("discordantexp");
   if (withUnchartedStars) tileGameSets.push("unchartedstars");
 
-  let factionGameSets: GameSet[] = [];
+  const factionGameSets: GameSet[] = [];
   if (!excludeBaseFactions) factionGameSets.push("base");
   if (!excludePokFactions) factionGameSets.push("pok");
   if (withDiscordant) factionGameSets.push("discordant");
@@ -431,7 +471,6 @@ export default function DraftPrechoice() {
   const handleContinueFromSavedState = () => {
     try {
       const savedState = JSON.parse(savedStateJson);
-      debugger;
       navigate("/draft/new", {
         state: {
           savedDraftState: {
@@ -480,7 +519,9 @@ export default function DraftPrechoice() {
         <Text mt="lg">To run a minor factions draft:</Text>
         <List mt="lg" mx="sm">
           <List.Item>Use Milty EQ as the draft format.</List.Item>
-          <List.Item>Click 'Minor factions' in advanced settings.</List.Item>
+          <List.Item>
+            Click &apos;Minor factions&apos; in advanced settings.
+          </List.Item>
           <List.Item>Specify the number of minor factions to draft.</List.Item>
         </List>
         <Text mt="lg">
@@ -605,14 +646,11 @@ export default function DraftPrechoice() {
               </Button>
             </Stack>
             <Box flex={1} pos="relative" mt="sm">
-              <Paper shadow="md" withBorder px="md" py="sm">
-                <Text size="md">{MAPS[mapType].description}</Text>
-              </Paper>
               <Box
                 flex={1}
                 pos="relative"
                 mah="1000px"
-                mt="lg"
+                mb="lg"
                 visibleFrom="xs"
               >
                 {mapType && (
@@ -624,6 +662,9 @@ export default function DraftPrechoice() {
                   />
                 )}
               </Box>
+              <Paper shadow="md" withBorder px="md" py="sm">
+                <Text size="md">{MAPS[mapType].description}</Text>
+              </Paper>
             </Box>
           </Group>
         </Flex>

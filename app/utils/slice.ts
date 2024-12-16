@@ -4,7 +4,7 @@ import { valueSlice } from "~/stats";
 import { Slice, HomeTile, System, SystemId, Tile } from "~/types";
 import { systemsFromIds } from "./system";
 
-const emptyHomeTile = (config: DraftConfig): HomeTile => ({
+const emptyHomeTile = (): HomeTile => ({
   idx: 0,
   type: "HOME",
   position: { x: 0, y: 0 },
@@ -29,12 +29,11 @@ export function emptySlice(
 
   return {
     name,
-    tiles: [emptyHomeTile(config), ...tiles],
+    tiles: [emptyHomeTile(), ...tiles],
   };
 }
 
 export const systemsInSlice = (slice: Slice): System[] => {
-  if (slice === undefined) debugger;
   return slice.tiles.reduce((acc, t) => {
     if (t.type !== "SYSTEM") return acc;
     acc.push(systemData[t.systemId]);
@@ -62,7 +61,7 @@ export const systemIdsToSlice = (
   return {
     name: sliceName,
     tiles: [
-      emptyHomeTile(config),
+      emptyHomeTile(),
       ...systemIds.map((id, idx) => ({
         idx: idx + 1,
         position: config.seatTilePositions[idx + 1],

@@ -1,12 +1,9 @@
 import {
-  Badge,
   Box,
   Button,
   Card,
-  Divider,
   Grid,
   Group,
-  Image,
   Input,
   Modal,
   SimpleGrid,
@@ -15,7 +12,6 @@ import {
   Text,
 } from "@mantine/core";
 import { useState } from "react";
-import { Wormhole } from "~/components/features/Wormhole";
 import { SectionTitle } from "~/components/Section";
 import { BaseSlice } from "~/components/Slice";
 import { draftConfig } from "~/draft";
@@ -102,7 +98,6 @@ function PresetDraftStart({
   modalOpen,
   sliceIds,
   title,
-  onClick,
   onClose,
 }: PresetDraftStartProps) {
   const [players, setPlayers] = useState(defaultPlayers);
@@ -204,7 +199,6 @@ function PresetDraftStart({
                 guildId: "",
                 channelId: "",
                 players: [],
-                pickMessageIds: {},
               }}
               onChangeName={(id, name) => {
                 setPlayers((p) =>
@@ -238,7 +232,7 @@ function PresetDraftStart({
   );
 }
 
-function PresetCard({ sliceIDs, title, badge, onClick }: PresetCardProps) {
+function PresetCard({ sliceIDs, title, onClick }: PresetCardProps) {
   const { totalResources, totalInfluence, totalWormholes, totalPlanets } =
     usePresetCardStats(sliceIDs);
 
@@ -488,6 +482,7 @@ export default function DraftPresets() {
       <Group align="flex-start" px="lg" mt="lg">
         {pastDrafts.map((draft) => (
           <PresetCard
+            key={draft.title}
             sliceIDs={draft.sliceIDs}
             title={draft.title}
             badge={draft.badge}

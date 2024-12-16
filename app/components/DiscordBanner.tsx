@@ -16,7 +16,7 @@ export function DiscordBanner() {
 
       <Text flex={1} c="white">
         You are running this draft with discord! Once the draft starts, the
-        discord bot will ping people when it's their turn to draft.
+        discord bot will ping people when it&apos;s their turn to draft.
       </Text>
     </Group>
   );

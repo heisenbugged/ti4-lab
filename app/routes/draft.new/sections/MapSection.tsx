@@ -11,7 +11,6 @@ import { useFullMapStats } from "~/hooks/useFullMapStats";
 import {
   DndContext,
   DragEndEvent,
-  DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,

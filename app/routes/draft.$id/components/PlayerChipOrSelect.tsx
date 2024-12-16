@@ -1,6 +1,6 @@
-import { Badge, Button, Chip, Group } from "@mantine/core";
+import { Badge, Button, Group } from "@mantine/core";
 import { PlayerChip } from "./PlayerChip";
-import { HydratedPlayer, Player } from "~/types";
+import { HydratedPlayer } from "~/types";
 
 type Props = {
   player?: HydratedPlayer;
@@ -54,7 +54,7 @@ export function PlayerChipOrSelect({
               onMouseDown={onSelect}
               disabled={disabled}
             >
-              {!!onSelectMinor ? "Main" : "Select"}
+              {onSelectMinor ? "Main" : "Select"}
             </Button>
           )}
         </Group>

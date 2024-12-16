@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { valueSlice } from "~/stats";
-import { Slice, SystemIds } from "~/types";
+import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
 
 export function useSortedSlices(slices: Slice[], draftedSlices: number[]) {

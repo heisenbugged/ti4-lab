@@ -51,8 +51,9 @@ export function OriginalArtToggle({ showWarning = false }: Props) {
         title="Original Art Mode"
       >
         <Text>
-          Please note that editing features do not work in 'Original Art' mode.
-          You can switch back to 'Lab Art' mode to use all editing features.
+          Please note that editing features do not work in &apos;Original
+          Art&apos; mode. You can switch back to &apos;Lab Art&apos; mode to use
+          all editing features.
         </Text>
       </Modal>
     </Box>

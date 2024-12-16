@@ -1,4 +1,4 @@
-import { Box, Text, lighten, useMantineTheme } from "@mantine/core";
+import { Box, Text, useMantineTheme } from "@mantine/core";
 import { PlanetTrait } from "~/types";
 
 type Props = {

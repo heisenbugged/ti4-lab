@@ -7,7 +7,6 @@ import {
   TextChannel,
 } from "discord.js";
 import startDraft from "./commands/startDraft";
-import testMessage from "./commands/testMessage";
 import { DiscordData, Draft, DraftSelection, FactionId, Player } from "~/types";
 import {
   getDiscordPickMessage,
@@ -16,7 +15,7 @@ import {
 import { factions } from "~/data/factionData";
 import { hydratePlayers } from "~/hooks/useHydratedDraft";
 
-const commands = [startDraft, testMessage];
+const commands = [startDraft];
 
 declare global {
   var discordClient: Client;

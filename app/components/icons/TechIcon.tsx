@@ -13,5 +13,11 @@ type Props = {
 };
 
 export function TechIcon({ techSpecialty, size = 20 }: Props) {
-  return <img src={techIcon[techSpecialty]} style={{ width: size }} />;
+  return (
+    <img
+      src={techIcon[techSpecialty]}
+      style={{ width: size }}
+      alt={techSpecialty}
+    />
+  );
 }

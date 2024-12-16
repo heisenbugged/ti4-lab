@@ -4,7 +4,6 @@ import { useDraft } from "~/draftStore";
 import { DraftableSlice } from "../components/DraftableSlice";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
-import { useMemo } from "react";
 
 export function SlicesSection() {
   const slices = useDraft((state) => state.draft.slices);

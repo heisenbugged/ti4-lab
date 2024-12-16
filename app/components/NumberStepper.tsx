@@ -16,7 +16,7 @@ export function NumberStepper({
   increaseDisabled,
 }: Props) {
   return (
-    <Group gap={!!value ? "sm" : 2}>
+    <Group gap={value ? "sm" : 2}>
       <Button
         size="compact-md"
         color="red"

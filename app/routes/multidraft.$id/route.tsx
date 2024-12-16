@@ -1,13 +1,9 @@
-import { Flex, Group, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Group, SimpleGrid, Stack, Text } from "@mantine/core";
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { SectionTitle } from "~/components/Section";
-import { draftById, draftByPrettyUrl } from "~/drizzle/draft.server";
-
-import {
-  multiDraftById,
-  multiDraftByPrettyUrl,
-} from "~/drizzle/multiDraft.server";
+import { draftByPrettyUrl } from "~/drizzle/draft.server";
+import { multiDraftByPrettyUrl } from "~/drizzle/multiDraft.server";
 import { NewDraftFaction } from "../draft.new/components/NewDraftFaction";
 import { Draft } from "~/types";
 import { factions } from "~/data/factionData";
@@ -33,15 +29,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export default function MultidraftRoute() {
-  const { multidraft, drafts } = useLoaderData<typeof loader>();
-  console.log(drafts);
+  const { drafts } = useLoaderData<typeof loader>();
   return (
     <Stack p="lg" gap={50}>
       {drafts.map(({ draft, urlName }) => {
         if (draft.data == null) return null;
         const data: Draft = JSON.parse(draft.data as string);
         return (
-          <Stack>
+          <Stack key={urlName}>
             <a href={`/draft/${urlName}`}>
               <SectionTitle title={urlName} />
             </a>
@@ -66,7 +61,7 @@ export default function MultidraftRoute() {
               style={{ alignItems: "flex-start" }}
             >
               {data.slices.map((slice, idx) => (
-                <div style={{ position: "relative" }}>
+                <div key={`${urlName}-${idx}`} style={{ position: "relative" }}>
                   <BaseSlice
                     id={`${urlName}-${idx}`}
                     slice={slice}

@@ -10,8 +10,6 @@ import {
 import { IconCopy } from "@tabler/icons-react";
 import { useDraft } from "~/draftStore";
 
-interface ExportDraftStateProps {}
-
 export function ExportDraftState() {
   const draftState = useDraft((state) => state.draft);
   const [modalOpen, setModalOpen] = useState(false);

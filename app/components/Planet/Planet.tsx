@@ -4,7 +4,6 @@ import { PlanetName } from "./PlanetName";
 import { PlanetStats } from "./PlanetStats";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
-import { hasLegendaryImage } from "../LegendaryImage";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 export type PlanetFormat =

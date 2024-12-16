@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
-import { DefaultMantineColor, StyleProp, Text } from "@mantine/core";
+import { Text } from "@mantine/core";
 import "./AnimatedText.css";
 
 interface Props {

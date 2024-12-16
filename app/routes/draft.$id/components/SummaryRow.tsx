@@ -10,7 +10,7 @@ import { PlayerChip } from "./PlayerChip";
 type Props = {
   player: HydratedPlayer;
   slice: Slice;
-  draftSpeaker: Boolean;
+  draftSpeaker: boolean;
   showPlayerColor: boolean;
 };
 

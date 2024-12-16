@@ -25,6 +25,7 @@ export function FactionIcon({
           objectFit: "contain",
           ...style,
         }}
+        alt={factions[faction].name}
       />
     );
   }
@@ -38,6 +39,7 @@ export function FactionIcon({
           width: "100%",
           height: "100%",
         }}
+        alt={factions[faction].name}
       />
     </Box>
   );

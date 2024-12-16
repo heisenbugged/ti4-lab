@@ -1,5 +1,5 @@
 import { mapStringOrder } from "~/data/mapStringOrder";
-import { factionSystems, systemData } from "~/data/systemData";
+import { factionSystems } from "~/data/systemData";
 import { DraftConfig } from "~/draft/types";
 import {
   Slice,
@@ -10,10 +10,7 @@ import {
   TechSpecialty,
   Tile,
   SystemTile,
-  SystemId,
   DemoTile,
-  OpenTile,
-  ClosedTile,
   PlayerDemoTile,
 } from "~/types";
 

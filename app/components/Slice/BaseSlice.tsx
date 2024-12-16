@@ -6,7 +6,6 @@ import { SliceHeader } from "./SliceHeader";
 import { Slice, Tile } from "~/types";
 import { useSlice } from "./useSlice";
 import { SliceFeatures } from "./SliceFeatures";
-import { useDraftConfig } from "~/hooks/useDraftConfig";
 
 import classes from "./Slice.module.css";
 import { DraftConfig } from "~/draft";

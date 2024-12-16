@@ -1,4 +1,4 @@
-import { Badge, Box, Group, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Badge, Box, Group, SimpleGrid, Stack } from "@mantine/core";
 import { factions as allFactions, playerColors } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
 import { DraftableFaction } from "../components/DraftableFaction";
@@ -104,7 +104,7 @@ function GroupedFactionSelection({
     const player = hydratedPlayers.find((p) => p.id === Number(playerId))!;
     const color = playerColors[player.id];
     return (
-      <Stack gap="xs" style={{ position: "relative" }}>
+      <Stack key={playerId} gap="xs" style={{ position: "relative" }}>
         {!player.faction && (
           <Badge
             color={color}
@@ -128,7 +128,7 @@ function GroupedFactionSelection({
         >
           {factions.map((factionId) => {
             return (
-              <Box miw="250px">
+              <Box miw="250px" key={factionId}>
                 <DraftableFaction
                   key={factionId}
                   player={player.faction === factionId ? player : undefined}

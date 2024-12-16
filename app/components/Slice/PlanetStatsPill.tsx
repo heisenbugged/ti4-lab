@@ -1,4 +1,4 @@
-import { Box, Group, Text, useMantineTheme } from "@mantine/core";
+import { Box, Group, Text } from "@mantine/core";
 import classes from "./PlanetStatsPill.module.css";
 
 type Props = {

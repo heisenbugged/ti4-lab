@@ -26,7 +26,8 @@ export type DraftType =
   | "miltyeq7plarge"
   | "milty8p"
   | "milty5p"
-  | "wekker";
+  | "wekker"
+  | "std4p";
 
 export type MapSize = 3 | 4;
 

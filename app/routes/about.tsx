@@ -62,17 +62,17 @@ function About() {
                 About TI4 Lab
               </Text>
               <Text>
-                Hi, I'm James. I've been playing Twilight Imperium for a few
-                years now, and have fallen absolutely in love with this game.
-                TI4 Lab was ultimately born out of a desire to try different,
-                off-the-beaten-path draft formats in our in-person group. After
-                running these with an excel spreadsheet, and realizing the
-                potential for a better tool, TI4 Lab was born.
+                Hi, I&apos;m James. I&apos;ve been playing Twilight Imperium for
+                a few years now, and have fallen absolutely in love with this
+                game. TI4 Lab was ultimately born out of a desire to try
+                different, off-the-beaten-path draft formats in our in-person
+                group. After running these with an excel spreadsheet, and
+                realizing the potential for a better tool, TI4 Lab was born.
               </Text>
               <Text>
                 There are a lot of excellent tools out there already, but none
-                that quite met all my desires. I've decided to try and change
-                that with TI4 Lab. The goal of this tool is to provide
+                that quite met all my desires. I&apos;ve decided to try and
+                change that with TI4 Lab. The goal of this tool is to provide
                 automation for every imaginable draft format, and make it easy
                 to host and play, be it online or in person.
               </Text>

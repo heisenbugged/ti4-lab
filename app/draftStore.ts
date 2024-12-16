@@ -127,7 +127,6 @@ type DraftV2State = {
 
     // map actions
     clearMap: () => void;
-    importMap: (mapString: string) => void;
 
     // randomization
     randomizeAll: () => void;
@@ -357,7 +356,7 @@ export const draftStore = createStore<DraftV2State>()(
           );
 
           const numMinorFactions = settings.numMinorFactions;
-          if (!!numMinorFactions) {
+          if (numMinorFactions) {
             const otherFactions = state.factionPool.filter(
               (f) => !draft.availableFactions.includes(f),
             );
@@ -574,7 +573,6 @@ export const draftStore = createStore<DraftV2State>()(
           const config = draftConfig[draft.settings.type];
           draft.presetMap = generateEmptyMap(config);
         }),
-      importMap: (mapString: string) => {},
 
       // randomization
       randomizeAll: () =>

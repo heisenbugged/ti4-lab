@@ -1,11 +1,10 @@
-import { Box, Button, Group, Stack, Switch } from "@mantine/core";
+import { Button, Group, Stack, Switch } from "@mantine/core";
 import { SectionTitle } from "~/components/Section";
 import { DraftOrder } from "../components/DraftOrder";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { ExportDraftState } from "../components/ExportDraftState";
-import { DraftOrderContext } from "~/routes/draft/route";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 

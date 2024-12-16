@@ -1,5 +1,4 @@
 import { mapStringOrder } from "~/data/mapStringOrder";
-import { draftConfig } from "../draftConfig";
 import { shuffle, weightedChoice } from "../helpers/randomization";
 import { systemData } from "~/data/systemData";
 import {
@@ -188,7 +187,7 @@ export function generateMap(
 
   // Select random target number of low/med/high systems,
   // and then shuffle.
-  let systemsToPullFrom = shuffle(
+  const systemsToPullFrom = shuffle(
     [
       ...shuffle(tieredSystems.low).slice(0, targets.low),
       ...shuffle(tieredSystems.med).slice(0, targets.med),
@@ -361,20 +360,20 @@ function distributeByDistance(
   numSpots: number,
   minDistance: number = 3,
 ) {
-  let chosen: { location: Location; systemId: SystemId }[] = [];
+  const chosen: { location: Location; systemId: SystemId }[] = [];
 
   for (let i = 0; i < numSpots; i++) {
     // First tile gets placed randomly on any spot.
     if (i === 0) {
-      const location = availableLocations.pop()!!;
-      chosen.push({ location, systemId: availableSystems.pop()!! });
+      const location = availableLocations.pop()!;
+      chosen.push({ location, systemId: availableSystems.pop()! });
       continue;
     }
 
     // Loop through all other available locations
     // compute the distance to all the already chosen locations,
     // where the distance is the distance to the closest chosen location.
-    let sortedLocations = availableLocations
+    const sortedLocations = availableLocations
       .map((candidate) => ({
         location: candidate,
         minDistance: Math.min(
@@ -389,7 +388,7 @@ function distributeByDistance(
     // or the furthest away if there is no such location.
     const chosenLocation =
       sortedLocations.find((d) => d.minDistance >= minDistance)?.location ??
-      sortedLocations.pop()!!.location;
+      sortedLocations.pop()!.location;
 
     // remove the location from the list of available locations
     availableLocations.splice(availableLocations.indexOf(chosenLocation), 1);
@@ -397,7 +396,7 @@ function distributeByDistance(
     // Add chosen tile to the list of chosen tiles.
     chosen.push({
       location: chosenLocation,
-      systemId: availableSystems.pop()!!,
+      systemId: availableSystems.pop()!,
     });
   }
 
@@ -428,19 +427,3 @@ function cubeDistance(a: Cube, b: Cube) {
   const vec = cubeSubtract(a, b);
   return Math.max(Math.abs(vec.q), Math.abs(vec.r), Math.abs(vec.s));
 }
-
-/**
- * Picks the closest tier to the given tier from the sliceTiers.
- */
-const tierOrder: Record<ChoosableTier, number> = {
-  red: 0,
-  low: 1,
-  med: 2,
-  high: 3,
-};
-const pickClosestTier = (tier: ChoosableTier, sliceTiers: ChoosableTier[]) =>
-  [...sliceTiers].sort(
-    (a, b) =>
-      Math.abs(tierOrder[a] - tierOrder[tier]) -
-      Math.abs(tierOrder[b] - tierOrder[tier]),
-  )[0];

@@ -1,5 +1,4 @@
 import {
-  Anomaly,
   FactionId,
   PlanetTrait,
   System,

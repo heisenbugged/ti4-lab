@@ -1,10 +1,8 @@
 import { eq } from "drizzle-orm";
-import { mapStringOrder } from "~/data/mapStringOrder";
-import { draftConfig } from "~/draft";
 import { db } from "~/drizzle/config.server";
 import { findDrafts } from "~/drizzle/draft.server";
 import { drafts } from "~/drizzle/schema.server";
-import { DiscordData, Draft, DraftSelection, Slice, Tile } from "~/types";
+import { Draft } from "~/types";
 
 async function migrateState() {
   const records = await findDrafts();
