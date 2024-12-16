@@ -4,7 +4,7 @@ import { Section, SectionTitle } from "~/components/Section";
 import { NumberStepper } from "~/components/NumberStepper";
 import { IconDice6Filled, IconSettings } from "@tabler/icons-react";
 import { NewDraftFaction } from "../components/NewDraftFaction";
-import { useDraft } from "~/draftStore";
+import { useDraft, useHasBanPhase } from "~/draftStore";
 
 export function AvailableFactionsSection() {
   const {
@@ -14,6 +14,8 @@ export function AvailableFactionsSection() {
     removeFaction,
     openFactionSettings,
   } = useDraft((state) => state.actions);
+
+  const hasBanPhase = useHasBanPhase();
 
   const numPreassignedFactions = useDraft(
     (state) => state.draft.settings.numPreassignedFactions,
@@ -28,6 +30,31 @@ export function AvailableFactionsSection() {
     numFactions: state.draft.settings.numFactions,
     availableFactions: state.draft.availableFactions,
   }));
+
+  if (hasBanPhase) {
+    return (
+      <Section>
+        <SectionTitle title="Faction Pool">
+          <Group>
+            <Text># factions: {numFactions}</Text>
+            {/* cannot change number of factions if using 'bag draft' method */}
+            {numPreassignedFactions === undefined && (
+              <NumberStepper
+                decrease={removeLastFaction}
+                increase={addRandomFaction}
+                decreaseDisabled={numFactions <= 6}
+                increaseDisabled={numFactions >= factionPool.length}
+              />
+            )}
+          </Group>
+        </SectionTitle>
+
+        <Text c="dimmed">
+          Factions pool will be made during the draft after the ban phase
+        </Text>
+      </Section>
+    );
+  }
 
   return (
     <Section>

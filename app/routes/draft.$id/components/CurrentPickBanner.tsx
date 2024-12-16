@@ -5,7 +5,11 @@ import { playerColors } from "~/data/factionData";
 import classes from "./CurrentPickBanner.module.css";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 
-export function CurrentPickBanner() {
+type Props = {
+  title?: string;
+};
+
+export function CurrentPickBanner({ title }: Props) {
   const { activePlayer, lastEvent } = useHydratedDraft();
   const playerColor = playerColors[activePlayer.id];
   return (
@@ -23,7 +27,9 @@ export function CurrentPickBanner() {
       >
         {lastEvent ?? ""}
       </Text>
-      <AnimatedText text={`It's ${activePlayer?.name}'s turn to pick!`} />
+      <AnimatedText
+        text={title ?? `It's ${activePlayer?.name}'s turn to pick!`}
+      />
     </Stack>
   );
 }

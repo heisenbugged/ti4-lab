@@ -41,6 +41,16 @@ export function hydratePlayers(
       const playerIdx = acc.findIndex((p) => p.id === selection.playerId);
       if (playerIdx === -1) return acc;
 
+      if (selection.type === "BAN_FACTION") {
+        acc[playerIdx] = {
+          ...acc[playerIdx],
+          bannedFactions: [
+            ...(acc[playerIdx].bannedFactions ?? []),
+            selection.factionId,
+          ],
+        };
+      }
+
       if (selection.type === "SELECT_SPEAKER_ORDER") {
         acc[playerIdx] = {
           ...acc[playerIdx],

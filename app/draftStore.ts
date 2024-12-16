@@ -71,6 +71,7 @@ type DraftV2State = {
     selectMinorFaction: (playerId: number, minorFactionId: FactionId) => void;
     selectPlayerColor: (playerId: number, color: InGameColor) => void;
     selectSeat: (playerId: number, seatIdx: number) => void;
+    banFaction: (playerId: PlayerId, factionId: FactionId) => void;
     undoLastSelection: () => void;
   };
   actions: {
@@ -289,6 +290,40 @@ export const draftStore = createStore<DraftV2State>()(
             seatIdx,
           });
         }),
+
+      banFaction: (playerId: PlayerId, factionId: FactionId) =>
+        set((state) => {
+          if (!state.draft.settings.modifiers?.banFactions) return;
+          state.draft.selections.push({
+            type: "BAN_FACTION",
+            playerId,
+            factionId,
+          });
+
+          const modifier = state.draft.settings.modifiers.banFactions;
+          const totalBans = modifier.numFactions * state.draft.players.length;
+
+          // once ban phase is complete, reroll factions
+          if (state.draft.selections.length >= totalBans) {
+            // Get all banned factions
+            const bannedFactions = state.draft.selections
+              .filter((s) => s.type === "BAN_FACTION")
+              .map((s) => s.factionId);
+
+            // Filter the faction pool to exclude banned factions
+            const filteredPool = state.factionPool.filter(
+              (f) => !bannedFactions.includes(f),
+            );
+
+            state.draft.availableFactions = randomizeFactions(
+              state.draft.settings.numFactions,
+              filteredPool,
+              state.draft.availableMinorFactions ?? [],
+              state.requiredFactions,
+              state.allowedFactions,
+            );
+          }
+        }),
     },
     actions: {
       openFactionSettings: () =>
@@ -340,8 +375,6 @@ export const draftStore = createStore<DraftV2State>()(
           const draft = state.draft;
           draft.players = players;
           draft.integrations = integrations;
-
-          console.log("settings", settings);
 
           // intialize pools based on game sets.
           state.factionPool = getFactionPool(settings.factionGameSets);
@@ -651,6 +684,12 @@ export function useDraft(): DraftV2State;
 export function useDraft<T>(selector: (state: DraftV2State) => T): T;
 export function useDraft<T>(selector?: (state: DraftV2State) => T) {
   return useStore(draftStore, selector!);
+}
+
+export function useHasBanPhase() {
+  return useDraft(
+    (state) => state.draft.settings.modifiers?.banFactions !== undefined,
+  );
 }
 
 // Jotai atom, used for derived/computed values.

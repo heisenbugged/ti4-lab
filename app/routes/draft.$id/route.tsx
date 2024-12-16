@@ -36,6 +36,7 @@ import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import { DraftableMinorFactionsSection } from "./sections/DraftableMinorFactionsSection";
 import { DraftablePlayerColorsSection } from "./sections/DraftablePlayerColorsSection";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
+import { BanPhase } from "./sections/BanPhase";
 
 export default function RunningDraft() {
   const { adminMode } = useSafeOutletContext();
@@ -97,6 +98,25 @@ export default function RunningDraft() {
           draftActions.setSelectedPlayer(playerId);
         }}
       />
+    );
+  }
+
+  const isInBanPhase = () => {
+    if (!settings.modifiers) return false;
+    const banModifier = settings.modifiers.banFactions;
+    if (!banModifier) return false;
+
+    const totalBansNeeded = banModifier.numFactions * draft.players.length;
+    const currentPickNumber = draft.selections.length;
+
+    return currentPickNumber < totalBansNeeded;
+  };
+
+  if (isInBanPhase()) {
+    return (
+      <SyncDraftContext.Provider value={{ syncDraft, syncing }}>
+        <BanPhase />
+      </SyncDraftContext.Provider>
     );
   }
 

@@ -251,6 +251,8 @@ export default function DraftPrechoice() {
     useState<boolean>(false);
   const [excludePokFactions, setExcludePokFactions] = useState<boolean>(false);
 
+  const [banFactions, setBanFactions] = useState<boolean>(false);
+
   const [numPreassignedFactions, setNumPreassignedFactions] = useState<
     number | undefined
   >();
@@ -421,6 +423,7 @@ export default function DraftPrechoice() {
       minOptimal: minOptimalTotal,
       maxOptimal: maxOptimalTotal,
       draftPlayerColors,
+      modifiers: banFactions ? { banFactions: { numFactions: 1 } } : undefined,
     };
 
     // both cannot be set at the same time
@@ -890,6 +893,14 @@ export default function DraftPrechoice() {
                   <Text>Maximum optimal total</Text>
                 </Group>
               )}
+
+              <Switch
+                label="Faction Ban Phase"
+                description="When draft starts, players will ban one faction each. The tool then rolls the remaining factions."
+                checked={banFactions}
+                onChange={() => setBanFactions((v) => !v)}
+                disabled={minorFactionsInSharedPool}
+              />
 
               <Group>
                 <Switch

@@ -160,15 +160,6 @@ export type SystemId = string;
 export type PlayerId = number;
 
 /// V2
-export type DraftModifier =
-  | {
-      type: "banFactions";
-      numFactions: number;
-    }
-  | {
-      type: "anyFactionFirstPick";
-    };
-
 export type DraftSettings = {
   type: DraftType;
   factionGameSets: GameSet[];
@@ -183,7 +174,12 @@ export type DraftSettings = {
   numPreassignedFactions?: number;
   numMinorFactions?: number;
   minorFactionsInSharedPool?: boolean;
-  modifiers?: DraftModifier[];
+  modifiers?: {
+    banFactions?: {
+      numFactions: number;
+    };
+    anyFactionFirstPick?: boolean;
+  };
   minOptimal?: number;
   maxOptimal?: number;
   draftPlayerColors?: boolean;
@@ -254,6 +250,11 @@ export type Map = Tile[];
 
 export type DraftSelection =
   | {
+      type: "BAN_FACTION";
+      playerId: PlayerId;
+      factionId: FactionId;
+    }
+  | {
       type: "SELECT_SPEAKER_ORDER";
       playerId: PlayerId;
       speakerOrder: number;
@@ -295,7 +296,7 @@ export type Draft = {
   pickOrder: PlayerId[];
   selections: DraftSelection[];
   playerFactionPool?: Record<PlayerId, FactionId[]>;
-  bannnedFactions?: Record<PlayerId, FactionId[]>;
+  bannedFactions?: Record<PlayerId, FactionId[]>;
 };
 
 export type HydratedPlayer = {
@@ -308,6 +309,7 @@ export type HydratedPlayer = {
   sliceIdx?: number;
   speakerOrder?: number;
   factionColor?: string;
+  bannedFactions?: FactionId[];
 };
 
 export type PlayerSelection = {

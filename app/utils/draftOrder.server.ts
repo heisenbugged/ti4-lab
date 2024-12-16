@@ -12,7 +12,17 @@ export function createDraftOrder(
     players.length,
   );
   const reversedPlayerIds = [...playerIds].reverse();
-  const pickOrder = [...playerIds, ...reversedPlayerIds, ...playerIds];
+  let pickOrder = [...playerIds, ...reversedPlayerIds, ...playerIds];
+
+  if (settings.modifiers?.banFactions) {
+    const modifier = settings.modifiers.banFactions;
+    const banOrder = [];
+    const banPlayerIds = [...reversedPlayerIds];
+    for (let i = 0; i < modifier.numFactions; i++) {
+      banOrder.push(...banPlayerIds.reverse());
+    }
+    pickOrder = [...banOrder, ...pickOrder];
+  }
 
   // Add stages to snake draft
   if (settings.draftSpeaker) {
