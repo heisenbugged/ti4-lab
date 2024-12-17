@@ -16,16 +16,17 @@ export type SliceChoice = {
 export type TieredSlice = Tier[];
 
 export type DraftType =
+  | "milty4p"
+  | "milty5p"
+  | "milty"
+  | "milty7p"
+  | "milty8p"
   | "heisen"
   | "heisen8p"
   | "miltyeq"
   | "miltyeq5p"
   | "miltyeqless"
-  | "milty"
-  | "milty7p"
   | "miltyeq7plarge"
-  | "milty8p"
-  | "milty5p"
   | "wekker"
   | "std4p";
 

@@ -8,14 +8,7 @@ import { useCreateDraft } from "./draft.new/useCreateDraft";
 import { randomizeFactions } from "~/draftStore";
 import { getFactionPool } from "~/utils/factions";
 import { generateEmptyMap } from "~/utils/map";
-import {
-  IconBook,
-  IconBook2,
-  IconLink,
-  IconNotes,
-  IconPaperclip,
-  IconUserPlus,
-} from "@tabler/icons-react";
+import { IconBook2, IconUserPlus } from "@tabler/icons-react";
 
 export default function LGCS4() {
   const slices = [

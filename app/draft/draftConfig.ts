@@ -5,6 +5,7 @@
 import { heisen } from "./heisen";
 import { heisen8p } from "./heisen8p";
 import { milty } from "./milty";
+import { milty4p } from "./milty4p";
 import { milty5p } from "./milty5p";
 import { milty7p } from "./milty7p";
 import { milty8p } from "./milty8p";
@@ -31,5 +32,6 @@ export const draftConfig: Record<DraftType, DraftConfig> = {
   miltyeq7plarge,
   milty8p,
   milty5p,
+  milty4p,
   std4p,
 };

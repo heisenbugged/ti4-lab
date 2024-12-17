@@ -108,10 +108,18 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     playerCount: 6,
   },
-  std4p: {
-    title: "4P Standard",
+  milty4p: {
+    title: "Milty 4p",
     description:
-      "A standard 4 player draft. Slices are biased towards having one red, but some have two. Other tiles fully randomized.",
+      "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
+    map: hydrateDemoMap(draftConfig.milty4p),
+    titles: ["Speaker", "2nd", "3rd", "4th"],
+    playerCount: 4,
+  },
+  std4p: {
+    title: "4P Small",
+    description:
+      "A small 4 player draft. Slices are biased towards having one red, but some have two. Other tiles fully randomized.",
     map: hydrateDemoMap(std4p),
     titles: ["P1", "P2", "P3", "P4"],
     playerCount: 4,
