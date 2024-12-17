@@ -6,6 +6,7 @@ type Props = {
   player?: HydratedPlayer;
   isMinor?: boolean;
   disabled?: boolean;
+  selectTitle?: string;
   onSelect?: () => void;
   onSelectMinor?: () => void;
 };
@@ -14,9 +15,11 @@ export function PlayerChipOrSelect({
   player,
   isMinor = false,
   disabled = false,
+  selectTitle,
   onSelect,
   onSelectMinor,
 }: Props) {
+  const selectText = selectTitle || "Select";
   return (
     <div
       style={{
@@ -54,7 +57,7 @@ export function PlayerChipOrSelect({
               onMouseDown={onSelect}
               disabled={disabled}
             >
-              {onSelectMinor ? "Main" : "Select"}
+              {onSelectMinor ? "Main" : selectText}
             </Button>
           )}
         </Group>

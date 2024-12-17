@@ -12,11 +12,13 @@ type Props = {
   faction: Faction;
   player?: HydratedPlayer;
   disabled?: boolean;
+  selectTitle?: string;
   onSelect?: () => void;
   onSelectMinor?: () => void;
 };
 
 export function DraftableFaction({
+  selectTitle,
   faction,
   player,
   disabled = false,
@@ -26,19 +28,23 @@ export function DraftableFaction({
   const [opened, { open, close }] = useDisclosure();
   const playerColor =
     player?.id !== undefined ? playerColors[player.id] : undefined;
+
+  const hasRegularSelectOnly = onSelect && !onSelectMinor;
+
   return (
     <Stack
       gap={4}
       px="sm"
       py={8}
       pb={4}
-      className={`${classes.surface} ${classes.withBorder} ${playerColor ? classes[playerColor] : ""}`}
+      className={`${classes.surface} ${classes.withBorder} ${hasRegularSelectOnly ? classes.hoverable : ""} ${playerColor ? classes[playerColor] : ""}`}
       style={{
         borderRadius: "var(--mantine-radius-md)",
         cursor: "pointer",
         position: "relative",
         opacity: disabled ? 0.5 : 1,
       }}
+      onClick={hasRegularSelectOnly && !opened ? onSelect : undefined}
     >
       <Modal
         opened={opened}
@@ -67,7 +73,7 @@ export function DraftableFaction({
         }}
         pt={5}
       >
-        <Flex visibleFrom="sm" align="center" w="25px" h="25px">
+        <Flex align="center" w="25px" h="25px">
           <FactionIcon faction={faction.id} style={{ width: 25, height: 25 }} />
         </Flex>
         <Text flex={1} size="14px" ff="heading" fw="bold">
@@ -75,7 +81,7 @@ export function DraftableFaction({
         </Text>
       </Group>
 
-      <Box style={{ alignSelf: "flex-end" }}>
+      <Box style={{ alignSelf: "flex-start" }}>
         <Button
           size="compact-xs"
           w="auto"
@@ -88,6 +94,7 @@ export function DraftableFaction({
       </Box>
       <PlayerChipOrSelect
         player={player}
+        selectTitle={selectTitle}
         onSelect={onSelect}
         onSelectMinor={onSelectMinor}
         disabled={disabled}

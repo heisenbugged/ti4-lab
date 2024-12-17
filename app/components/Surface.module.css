@@ -9,6 +9,18 @@
     @mixin dark { border-color: var(--mantine-color-dark-5); }
 }
 
+.surface.withBorder.hoverable:hover {
+    cursor: pointer;
+    @mixin light {
+        background-color: var(--mantine-color-gray-0);
+        border-color: var(--mantine-color-blue-5);
+    }
+    @mixin dark {
+        background-color: var(--mantine-color-dark-5);
+        border-color: var(--mantine-color-purple-5);
+    }
+}
+
 .surface.withBorder.blue {
     background-color: color-mix(in srgb, var(--mantine-color-blue-filled) 10%, transparent);
     border-color: var(--mantine-color-blue-filled);

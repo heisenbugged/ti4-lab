@@ -40,7 +40,7 @@ export function BanPhase() {
         <Grid.Col span={12}>
           <SectionTitle title="Ban Phase" />
           <SimpleGrid
-            cols={{ base: 1, xs: 2, sm: 3, md: 4, xl: 4, xxl: 8 }}
+            cols={{ base: 2, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }}
             spacing="xs"
             mt="md"
           >
@@ -53,9 +53,10 @@ export function BanPhase() {
                   key={factionId}
                   player={player}
                   disabled={!!player}
+                  selectTitle={"Ban"}
                   faction={allFactions[factionId]}
                   onSelect={
-                    currentlyPicking
+                    currentlyPicking && !player
                       ? () => {
                           if (
                             confirm(
