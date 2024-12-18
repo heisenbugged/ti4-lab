@@ -95,7 +95,14 @@ export function DraftableFaction({
       <PlayerChipOrSelect
         player={player}
         selectTitle={selectTitle}
-        onSelect={onSelect}
+        onSelect={
+          onSelect
+            ? (e) => {
+                e.preventDefault();
+                onSelect();
+              }
+            : undefined
+        }
         onSelectMinor={onSelectMinor}
         disabled={disabled}
         isMinor={player?.minorFaction === faction.id}

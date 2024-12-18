@@ -34,16 +34,15 @@ export async function generateUniquePrettyUrl() {
   let prettyUrl = "";
   while (exists) {
     prettyUrl = generatePrettyUrlName();
-    console.log("pretty url candidate is", prettyUrl);
     const existingRecord = await draftByPrettyUrl(prettyUrl);
     exists = !!existingRecord;
   }
   return prettyUrl;
 }
 
-export async function createDraft(draft: Draft) {
+export async function createDraft(draft: Draft, presetUrl?: string) {
   const id = uuidv4().toString();
-  const prettyUrl = await generateUniquePrettyUrl();
+  const prettyUrl = await getPrettyUrl(presetUrl);
   db.insert(drafts)
     .values({
       id,
@@ -53,6 +52,13 @@ export async function createDraft(draft: Draft) {
     .run();
 
   return { id, prettyUrl };
+}
+
+async function getPrettyUrl(presetUrl?: string): Promise<string> {
+  if (!presetUrl) return generateUniquePrettyUrl();
+
+  const existingRecord = await draftByPrettyUrl(presetUrl);
+  return existingRecord ? generateUniquePrettyUrl() : presetUrl;
 }
 
 export async function updateDraft(id: string, draftData: Draft) {

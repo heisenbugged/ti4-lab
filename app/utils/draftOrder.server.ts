@@ -52,10 +52,12 @@ export function createDraftOrder(
   return {
     players: players.map((p) => ({
       ...p,
-      name: p.name.length > 0 ? p.name : `Player ${p.id + 1}`,
+      name: p.name.length > 0 ? p.name : `Player ${placeholderName[p.id]}`,
     })),
     pickOrder,
     playerFactionPool,
     selections: [],
   };
 }
+
+const placeholderName = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];

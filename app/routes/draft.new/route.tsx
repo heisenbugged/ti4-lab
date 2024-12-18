@@ -200,12 +200,15 @@ export default function DraftNew() {
 export async function action({ request }: ActionFunctionArgs) {
   const body = (await request.json()) as DraftInput;
 
+  const presetUrl = body.presetUrl;
+  delete body.presetUrl;
+
   const draft: Draft = {
     ...body,
     ...createDraftOrder(body.players, body.settings, body.availableFactions),
   };
 
-  const { prettyUrl, id } = await createDraft(draft);
+  const { prettyUrl, id } = await createDraft(draft, presetUrl);
   if (body.integrations?.discord) {
     await notifyPick(id, prettyUrl, draft);
   }

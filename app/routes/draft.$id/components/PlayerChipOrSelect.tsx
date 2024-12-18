@@ -7,8 +7,8 @@ type Props = {
   isMinor?: boolean;
   disabled?: boolean;
   selectTitle?: string;
-  onSelect?: () => void;
-  onSelectMinor?: () => void;
+  onSelect?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onSelectMinor?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
 export function PlayerChipOrSelect({

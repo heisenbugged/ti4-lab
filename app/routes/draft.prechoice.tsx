@@ -70,35 +70,6 @@ type PrechoiceMap = {
   playerCount: number;
 };
 
-const slice: [number, number][] = [
-  [1, 0],
-  [0, 1],
-  [-1, 1],
-];
-
-export const heisen: DraftConfig = {
-  type: "heisen",
-  numSystemsInSlice: 3,
-  sliceHeight: 2,
-  sliceConcentricCircles: 1,
-  homeIdxInMapString: [27, 32, 36, 23],
-  modifiableMapTiles: [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18],
-  presetTiles: {},
-  closedMapTiles: [21, 22, 25, 31, 34, 28, 29, 30, 19, 20],
-  seatTilePositions: [
-    { x: 0, y: 0 },
-    { x: -1, y: 0 },
-    { x: 0, y: -1 },
-  ],
-  seatTilePlacement: {
-    0: rotateSlice(slice, 3),
-    1: rotateSlice(slice, 4),
-    2: rotateSlice(slice, 6),
-    3: rotateSlice(slice, 1),
-  } as Record<number, [number, number][]>,
-  generateSlices,
-};
-
 const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
   milty: {
     title: "Milty",

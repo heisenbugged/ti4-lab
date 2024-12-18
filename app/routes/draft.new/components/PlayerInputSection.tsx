@@ -20,6 +20,8 @@ type Props = {
   onDecreasePlayers?: () => void;
 };
 
+const placeholderName = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+
 export function PlayerInputSection({
   players,
   discordData,
@@ -62,7 +64,7 @@ export function PlayerInputSection({
                       flex={1}
                       size="md"
                       value={player.name}
-                      placeholder={`Player ${idx + 1}`}
+                      placeholder={`Player ${placeholderName[idx]}`}
                       onChange={(e) => onChangeName(idx, e.currentTarget.value)}
                     />
                   </>

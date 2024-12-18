@@ -1,4 +1,4 @@
-import { Button, Grid, Stack } from "@mantine/core";
+import { Button, Grid, Stack, Text } from "@mantine/core";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
@@ -130,6 +130,13 @@ export default function RunningDraft() {
       </Stack>
 
       <Grid gutter="xl">
+        {/* Add this new Grid.Col at the top */}
+        <Grid.Col span={12} order={{ base: 0 }}>
+          <Text size="md" ta="right">
+            Draft URL: https://tidraft.com/draft/{result.urlName}
+          </Text>
+        </Grid.Col>
+
         {settings.draftSpeaker && (
           <Grid.Col
             span={{ base: 12, sm: 6 }}

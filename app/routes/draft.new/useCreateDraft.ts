@@ -1,7 +1,9 @@
 import { useFetcher } from "@remix-run/react";
 import { Draft } from "~/types";
 
-export type DraftInput = Omit<Draft, "pickOrder">;
+export type DraftInput = Omit<Draft, "pickOrder"> & {
+  presetUrl?: string;
+};
 
 export function useCreateDraft() {
   const fetcher = useFetcher();
