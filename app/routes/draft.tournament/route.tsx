@@ -154,6 +154,7 @@ export default function DraftTournament() {
               placeholder="Enter table name..."
               flex={1}
               value={tableName}
+              miw={200}
               onChange={(e) => setTableName(e.target.value)}
             />
           </Group>
