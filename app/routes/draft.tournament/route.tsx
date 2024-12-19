@@ -118,6 +118,8 @@ export default function DraftTournament() {
     .filter(Boolean)
     .join(", ");
 
+  const maxPlayers = Math.min(8, slices.length);
+
   return (
     <Box mt="lg">
       <SectionTitle title="Tournament Table Setup" />
@@ -129,6 +131,7 @@ export default function DraftTournament() {
             onChangeName={handleChangeName}
             onIncreasePlayers={handleAddPlayer}
             onDecreasePlayers={handleRemovePlayer}
+            maxPlayers={maxPlayers}
           />
           {players.length < 6 && (
             <Alert color="orange.9" mt="xs" variant="filled" fw="bold">
