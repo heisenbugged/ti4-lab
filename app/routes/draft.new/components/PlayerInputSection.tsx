@@ -15,6 +15,7 @@ import { DiscordData, Player } from "~/types";
 type Props = {
   players: Player[];
   discordData?: DiscordData;
+  maxPlayers?: number;
   onChangeName: (playerIdx: number, name: string) => void;
   onIncreasePlayers?: () => void;
   onDecreasePlayers?: () => void;
@@ -25,6 +26,7 @@ const placeholderName = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 export function PlayerInputSection({
   players,
   discordData,
+  maxPlayers = 8,
   onIncreasePlayers,
   onDecreasePlayers,
   onChangeName,
@@ -39,7 +41,7 @@ export function PlayerInputSection({
             decrease={onDecreasePlayers}
             increase={onIncreasePlayers}
             decreaseDisabled={players.length <= 4}
-            increaseDisabled={players.length >= 8}
+            increaseDisabled={players.length >= maxPlayers}
           />
         )}
       </SectionTitle>

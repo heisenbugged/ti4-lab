@@ -33,7 +33,6 @@ export function DraftOrderSection() {
   const pickForAnyoneControl = (
     <Switch
       label="Pick for anyone"
-      // visibleFrom="sm"
       checked={pickForAnyone}
       onChange={(e) => {
         setPickForAnyone(e.currentTarget.checked);
@@ -60,16 +59,13 @@ export function DraftOrderSection() {
   return (
     <Stack>
       <Group hiddenFrom="sm" justify="flex-end">
+        {adminMode && <ExportDraftState />}
+        {UndoLastSelection}
         <OriginalArtToggle />
       </Group>
       <Group hiddenFrom="sm" justify="flex-end">
         {pickForAnyoneControl}
         {adminControl}
-      </Group>
-
-      <Group hiddenFrom="sm" justify="flex-end">
-        {adminMode && <ExportDraftState />}
-        {UndoLastSelection}
       </Group>
 
       <SectionTitle title="Draft Order">

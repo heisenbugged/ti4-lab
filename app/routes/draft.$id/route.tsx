@@ -177,8 +177,8 @@ export default function RunningDraft() {
       <Grid gutter="xl">
         {/* Add this new Grid.Col at the top */}
         <Grid.Col span={12} order={{ base: 0 }}>
-          <Text size="md" ta="right">
-            Draft URL: https://tidraft.com/draft/{result.urlName}
+          <Text size="md" ta="right" c="dimmed">
+            https://tidraft.com/draft/{result.urlName}
           </Text>
         </Grid.Col>
 

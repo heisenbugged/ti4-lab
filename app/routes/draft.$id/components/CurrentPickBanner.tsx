@@ -15,7 +15,7 @@ export function CurrentPickBanner({ title }: Props) {
   return (
     <Stack
       gap={8}
-      h="80px"
+      h="60px"
       align="center"
       justify="center"
       className={`${classes.banner} ${classes[playerColor]}`}

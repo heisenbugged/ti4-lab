@@ -78,6 +78,7 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
               size="xs"
               onMouseDown={onSelect}
               disabled={disabled}
+              style={{ zIndex: 1 }}
             >
               Select Seat
             </Button>
