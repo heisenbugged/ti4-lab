@@ -2,7 +2,7 @@ import { Button, Grid, Stack, Text } from "@mantine/core";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
@@ -37,6 +37,7 @@ import { DraftableMinorFactionsSection } from "./sections/DraftableMinorFactions
 import { DraftablePlayerColorsSection } from "./sections/DraftablePlayerColorsSection";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { BanPhase } from "./sections/BanPhase";
+import { IconRefresh } from "@tabler/icons-react";
 
 export default function RunningDraft() {
   const { adminMode } = useSafeOutletContext();
@@ -52,13 +53,31 @@ export default function RunningDraft() {
 
   // Real-time socket connection to push and receive state updates.
   const socket = useSocket();
+  const [isDisconnected, setIsDisconnected] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
   useEffect(() => {
     if (!socket) return;
+
     // join draft on every connect
     // this way if there's a disconnection, a reconnection will rejoin the draft
     socket.on("connect", () => {
       socket.emit("joinDraft", result.id);
+      setIsDisconnected(false);
     });
+
+    socket.on("disconnect", () => {
+      setIsDisconnected(true);
+    });
+
+    socket.on("reconnecting", () => {
+      console.log("reconnecting");
+      setIsReconnecting(true);
+    });
+
+    socket.on("reconnect_failed", () => {
+      setIsReconnecting(false);
+    });
+
     socket.on("syncDraft", (data) => {
       const draft = JSON.parse(data) as Draft;
       draftStore.draftActions.update(result.id!, draft);
@@ -76,6 +95,12 @@ export default function RunningDraft() {
       draftActions.setSelectedPlayer(parseInt(storedSelectedPlayer));
     }
   }, []);
+
+  const reconnect = () => {
+    setIsReconnecting(true);
+    socket?.disconnect();
+    socket?.connect();
+  };
 
   if (!draftStore.hydrated) return <LoadingOverlay />;
 
@@ -122,6 +147,26 @@ export default function RunningDraft() {
 
   return (
     <SyncDraftContext.Provider value={{ syncDraft, syncing }}>
+      {socket && isDisconnected && (
+        <Button
+          variant="filled"
+          size="md"
+          radius="xl"
+          leftSection={<IconRefresh size={20} />}
+          style={{
+            position: "fixed",
+            top: "160px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+          }}
+          onClick={reconnect}
+          loading={isReconnecting}
+        >
+          Refresh
+        </Button>
+      )}
+
       <PlanetFinder onSystemSelected={syncDraft} />
       <audio id="notificationSound" src="/chime.mp3" preload="auto"></audio>
       <Stack gap="sm" mb="60" mt="lg">

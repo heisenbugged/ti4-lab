@@ -143,6 +143,6 @@
 }
 
 .tileWrapper.hovered {
-  transform: scale(1.8);
+  transform: scale(2);
   z-index: 1000;
 }
