@@ -65,12 +65,12 @@ export default function LGCS4() {
       },
       integrations: {},
       players: [
-        { id: 0, name: "Player 1" },
-        { id: 1, name: "Player 2" },
-        { id: 2, name: "Player 3" },
-        { id: 3, name: "Player 4" },
-        { id: 4, name: "Player 5" },
-        { id: 5, name: "Player 6" },
+        { id: 0, name: "Player A" },
+        { id: 1, name: "Player B" },
+        { id: 2, name: "Player C" },
+        { id: 3, name: "Player D" },
+        { id: 4, name: "Player E" },
+        { id: 5, name: "Player F" },
       ],
       slices,
       presetMap: generateEmptyMap(config),
@@ -110,7 +110,7 @@ export default function LGCS4() {
             </Button>
             <Button
               component="a"
-              href="https://docs.google.com/document/d/1_KswlcLCIwlMnRfgO9VxQFIXe8HZaI9m8iMesWsHBUc/edit?tab=t.0"
+              href="https://docs.google.com/document/d/1CSVXmplxtRqaA9cQMe5PqsUM8BHG4_mdC9hyAdaxiA0/"
               variant="filled"
               color="blue"
               leftSection={<IconBook2 />}
@@ -123,11 +123,14 @@ export default function LGCS4() {
         <Grid.Col span={{ base: 12, md: 6 }}>
           <SectionTitle title="What's Milty Draft?" />
           <Text pl="sm" pr="sm" mt="sm">
-            In the Milty Draft format of Twilight Imperium, players draft both
-            factions and slices. Each slice contains 3 'blue' tiles with planets
-            and 2 'red' tiles (either without planets or with anomalies),
-            ensuring an even distribution of resources. Players take turns
-            selecting factions, slices, and their starting position on the map.
+            During drafting, players draft both factions and slices, and their
+            starting position on the map. Players make one 'pick' during their
+            turn, and the draft proceeds in snake order. Each slice contains 3
+            'blue' tiles with planets and 2 'red' tiles (either without planets
+            or with anomalies), ensuring an even distribution of resources.
+            Speaker order is determined by the (drafted) position on the map.
+            Speaker is given to the player on the 12 o'clock position and then
+            order proceeds clockwise.
           </Text>
 
           <Text pl="sm" pr="sm" mt="sm">
