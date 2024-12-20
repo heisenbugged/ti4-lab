@@ -11,7 +11,9 @@ type Props = {
 export function SliceHeader({ children, right, selected = false }: Props) {
   return (
     <Group className={`${classes.header} ${selected ? classes.selected : ""}`}>
-      <Group gap={2}>{children}</Group>
+      <Group gap={2} flex={1}>
+        {children}
+      </Group>
       {right}
     </Group>
   );

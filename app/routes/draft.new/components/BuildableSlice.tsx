@@ -1,6 +1,6 @@
-import { Button, Group } from "@mantine/core";
+import { Button, Group, Text } from "@mantine/core";
 import { Slice, Tile } from "~/types";
-import { IconDice6Filled } from "@tabler/icons-react";
+import { IconDice6Filled, IconPencil } from "@tabler/icons-react";
 import { BaseSlice } from "~/components/Slice/BaseSlice";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 
@@ -11,6 +11,7 @@ type Props = {
   onDeleteTile?: (tile: Tile) => void;
   onRandomizeSlice?: () => void;
   onClearSlize?: () => void;
+  onNameChange?: (name: string) => void;
 };
 
 export function BuildableSlice({
@@ -20,6 +21,7 @@ export function BuildableSlice({
   onDeleteTile,
   onRandomizeSlice,
   onClearSlize,
+  onNameChange,
 }: Props) {
   const config = useDraftConfig();
   return (
@@ -50,6 +52,7 @@ export function BuildableSlice({
       }
       onSelectTile={onSelectTile}
       onDeleteTile={onDeleteTile}
+      onNameChange={onNameChange}
     />
   );
 }

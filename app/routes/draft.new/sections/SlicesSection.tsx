@@ -27,6 +27,7 @@ export function SlicesSection() {
     randomizeSlices,
     randomizeAll,
     openPlanetFinderForSlice,
+    updateSliceName,
   } = useDraft((state) => state.actions);
 
   const [draggingSlice, setDraggingSlice] = useState<number | undefined>(
@@ -112,6 +113,7 @@ export function SlicesSection() {
                 onDeleteTile={(tile) => removeSystemFromSlice(idx, tile.idx)}
                 onRandomizeSlice={() => randomizeSlice(idx)}
                 onClearSlize={() => clearSlice(idx)}
+                onNameChange={(name) => updateSliceName(idx, name)}
               />
             </div>
           ))}

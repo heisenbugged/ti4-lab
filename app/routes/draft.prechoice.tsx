@@ -59,6 +59,7 @@ import { rotateSlice } from "~/utils/hexagonal";
 
 import "../components/draftprechoice.css";
 import { std4p } from "~/draft/std4p";
+import { sliceWords } from "~/data/sliceWords";
 
 type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 

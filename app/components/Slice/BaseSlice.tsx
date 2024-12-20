@@ -1,7 +1,6 @@
-import { Box, Group, Paper, Stack, Text } from "@mantine/core";
+import { Box, Group, Paper, Stack, Text, TextInput } from "@mantine/core";
 import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
-import { Titles } from "../Titles";
 import { SliceHeader } from "./SliceHeader";
 import { Slice, Tile } from "~/types";
 import { useSlice } from "./useSlice";
@@ -9,6 +8,7 @@ import { SliceFeatures } from "./SliceFeatures";
 
 import classes from "./Slice.module.css";
 import { DraftConfig } from "~/draft";
+import { Titles } from "../Titles";
 
 type Props = {
   id: string;
@@ -19,6 +19,7 @@ type Props = {
   // greyOut?: boolean;
   titleLeft?: React.ReactNode;
   titleRight?: React.ReactNode;
+  onNameChange?: (name: string) => void;
   onSelectTile?: (tile: Tile) => void;
   onDeleteTile?: (tile: Tile) => void;
 };
@@ -33,6 +34,7 @@ export function BaseSlice({
   selectedColor,
   onSelectTile,
   onDeleteTile,
+  onNameChange,
 }: Props) {
   const { total, optimal } = useSlice(slice);
   return (
@@ -43,10 +45,22 @@ export function BaseSlice({
     >
       <Stack flex={1} gap={0}>
         <SliceHeader right={titleRight}>
-          <Group>
-            <Titles.Slice className={`${classes["slice-text"]}`}>
-              {slice.name}
-            </Titles.Slice>
+          <Group flex={1}>
+            {mapModifiable ? (
+              <TextInput
+                className={classes.editableSliceName}
+                value={slice.name}
+                mr="xs"
+                fw="bold"
+                w="auto"
+                flex={1}
+                onChange={(e) => onNameChange?.(e.target.value)}
+              />
+            ) : (
+              <Titles.Slice className={`${classes["slice-text"]}`}>
+                {slice.name}
+              </Titles.Slice>
+            )}
             {titleLeft}
           </Group>
         </SliceHeader>

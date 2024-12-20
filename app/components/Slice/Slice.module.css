@@ -1,3 +1,7 @@
+.editableSliceName input {
+    font-family: "Orbitron", sans-serif;
+}
+
 .stats {
     align-items: center;
     gap: var(--mantine-spacing-xs);

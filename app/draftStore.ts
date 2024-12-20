@@ -34,6 +34,7 @@ import {
 } from "./hooks/useUsedSystemIds";
 import { atomWithStore } from "jotai-zustand";
 import { createStore } from "zustand/vanilla";
+import { getRandomSliceNames } from "./data/sliceWords";
 
 /// V2
 type DraftV2State = {
@@ -125,6 +126,7 @@ type DraftV2State = {
     ) => void;
     removeSystemFromSlice: (sliceIdx: number, tileIdx: number) => void;
     clearSlice: (sliceIdx: number) => void;
+    updateSliceName: (sliceIdx: number, name: string) => void;
 
     // map actions
     clearMap: () => void;
@@ -419,6 +421,13 @@ export const draftStore = createStore<DraftV2State>()(
             );
           }
 
+          // get cool names!
+          const sliceLength = draft.slices.length;
+          const sliceNames = getRandomSliceNames(sliceLength);
+          draft.slices.forEach((slice, idx) => {
+            slice.name = `Slice ${sliceNames[idx]}`;
+          });
+
           state.draft.settings = settings;
           state.initialized = true;
         });
@@ -598,6 +607,10 @@ export const draftStore = createStore<DraftV2State>()(
             draft.slices[sliceIdx].name,
             config.numSystemsInSlice,
           );
+        }),
+      updateSliceName: (sliceIdx: number, name: string) =>
+        set(({ draft }) => {
+          draft.slices[sliceIdx].name = name;
         }),
 
       // map actions
