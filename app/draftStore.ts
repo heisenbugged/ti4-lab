@@ -632,6 +632,14 @@ export const draftStore = createStore<DraftV2State>()(
           const { map, slices } = initializeHeisen(draft.settings, systemPool);
           draft.presetMap = map;
           draft.slices = slices;
+
+          // TODO: Remove duplication between this and initializeDraft
+          // get cool names!
+          const sliceLength = draft.slices.length;
+          const sliceNames = getRandomSliceNames(sliceLength);
+          draft.slices.forEach((slice, idx) => {
+            slice.name = `Slice ${sliceNames[idx]}`;
+          });
         }),
 
       randomizeMap: () =>
@@ -688,6 +696,14 @@ export const draftStore = createStore<DraftV2State>()(
           if (rawSlices) {
             draft.slices = systemIdsToSlices(config, rawSlices);
           }
+
+          // TODO: Remove duplication between this and initializeDraft
+          // get cool names!
+          const sliceLength = draft.slices.length;
+          const sliceNames = getRandomSliceNames(sliceLength);
+          draft.slices.forEach((slice, idx) => {
+            slice.name = `Slice ${sliceNames[idx]}`;
+          });
         }),
     },
   })),
