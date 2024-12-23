@@ -1524,9 +1524,9 @@ export const rawSystems: Record<string, RawSystem> = {
     wormholes: [],
     anomalies: [],
   },
-  4224: { id: "4225", planets: [], type: "RED", wormholes: [], anomalies: [] },
+  4224: { id: "4224", planets: [], type: "RED", wormholes: [], anomalies: [] },
   4225: {
-    id: "4227",
+    id: "4225",
     planets: [],
     type: "GREEN",
     faction: "ghoti",
@@ -1534,7 +1534,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4226: {
-    id: "4228",
+    id: "4226",
     planets: [
       { name: "Last Stop", resources: 3, influence: 0, legendary: false },
     ],
@@ -1544,7 +1544,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4227: {
-    id: "4229",
+    id: "4227",
     planets: [
       { name: "Avicenna", resources: 4, influence: 0, legendary: false },
     ],
@@ -1554,7 +1554,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4228: {
-    id: "4230",
+    id: "4228",
     planets: [
       { name: "Benc", resources: 2, influence: 0, legendary: false },
       { name: "Hau", resources: 1, influence: 2, legendary: false },
@@ -1565,7 +1565,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4229: {
-    id: "4231",
+    id: "4229",
     planets: [
       { name: "Zarr", resources: 2, influence: 1, legendary: false },
       { name: "Nokk", resources: 1, influence: 1, legendary: false },
@@ -1576,7 +1576,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4230: {
-    id: "4232",
+    id: "4230",
     planets: [
       { name: "Aysis' Rest", resources: 4, influence: 3, legendary: false },
       { name: "Solitude", resources: 0, influence: 1, legendary: false },
@@ -1587,7 +1587,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4231: {
-    id: "4233",
+    id: "4231",
     planets: [
       { name: "Alesna", resources: 2, influence: 0, legendary: false },
       { name: "Azle", resources: 2, influence: 0, legendary: false },
@@ -1598,7 +1598,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4232: {
-    id: "4234",
+    id: "4232",
     planets: [
       { name: "Gghurn Theta", resources: 2, influence: 1, legendary: false },
       { name: "Arche", resources: 2, influence: 2, legendary: false },
@@ -1609,7 +1609,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4233: {
-    id: "4235",
+    id: "4233",
     planets: [
       { name: "Kjalengard", resources: 3, influence: 2, legendary: false },
       { name: "Hulgade", resources: 1, influence: 0, legendary: false },
@@ -1620,7 +1620,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4234: {
-    id: "4236",
+    id: "4234",
     planets: [
       { name: "Edyn", resources: 3, influence: 3, legendary: false },
       { name: "Ekko", resources: 0, influence: 1, legendary: false },
@@ -1632,7 +1632,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4253: {
-    id: "4237",
+    id: "4253",
     planets: [
       {
         name: "Silence",
@@ -1647,7 +1647,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4254: {
-    id: "4238",
+    id: "4254",
     planets: [
       {
         name: "Echo",
@@ -1662,7 +1662,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4255: {
-    id: "4239",
+    id: "4255",
     planets: [
       {
         name: "Tarrock",
@@ -1677,7 +1677,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4256: {
-    id: "4240",
+    id: "4256",
     planets: [
       {
         name: "Prism",
@@ -1692,7 +1692,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4257: {
-    id: "4241",
+    id: "4257",
     planets: [
       {
         name: "Troac",
@@ -1707,7 +1707,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4258: {
-    id: "4242",
+    id: "4258",
     planets: [
       {
         name: "Etir V",
@@ -1722,7 +1722,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4259: {
-    id: "4243",
+    id: "4259",
     planets: [
       {
         name: "Vioss",
@@ -1737,7 +1737,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4260: {
-    id: "4244",
+    id: "4260",
     planets: [
       {
         name: "Fakrenn",
@@ -1752,7 +1752,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4261: {
-    id: "4245",
+    id: "4261",
     planets: [
       {
         name: "San-Vit",
@@ -1775,7 +1775,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4262: {
-    id: "4246",
+    id: "4262",
     planets: [
       {
         name: "Dorvok",
@@ -1798,7 +1798,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4263: {
-    id: "4247",
+    id: "4263",
     planets: [
       {
         name: "Rysaa",
@@ -1822,7 +1822,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4264: {
-    id: "4248",
+    id: "4264",
     planets: [
       {
         name: "Salin",
@@ -1844,7 +1844,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4265: {
-    id: "4249",
+    id: "4265",
     planets: [
       {
         name: "Inan",
@@ -1866,7 +1866,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4266: {
-    id: "4250",
+    id: "4266",
     planets: [
       {
         name: "Detic",
@@ -1888,7 +1888,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4267: {
-    id: "4251",
+    id: "4267",
     planets: [
       {
         name: "Qaak",
@@ -1917,7 +1917,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4268: {
-    id: "4252",
+    id: "4268",
     planets: [
       {
         name: "Mandle",
@@ -1946,7 +1946,7 @@ export const rawSystems: Record<string, RawSystem> = {
     anomalies: [],
   },
   4269: {
-    id: "4253",
+    id: "4269",
     planets: [
       {
         name: "Domna",
@@ -1960,38 +1960,38 @@ export const rawSystems: Record<string, RawSystem> = {
     wormholes: [],
     anomalies: ["NEBULA"],
   },
-  4270: { id: "4254", planets: [], type: "RED", wormholes: [], anomalies: [] },
-  4271: { id: "4255", planets: [], type: "RED", wormholes: [], anomalies: [] },
+  4270: { id: "4270", planets: [], type: "RED", wormholes: [], anomalies: [] },
+  4271: { id: "4271", planets: [], type: "RED", wormholes: [], anomalies: [] },
   4272: {
-    id: "4256",
+    id: "4272",
     planets: [],
     type: "RED",
     wormholes: ["BETA"],
     anomalies: ["NEBULA"],
   },
   4273: {
-    id: "4257",
+    id: "4273",
     planets: [],
     type: "RED",
     wormholes: [],
     anomalies: ["NEBULA", "ASTEROID_FIELD"],
   },
   4274: {
-    id: "4258",
+    id: "4274",
     planets: [],
     type: "RED",
     wormholes: [],
     anomalies: ["ASTEROID_FIELD", "GRAVITY_RIFT"],
   },
   4275: {
-    id: "4259",
+    id: "4275",
     planets: [],
     type: "RED",
     wormholes: ["GAMMA"],
     anomalies: ["GRAVITY_RIFT"],
   },
   4276: {
-    id: "4260",
+    id: "4276",
     planets: [],
     type: "RED",
     wormholes: ["ALPHA", "BETA"],
