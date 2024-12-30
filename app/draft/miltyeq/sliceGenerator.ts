@@ -78,8 +78,9 @@ export function generateMap(
   // if we have gone past max attempts, return the map regardless of validation
   if (attempts > 1000) return { map, slices };
 
-  // validate map has a minimum of 11 anomalies.
-  if (!validateMap(map, slices)) {
+  // validate map has a minimum of 11 anomalies. only for miltyeq, as smaller map configurations
+  // need different validations and haven't figured that out yet.
+  if (settings.type === "miltyeq" && !validateMap(map, slices)) {
     return generateMap(settings, systemPool, attempts + 1);
   }
 
