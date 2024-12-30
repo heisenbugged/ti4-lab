@@ -1,4 +1,4 @@
-import { DraftSettings, SystemId, SystemIds } from "~/types";
+import { DraftSettings, Map, SystemId, SystemIds } from "~/types";
 import { SLICE_SHAPES } from "../sliceShapes";
 import { miltySystemTiers } from "~/data/miltyTileTiers";
 import {
@@ -22,6 +22,7 @@ import { systemData } from "~/data/systemData";
 import { generateEmptyMap } from "~/utils/map";
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { draftConfig } from "../draftConfig";
+import { calculateMapStats } from "~/hooks/useFullMapStats";
 
 const SLICE_CHOICES: SliceChoice[] = [
   // 2 red
@@ -44,7 +45,11 @@ const DEFAULT_SLICE_CONFIG: SliceGenerationConfig = {
   minOptimal: undefined,
 };
 
-export function generateMap(settings: DraftSettings, systemPool: SystemId[]) {
+export function generateMap(
+  settings: DraftSettings,
+  systemPool: SystemId[],
+  attempts: number = 0,
+) {
   const config = draftConfig[settings.type];
   const map = generateEmptyMap(config);
   const numMapTiles = config.modifiableMapTiles.length;
@@ -70,8 +75,24 @@ export function generateMap(settings: DraftSettings, systemPool: SystemId[]) {
     };
   });
 
+  // if we have gone past max attempts, return the map regardless of validation
+  if (attempts > 1000) return { map, slices };
+
+  // validate map has a minimum of 11 anomalies.
+  if (!validateMap(map, slices)) {
+    return generateMap(settings, systemPool, attempts + 1);
+  }
+
   return { map, slices };
 }
+
+const validateMap = (map: Map, slices: SystemIds[]) => {
+  const stats = calculateMapStats(slices, map);
+
+  // validate map has a minimum of 11 anomalies.
+  // add other validations in here
+  return stats.redTiles >= 11;
+};
 
 export const generateSlices = (
   sliceCount: number,

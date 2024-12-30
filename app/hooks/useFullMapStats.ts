@@ -1,16 +1,16 @@
 import { useMemo } from "react";
 import { systemData } from "~/data/systemData";
 import { useDraft } from "~/draftStore";
-import { Map, Slice, SystemStats } from "~/types";
+import { Map, SystemIds, SystemStats } from "~/types";
+import { slicesToSystemIds } from "~/utils/slice";
 import { systemStats } from "~/utils/system";
 
 // TODO: Move to new file
-export function calculateMapStats(slices: Slice[], presetMap: Map) {
+export function calculateMapStats(slices: SystemIds[], presetMap: Map) {
   const stats: SystemStats[] = [];
   slices.forEach((slice) => {
-    slice.tiles.forEach((t) => {
-      if (t.type !== "SYSTEM") return;
-      stats.push(systemStats(systemData[t.systemId]));
+    slice.forEach((t) => {
+      stats.push(systemStats(systemData[t]));
     });
   });
   presetMap.forEach((t) => {
@@ -53,7 +53,7 @@ export function useFullMapStats() {
   const presetMap = useDraft((state) => state.draft.presetMap);
 
   return useMemo(
-    () => calculateMapStats(slices, presetMap),
+    () => calculateMapStats(slicesToSystemIds(slices), presetMap),
     [slices, presetMap],
   );
 }

@@ -1,7 +1,7 @@
 import { systemData } from "~/data/systemData";
 import { DraftConfig } from "~/draft";
 import { valueSlice } from "~/stats";
-import { Slice, HomeTile, System, SystemId, Tile } from "~/types";
+import { Slice, HomeTile, System, SystemId, Tile, SystemIds } from "~/types";
 import { systemsFromIds } from "./system";
 
 const emptyHomeTile = (): HomeTile => ({
@@ -86,4 +86,8 @@ export const systemIdsToSlices = (
   return sorted.map((systemIds, idx) =>
     systemIdsToSlice(config, `Slice ${idx + 1}`, systemIds),
   );
+};
+
+export const slicesToSystemIds = (slices: Slice[]): SystemIds[] => {
+  return slices.map((slice) => systemIdsInSlice(slice));
 };
