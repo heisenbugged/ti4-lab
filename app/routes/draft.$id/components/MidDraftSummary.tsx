@@ -2,7 +2,7 @@ import { Card, Group, Stack, Table, Text } from "@mantine/core";
 import { useDraft } from "~/draftStore";
 import { PlayerChip } from "./PlayerChip";
 import { factions } from "~/data/factionData";
-import { optimalStatsForSystems, techSpecialtiesForSystems } from "~/utils/map";
+import { optimalStatsForSystems } from "~/utils/map";
 import { Slice, Faction, HydratedPlayer, System } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
@@ -106,14 +106,14 @@ export function SummaryCard({
   let optimal:
     | { resources: number; influence: number; flex: number }
     | undefined;
-  let specialties: string[] | undefined;
+  // let specialties: string[] | undefined;
 
   if (player.faction) faction = factions[player.faction];
   if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
     optimal = optimalStatsForSystems(systems);
-    specialties = techSpecialtiesForSystems(systems);
+    // specialties = techSpecialtiesForSystems(systems);
   }
 
   return (
@@ -198,14 +198,14 @@ function SummaryRow({
   let optimal:
     | { resources: number; influence: number; flex: number }
     | undefined;
-  let specialties: string[] | undefined;
+  // let specialties: string[] | undefined;
 
   if (player.faction) faction = factions[player.faction];
   if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
     optimal = optimalStatsForSystems(systems);
-    specialties = techSpecialtiesForSystems(systems);
+    // specialties = techSpecialtiesForSystems(systems);
   }
 
   return (

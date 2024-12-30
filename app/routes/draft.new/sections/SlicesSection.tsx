@@ -73,7 +73,7 @@ export function SlicesSection() {
           <Group gap={4}>
             <Button
               onMouseDown={() => {
-                if (config.type === "heisen" || config.type === "heisen8p") {
+                if (config.generateMap !== undefined) {
                   randomizeAll();
                 } else {
                   randomizeSlices();

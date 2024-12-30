@@ -16,7 +16,6 @@ import { generateEmptyMap } from "./utils/map";
 import { fisherYatesShuffle } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig } from "./draft/types";
-import { generateMap as generateHeisenMap } from "./draft/heisen/generateMap";
 import { immer } from "zustand/middleware/immer";
 import {
   emptySlice,
@@ -401,15 +400,14 @@ export const draftStore = createStore<DraftV2State>()(
             );
           }
 
-          // pre-fill map and slices
-          if (config.type === "heisen" || config.type === "heisen8p") {
-            // nucleus has a special draft format.
-            const { map, slices } = initializeHeisen(
-              settings,
-              state.systemPool,
-            );
-            draft.presetMap = map;
-            draft.slices = slices;
+          if (config.generateMap !== undefined) {
+            const generated = config.generateMap(settings, state.systemPool);
+            if (generated) {
+              draft.presetMap = generated.map;
+              // TODO: Respect new name logic in here.
+              // instead of it being overridden below.
+              draft.slices = systemIdsToSlices(config, generated.slices);
+            }
           } else {
             const slices = initializeSlices(settings, state.systemPool);
             if (slices) draft.slices = slices;
@@ -623,15 +621,15 @@ export const draftStore = createStore<DraftV2State>()(
       // randomization
       randomizeAll: () =>
         set(({ draft, systemPool }) => {
-          if (
-            draft.settings.type !== "heisen" &&
-            draft.settings.type !== "heisen8p"
-          ) {
-            return {};
+          const config = draftConfig[draft.settings.type];
+          if (config.generateMap === undefined) return;
+
+          // TODO: Reduce duplication between this and initializeDraft
+          const generated = config.generateMap(draft.settings, systemPool);
+          if (generated) {
+            draft.presetMap = generated.map;
+            draft.slices = systemIdsToSlices(config, generated.slices);
           }
-          const { map, slices } = initializeHeisen(draft.settings, systemPool);
-          draft.presetMap = map;
-          draft.slices = slices;
 
           // TODO: Remove duplication between this and initializeDraft
           // get cool names!
@@ -723,35 +721,6 @@ export function useHasBanPhase() {
 
 // Jotai atom, used for derived/computed values.
 export const draftStoreAtom = atomWithStore(draftStore);
-
-// Random functions to be moved elsewhere
-function initializeHeisen(settings: DraftSettings, systemPool: SystemId[]) {
-  const config = draftConfig[settings.type];
-  const map = generateEmptyMap(config);
-  if (!settings.randomizeMap) {
-    return {
-      map,
-      slices: emptySlices(config, settings.numSlices),
-    };
-  }
-
-  const { chosenSpots, slices: rawSlices } = generateHeisenMap(
-    config,
-    settings.numSlices,
-    systemPool,
-  );
-
-  Object.entries(chosenSpots).forEach(([mapIdx, systemId]) => {
-    const existing = map[Number(mapIdx) + 1];
-    map[Number(mapIdx) + 1] = {
-      ...existing,
-      type: "SYSTEM",
-      systemId,
-    };
-  });
-
-  return { map, slices: systemIdsToSlices(config, rawSlices) };
-}
 
 export function initializeSlices(
   settings: DraftSettings,

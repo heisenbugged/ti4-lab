@@ -3,7 +3,6 @@ import { shuffle, weightedChoice } from "../helpers/randomization";
 import { systemData } from "~/data/systemData";
 import {
   ChoosableTier,
-  DraftConfig,
   SliceChoice,
   SliceGenerationConfig,
   TieredSlice,
@@ -14,7 +13,9 @@ import {
   fillSlicesWithRemainingTiles,
   fillSlicesWithRequiredTiles,
 } from "../helpers/sliceGeneration";
-import { PlanetTrait, SystemIds, SystemId } from "~/types";
+import { PlanetTrait, SystemIds, SystemId, DraftSettings } from "~/types";
+import { generateEmptyMap } from "~/utils/map";
+import { draftConfig } from "../draftConfig";
 
 const MAP_WORMHOLES = [
   { weight: 1, value: { numAlphas: 3, numBetas: 3 } },
@@ -61,12 +62,12 @@ const SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "low", "high"] },
 ];
 
-export function generateMap(
-  config: DraftConfig,
-  sliceCount: number,
-  systemPool: SystemId[],
-) {
+export function generateMap(settings: DraftSettings, systemPool: SystemId[]) {
+  const sliceCount = settings.numSlices;
+  const config = draftConfig[settings.type];
+
   // a bit hacky, but works for now
+  // this changes between heisen and heisen8p
   const targets: Record<ChoosableTier, number> =
     config.type === "heisen"
       ? {
@@ -228,8 +229,18 @@ export function generateMap(
     }
   });
 
+  const map = generateEmptyMap(config);
+  Object.entries(chosenMapLocations).forEach(([mapIdx, systemId]) => {
+    const existing = map[Number(mapIdx) + 1];
+    map[Number(mapIdx) + 1] = {
+      ...existing,
+      type: "SYSTEM",
+      systemId,
+    };
+  });
+
   return {
-    chosenSpots: chosenMapLocations,
+    map,
     // lastly, jumble up the slices
     slices: slices.map((slice) => shuffle(slice)),
   };

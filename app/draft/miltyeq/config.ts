@@ -1,5 +1,5 @@
 import { DraftConfig } from "../types";
-import { generateSlices } from "./sliceGenerator";
+import { generateMap, generateSlices } from "./sliceGenerator";
 
 export const miltyeq: DraftConfig = {
   type: "miltyeq",
@@ -55,5 +55,6 @@ export const miltyeq: DraftConfig = {
       [2, 0],
     ],
   } as Record<number, [number, number][]>,
+  generateMap,
   generateSlices,
 };

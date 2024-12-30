@@ -1,4 +1,4 @@
-import { generateSlices } from "../heisen/generateMap";
+import { generateMap, generateSlices } from "../heisen/generateMap";
 import { DraftConfig } from "../types";
 
 export const heisen8p: DraftConfig = {
@@ -70,5 +70,6 @@ export const heisen8p: DraftConfig = {
       [0, 1],
     ],
   } as Record<number, [number, number][]>,
+  generateMap,
   generateSlices,
 };

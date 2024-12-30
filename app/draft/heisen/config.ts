@@ -1,5 +1,5 @@
 import { DraftConfig } from "../types";
-import { generateSlices } from "./generateMap";
+import { generateMap, generateSlices } from "./generateMap";
 
 export const heisen: DraftConfig = {
   type: "heisen",
@@ -48,5 +48,6 @@ export const heisen: DraftConfig = {
       [0, 1],
     ],
   } as Record<number, [number, number][]>,
+  generateMap,
   generateSlices,
 };

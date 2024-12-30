@@ -1,4 +1,4 @@
-import { SystemId, SystemIds } from "~/types";
+import { DraftSettings, SystemId, SystemIds } from "~/types";
 import { SLICE_SHAPES } from "../sliceShapes";
 import { miltySystemTiers } from "~/data/miltyTileTiers";
 import {
@@ -19,6 +19,9 @@ import {
   shuffleTieredSystems,
 } from "../helpers/sliceGeneration";
 import { systemData } from "~/data/systemData";
+import { generateEmptyMap } from "~/utils/map";
+import { mapStringOrder } from "~/data/mapStringOrder";
+import { draftConfig } from "../draftConfig";
 
 const SLICE_CHOICES: SliceChoice[] = [
   // 2 red
@@ -40,6 +43,35 @@ const DEFAULT_SLICE_CONFIG: SliceGenerationConfig = {
   maxOptimal: undefined,
   minOptimal: undefined,
 };
+
+export function generateMap(settings: DraftSettings, systemPool: SystemId[]) {
+  const config = draftConfig[settings.type];
+  const map = generateEmptyMap(config);
+  const numMapTiles = config.modifiableMapTiles.length;
+
+  const slices = generateSlices(settings.numSlices, systemPool, {
+    maxOptimal: settings.maxOptimal,
+    minOptimal: settings.minOptimal,
+  });
+  if (!slices) return undefined;
+  const usedSystemIds = slices.flat(1);
+  const remainingSystemIds = shuffle(
+    systemPool.filter((id) => !usedSystemIds.includes(id)),
+  );
+  const mapSystemIds = shuffle(remainingSystemIds).slice(0, numMapTiles);
+
+  // fill map with chosen systems
+  config.modifiableMapTiles.forEach((idx) => {
+    map[idx] = {
+      idx: idx,
+      position: mapStringOrder[idx],
+      type: "SYSTEM",
+      systemId: mapSystemIds.pop()!,
+    };
+  });
+
+  return { map, slices };
+}
 
 export const generateSlices = (
   sliceCount: number,

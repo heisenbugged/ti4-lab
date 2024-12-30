@@ -1,4 +1,10 @@
-import { SystemIds, SystemId, TilePosition } from "~/types";
+import {
+  SystemIds,
+  SystemId,
+  TilePosition,
+  DraftSettings,
+  Map,
+} from "~/types";
 
 export type Tier = "low" | "med" | "high" | "red" | "resolved";
 export type ChoosableTier = "low" | "med" | "high" | "red";
@@ -97,6 +103,16 @@ export type DraftConfig = {
    * Multiplier to properly center the slice when rendering (if needed)
    */
   wOffsetMultiplier?: number;
+
+  generateMap?: (
+    settings: DraftSettings,
+    systemPool: SystemId[],
+  ) =>
+    | {
+        map: Map;
+        slices: SystemIds[];
+      }
+    | undefined;
 
   /**
    * Function to randomly generate slices according to draft-specific rules.
