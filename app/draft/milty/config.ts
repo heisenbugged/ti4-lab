@@ -1,6 +1,6 @@
 import { rotateSlice } from "~/utils/hexagonal";
 import { DraftConfig } from "../types";
-import { generateSlices } from "./altSliceGenerator";
+import { generateSlices } from "./sliceGenerator";
 
 const slice: [number, number][] = [
   [1, 0],

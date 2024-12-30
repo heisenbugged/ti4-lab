@@ -1,6 +1,6 @@
-import { rotate, rotateSlice } from "~/utils/hexagonal";
+import { rotateSlice } from "~/utils/hexagonal";
 import { DraftConfig } from "../types";
-import { generateSlices } from "../milty/altSliceGenerator";
+import { generateSlices } from "../milty/sliceGenerator";
 
 const slice: [number, number][] = [
   [1, 0],

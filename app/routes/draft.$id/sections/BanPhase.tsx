@@ -1,4 +1,4 @@
-import { Box, Grid, SimpleGrid, Stack } from "@mantine/core";
+import { Grid, SimpleGrid, Stack } from "@mantine/core";
 import { CurrentPickBanner } from "../components/CurrentPickBanner";
 import { DraftOrderSection } from "./DraftOrderSection";
 import { SectionTitle } from "~/components/Section";

@@ -1,92 +1,179 @@
-import { SystemIds, SystemId } from "~/types";
+import { SystemId, SystemIds } from "~/types";
+import { SLICE_SHAPES } from "../sliceShapes";
+import { miltySystemTiers } from "~/data/miltyTileTiers";
+import {
+  ChoosableTier,
+  SliceChoice,
+  SliceGenerationConfig,
+  TieredSlice,
+  TieredSystems,
+} from "../types";
 import { shuffle, weightedChoice } from "../helpers/randomization";
 import {
-  fillSlicesWithRemainingTiles,
-  fillSlicesWithRequiredTiles,
-  chooseRequiredSystems,
+  filterTieredSystems,
+  groupSystemsByTier,
+  isAlpha,
+  isBeta,
+  isLegendary,
   separateAnomalies,
+  shuffleTieredSystems,
 } from "../helpers/sliceGeneration";
-import { SLICE_SHAPES } from "../sliceShapes";
-import { ChoosableTier, SliceGenerationConfig, TieredSlice } from "../types";
-
-const HIGH = "high";
-const MED = "med";
-const LOW = "low";
-const RED = "red";
-
-type SliceChoice = {
-  weight: number;
-  value: ChoosableTier[];
-};
+import { systemData } from "~/data/systemData";
 
 const SLICE_CHOICES: SliceChoice[] = [
   // 2 red
-  { weight: 2, value: [RED, RED, HIGH, HIGH] }, // 6
-  { weight: 3, value: [RED, RED, HIGH, MED] }, // 5
-  { weight: 1, value: [RED, RED, MED, MED] }, // 4
+  { weight: 2, value: ["red", "red", "high", "high"] }, // 6
+  { weight: 3, value: ["red", "red", "high", "med"] }, // 5
+  { weight: 1, value: ["red", "red", "med", "med"] }, // 4
 
   // 1 red
-  { weight: 2, value: [RED, HIGH, MED, LOW] }, // 6
-  { weight: 3, value: [RED, HIGH, LOW, LOW] }, // 5
-  { weight: 2, value: [RED, MED, MED, LOW] }, // 5
-  { weight: 1, value: [RED, MED, LOW, LOW] }, // 4
+  { weight: 2, value: ["red", "high", "med", "low"] }, // 6
+  { weight: 3, value: ["red", "high", "low", "low"] }, // 5
+  { weight: 2, value: ["red", "med", "med", "low"] }, // 5
+  { weight: 1, value: ["red", "med", "low", "low"] }, // 4
 ];
 
-const MIN_WORMHOLE_CHOICES = [
-  { weight: 1, value: 2 },
-  { weight: 1, value: 3 },
-];
+const DEFAULT_SLICE_CONFIG: SliceGenerationConfig = {
+  numAlphas: 2,
+  numBetas: 2,
+  numLegendaries: 1,
+  maxOptimal: undefined,
+  minOptimal: undefined,
+};
 
-const MIN_LEGENDARY_CHOICES = [
-  { weight: 1, value: 1 },
-  { weight: 1, value: 2 },
-];
-
-export function generateSlices(
+export const generateSlices = (
   sliceCount: number,
   availableSystems: SystemId[],
-  config: SliceGenerationConfig = {},
-) {
-  const tieredSlices: TieredSlice[] = [];
-  for (let i = 0; i < sliceCount; i++) {
-    const tierValues = shuffle(weightedChoice(SLICE_CHOICES));
-    tieredSlices.push(tierValues);
-  }
-
-  // Enforce a minimum number of wormholes and legendary planets
-  const minAlphaWormholes =
-    config.numAlphas ?? weightedChoice(MIN_WORMHOLE_CHOICES);
-  const minBetaWormholes =
-    config.numBetas ?? weightedChoice(MIN_WORMHOLE_CHOICES);
-  const minLegendary =
-    config.numLegendaries ?? weightedChoice(MIN_LEGENDARY_CHOICES);
-  const { chosenTiles, remainingTiles } = chooseRequiredSystems(
+  config?: SliceGenerationConfig,
+) =>
+  coreGenerateSlices({
+    sliceCount,
     availableSystems,
-    {
-      minAlphaWormholes,
-      minBetaWormholes,
-      minLegendary,
+    config: config ?? DEFAULT_SLICE_CONFIG,
+    sliceShape: SLICE_SHAPES.milty_eq,
+    systemTiers: miltySystemTiers,
+    getSliceTiers: () => shuffle(weightedChoice(SLICE_CHOICES)),
+    validateSystems: (systems, config) => {
+      const alphas = filterTieredSystems(systems, isAlpha).length;
+      const betas = filterTieredSystems(systems, isBeta).length;
+      const legendaries = filterTieredSystems(systems, isLegendary).length;
+
+      const minAlphas = config.numAlphas ?? 2;
+      const minBetas = config.numBetas ?? 2;
+      const minLegendaries = config.numLegendaries ?? 1;
+      return (
+        alphas >= minAlphas &&
+        betas >= minBetas &&
+        legendaries >= minLegendaries
+      );
     },
-  );
 
-  // distirbute the wormholes/legendaries in round robin fashion
-  // on the slices.
-  const slices: SystemIds[] = Array.from({ length: sliceCount }, () => []);
-  fillSlicesWithRequiredTiles(tieredSlices, chosenTiles, slices);
+    validateSlice: (slice) => {
+      const systems = slice.map((systemId) => systemData[systemId]);
+      // can't have two alphas, two betas, or two legendaries
+      return (
+        systems.filter(isAlpha).length <= 1 &&
+        systems.filter(isBeta).length <= 1 &&
+        systems.filter(isLegendary).length <= 1
+      );
 
-  // fill slices with remaining tiles, respecting the 'tier' requirements
-  // of the spots in each slice.
-  fillSlicesWithRemainingTiles(tieredSlices, remainingTiles, slices);
+      // TODO: Maybe implement min/max optimal stats here.
+    },
+  });
 
-  // do a shuffle of the tiles in each slice
-  for (let i = 0; i < slices.length; i++) {
-    slices[i] = shuffle(slices[i]);
-  }
+type CoreGenerateSlicesArgs = {
+  // NOTE: These are provided by draft config.
+  sliceCount: number;
+  sliceShape: string[];
+  systemTiers: Record<string, ChoosableTier>;
+
+  getSliceTiers: () => TieredSlice;
+  validateSystems: (
+    systems: TieredSystems,
+    config: SliceGenerationConfig,
+  ) => boolean;
+  validateSlice: (slice: SystemIds, config: SliceGenerationConfig) => boolean;
+
+  // NOTE: These are provided by user.
+  availableSystems: SystemId[];
+  config: SliceGenerationConfig;
+};
+
+export function coreGenerateSlices({
+  availableSystems,
+  systemTiers,
+  sliceShape,
+  sliceCount,
+  config,
+  getSliceTiers,
+  validateSystems,
+  validateSlice,
+}: CoreGenerateSlicesArgs) {
+  const allTieredSystems = groupSystemsByTier(availableSystems, systemTiers);
+
+  const gatherSlices = (attempts: number = 0): SystemIds[] | undefined => {
+    if (attempts > 1000) return undefined;
+
+    const { tieredSystems, sliceTiers } = gatherSystems() ?? {
+      tieredSystems: undefined,
+      sliceTiers: undefined,
+    };
+    if (!tieredSystems) return undefined;
+
+    const slices: SystemIds[] = [];
+    for (let i = 0; i < sliceCount; i++) {
+      const tierValues = sliceTiers[i];
+      const slice: SystemId[] = tierValues.map(
+        (tier) => tieredSystems[tier as ChoosableTier].shift()!,
+      );
+      if (!validateSlice(slice, config)) return gatherSlices(attempts + 1);
+      slices.push(shuffle(slice));
+    }
+
+    return slices;
+  };
+
+  const gatherSystems = (attempts: number = 0) => {
+    if (attempts > 1000) return undefined;
+
+    const sliceTiers: TieredSlice[] = Array.from(
+      { length: sliceCount },
+      getSliceTiers,
+    );
+    const tierCounts = sliceTiers.flat().reduce(
+      (counts, tier) => {
+        // NOTE: "resolved" branch should never be triggered,
+        // but is currently required for the type checker
+        // as the types are a bit messy.
+        if (tier === "resolved") return counts;
+        counts[tier] = (counts[tier] || 0) + 1;
+        return counts;
+      },
+      { high: 0, med: 0, low: 0, red: 0 } as Record<ChoosableTier, number>,
+    );
+
+    const shuffledTieredSystems = shuffleTieredSystems(allTieredSystems);
+    const tieredSystems = {
+      high: shuffledTieredSystems.high.slice(0, tierCounts.high),
+      med: shuffledTieredSystems.med.slice(0, tierCounts.med),
+      low: shuffledTieredSystems.low.slice(0, tierCounts.low),
+      red: shuffledTieredSystems.red.slice(0, tierCounts.red),
+    };
+
+    if (!validateSystems(tieredSystems, config)) {
+      return gatherSystems(attempts + 1);
+    }
+
+    return { sliceTiers, tieredSystems };
+  };
+
+  const slices: SystemIds[] | undefined = gatherSlices();
+  if (!slices) return undefined;
 
   // finally, we separate anomalies
   for (let sliceIndex = 0; sliceIndex < slices.length; sliceIndex++) {
     let slice = slices[sliceIndex];
-    slice = separateAnomalies(slice, SLICE_SHAPES.milty_eq);
+    slice = separateAnomalies(slice, sliceShape);
     slices[sliceIndex] = slice;
   }
 

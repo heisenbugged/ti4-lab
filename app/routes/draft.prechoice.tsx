@@ -40,7 +40,7 @@ import {
   useNavigate,
   useSubmit,
 } from "@remix-run/react";
-import { DraftConfig, DraftType, draftConfig } from "~/draft";
+import { DraftType, draftConfig } from "~/draft";
 import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
 import {
@@ -54,12 +54,9 @@ import {
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { useDisclosure } from "@mantine/hooks";
 import { hydrateDemoMap } from "~/utils/map";
-import { generateSlices } from "~/draft/heisen/generateMap";
-import { rotateSlice } from "~/utils/hexagonal";
 
 import "../components/draftprechoice.css";
 import { std4p } from "~/draft/std4p";
-import { sliceWords } from "~/data/sliceWords";
 
 type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 

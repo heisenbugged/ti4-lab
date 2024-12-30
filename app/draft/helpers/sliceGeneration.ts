@@ -440,3 +440,21 @@ function permutator<T>(array: T[], inspector: (arg: T[]) => boolean) {
   permute(array);
   return result;
 }
+
+export function groupSystemsByTier(
+  systems: SystemId[],
+  tiers: Record<string, ChoosableTier>,
+): Record<ChoosableTier, SystemId[]> {
+  return systems.reduce(
+    (acc, id) => {
+      const tier = tiers[id];
+      if (acc[tier]) {
+        acc[tier].push(id);
+      } else {
+        acc[tier] = [id];
+      }
+      return acc;
+    },
+    {} as Record<ChoosableTier, SystemId[]>,
+  );
+}

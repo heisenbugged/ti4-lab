@@ -124,13 +124,14 @@ export default function LGCS4() {
           <SectionTitle title="What's Milty Draft?" />
           <Text pl="sm" pr="sm" mt="sm">
             During drafting, players draft both factions and slices, and their
-            starting position on the map. Players make one 'pick' during their
-            turn, and the draft proceeds in snake order. Each slice contains 3
-            'blue' tiles with planets and 2 'red' tiles (either without planets
-            or with anomalies), ensuring an even distribution of resources.
-            Speaker order is determined by the (drafted) position on the map.
-            Speaker is given to the player on the 12 o'clock position and then
-            order proceeds clockwise.
+            starting position on the map. Players make one &apos;pick&apos;
+            during their turn, and the draft proceeds in snake order. Each slice
+            contains 3 &apos;blue&apos; tiles with planets and 2 &apos;red&apos;
+            tiles (either without planets or with anomalies), ensuring an even
+            distribution of resources. Speaker order is determined by the
+            (drafted) position on the map. Speaker is given to the player on the
+            12 o&apos;clock position and then order proceeds clockwise. order
+            proceeds clockwise.
           </Text>
 
           <Text pl="sm" pr="sm" mt="sm">
@@ -138,8 +139,8 @@ export default function LGCS4() {
           </Text>
 
           <Text pl="sm" pr="sm" mt="sm">
-            Note: Use 'pick for anyone' to progress through the draft while
-            previewing.
+            Note: Use &apos;pick for anyone&apos; to progress through the draft
+            while previewing.
           </Text>
 
           <Box pl="sm" mt="lg">
