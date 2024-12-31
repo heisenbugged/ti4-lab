@@ -57,7 +57,8 @@ export const draftableSystemIds = Object.values(systemData)
       (system.type === "BLUE" || system.type === "RED") &&
       Number(system.id) < 100 &&
       system.id !== "18" && // cannot draft mecatol
-      system.id !== "82", // cannot draft mallice
+      system.id !== "82" && // cannot draft mallice
+      system.id !== "81", // cannot draft muaat hero supernova
   )
   .map((system) => system.id);
 
