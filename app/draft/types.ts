@@ -1,10 +1,4 @@
-import {
-  SystemIds,
-  SystemId,
-  TilePosition,
-  DraftSettings,
-  Map,
-} from "~/types";
+import { SystemIds, SystemId, TilePosition, DraftSettings, Map } from "~/types";
 
 export type Tier = "low" | "med" | "high" | "red" | "resolved";
 export type ChoosableTier = "low" | "med" | "high" | "red";
@@ -47,6 +41,8 @@ export type SliceGenerationConfig = {
 };
 
 export type DraftConfig = {
+  numPlayers: number;
+
   /**
    * The type of draft this configuration is for.
    */

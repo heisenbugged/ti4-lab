@@ -11,6 +11,7 @@ const slice: [number, number][] = [
 ];
 
 export const milty4p: DraftConfig = {
+  numPlayers: 4,
   type: "milty4p",
   numSystemsInSlice: 5,
   sliceHeight: 3,

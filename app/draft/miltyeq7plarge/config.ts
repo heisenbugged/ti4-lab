@@ -10,6 +10,7 @@ const slice: [number, number][] = [
 ];
 
 export const miltyeq7plarge: DraftConfig = {
+  numPlayers: 7,
   type: "miltyeq7plarge",
   mapSize: 4,
   numSystemsInSlice: 4,

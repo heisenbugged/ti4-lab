@@ -9,6 +9,7 @@ const slice: [number, number][] = [
 ];
 
 export const std4p: DraftConfig = {
+  numPlayers: 4,
   type: "std4p",
   numSystemsInSlice: 3,
   sliceHeight: 2,

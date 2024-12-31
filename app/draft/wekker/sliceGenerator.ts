@@ -8,12 +8,16 @@ function generateSlices(sliceCount: number, availableSystems: SystemId[]) {
   const miltySlices = miltyGenerateSlices(
     sliceCount,
     availableSystems,
-    undefined,
+    {
+      numAlphas: 0,
+      numBetas: 0,
+      numLegendaries: 0,
+    },
     SLICE_SHAPES.wekker,
   );
 
   // ensure at least one blue adjacent to home system,
-  miltySlices.forEach((slice) => {
+  miltySlices?.forEach((slice) => {
     const candidates: SystemId[] = [slice[0], slice[2]];
     const allRed = candidates.every(
       (systemId) => systemData[systemId].type === "RED",

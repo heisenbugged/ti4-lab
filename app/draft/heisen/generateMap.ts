@@ -14,7 +14,7 @@ import {
   fillSlicesWithRequiredTiles,
 } from "../helpers/sliceGeneration";
 import { PlanetTrait, SystemIds, SystemId, DraftSettings } from "~/types";
-import { generateEmptyMap } from "~/utils/map";
+import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
 
 const MAP_WORMHOLES = [
@@ -62,7 +62,11 @@ const SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "low", "high"] },
 ];
 
-export function generateMap(settings: DraftSettings, systemPool: SystemId[]) {
+export function generateMap(
+  settings: DraftSettings,
+  systemPool: SystemId[],
+  attempts: number = 0,
+) {
   const sliceCount = settings.numSlices;
   const config = draftConfig[settings.type];
 
@@ -239,10 +243,39 @@ export function generateMap(settings: DraftSettings, systemPool: SystemId[]) {
     };
   });
 
+  // TODO: Adapt validations for heisen8p,heisen7p, heisen5p, and heisen4p
+  if (settings.type === "heisen" && attempts <= 1000) {
+    // Calculate min/max planets across all slices
+    const planetCounts = slices.map((slice) =>
+      slice.reduce(
+        (sum, systemId) => sum + systemData[systemId].planets.length,
+        0,
+      ),
+    );
+    const minPlanets = Math.min(...planetCounts);
+    const maxPlanets = Math.max(...planetCounts);
+
+    const totalSpends = slices.map((s) => {
+      const stats = optimalStatsForSystems(s.map((id) => systemData[id]));
+      return stats.resources + stats.influence + stats.flex;
+    });
+    const minTotalSpend = Math.min(...totalSpends);
+    const maxTotalSpend = Math.max(...totalSpends);
+
+    if (
+      minTotalSpend < 4 ||
+      maxTotalSpend > 9 ||
+      minPlanets < 2 ||
+      maxPlanets > 5
+    ) {
+      return generateMap(settings, systemPool, attempts + 1);
+    }
+  }
+
   return {
     map,
-    // lastly, jumble up the slices
-    slices: slices.map((slice) => shuffle(slice)),
+    slices,
+    valid: attempts <= 1000,
   };
 }
 
@@ -360,7 +393,8 @@ export function generateSlices(
   // of the spots in each slice.
   fillSlicesWithRemainingTiles(tieredSlices, remainingTiles, slices);
 
-  return slices;
+  // shuffle the slices
+  return slices.map((slice) => shuffle(slice));
 }
 
 type Location = { mapIdx: number; position: { x: number; y: number } };

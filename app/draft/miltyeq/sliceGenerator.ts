@@ -3,6 +3,7 @@ import { SLICE_SHAPES } from "../sliceShapes";
 import { miltySystemTiers } from "~/data/miltyTileTiers";
 import {
   ChoosableTier,
+  DraftConfig,
   SliceChoice,
   SliceGenerationConfig,
   TieredSlice,
@@ -23,6 +24,7 @@ import { generateEmptyMap } from "~/utils/map";
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { draftConfig } from "../draftConfig";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
+import { systemIdsInSlice, systemIdsToSlices } from "~/utils/slice";
 
 const SLICE_CHOICES: SliceChoice[] = [
   // 2 red
@@ -76,22 +78,25 @@ export function generateMap(
   });
 
   // if we have gone past max attempts, return the map regardless of validation
-  if (attempts > 1000) return { map, slices };
+  if (attempts > 1000) return { map, slices, valid: false };
 
   // validate map has a minimum of 11 anomalies. only for miltyeq, as smaller map configurations
   // need different validations and haven't figured that out yet.
-  if (settings.type === "miltyeq" && !validateMap(map, slices)) {
+  if (settings.type === "miltyeq" && !validateMap(config, map, slices)) {
     return generateMap(settings, systemPool, attempts + 1);
   }
 
-  return { map, slices };
+  return { map, slices, valid: true };
 }
 
-const validateMap = (map: Map, slices: SystemIds[]) => {
-  const stats = calculateMapStats(slices, map);
+const validateMap = (config: DraftConfig, map: Map, slices: SystemIds[]) => {
+  // For validating 'globals', we grab the N richest slices.
+  const slicesToValidate = systemIdsToSlices(config, slices)
+    .slice(0, config.numPlayers)
+    .map((s) => systemIdsInSlice(s));
 
-  // validate map has a minimum of 11 anomalies.
-  // add other validations in here
+  const stats = calculateMapStats(slicesToValidate, map);
+
   return stats.redTiles >= 11;
 };
 
@@ -213,6 +218,18 @@ export function coreGenerateSlices({
       low: shuffledTieredSystems.low.slice(0, tierCounts.low),
       red: shuffledTieredSystems.red.slice(0, tierCounts.red),
     };
+
+    // make sure we have enough systems in each tier
+    // as sometimes the weighted picks grab more tiles in a tier
+    // than we have available.
+    if (
+      tieredSystems.high.length < tierCounts.high ||
+      tieredSystems.med.length < tierCounts.med ||
+      tieredSystems.low.length < tierCounts.low ||
+      tieredSystems.red.length < tierCounts.red
+    ) {
+      return gatherSystems(attempts + 1);
+    }
 
     if (!validateSystems(tieredSystems, config)) {
       return gatherSystems(attempts + 1);

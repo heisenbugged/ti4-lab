@@ -2,6 +2,7 @@ import { generateSlices } from "../miltyeq/sliceGenerator";
 import { DraftConfig } from "../types";
 
 export const miltyeqless: DraftConfig = {
+  numPlayers: 6,
   type: "miltyeqless",
   numSystemsInSlice: 4,
   sliceHeight: 3,

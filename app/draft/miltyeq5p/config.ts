@@ -2,6 +2,7 @@ import { DraftConfig } from "../types";
 import { generateSlices } from "../miltyeq/sliceGenerator";
 
 export const miltyeq5p: DraftConfig = {
+  numPlayers: 5,
   type: "miltyeq5p",
   numSystemsInSlice: 4,
   sliceHeight: 3,

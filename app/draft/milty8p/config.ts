@@ -2,6 +2,7 @@ import { generateSlices } from "../milty/sliceGenerator";
 import { DraftConfig } from "../types";
 
 export const milty8p: DraftConfig = {
+  numPlayers: 8,
   type: "milty8p",
   mapSize: 4,
   numSystemsInSlice: 5,

@@ -11,6 +11,7 @@ const slice: [number, number][] = [
 ];
 
 export const wekker: DraftConfig = {
+  numPlayers: 6,
   type: "wekker",
   numSystemsInSlice: 5,
   sliceHeight: 3.5,

@@ -2,6 +2,7 @@ import { DraftConfig } from "../types";
 import { generateMap, generateSlices } from "./generateMap";
 
 export const heisen: DraftConfig = {
+  numPlayers: 6,
   type: "heisen",
   numSystemsInSlice: 3,
   sliceHeight: 2,
