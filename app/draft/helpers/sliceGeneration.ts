@@ -8,7 +8,6 @@ import { SystemIds, System, SystemId } from "~/types";
 import { systemData } from "~/data/systemData";
 import { ChoosableTier, TieredSlice, TieredSystems } from "../types";
 import { neighbors } from "../hex";
-import { getTieredSystems } from "../tieredSystems";
 import { shuffle, weightedChoice } from "./randomization";
 
 const DEBUG_SLICE_SCORING = false;
@@ -21,16 +20,9 @@ export function chooseRequiredSystems(
   availableSystems: SystemId[],
   { minAlphaWormholes = 0, minBetaWormholes = 0, minLegendary = 0 },
 ) {
-  const tieredSystems = getTieredSystems(availableSystems);
-
-  // Get the initial set, before promoting anything.
-  const remainingSystems: TieredSystems = shuffleTieredSystems(tieredSystems);
-  const chosenSystems = {
-    high: [],
-    med: [],
-    low: [],
-    red: [],
-  };
+  // Get the initial set, before selecting anything
+  const remainingSystems = shuffle([...availableSystems]);
+  const chosenSystems: SystemId[] = [];
 
   sampleAndPromoteSystems(
     minAlphaWormholes,
@@ -44,7 +36,6 @@ export function chooseRequiredSystems(
     chosenSystems,
     isBeta,
   );
-
   sampleAndPromoteSystems(
     minLegendary,
     remainingSystems,
@@ -52,26 +43,31 @@ export function chooseRequiredSystems(
     isLegendary,
   );
 
-  // Return shuffled version of everything.
+  // Return shuffled version of everything
   return {
-    chosenTiles: shuffleTieredSystems(chosenSystems),
-    remainingTiles: shuffleTieredSystems(remainingSystems),
+    chosenTiles: shuffle([...chosenSystems]),
+    remainingTiles: shuffle([...remainingSystems]),
   };
 }
 
 function sampleAndPromoteSystems(
   sampleCount: number,
-  remainingSystems: TieredSystems,
-  chosenSystems: TieredSystems,
+  remainingSystems: SystemId[],
+  chosenSystems: SystemId[],
   filter: (system: System) => boolean,
 ) {
-  let chosenCount = filterTieredSystems(chosenSystems, filter).length;
-  let remainingTiles = filterTieredSystems(remainingSystems, filter);
-  remainingTiles = shuffle(remainingTiles);
-  while (chosenCount < sampleCount && remainingTiles.length > 0) {
-    const system = remainingTiles.pop()!;
-    promote(system, chosenSystems, remainingSystems);
-    chosenCount += 1;
+  let chosenCount = chosenSystems.filter((id) => filter(systemData[id])).length;
+  let matchingSystems = remainingSystems.filter((id) => filter(systemData[id]));
+  matchingSystems = shuffle(matchingSystems);
+
+  while (chosenCount < sampleCount && matchingSystems.length > 0) {
+    const system = matchingSystems.pop()!;
+    const index = remainingSystems.indexOf(system);
+    if (index !== -1) {
+      remainingSystems.splice(index, 1);
+      chosenSystems.push(system);
+      chosenCount += 1;
+    }
   }
 }
 
@@ -105,28 +101,6 @@ export function filterTieredSystems(
   runForTier(tieredSystems.low);
   runForTier(tieredSystems.red);
   return matchingSystems;
-}
-
-function promote(
-  system: SystemId,
-  chosenSystems: TieredSystems,
-  remainingSystems: TieredSystems,
-) {
-  const runForTier = (
-    system: SystemId,
-    dstArray: SystemId[],
-    srcArray: SystemId[],
-  ) => {
-    const srcIdx = srcArray.indexOf(system);
-    if (srcIdx >= 0) {
-      srcArray.splice(srcIdx, 1); // remove from src
-      dstArray.unshift(system); // add to front of dst
-    }
-  };
-  runForTier(system, chosenSystems.high, remainingSystems.high);
-  runForTier(system, chosenSystems.med, remainingSystems.med);
-  runForTier(system, chosenSystems.low, remainingSystems.low);
-  runForTier(system, chosenSystems.red, remainingSystems.red);
 }
 
 /**

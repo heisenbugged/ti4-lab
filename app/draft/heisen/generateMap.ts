@@ -383,15 +383,17 @@ export function generateSlices(
       minLegendary: config.numLegendaries,
     },
   );
+  const tieredChosenTiles = getTieredSystems(chosenTiles);
+  const tieredRemainingTiles = getTieredSystems(remainingTiles);
 
   // distirbute the wormholes/legendaries in round robin fashion
   // on the slices.
   const slices: SystemIds[] = Array.from({ length: sliceCount }, () => []);
-  fillSlicesWithRequiredTiles(tieredSlices, chosenTiles, slices);
+  fillSlicesWithRequiredTiles(tieredSlices, tieredChosenTiles, slices);
 
   // fill slices with remaining tiles, respecting the 'tier' requirements
   // of the spots in each slice.
-  fillSlicesWithRemainingTiles(tieredSlices, remainingTiles, slices);
+  fillSlicesWithRemainingTiles(tieredSlices, tieredRemainingTiles, slices);
 
   // shuffle the slices
   return slices.map((slice) => shuffle(slice));
