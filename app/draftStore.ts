@@ -34,6 +34,8 @@ import {
 import { atomWithStore } from "jotai-zustand";
 import { createStore } from "zustand/vanilla";
 import { getRandomSliceNames } from "./data/sliceWords";
+import { shuffle } from "./draft/helpers/randomization";
+import { factions } from "./data/factionData";
 
 /// V2
 type DraftV2State = {
@@ -45,8 +47,6 @@ type DraftV2State = {
   draft: Draft;
 
   factionPool: FactionId[];
-  requiredFactions: FactionId[] | null;
-  allowedFactions: FactionId[] | null;
   systemPool: SystemId[];
 
   selectedPlayer?: PlayerId;
@@ -164,8 +164,6 @@ const initialState = {
   initialized: false,
   hydrated: false,
   factionPool: [],
-  requiredFactions: null,
-  allowedFactions: null,
   systemPool: [],
   planetFinderModal: undefined,
   factionSettingsModal: false,
@@ -311,17 +309,17 @@ export const draftStore = createStore<DraftV2State>()(
               .filter((s) => s.type === "BAN_FACTION")
               .map((s) => s.factionId);
 
-            // Filter the faction pool to exclude banned factions
-            const filteredPool = state.factionPool.filter(
-              (f) => !bannedFactions.includes(f),
+            const draftableFactions = getDraftableFactions(
+              state.factionPool,
+              state.draft.availableMinorFactions,
+              state.draft.settings.allowedFactions,
+              bannedFactions,
             );
 
             state.draft.availableFactions = randomizeFactions(
               state.draft.settings.numFactions,
-              filteredPool,
-              state.draft.availableMinorFactions ?? [],
-              state.requiredFactions,
-              state.allowedFactions,
+              draftableFactions,
+              state.draft.settings.requiredFactions,
             );
           }
         }),
@@ -342,16 +340,20 @@ export const draftStore = createStore<DraftV2State>()(
         requiredFactions: FactionId[],
       ) =>
         set((state) => {
-          state.requiredFactions = requiredFactions;
-          state.allowedFactions = availableFactions;
+          state.draft.settings.requiredFactions = requiredFactions;
+          state.draft.settings.allowedFactions = availableFactions;
           state.factionSettingsModal = false;
+
+          const factionPool = getDraftableFactions(
+            state.factionPool,
+            state.draft.availableMinorFactions ?? [],
+            availableFactions,
+          );
 
           state.draft.availableFactions = randomizeFactions(
             state.draft.settings.numFactions,
-            state.factionPool,
-            state.draft.availableMinorFactions ?? [],
+            factionPool,
             requiredFactions,
-            availableFactions,
           );
         }),
 
@@ -383,10 +385,12 @@ export const draftStore = createStore<DraftV2State>()(
 
           draft.availableFactions = randomizeFactions(
             settings.numFactions,
-            state.factionPool,
-            [],
-            state.requiredFactions,
-            state.allowedFactions,
+            getDraftableFactions(
+              state.factionPool,
+              null,
+              settings.allowedFactions,
+            ),
+            settings.requiredFactions,
           );
 
           const numMinorFactions = settings.numMinorFactions;
@@ -494,13 +498,15 @@ export const draftStore = createStore<DraftV2State>()(
 
       // faction actions
       randomizeFactions: () =>
-        set(({ draft, factionPool, requiredFactions, allowedFactions }) => {
+        set(({ draft, factionPool }) => {
           draft.availableFactions = randomizeFactions(
             draft.settings.numFactions,
-            factionPool,
-            draft.availableMinorFactions ?? [],
-            requiredFactions,
-            allowedFactions,
+            getDraftableFactions(
+              factionPool,
+              draft.availableMinorFactions,
+              draft.settings.allowedFactions,
+            ),
+            draft.settings.requiredFactions,
           );
         }),
 
@@ -511,7 +517,7 @@ export const draftStore = createStore<DraftV2State>()(
       addRandomFaction: () =>
         set((state) => {
           const { draft, factionPool } = state;
-          const pool = state.allowedFactions ?? factionPool;
+          const pool = state.draft.settings.allowedFactions ?? factionPool;
           const availableFactions = pool.filter(
             (f) =>
               !draft.availableFactions.includes(f) &&
@@ -777,29 +783,106 @@ export function randomizeMap(
   return map;
 }
 
+/**
+ * Returns a list of factions that can be used for a draft, considering all game settings that
+ * may restrict the pool of factions.
+ * @param fullFactionPool - The full list of factions available to the draft from the chosen game sets.
+ * @param availableMinorFactions - The list of minor factions that are chosen (thus not available for draft).
+ * @param allowedFactions - The list of factions that are allowed to be chosen. If null, all factions are allowed.
+ * @returns A list of factions that can be used for a draft.
+ */
+export function getDraftableFactions(
+  fullFactionPool: FactionId[],
+  availableMinorFactions: FactionId[] | null = null,
+  allowedFactions: FactionId[] | null = null,
+  bannedFactions: FactionId[] | null = null,
+) {
+  const toPullFrom = allowedFactions ? allowedFactions : fullFactionPool;
+  return toPullFrom.filter(
+    (f) => !availableMinorFactions?.includes(f) && !bannedFactions?.includes(f),
+  );
+}
+
 export function randomizeFactions(
   numFactions: number,
   factionPool: FactionId[],
-  availableMinorFactions: FactionId[],
-  requiredFactions: FactionId[] | null,
-  allowedFactions: FactionId[] | null,
+  requiredFactions: FactionId[] | undefined,
 ) {
   const availableFactions = [...(requiredFactions ?? [])];
   const remainingToPull = numFactions - availableFactions.length;
 
   if (remainingToPull > 0) {
-    const toPullFrom = allowedFactions ? allowedFactions : factionPool;
     availableFactions.push(
-      ...fisherYatesShuffle(
-        toPullFrom.filter(
-          (f) =>
-            !availableFactions.includes(f) &&
-            !availableMinorFactions.includes(f),
-        ),
-        remainingToPull,
-      ),
+      ...shuffle(
+        factionPool.filter((f) => !availableFactions.includes(f)),
+      ).slice(0, remainingToPull),
     );
   }
 
   return availableFactions;
 }
+
+type StratifiedConfig = {
+  [gameSets: `${string}|${string}`]: number; // Using template literal type to hint at the format
+};
+
+export function randomizeFactionsWithStratification(
+  numFactions: number,
+  factionPool: FactionId[],
+  requiredFactions: FactionId[] | null,
+  stratifiedConfig?: StratifiedConfig,
+) {
+  // Start with required factions
+  const availableFactions = [...(requiredFactions ?? [])];
+
+  // Behavior if no stratification is requested
+  if (!stratifiedConfig || !factionGameSet) {
+    const remainingToPull = numFactions - availableFactions.length;
+    if (remainingToPull > 0) {
+      availableFactions.push(
+        ...shuffle(
+          factionPool.filter((f) => !availableFactions.includes(f)),
+        ).slice(0, remainingToPull),
+      );
+    }
+    return availableFactions;
+  }
+
+  // Count how many required factions are already using up each group's quota
+  const usedQuotas = availableFactions.reduce(
+    (quotas, faction) => {
+      const groupKey = Object.keys(stratifiedConfig).find((key) =>
+        key.split("|").includes(factionGameSet(faction)),
+      );
+
+      if (groupKey) {
+        return {
+          ...quotas,
+          [groupKey]: (quotas[groupKey] || 0) + 1,
+        };
+      }
+      return quotas;
+    },
+    {} as { [key: string]: number },
+  );
+
+  // For each group, pull the remaining needed factions
+  for (const [groupKey, targetCount] of Object.entries(stratifiedConfig)) {
+    const gameSets = groupKey.split("|");
+    const currentCount = usedQuotas[groupKey] || 0;
+    const remainingNeeded = targetCount - currentCount;
+
+    if (remainingNeeded > 0) {
+      const toPullFrom = factionPool.filter(
+        (f) =>
+          gameSets.includes(factionGameSet(f)) && // Faction is from one of the game sets in this group
+          !availableFactions.includes(f),
+      );
+      availableFactions.push(...shuffle(toPullFrom).slice(0, remainingNeeded));
+    }
+  }
+
+  return availableFactions;
+}
+
+const factionGameSet = (faction: FactionId) => factions[faction].set;

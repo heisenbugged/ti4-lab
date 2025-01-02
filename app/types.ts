@@ -165,24 +165,39 @@ export type DraftSettings = {
   factionGameSets: GameSet[];
   tileGameSets: GameSet[];
   draftSpeaker: boolean;
-  allowEmptyTiles: boolean;
+
+  /** If specified, only these factions are allowed in the draft */
+  allowedFactions?: FactionId[];
+  /** If specified, these factions are required in the draft */
+  requiredFactions?: FactionId[];
+
   allowHomePlanetSearch: boolean;
   numFactions: number;
   numSlices: number;
+  /**
+   * If true, preset map tiles will be populated.
+   * Generally only turned off for minor factions variant.
+   * */
   randomizeMap: boolean;
-  randomizeSlices: boolean;
+
+  /** For faction bags. # of factions in each 'bag' */
   numPreassignedFactions?: number;
+  /** Minor factions variant. */
   numMinorFactions?: number;
+  /** If true, minor factions are in the same pool as major factions. */
   minorFactionsInSharedPool?: boolean;
   modifiers?: {
     banFactions?: {
       numFactions: number;
     };
-    anyFactionFirstPick?: boolean;
   };
   minOptimal?: number;
   maxOptimal?: number;
   draftPlayerColors?: boolean;
+
+  // Legacy settings
+  allowEmptyTiles: boolean;
+  randomizeSlices: boolean;
 };
 
 export type DiscordPlayer =

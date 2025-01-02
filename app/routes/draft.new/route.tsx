@@ -18,7 +18,7 @@ import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { draftStore, useDraft } from "~/draftStore";
 import { Draft } from "~/types";
 import { DraftInput, useCreateDraft } from "./useCreateDraft";
-import { ExportMapModal } from "./components/ExportMapModal";
+
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
@@ -34,7 +34,7 @@ import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraftSettings } from "~/hooks/useDraftSettings";
 import { notifyPick } from "~/discord/bot.server";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
-import { FactionSettingsModal } from "./components/FactionSettingsModal";
+import { ConnectedFactionSettingsModal } from "./components/ConnectedFactionSettingsModal";
 import { createDraftOrder } from "~/utils/draftOrder.server";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 
@@ -90,16 +90,6 @@ export default function DraftNew() {
 
   const advancedOptions = (
     <Stack gap="lg">
-      <SectionTitle title="Advanced Options" />
-      <Switch
-        checked={settings.draftSpeaker}
-        onChange={() => actions.setDraftSpeaker(!settings.draftSpeaker)}
-        size="md"
-        label="Draft Speaker order separately"
-        description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
-      />
-
-      <Divider mt="md" mb="md" />
       <Group gap="sm">
         <Popover shadow="md" opened={validationErrorsOpened && !draftIsValid}>
           <Popover.Target>
@@ -128,14 +118,14 @@ export default function DraftNew() {
           </Popover.Dropdown>
         </Popover>
 
-        <Button
+        {/* <Button
           onClick={openMapExport}
           variant="outline"
           size="xl"
           color="blue"
         >
           Export Map
-        </Button>
+        </Button> */}
       </Group>
     </Stack>
   );
@@ -148,15 +138,7 @@ export default function DraftNew() {
         </Box>
       )}
 
-      <FactionSettingsModal />
-
-      <ExportMapModal
-        // TODO: Implement actual map string
-        mapString=""
-        // mapString={draft.exportableMapString()}
-        opened={mapExportOpened}
-        onClose={closeMapExport}
-      />
+      <ConnectedFactionSettingsModal />
 
       <PlanetFinder />
       <Box mb="md">

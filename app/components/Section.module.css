@@ -6,7 +6,7 @@
   }
 
   @mixin light {
-    background: linear-gradient(90deg, var(--mantine-color-spaceBlue-1) 0%, #ffffff 50%);
+    background: var(--mantine-color-spaceBlue-1);
     border-bottom: 1px solid var(--mantine-color-spaceBlue-1);
   }
 }

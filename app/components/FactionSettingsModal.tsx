@@ -3,7 +3,6 @@ import { IconCheck } from "@tabler/icons-react";
 import { Fragment, useMemo, useState } from "react";
 import { SectionTitle } from "~/components/Section";
 import { factions } from "~/data/factionData";
-import { useDraft } from "~/draftStore";
 import { FactionId, GameSet } from "~/types";
 
 const gameSetLabel: Record<GameSet, string> = {
@@ -15,13 +14,29 @@ const gameSetLabel: Record<GameSet, string> = {
   unchartedstars: "Uncharted Stars",
 };
 
-export function FactionSettingsModal() {
-  const opened = useDraft((state) => state.factionSettingsModal);
-  const { closeFactionSettings, changeFactionSettings } = useDraft(
-    (state) => state.actions,
-  );
+type Props = {
+  opened: boolean;
+  factionPool: FactionId[];
+  allowedFactions: FactionId[];
+  requiredFactions: FactionId[];
+  setAllowedFactions: React.Dispatch<React.SetStateAction<FactionId[]>>;
+  setRequiredFactions: React.Dispatch<React.SetStateAction<FactionId[]>>;
+  onSave: (allowedFactions: FactionId[], requiredFactions: FactionId[]) => void;
+  onClose: () => void;
 
-  const factionPool = useDraft((state) => state.factionPool);
+  buttonText: string;
+};
+export function FactionSettingsModal({
+  factionPool,
+  opened,
+  allowedFactions,
+  requiredFactions,
+  buttonText,
+  onSave,
+  onClose,
+  setAllowedFactions,
+  setRequiredFactions,
+}: Props) {
   const sortedFactionPool = useMemo(() => {
     const grouped = factionPool.reduce(
       (acc, factionId) => {
@@ -43,15 +58,10 @@ export function FactionSettingsModal() {
     }));
   }, [factionPool]);
 
-  const [allowedFactions, setAllowedFactions] =
-    useState<FactionId[]>(factionPool);
-
-  const [requiredFactions, setRequiredFactions] = useState<FactionId[]>([]);
-
   return (
     <Modal
       opened={!!opened}
-      onClose={closeFactionSettings}
+      onClose={onClose}
       size="90%"
       title="Faction Settings"
       removeScrollProps={{ removeScrollBar: false }}
@@ -146,13 +156,14 @@ export function FactionSettingsModal() {
           justifyContent: "flex-end",
         }}
       >
+        {/* TODO: Button should say something different depending on context */}
         <Button
           leftSection={<IconCheck size={16} />}
           onMouseDown={() => {
-            changeFactionSettings(allowedFactions, requiredFactions);
+            onSave(allowedFactions, requiredFactions);
           }}
         >
-          Save and reroll
+          {buttonText}
         </Button>
       </div>
     </Modal>

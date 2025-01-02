@@ -1,5 +1,3 @@
-// Import styles of packages that you've installed.
-// All packages except `@mantine/hooks` require styles imports
 import "@mantine/core/styles.css";
 import "./main.css";
 
@@ -110,9 +108,7 @@ const mantineTheme = createTheme({
   },
   primaryColor: "purple",
   fontFamily: '"Quantico", sans-serif',
-  // fontFamily: "Orbitron",
   headings: {
-    // fontFamily: '"Quantico", sans-serif',
     fontFamily: "Orbitron",
   },
   components: {
@@ -218,7 +214,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <MantineProvider
           theme={mantineTheme}
-          defaultColorScheme="auto"
+          defaultColorScheme="dark"
           forceColorScheme={result?.forcedColorScheme ?? undefined}
         >
           <SocketProvider socket={socket}>{children}</SocketProvider>

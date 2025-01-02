@@ -42,8 +42,6 @@ export async function action({ request }: ActionFunctionArgs) {
     const availableFactions = randomizeFactions(
       settings.numFactions,
       factionPool,
-      [],
-      null,
       null,
     );
 

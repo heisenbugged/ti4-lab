@@ -87,8 +87,6 @@ export default function DraftTournament() {
       availableFactions: randomizeFactions(
         adjustedFactions,
         getFactionPool(["base", "pok"]),
-        [],
-        null,
         null,
       ),
       selections: [],

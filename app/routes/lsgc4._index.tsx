@@ -77,8 +77,6 @@ export default function LGCS4() {
       availableFactions: randomizeFactions(
         8,
         getFactionPool(["base", "pok"]),
-        [],
-        null,
         null,
       ),
       selections: [],

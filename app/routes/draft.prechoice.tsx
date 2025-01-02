@@ -28,6 +28,7 @@ import {
   GameSet,
   DemoTile,
   Draft,
+  FactionId,
 } from "~/types";
 import { useEffect, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
@@ -44,12 +45,15 @@ import { DraftType, draftConfig } from "~/draft";
 import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionCount } from "~/data/factionData";
 import {
+  IconAlienFilled,
   IconBrandDiscordFilled,
   IconChevronDown,
   IconChevronUp,
   IconFile,
+  IconFlagCog,
   IconInfoCircle,
   IconPlayerPlay,
+  IconShieldCog,
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { useDisclosure } from "@mantine/hooks";
@@ -57,6 +61,8 @@ import { hydrateDemoMap } from "~/utils/map";
 
 import "../components/draftprechoice.css";
 import { std4p } from "~/draft/std4p";
+import { FactionSettingsModal } from "~/components/FactionSettingsModal";
+import { getFactionPool } from "~/utils/factions";
 
 type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 
@@ -192,7 +198,6 @@ export default function DraftPrechoice() {
     setNumPreassignedFactions(undefined);
     setNumMinorFactions(undefined);
     setAllowEmptyMapTiles(false);
-    setRandomizeMap(true);
     setAllowHomePlanetSearch(false);
   };
 
@@ -214,20 +219,43 @@ export default function DraftPrechoice() {
 
   const [numFactions, setNumFactions] = useState(playerCount);
   const [numSlices, setNumSlices] = useState(playerCount);
-  const [randomizeSlices, setRandomizeSlices] = useState<boolean>(true);
-  const [randomizeMap, setRandomizeMap] = useState<boolean>(true);
 
   const [minOptimalTotal, setMinOptimalTotal] = useState<number>(9);
   const [maxOptimalTotal, setMaxOptimalTotal] = useState<number>(13);
 
-  const [withDiscordant, setWithDiscordant] = useState<boolean>(false);
-  const [withDiscordantExp, setWithDiscordantExp] = useState<boolean>(false);
-  const [withUnchartedStars, setWithUnchartedStars] = useState<boolean>(false);
-  const [withDrahn, setWithDrahn] = useState<boolean>(false);
-  const [excludeBaseFactions, setExcludeBaseFactions] =
-    useState<boolean>(false);
-  const [excludePokFactions, setExcludePokFactions] = useState<boolean>(false);
+  const [contentFlags, setContentFlags] = useState<ContentFlags>({
+    excludeBaseFactions: false,
+    excludePokFactions: false,
+    withDiscordant: false,
+    withDiscordantExp: false,
+    withUnchartedStars: false,
+    withDrahn: false,
+  });
+  const {
+    excludeBaseFactions,
+    excludePokFactions,
+    withDiscordant,
+    withDiscordantExp,
+    withUnchartedStars,
+    withDrahn,
+  } = contentFlags;
 
+  const setWithDiscordantExp = (v: boolean) =>
+    setContentFlags((prev) => ({ ...prev, withDiscordantExp: v }));
+
+  const setWithUnchartedStars = (v: boolean) =>
+    setContentFlags((prev) => ({ ...prev, withUnchartedStars: v }));
+
+  const setWithDrahn = (v: boolean) =>
+    setContentFlags((prev) => ({ ...prev, withDrahn: v }));
+
+  const setExcludeBaseFactions = (v: boolean) =>
+    setContentFlags((prev) => ({ ...prev, excludeBaseFactions: v }));
+
+  const setExcludePokFactions = (v: boolean) =>
+    setContentFlags((prev) => ({ ...prev, excludePokFactions: v }));
+
+  const [draftSpeaker, setDraftSpeaker] = useState<boolean>(false);
   const [banFactions, setBanFactions] = useState<boolean>(false);
 
   const [numPreassignedFactions, setNumPreassignedFactions] = useState<
@@ -242,6 +270,57 @@ export default function DraftPrechoice() {
   const [minorFactionsInSharedPool, setMinorFactionsInSharedPool] =
     useState<boolean>(false);
 
+  const tileGameSets = getTileSetsFromFlags(contentFlags);
+  const factionGameSets = getFactionGameSetsFromFlags(contentFlags);
+
+  const maxFactionCount = getFactionCount(factionGameSets);
+  const maxPreassigned = Math.floor(maxFactionCount / playerCount);
+  const minNumFactions = minorFactionsInSharedPool
+    ? playerCount * 2
+    : playerCount;
+
+  const maxNumFactions = maxFactionCount - (numMinorFactions ?? 0);
+
+  useEffect(() => {
+    if (numFactions > maxFactionCount) {
+      setNumFactions(maxFactionCount);
+    }
+  }, [maxFactionCount]);
+
+  const [allowedFactions, setAllowedFactions] = useState<FactionId[]>([]);
+  const [requiredFactions, setRequiredFactions] = useState<FactionId[]>([]);
+  const handleOpenFactionSettings = () => {
+    if (allowedFactions.length === 0) {
+      setAllowedFactions(getFactionPool(factionGameSets));
+    }
+    setRequiredFactions([]);
+    openFactionSettings();
+  };
+
+  const handleToggleDiscordantStars = () => {
+    const newWithDiscordantValue = !withDiscordant;
+    const newContentFlags = {
+      ...contentFlags,
+      withDiscordant: newWithDiscordantValue,
+      withDiscordantExp: newWithDiscordantValue,
+      withUnchartedStars: newWithDiscordantValue,
+    };
+
+    // if turning off discordant, remove base and pok overrides
+    if (!newWithDiscordantValue) {
+      newContentFlags.excludeBaseFactions = false;
+      newContentFlags.excludePokFactions = false;
+    }
+
+    setContentFlags(newContentFlags);
+  };
+
+  // reset allowed and required factions when content flags change
+  useEffect(() => {
+    setAllowedFactions([]);
+    setRequiredFactions([]);
+  }, [contentFlags]);
+
   const handleToggleMinorFactions = () => {
     // toggling to true
     if (!minorFactionsEnabled) {
@@ -249,14 +328,12 @@ export default function DraftPrechoice() {
       setMinorFactionsInSharedPool(false);
       setNumMinorFactions(playerCount);
       setAllowEmptyMapTiles(true);
-      setRandomizeMap(false);
     } else {
       // toggling to false
       setMinorFactionsEnabled(false);
       setMinorFactionsInSharedPool(false);
       setNumMinorFactions(undefined);
       setAllowEmptyMapTiles(false);
-      setRandomizeMap(true);
     }
   };
 
@@ -345,37 +422,7 @@ export default function DraftPrechoice() {
     resetSelectedMap(numPlayers);
   };
 
-  const tileGameSets: GameSet[] = ["base", "pok"];
-  if (withDiscordant) tileGameSets.push("discordant");
-  if (withDiscordantExp) tileGameSets.push("discordantexp");
-  if (withUnchartedStars) tileGameSets.push("unchartedstars");
-
-  const factionGameSets: GameSet[] = [];
-  if (!excludeBaseFactions) factionGameSets.push("base");
-  if (!excludePokFactions) factionGameSets.push("pok");
-  if (withDiscordant) factionGameSets.push("discordant");
-  if (withDiscordantExp) factionGameSets.push("discordantexp");
-  if (withDrahn) factionGameSets.push("drahn");
-
-  const maxFactionCount = getFactionCount(factionGameSets);
-  const maxPreassigned = Math.floor(maxFactionCount / playerCount);
-  const minNumFactions = minorFactionsInSharedPool
-    ? playerCount * 2
-    : playerCount;
-
-  const maxNumFactions = maxFactionCount - (numMinorFactions ?? 0);
-
-  useEffect(() => {
-    if (numFactions > maxFactionCount) {
-      setNumFactions(maxFactionCount);
-    }
-  }, [maxFactionCount]);
-
   const mapType = hoveredMapType ?? selectedMapType;
-  const config = selectedMapType ? draftConfig[selectedMapType] : undefined;
-  const showRandomizeMapTiles = config
-    ? config.modifiableMapTiles.length > 0
-    : true;
 
   const handleChangeName = (playerIdx: number, name: string) => {
     setPlayers((players) =>
@@ -385,15 +432,16 @@ export default function DraftPrechoice() {
     );
   };
   const handleContinue = () => {
+    const customizedFactions = allowedFactions.length > 0;
     const draftSettings: DraftSettings = {
       factionGameSets,
       tileGameSets,
       type: selectedMapType,
       numFactions: Number(numFactions),
       numSlices: Number(numSlices),
-      randomizeSlices,
-      randomizeMap,
-      draftSpeaker: config?.type === "heisen",
+      randomizeSlices: true,
+      randomizeMap: !minorFactionsEnabled,
+      draftSpeaker,
       allowHomePlanetSearch,
       allowEmptyTiles: allowEmptyMapTiles,
       numPreassignedFactions,
@@ -401,6 +449,8 @@ export default function DraftPrechoice() {
       maxOptimal: maxOptimalTotal,
       draftPlayerColors,
       modifiers: banFactions ? { banFactions: { numFactions: 1 } } : undefined,
+      allowedFactions: customizedFactions ? allowedFactions : undefined,
+      requiredFactions: customizedFactions ? requiredFactions : undefined,
     };
 
     // both cannot be set at the same time
@@ -446,6 +496,12 @@ export default function DraftPrechoice() {
 
   const [savedStateOpened, { open: openSavedState, close: closeSavedState }] =
     useDisclosure(false);
+
+  const [
+    factionSettingsOpened,
+    { open: openFactionSettings, close: closeFactionSettings },
+  ] = useDisclosure(false);
+
   const [savedStateJson, setSavedStateJson] = useState("");
 
   const handleContinueFromSavedState = () => {
@@ -469,6 +525,18 @@ export default function DraftPrechoice() {
 
   return (
     <Grid mt="lg">
+      <FactionSettingsModal
+        buttonText="Save"
+        opened={factionSettingsOpened}
+        onClose={closeFactionSettings}
+        factionPool={getFactionPool(factionGameSets)}
+        onSave={closeFactionSettings}
+        allowedFactions={allowedFactions}
+        requiredFactions={requiredFactions}
+        setAllowedFactions={setAllowedFactions}
+        setRequiredFactions={setRequiredFactions}
+      />
+
       <Modal
         opened={savedStateOpened}
         onClose={closeSavedState}
@@ -694,6 +762,16 @@ export default function DraftPrechoice() {
               </Box>
             </Input.Wrapper>
 
+            <Button
+              variant="outline"
+              color="orange"
+              w="fit-content"
+              rightSection={<IconAlienFilled />}
+              onMouseDown={handleOpenFactionSettings}
+            >
+              Configure faction pool
+            </Button>
+
             {mapType === "miltyeq" && (
               <Group>
                 <Switch
@@ -750,60 +828,12 @@ export default function DraftPrechoice() {
                 />
               </Box>
             </Input.Wrapper>
-
-            <Stack>
-              <Checkbox
-                label="Discordant Stars"
-                checked={withDiscordant}
-                onChange={() => {
-                  // if switching from OFF to ON, we also switch the others on by default
-                  if (!withDiscordant) {
-                    setWithDiscordantExp(true);
-                    setWithUnchartedStars(true);
-                  }
-                  setWithDiscordant((v) => !v);
-                }}
-              />
-              {withDiscordant && (
-                <Group mx="lg">
-                  <Checkbox
-                    label="Base factions"
-                    checked={!excludeBaseFactions}
-                    onChange={() => setExcludeBaseFactions((v) => !v)}
-                  />
-
-                  <Checkbox
-                    label="POK factions"
-                    checked={!excludePokFactions}
-                    onChange={() => setExcludePokFactions((v) => !v)}
-                  />
-                  <Checkbox
-                    label="(+10 factions)"
-                    checked={withDiscordantExp}
-                    onChange={() => setWithDiscordantExp((v) => !v)}
-                  />
-
-                  <Checkbox
-                    label="Uncharted Stars"
-                    checked={withUnchartedStars}
-                    onChange={() => setWithUnchartedStars((v) => !v)}
-                  />
-                </Group>
-              )}
-            </Stack>
           </Stack>
-
-          <Checkbox
-            label="Drahn"
-            checked={withDrahn}
-            onChange={() => {
-              setWithDrahn((v) => !v);
-            }}
-          />
 
           <Group>
             <Switch
               label="Multidraft"
+              description="Will create multiple drafts with the same settings, with a link to view them all on one page."
               checked={isMultidraft}
               onChange={(event) => setIsMultidraft(event.currentTarget.checked)}
             />
@@ -821,6 +851,39 @@ export default function DraftPrechoice() {
               </Input.Wrapper>
             )}
           </Group>
+
+          <Stack>
+            <Checkbox
+              label="Discordant Stars"
+              checked={withDiscordant}
+              onChange={handleToggleDiscordantStars}
+            />
+            {withDiscordant && (
+              <Group mx="lg">
+                <Checkbox
+                  label="Base factions"
+                  checked={!excludeBaseFactions}
+                  onChange={() => setExcludeBaseFactions(!excludeBaseFactions)}
+                />
+                <Checkbox
+                  label="POK factions"
+                  checked={!excludePokFactions}
+                  onChange={() => setExcludePokFactions(!excludePokFactions)}
+                />
+                <Checkbox
+                  label="(+10 factions)"
+                  checked={withDiscordantExp}
+                  onChange={() => setWithDiscordantExp(!withDiscordantExp)}
+                />
+
+                <Checkbox
+                  label="Uncharted Stars"
+                  checked={withUnchartedStars}
+                  onChange={() => setWithUnchartedStars(!withUnchartedStars)}
+                />
+              </Group>
+            )}
+          </Stack>
 
           <Box mt="md">
             <Button
@@ -872,7 +935,14 @@ export default function DraftPrechoice() {
               )}
 
               <Switch
-                label="Faction Ban Phase"
+                checked={draftSpeaker}
+                onChange={() => setDraftSpeaker((v) => !v)}
+                label="Draft speaker order separately"
+                description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
+              />
+
+              <Switch
+                label="Faction ban phase"
                 description="When draft starts, players will ban one faction each. The tool then rolls the remaining factions."
                 checked={banFactions}
                 onChange={() => setBanFactions((v) => !v)}
@@ -881,7 +951,7 @@ export default function DraftPrechoice() {
 
               <Group>
                 <Switch
-                  label="Faction Bags"
+                  label="Faction bags"
                   description="If turned on, will pre-assign a 'bag' of # factions to each player. A player then chooses a faction only from their assigned 'bag' during the draft."
                   checked={Number(numPreassignedFactions) > 0}
                   onChange={handleTogglePreassignedFactions}
@@ -900,41 +970,24 @@ export default function DraftPrechoice() {
               </Group>
 
               <Switch
-                label="Allow search of home planets"
-                description="Useful if running minor factions. Will allow you to put home planets on the board with no/minimal restrictions"
-                checked={allowHomePlanetSearch}
-                onChange={() => setAllowHomePlanetSearch((v) => !v)}
-              />
-
-              <Switch
-                label="Allow empty map tiles"
-                description="Will allow starting a draft even if not every tile is filled"
-                checked={allowEmptyMapTiles}
-                onChange={() => setAllowEmptyMapTiles((v) => !v)}
-                disabled={!!minorFactionsEnabled}
-              />
-
-              <Switch
-                label="Randomize slices"
-                description="Prepopulate the slices with random systems. Setting can be changed during draft building. All slices are manually editable."
-                checked={randomizeSlices}
-                onChange={() => setRandomizeSlices((v) => !v)}
-              />
-
-              <Switch
-                label="Randomize Map Tiles"
-                description="Prepopulate the map with random systems. All map systems are manually editable."
-                checked={randomizeMap}
-                onChange={() => setRandomizeMap((v) => !v)}
-                disabled={
-                  !showRandomizeMapTiles || numMinorFactions !== undefined
-                }
-              />
-              <Switch
-                label="Draft Player Colors"
+                label="Draft player colors"
                 description="Allows players to choose their in-game color via final round of draft."
                 checked={draftPlayerColors}
                 onChange={() => setDraftPlayerColors((v) => !v)}
+              />
+
+              <Switch
+                label="Allow home planets on map"
+                description="Will allow you to put home planets on the board with no/minimal restrictions"
+                checked={allowHomePlanetSearch}
+                onChange={() => setAllowHomePlanetSearch((v) => !v)}
+              />
+              <Checkbox
+                label="Drahn"
+                checked={withDrahn}
+                onChange={() => {
+                  setWithDrahn(!withDrahn);
+                }}
               />
             </Stack>
           </Collapse>
@@ -984,4 +1037,42 @@ export const loader = async (args: LoaderFunctionArgs) => {
   }
 
   return { discordData, discordOauthUrl: env.discordOauthUrl };
+};
+
+type ContentFlags = {
+  excludeBaseFactions: boolean;
+  excludePokFactions: boolean;
+  withDiscordant: boolean;
+  withDiscordantExp: boolean;
+  withDrahn: boolean;
+  withUnchartedStars: boolean;
+};
+
+const getTileSetsFromFlags = ({
+  withDiscordant,
+  withDiscordantExp,
+  withUnchartedStars,
+}: ContentFlags) => {
+  const tileGameSets: GameSet[] = ["base", "pok"];
+  if (withDiscordant) tileGameSets.push("discordant");
+  if (withDiscordantExp) tileGameSets.push("discordantexp");
+  if (withUnchartedStars) tileGameSets.push("unchartedstars");
+
+  return tileGameSets;
+};
+
+const getFactionGameSetsFromFlags = ({
+  excludeBaseFactions,
+  excludePokFactions,
+  withDiscordant,
+  withDiscordantExp,
+  withDrahn,
+}: ContentFlags) => {
+  const factionGameSets: GameSet[] = [];
+  if (!excludeBaseFactions) factionGameSets.push("base");
+  if (!excludePokFactions) factionGameSets.push("pok");
+  if (withDiscordant) factionGameSets.push("discordant");
+  if (withDiscordantExp) factionGameSets.push("discordantexp");
+  if (withDrahn) factionGameSets.push("drahn");
+  return factionGameSets;
 };
