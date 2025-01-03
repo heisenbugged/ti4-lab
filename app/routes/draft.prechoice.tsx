@@ -29,6 +29,7 @@ import {
   DemoTile,
   Draft,
   FactionId,
+  FactionStratification,
 } from "~/types";
 import { useEffect, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
@@ -63,6 +64,7 @@ import "../components/draftprechoice.css";
 import { std4p } from "~/draft/std4p";
 import { FactionSettingsModal } from "~/components/FactionSettingsModal";
 import { getFactionPool } from "~/utils/factions";
+import { notifications } from "@mantine/notifications";
 
 type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 
@@ -278,23 +280,57 @@ export default function DraftPrechoice() {
   const minNumFactions = minorFactionsInSharedPool
     ? playerCount * 2
     : playerCount;
-
   const maxNumFactions = maxFactionCount - (numMinorFactions ?? 0);
+
+  const handleChangeNumFactions = (num: number) => {
+    if (stratifiedConfig !== undefined) {
+      notifications.show({
+        message: "Faction stratification was reset.",
+        color: "blue",
+      });
+      setStratifiedConfig(undefined);
+    }
+    setNumFactions(num);
+  };
 
   useEffect(() => {
     if (numFactions > maxFactionCount) {
-      setNumFactions(maxFactionCount);
+      handleChangeNumFactions(maxFactionCount);
     }
   }, [maxFactionCount]);
 
-  const [allowedFactions, setAllowedFactions] = useState<FactionId[]>([]);
-  const [requiredFactions, setRequiredFactions] = useState<FactionId[]>([]);
-  const handleOpenFactionSettings = () => {
-    if (allowedFactions.length === 0) {
-      setAllowedFactions(getFactionPool(factionGameSets));
+  const [allowedFactions, setAllowedFactions] = useState<
+    FactionId[] | undefined
+  >(undefined);
+  const [requiredFactions, setRequiredFactions] = useState<
+    FactionId[] | undefined
+  >(undefined);
+  const [stratifiedConfig, setStratifiedConfig] = useState<
+    FactionStratification | undefined
+  >(undefined);
+
+  const handleSaveFactionSettings = (
+    allowedFactions: FactionId[],
+    requiredFactions: FactionId[],
+    stratifiedConfig: FactionStratification | undefined,
+  ) => {
+    setAllowedFactions(allowedFactions);
+    setRequiredFactions(requiredFactions);
+    setStratifiedConfig(stratifiedConfig);
+
+    const numStratifiedFactions = Object.values(stratifiedConfig ?? {}).reduce(
+      (acc, curr) => acc + curr,
+      0,
+    );
+    if (numStratifiedFactions > 0) {
+      setNumFactions(numStratifiedFactions);
+    } else {
+      setNumFactions(
+        Math.max(numFactions, playerCount, requiredFactions?.length ?? 0),
+      );
     }
-    setRequiredFactions([]);
-    openFactionSettings();
+
+    closeFactionSettings();
   };
 
   const handleToggleDiscordantStars = () => {
@@ -317,8 +353,8 @@ export default function DraftPrechoice() {
 
   // reset allowed and required factions when content flags change
   useEffect(() => {
-    setAllowedFactions([]);
-    setRequiredFactions([]);
+    setAllowedFactions(undefined);
+    setRequiredFactions(undefined);
   }, [contentFlags]);
 
   const handleToggleMinorFactions = () => {
@@ -340,7 +376,7 @@ export default function DraftPrechoice() {
   const handleToggleMinorFactionsInSharedPool = () => {
     // if toggling to true, we need at least 2*player count in factions
     if (minorFactionsInSharedPool === false) {
-      setNumFactions(playerCount * 2);
+      handleChangeNumFactions(playerCount * 2);
       setNumMinorFactions(undefined);
       setMinorFactionsInSharedPool(true);
     } else {
@@ -368,7 +404,7 @@ export default function DraftPrechoice() {
       handleIncreasePreassignedFactions(2);
     } else {
       setNumPreassignedFactions(undefined);
-      setNumFactions(playerCount);
+      handleChangeNumFactions(playerCount);
     }
   };
 
@@ -379,7 +415,7 @@ export default function DraftPrechoice() {
         : num;
 
     setNumPreassignedFactions(preassignedNo);
-    setNumFactions(preassignedNo * playerCount);
+    handleChangeNumFactions(preassignedNo * playerCount);
   };
 
   const handleDecreasePreassignedFactions = (num = 1) => {
@@ -388,7 +424,7 @@ export default function DraftPrechoice() {
         ? Number(numPreassignedFactions) - num
         : num;
     setNumPreassignedFactions(preassignedNo);
-    setNumFactions(preassignedNo * playerCount);
+    handleChangeNumFactions(preassignedNo * playerCount);
   };
 
   const resetSelectedMap = (numPlayers: number) => {
@@ -411,7 +447,7 @@ export default function DraftPrechoice() {
     ]);
 
     const numPlayers = players.length + 1;
-    if (numFactions < numPlayers) setNumFactions(numPlayers);
+    if (numFactions < numPlayers) handleChangeNumFactions(numPlayers);
     if (numSlices < numPlayers) setNumSlices(numPlayers);
     resetSelectedMap(numPlayers);
   };
@@ -432,7 +468,6 @@ export default function DraftPrechoice() {
     );
   };
   const handleContinue = () => {
-    const customizedFactions = allowedFactions.length > 0;
     const draftSettings: DraftSettings = {
       factionGameSets,
       tileGameSets,
@@ -449,8 +484,9 @@ export default function DraftPrechoice() {
       maxOptimal: maxOptimalTotal,
       draftPlayerColors,
       modifiers: banFactions ? { banFactions: { numFactions: 1 } } : undefined,
-      allowedFactions: customizedFactions ? allowedFactions : undefined,
-      requiredFactions: customizedFactions ? requiredFactions : undefined,
+      allowedFactions: allowedFactions,
+      requiredFactions: requiredFactions,
+      factionStratification: stratifiedConfig,
     };
 
     // both cannot be set at the same time
@@ -528,13 +564,14 @@ export default function DraftPrechoice() {
       <FactionSettingsModal
         buttonText="Save"
         opened={factionSettingsOpened}
-        onClose={closeFactionSettings}
+        numPlayers={players.length}
         factionPool={getFactionPool(factionGameSets)}
-        onSave={closeFactionSettings}
-        allowedFactions={allowedFactions}
-        requiredFactions={requiredFactions}
-        setAllowedFactions={setAllowedFactions}
-        setRequiredFactions={setRequiredFactions}
+        factionGameSets={factionGameSets}
+        savedAllowedFactions={allowedFactions}
+        savedRequiredFactions={requiredFactions}
+        savedStratifiedConfig={stratifiedConfig}
+        onClose={closeFactionSettings}
+        onSave={handleSaveFactionSettings}
       />
 
       <Modal
@@ -749,8 +786,8 @@ export default function DraftPrechoice() {
               <Box mt="xs">
                 <NumberStepper
                   value={numFactions}
-                  decrease={() => setNumFactions((v) => v - 1)}
-                  increase={() => setNumFactions((v) => v + 1)}
+                  decrease={() => handleChangeNumFactions(numFactions - 1)}
+                  increase={() => handleChangeNumFactions(numFactions + 1)}
                   decreaseDisabled={
                     !!numPreassignedFactions || numFactions <= minNumFactions
                   }
@@ -767,7 +804,7 @@ export default function DraftPrechoice() {
               color="orange"
               w="fit-content"
               rightSection={<IconAlienFilled />}
-              onMouseDown={handleOpenFactionSettings}
+              onMouseDown={openFactionSettings}
             >
               Configure faction pool
             </Button>

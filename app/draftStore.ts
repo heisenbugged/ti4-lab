@@ -11,6 +11,7 @@ import {
   System,
   SystemId,
   InGameColor,
+  FactionStratification,
 } from "./types";
 import { generateEmptyMap } from "./utils/map";
 import { fisherYatesShuffle } from "./stats";
@@ -36,6 +37,7 @@ import { createStore } from "zustand/vanilla";
 import { getRandomSliceNames } from "./data/sliceWords";
 import { shuffle } from "./draft/helpers/randomization";
 import { factions } from "./data/factionData";
+import { notifications } from "@mantine/notifications";
 
 /// V2
 type DraftV2State = {
@@ -92,6 +94,7 @@ type DraftV2State = {
     changeFactionSettings: (
       availableFactions: FactionId[],
       requiredFactions: FactionId[],
+      stratifiedConfig: FactionStratification | undefined,
     ) => void;
 
     // faction actions
@@ -320,6 +323,7 @@ export const draftStore = createStore<DraftV2State>()(
               state.draft.settings.numFactions,
               draftableFactions,
               state.draft.settings.requiredFactions,
+              state.draft.settings.factionStratification,
             );
           }
         }),
@@ -338,11 +342,23 @@ export const draftStore = createStore<DraftV2State>()(
       changeFactionSettings: (
         availableFactions: FactionId[],
         requiredFactions: FactionId[],
+        stratifiedConfig: FactionStratification | undefined,
       ) =>
         set((state) => {
-          state.draft.settings.requiredFactions = requiredFactions;
-          state.draft.settings.allowedFactions = availableFactions;
-          state.factionSettingsModal = false;
+          let numFactions = Math.max(
+            state.draft.settings.numFactions,
+            requiredFactions.length,
+            state.draft.players.length,
+          );
+
+          // override numFactions if stratifiedConfig is defined
+          const numStratifiedFactions = Object.values(
+            stratifiedConfig ?? {},
+          ).reduce((acc, curr) => acc + curr, 0);
+
+          if (numStratifiedFactions > 0) {
+            numFactions = numStratifiedFactions;
+          }
 
           const factionPool = getDraftableFactions(
             state.factionPool,
@@ -350,10 +366,16 @@ export const draftStore = createStore<DraftV2State>()(
             availableFactions,
           );
 
+          state.factionSettingsModal = false;
+          state.draft.settings.numFactions = numFactions;
+          state.draft.settings.requiredFactions = requiredFactions;
+          state.draft.settings.allowedFactions = availableFactions;
+          state.draft.settings.factionStratification = stratifiedConfig;
           state.draft.availableFactions = randomizeFactions(
-            state.draft.settings.numFactions,
+            numFactions,
             factionPool,
             requiredFactions,
+            stratifiedConfig,
           );
         }),
 
@@ -391,6 +413,7 @@ export const draftStore = createStore<DraftV2State>()(
               settings.allowedFactions,
             ),
             settings.requiredFactions,
+            settings.factionStratification,
           );
 
           const numMinorFactions = settings.numMinorFactions;
@@ -507,6 +530,7 @@ export const draftStore = createStore<DraftV2State>()(
               draft.settings.allowedFactions,
             ),
             draft.settings.requiredFactions,
+            draft.settings.factionStratification,
           );
         }),
 
@@ -516,6 +540,14 @@ export const draftStore = createStore<DraftV2State>()(
         }),
       addRandomFaction: () =>
         set((state) => {
+          if (state.draft.settings.factionStratification) {
+            notifications.show({
+              message: "Faction stratification was reset.",
+              color: "blue",
+            });
+            state.draft.settings.factionStratification = undefined;
+          }
+
           const { draft, factionPool } = state;
           const pool = state.draft.settings.allowedFactions ?? factionPool;
           const availableFactions = pool.filter(
@@ -530,6 +562,14 @@ export const draftStore = createStore<DraftV2State>()(
 
       removeLastFaction: () =>
         set(({ draft }) => {
+          if (draft.settings.factionStratification) {
+            notifications.show({
+              message: "Faction stratification was reset.",
+              color: "blue",
+            });
+            draft.settings.factionStratification = undefined;
+          }
+
           const availableFactions = draft.availableFactions.slice(0, -1);
           draft.settings.numFactions = availableFactions.length;
           draft.availableFactions = availableFactions;
@@ -537,6 +577,15 @@ export const draftStore = createStore<DraftV2State>()(
 
       removeFaction: (id: FactionId) =>
         set(({ draft }) => {
+          let confirmation = true;
+          if (draft.settings.factionStratification) {
+            notifications.show({
+              message: "Faction stratification was reset.",
+              color: "blue",
+            });
+            draft.settings.factionStratification = undefined;
+          }
+
           draft.settings.numFactions = draft.availableFactions.length - 1;
           draft.availableFactions = draft.availableFactions.filter(
             (f) => f !== id,
@@ -807,30 +856,7 @@ export function randomizeFactions(
   numFactions: number,
   factionPool: FactionId[],
   requiredFactions: FactionId[] | undefined,
-) {
-  const availableFactions = [...(requiredFactions ?? [])];
-  const remainingToPull = numFactions - availableFactions.length;
-
-  if (remainingToPull > 0) {
-    availableFactions.push(
-      ...shuffle(
-        factionPool.filter((f) => !availableFactions.includes(f)),
-      ).slice(0, remainingToPull),
-    );
-  }
-
-  return availableFactions;
-}
-
-type StratifiedConfig = {
-  [gameSets: `${string}|${string}`]: number; // Using template literal type to hint at the format
-};
-
-export function randomizeFactionsWithStratification(
-  numFactions: number,
-  factionPool: FactionId[],
-  requiredFactions: FactionId[] | null,
-  stratifiedConfig?: StratifiedConfig,
+  stratifiedConfig?: FactionStratification,
 ) {
   // Start with required factions
   const availableFactions = [...(requiredFactions ?? [])];
@@ -882,7 +908,7 @@ export function randomizeFactionsWithStratification(
     }
   }
 
-  return availableFactions;
+  return availableFactions.slice(0, numFactions);
 }
 
 const factionGameSet = (faction: FactionId) => factions[faction].set;

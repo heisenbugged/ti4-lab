@@ -1,4 +1,5 @@
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 import "./main.css";
 
 import {
@@ -20,6 +21,7 @@ import type { Socket } from "socket.io-client";
 import io from "socket.io-client";
 import { SocketProvider } from "./socketContext";
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { Notifications } from "@mantine/notifications";
 
 const mantineTheme = createTheme({
   colors: {
@@ -217,6 +219,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           defaultColorScheme="dark"
           forceColorScheme={result?.forcedColorScheme ?? undefined}
         >
+          <Notifications />
           <SocketProvider socket={socket}>{children}</SocketProvider>
         </MantineProvider>
         <ScrollRestoration />

@@ -16,7 +16,7 @@ export function NumberStepper({
   increaseDisabled,
 }: Props) {
   return (
-    <Group gap={value ? "sm" : 2}>
+    <Group gap={value !== undefined ? "sm" : 2}>
       <Button
         size="compact-md"
         color="red"
@@ -26,7 +26,7 @@ export function NumberStepper({
       >
         -
       </Button>
-      {value ? <Text>{value}</Text> : undefined}
+      {value !== undefined ? <Text>{value}</Text> : undefined}
       <Button
         size="compact-md"
         color="green"

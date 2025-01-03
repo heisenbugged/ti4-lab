@@ -159,7 +159,12 @@ export type SystemIds = SystemId[];
 export type SystemId = string;
 export type PlayerId = number;
 
-/// V2
+/// V
+export type FactionStratification = {
+  ["base|pok"]?: number;
+  ["discordant|discordantexp"]?: number;
+};
+
 export type DraftSettings = {
   type: DraftType;
   factionGameSets: GameSet[];
@@ -170,6 +175,7 @@ export type DraftSettings = {
   allowedFactions?: FactionId[];
   /** If specified, these factions are required in the draft */
   requiredFactions?: FactionId[];
+  factionStratification?: FactionStratification;
 
   allowHomePlanetSearch: boolean;
   numFactions: number;
