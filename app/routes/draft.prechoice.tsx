@@ -621,7 +621,7 @@ export default function DraftPrechoice() {
         title={
           <Group>
             <IconBrandDiscordFilled />
-            <Text>Integrate with Discord (BETA)</Text>
+            <Text>Integrate with Discord</Text>
           </Group>
         }
       >
@@ -655,7 +655,7 @@ export default function DraftPrechoice() {
             }
           />
           <Stepper.Step
-            label="Start a draft via /startdraft"
+            label="Start a draft via /labdraft"
             description={<Image src="/discorddraft.png" />}
           ></Stepper.Step>
           <Stepper.Step
@@ -1055,7 +1055,7 @@ export default function DraftPrechoice() {
                 leftSection={<IconBrandDiscordFilled />}
                 onMouseDown={openDiscord}
               >
-                Integrate with Discord (BETA)
+                Integrate with Discord
               </Button>
             )}
           </Group>
