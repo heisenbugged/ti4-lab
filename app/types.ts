@@ -142,6 +142,7 @@ export type SystemStats = {
   redTraits: number;
   greenTraits: number;
   blueTraits: number;
+  totalLegendary: number;
 };
 
 export type MapStats = {

@@ -32,6 +32,10 @@ export function systemStats(system: System): SystemStats {
         stats[traitCount[p.trait]]++;
       }
 
+      if (p.legendary) {
+        stats.totalLegendary++;
+      }
+
       return stats;
     },
     {
@@ -42,6 +46,7 @@ export function systemStats(system: System): SystemStats {
       redTraits: 0,
       greenTraits: 0,
       blueTraits: 0,
+      totalLegendary: 0,
     },
   );
 }

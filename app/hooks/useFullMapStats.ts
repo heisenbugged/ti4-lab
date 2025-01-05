@@ -26,6 +26,7 @@ export function calculateMapStats(slices: SystemIds[], presetMap: Map) {
       acc.redTraits += s.redTraits;
       acc.greenTraits += s.greenTraits;
       acc.blueTraits += s.blueTraits;
+      acc.totalLegendary += s.totalLegendary;
 
       if (s.systemType === "RED") {
         acc.redTiles++;
@@ -41,6 +42,7 @@ export function calculateMapStats(slices: SystemIds[], presetMap: Map) {
       totalResources: 0,
       totalInfluence: 0,
       totalTech: [] as string[],
+      totalLegendary: 0,
       redTraits: 0,
       greenTraits: 0,
       blueTraits: 0,

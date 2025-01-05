@@ -97,7 +97,7 @@ const validateMap = (config: DraftConfig, map: Map, slices: SystemIds[]) => {
 
   const stats = calculateMapStats(slicesToValidate, map);
 
-  return stats.redTiles >= 11;
+  return stats.redTiles >= 11 && stats.totalLegendary <= 3;
 };
 
 export const generateSlices = (

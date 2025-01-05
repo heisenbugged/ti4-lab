@@ -16,6 +16,7 @@ import {
 import { PlanetTrait, SystemIds, SystemId, DraftSettings } from "~/types";
 import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
+import { calculateMapStats } from "~/hooks/useFullMapStats";
 
 const MAP_WORMHOLES = [
   { weight: 1, value: { numAlphas: 3, numBetas: 3 } },
@@ -262,11 +263,14 @@ export function generateMap(
     const minTotalSpend = Math.min(...totalSpends);
     const maxTotalSpend = Math.max(...totalSpends);
 
+    const mapStats = calculateMapStats(slices, map);
+
     if (
       minTotalSpend < 4 ||
       maxTotalSpend > 9 ||
       minPlanets < 2 ||
-      maxPlanets > 5
+      maxPlanets > 5 ||
+      (config.type === "heisen" && mapStats.totalLegendary > 3)
     ) {
       return generateMap(settings, systemPool, attempts + 1);
     }
