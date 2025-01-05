@@ -14,6 +14,7 @@ import {
   IconSun,
   IconBrandGithub,
   IconMail,
+  IconBrandPatreon,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
@@ -100,6 +101,16 @@ function About() {
                 href="mailto:james@thestrongfamily.org"
               >
                 Contact Me
+              </Button>
+              <Button
+                leftSection={<IconBrandPatreon size={18} />}
+                component="a"
+                href="https://patreon.com/TI4Lab"
+                target="_blank"
+                variant="filled"
+                color="pink"
+              >
+                Patreon
               </Button>
             </Group>
           </Grid.Col>
