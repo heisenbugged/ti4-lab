@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Peace & War Audio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    <style>
+        .button {
+            padding: 20px 40px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button class="button" onclick="playPeace()">Peace</button>
+    <button class="button" onclick="playWar()">War</button>
+
+    <script>
+        let peaceSound = new Howl({
+            src: ['peace.mp3'],
+            volume: 1
+        });
+
+        let warSound = new Howl({
+            src: ['war.mp3'],
+            volume: 0
+        });
+
+        let currentSound = null;
+        let peacePausedAt = 0;
+        const FADE_DURATION = 4000; // 4 seconds crossfade
+
+        function playPeace() {
+            if (currentSound === peaceSound) return;
+
+            if (currentSound === warSound) {
+                warSound.fade(1, 0, FADE_DURATION);
+                setTimeout(() => warSound.stop(), FADE_DURATION);
+            }
+
+            peaceSound.volume(0);
+            peaceSound.seek(peacePausedAt);
+            peaceSound.play();
+            peaceSound.fade(0, 1, FADE_DURATION);
+            currentSound = peaceSound;
+        }
+
+        function playWar() {
+            if (currentSound === warSound) return;
+
+            if (currentSound === peaceSound) {
+                peacePausedAt = peaceSound.seek();
+                peaceSound.fade(1, 0, FADE_DURATION);
+                setTimeout(() => peaceSound.stop(), FADE_DURATION);
+            }
+
+            warSound.volume(0);
+            warSound.seek(5); // Always start at 5 seconds
+            warSound.play();
+            warSound.fade(0, 1, FADE_DURATION);
+            currentSound = warSound;
+        }
+    </script>
+</body>
+</html>
