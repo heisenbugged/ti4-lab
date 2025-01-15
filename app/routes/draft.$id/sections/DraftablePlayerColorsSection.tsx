@@ -28,13 +28,10 @@ export function DraftablePlayerColorsSection() {
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const selections = useDraft((state) => state.draft.selections);
   const remainingPicks = pickOrder.length - selections.length;
-  const inFinalRound = remainingPicks <= hydratedPlayers.length;
 
   const { syncDraft } = useSyncDraft();
   const canSelect =
-    inFinalRound &&
-    currentlyPicking &&
-    activePlayer?.factionColor === undefined;
+    currentlyPicking && activePlayer?.factionColor === undefined;
 
   if (!draftPlayerColors) return null;
   return (
