@@ -58,6 +58,8 @@ export default function DraftTournament() {
   const numFactions = searchParams.get("numFactions") ?? 8;
   const urlPrefix = searchParams.get("urlPrefix");
 
+  const adminPassword = searchParams.get("adminPassword") ?? undefined;
+
   const handleCreateDraft = () => {
     const adjustedFactions =
       Number(numFactions) - Math.max(0, 6 - players.length);
@@ -78,6 +80,7 @@ export default function DraftTournament() {
         numSlices: adjustedSliceCount,
         randomizeMap: true,
         randomizeSlices: true,
+        adminPassword,
         modifiers: factionBan ? { banFactions: { numFactions: 1 } } : {},
       },
       integrations: {},

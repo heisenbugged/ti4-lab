@@ -202,6 +202,8 @@ export type DraftSettings = {
   maxOptimal?: number;
   draftPlayerColors?: boolean;
 
+  adminPassword?: string;
+
   // Legacy settings
   allowEmptyTiles: boolean;
   randomizeSlices: boolean;

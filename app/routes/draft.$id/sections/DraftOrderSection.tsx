@@ -7,15 +7,23 @@ import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { ExportDraftState } from "../components/ExportDraftState";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
+import { useState } from "react";
+import { AdminPasswordModal } from "../components/AdminPasswordModal";
+import { notifications } from "@mantine/notifications";
 
 export function DraftOrderSection() {
   const { adminMode, pickForAnyone, setAdminMode, setPickForAnyone } =
     useSafeOutletContext();
+
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+
   const { undoLastSelection } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
   const { hydratedPlayers, currentPick } = useHydratedDraft();
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const selections = useDraft((state) => state.draft.selections);
+  const adminPassword = useDraft((state) => state.draft.settings.adminPassword);
+  const hasAdminPassword = adminPassword !== undefined;
 
   const UndoLastSelection = (
     <Button
@@ -36,9 +44,6 @@ export function DraftOrderSection() {
       checked={pickForAnyone}
       onChange={(e) => {
         setPickForAnyone(e.currentTarget.checked);
-        if (e.currentTarget.checked) {
-          setAdminMode(false);
-        }
       }}
     />
   );
@@ -48,16 +53,45 @@ export function DraftOrderSection() {
       label="Admin mode"
       checked={adminMode}
       onChange={(e) => {
-        setAdminMode(e.currentTarget.checked);
-        if (e.currentTarget.checked) {
-          setPickForAnyone(false);
+        // can turn off without the password.
+        if (!e.currentTarget.checked) {
+          setAdminMode(false);
+          return;
+        }
+
+        if (hasAdminPassword) {
+          setPasswordModalOpen(true);
+        } else {
+          setAdminMode(e.currentTarget.checked);
         }
       }}
     />
   );
 
+  const handleAdminPasswordSubmit = (password: string) => {
+    if (password === adminPassword) {
+      setAdminMode(true);
+    } else {
+      notifications.show({
+        title: "Incorrect password",
+        message: "Please try again",
+        color: "red",
+      });
+    }
+    setPasswordModalOpen(false);
+  };
+
+  const showPickForAnyoneControl = !hasAdminPassword || adminMode;
+  const showUndoLastSelection = !hasAdminPassword || adminMode;
+
   return (
     <Stack>
+      <AdminPasswordModal
+        opened={passwordModalOpen}
+        onClose={() => setPasswordModalOpen(false)}
+        onSubmit={handleAdminPasswordSubmit}
+      />
+
       <Group hiddenFrom="sm" justify="flex-end">
         {adminMode && <ExportDraftState />}
         {UndoLastSelection}
@@ -72,8 +106,8 @@ export function DraftOrderSection() {
         <Group visibleFrom="sm" align="center">
           <OriginalArtToggle />
           {adminMode && <ExportDraftState />}
-          {UndoLastSelection}
-          {pickForAnyoneControl}
+          {showUndoLastSelection && UndoLastSelection}
+          {showPickForAnyoneControl && pickForAnyoneControl}
           {adminControl}
         </Group>
       </SectionTitle>

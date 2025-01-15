@@ -57,8 +57,19 @@ export async function createDraft(draft: Draft, presetUrl?: string) {
 async function getPrettyUrl(presetUrl?: string): Promise<string> {
   if (!presetUrl) return generateUniquePrettyUrl();
 
+  // if the presetUrl is already taken, generate a new one
+  // and update the old draft with the new url.
   const existingRecord = await draftByPrettyUrl(presetUrl);
-  return existingRecord ? generateUniquePrettyUrl() : presetUrl;
+  if (existingRecord) {
+    const newUrl = await generateUniquePrettyUrl();
+    await updateDraftUrl(existingRecord.id, newUrl);
+  }
+
+  return presetUrl;
+}
+
+export async function updateDraftUrl(id: string, urlName: string) {
+  db.update(drafts).set({ urlName }).where(eq(drafts.id, id)).run();
 }
 
 export async function updateDraft(id: string, draftData: Draft) {

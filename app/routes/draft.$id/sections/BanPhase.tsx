@@ -1,4 +1,4 @@
-import { Grid, SimpleGrid, Stack } from "@mantine/core";
+import { Button, Grid, SimpleGrid, Stack } from "@mantine/core";
 import { CurrentPickBanner } from "../components/CurrentPickBanner";
 import { DraftOrderSection } from "./DraftOrderSection";
 import { SectionTitle } from "~/components/Section";
@@ -8,10 +8,15 @@ import { factions as allFactions } from "~/data/factionData";
 import { useMemo } from "react";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
+import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 export function BanPhase() {
+  const { adminMode } = useSafeOutletContext();
+  const players = useDraft((state) => state.draft.players);
   const factionPool = useDraft((state) => state.factionPool);
   const { banFaction } = useDraft((state) => state.draftActions);
+  const { updatePlayerName } = useDraft((state) => state.actions);
   const sortedFactionPool = useMemo(() => {
     return [...factionPool].sort((a, b) => {
       const aFaction = allFactions[a];
@@ -20,7 +25,7 @@ export function BanPhase() {
     });
   }, [factionPool]);
 
-  const { syncDraft } = useSyncDraft();
+  const { syncDraft, syncing } = useSyncDraft();
 
   const { currentlyPicking, hydratedPlayers, activePlayer } =
     useHydratedDraft();
@@ -74,6 +79,19 @@ export function BanPhase() {
             })}
           </SimpleGrid>
         </Grid.Col>
+        {adminMode && (
+          <Grid.Col offset={6} span={6} order={{ base: 7 }}>
+            <PlayerInputSection
+              players={players}
+              onChangeName={(playerIdx, name) => {
+                updatePlayerName(playerIdx, name);
+              }}
+            />
+            <Button mt="lg" onClick={syncDraft} loading={syncing}>
+              Save
+            </Button>
+          </Grid.Col>
+        )}
       </Grid>
     </>
   );
