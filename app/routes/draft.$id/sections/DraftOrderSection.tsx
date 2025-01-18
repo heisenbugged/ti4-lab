@@ -94,11 +94,11 @@ export function DraftOrderSection() {
 
       <Group hiddenFrom="sm" justify="flex-end">
         {adminMode && <ExportDraftState />}
-        {UndoLastSelection}
+        {showUndoLastSelection && UndoLastSelection}
         <OriginalArtToggle />
       </Group>
       <Group hiddenFrom="sm" justify="flex-end">
-        {pickForAnyoneControl}
+        {showPickForAnyoneControl && pickForAnyoneControl}
         {adminControl}
       </Group>
 

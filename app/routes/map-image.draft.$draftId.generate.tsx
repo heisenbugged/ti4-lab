@@ -24,7 +24,8 @@ export const loader = async ({ params }: { params: { draftId: string } }) => {
     height: 1030,
   });
   // annoying, but sleep for 250ms to allow the right 'dark' mode to be set.
-  await new Promise((resolve) => setTimeout(resolve, 250));
+  // and content to properly load.
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   await page.screenshot({
     path: `./generated/${draftId}.png`,
   });
