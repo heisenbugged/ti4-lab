@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { db } from "./config.server";
 import { drafts } from "./schema.server";
 import { generatePrettyUrlName } from "~/data/urlWords.server";
@@ -15,8 +15,48 @@ export async function draftById(id: string) {
   return results[0];
 }
 
-export async function findDrafts() {
-  return db.select().from(drafts).orderBy(desc(drafts.createdAt));
+type SavedDraft = {
+  id: string;
+  data: Draft;
+  urlName: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PaginatedDrafts = {
+  drafts: SavedDraft[];
+  totalPages: number;
+  currentPage: number;
+};
+
+export async function findDrafts(
+  page = 1,
+  pageSize = 100,
+): Promise<PaginatedDrafts> {
+  const offset = (page - 1) * pageSize;
+
+  const [draftsData, totalCount] = await Promise.all([
+    db
+      .select()
+      .from(drafts)
+      .orderBy(desc(drafts.createdAt))
+      .limit(pageSize)
+      .offset(offset),
+    db.select({ count: sql<number>`count(*)` }).from(drafts),
+  ]);
+
+  const data = draftsData.map((draft) => ({
+    ...draft,
+    data: JSON.parse(draft.data as string) as Draft,
+  }));
+
+  const totalPages = Math.ceil(totalCount[0].count / pageSize);
+
+  return {
+    drafts: data,
+    totalPages,
+    currentPage: page,
+  };
 }
 
 export async function draftByPrettyUrl(urlName: string) {
