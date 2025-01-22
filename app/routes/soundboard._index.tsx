@@ -13,6 +13,7 @@ import {
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
+import { shuffle } from "~/draft/helpers/randomization";
 
 type Track = {
   src: string;
@@ -35,15 +36,37 @@ const hacanWarTrack: Track = {
 };
 
 const spotifyToken = "ENTER_HERE";
-const factionIds: FactionId[] = ["sol", "hacan", "xxcha", "nomad"];
-const factionAudios: Record<FactionId, Record<string, string>> = {
+const factionIds: FactionId[] = ["muaat", "sol", "hacan", "xxcha", "nomad"];
+const factionAudios = {
+  muaat: {
+    homeDefense: "/muaat-001.mp3",
+    homeInvasion: "/muaat-002.mp3",
+    defenseOutnumbered: "/muaat-003.mp3",
+    offenseSuperior: "/muaat-004.mp3",
+    battleLines: [
+      "/muaat-005.mp3",
+      "/muaat-006.mp3",
+      "/muaat-007.mp3",
+      "/muaat-008.mp3",
+      "/muaat-009.mp3",
+      "/muaat-010.mp3",
+      "/muaat-011.mp3",
+      "/muaat-012.mp3",
+    ],
+    jokes: [
+      "/muaat-016.mp3",
+      "/muaat-017.mp3",
+      "/muaat-018.mp3",
+      "/muaat-019.mp3",
+    ],
+  },
   sol: {
     homeDefense: "/sol.mp3",
   },
   hacan: {
     homeDefense: "/hacan.mp3",
   },
-};
+} as const;
 
 export default function Audio() {
   // const lastKnownPositionRef = useRef<{
@@ -60,12 +83,25 @@ export default function Audio() {
     setLoadingAudio(null);
   };
 
-  const playHomeDefense = (factionId: FactionId) => {
+  const playAudio = (
+    factionId: FactionId,
+    type: "homeInvasion" | "homeDefense" | "battleLines" | "jokes",
+  ) => {
     voiceLineRef.current?.stop();
-    setLoadingAudio(`${factionId}-defense`);
+    setLoadingAudio(`${factionId}-${type}`);
+
+    let audioSrc: string;
+    if (type === "battleLines" && factionAudios[factionId]?.battleLines) {
+      audioSrc = shuffle(factionAudios[factionId].battleLines)[0];
+    } else if (type === "jokes" && factionAudios[factionId]?.jokes) {
+      audioSrc = shuffle(factionAudios[factionId].jokes)[0];
+    } else {
+      audioSrc = factionAudios[factionId]!![type];
+    }
 
     const sound = new Howl({
-      src: [factionAudios[factionId]!!.homeDefense],
+      src: [audioSrc],
+
       html5: true,
       volume: volume,
       onend: () => {
@@ -80,6 +116,11 @@ export default function Audio() {
     voiceLineRef.current = sound;
     sound.play();
   };
+
+  const playHomeInvasion = (factionId: FactionId) =>
+    playAudio(factionId, "homeInvasion");
+  const playHomeDefense = (factionId: FactionId) =>
+    playAudio(factionId, "homeDefense");
 
   // const startSpotifyPlayback = async () => {
   //   try {
@@ -136,16 +177,28 @@ export default function Audio() {
                     variant="light"
                     color="green"
                     size="compact-md"
-                    disabled={factionAudios[faction]?.battleLine === undefined}
+                    disabled={factionAudios[faction]?.battleLines === undefined}
+                    onClick={() => {
+                      if (loadingAudio === `${faction}-battleLines`) {
+                        stopAudio();
+                      } else {
+                        playAudio(faction, "battleLines");
+                      }
+                    }}
+                    w="120px"
                   >
-                    Battle Line
+                    {loadingAudio === `${faction}-battleLines` ? (
+                      <Loader size="xs" type="bars" color="green" />
+                    ) : (
+                      "Battle Line"
+                    )}
                   </Button>
                   <Button
                     variant="light"
                     color="blue"
                     size="compact-md"
                     onClick={() => {
-                      if (loadingAudio === `${faction}-defense`) {
+                      if (loadingAudio === `${faction}-homeDefense`) {
                         stopAudio();
                       } else {
                         playHomeDefense(faction);
@@ -154,7 +207,7 @@ export default function Audio() {
                     w="140px"
                     disabled={factionAudios[faction]?.homeDefense === undefined}
                   >
-                    {loadingAudio === `${faction}-defense` ? (
+                    {loadingAudio === `${faction}-homeDefense` ? (
                       <Loader size="xs" type="bars" color="blue" />
                     ) : (
                       "Home Defense"
@@ -167,17 +220,40 @@ export default function Audio() {
                     disabled={
                       factionAudios[faction]?.homeInvasion === undefined
                     }
+                    onClick={() => {
+                      if (loadingAudio === `${faction}-homeInvasion`) {
+                        stopAudio();
+                      } else {
+                        playHomeInvasion(faction);
+                      }
+                    }}
+                    w="140px"
                   >
-                    Home Invasion
+                    {loadingAudio === `${faction}-homeInvasion` ? (
+                      <Loader size="xs" type="bars" color="red" />
+                    ) : (
+                      "Home Invasion"
+                    )}
                   </Button>
 
                   <Button
                     variant="light"
                     color="yellow"
                     size="compact-md"
-                    disabled={factionAudios[faction]?.joke === undefined}
+                    disabled={factionAudios[faction]?.jokes === undefined}
+                    onClick={() => {
+                      if (loadingAudio === `${faction}-joke`) {
+                        stopAudio();
+                      } else {
+                        playAudio(faction, "jokes");
+                      }
+                    }}
                   >
-                    Joke
+                    {loadingAudio === `${faction}-joke` ? (
+                      <Loader size="xs" type="bars" color="yellow" />
+                    ) : (
+                      "Joke"
+                    )}
                   </Button>
                 </Group>
               </Table.Td>
