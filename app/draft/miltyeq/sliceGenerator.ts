@@ -20,7 +20,7 @@ import {
   shuffleTieredSystems,
 } from "../helpers/sliceGeneration";
 import { systemData } from "~/data/systemData";
-import { generateEmptyMap } from "~/utils/map";
+import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { draftConfig } from "../draftConfig";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
@@ -130,13 +130,18 @@ export const generateSlices = (
     validateSlice: (slice) => {
       const systems = slice.map((systemId) => systemData[systemId]);
       // can't have two alphas, two betas, or two legendaries
-      return (
+      const validSpecialTiles =
         systems.filter(isAlpha).length <= 1 &&
         systems.filter(isBeta).length <= 1 &&
-        systems.filter(isLegendary).length <= 1
-      );
+        systems.filter(isLegendary).length <= 1;
+      if (!validSpecialTiles) return false;
 
-      // TODO: Maybe implement min/max optimal stats here.
+      const optimal = optimalStatsForSystems(systems);
+      const totalOptimal = optimal.resources + optimal.influence + optimal.flex;
+      if (totalOptimal > 10) return false;
+      if (totalOptimal < 6) return false;
+
+      return true;
     },
   });
 

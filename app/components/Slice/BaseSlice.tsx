@@ -46,7 +46,7 @@ export function BaseSlice({
       <Stack flex={1} gap={0}>
         <SliceHeader right={titleRight}>
           <Group flex={1}>
-            {mapModifiable ? (
+            {mapModifiable && onNameChange ? (
               <TextInput
                 className={classes.editableSliceName}
                 value={slice.name}

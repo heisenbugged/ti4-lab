@@ -1,27 +1,40 @@
 import { Button } from "@mantine/core";
-import { Slice, HydratedPlayer } from "~/types";
+import { Slice, HydratedPlayer, Tile } from "~/types";
 import { BaseSlice } from "~/components/Slice/BaseSlice";
 import { PlayerChip } from "./PlayerChip";
 import { playerColors } from "~/data/factionData";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
+import { useDraft } from "~/draftStore";
 
 type Props = {
   id: string;
   slice: Slice;
   player: HydratedPlayer | undefined;
+  modifiable?: boolean;
   onSelect?: () => void;
+  onSelectTile?: (tile: Tile) => void;
+  onDeleteTile?: (tile: Tile) => void;
 };
 
-export function DraftableSlice({ id, slice, player, onSelect }: Props) {
+export function DraftableSlice({
+  id,
+  slice,
+  player,
+  modifiable = false,
+  onSelect,
+  onSelectTile,
+  onDeleteTile,
+}: Props) {
   const playerColor = player ? playerColors[player.id] : undefined;
   const config = useDraftConfig();
+
   return (
     <div style={{ position: "relative" }}>
       <BaseSlice
         id={id}
         config={config}
         slice={slice}
-        mapModifiable={false}
+        mapModifiable={modifiable}
         selectedColor={playerColor}
         titleLeft={
           player ? (
@@ -52,6 +65,8 @@ export function DraftableSlice({ id, slice, player, onSelect }: Props) {
               )
             : undefined
         }
+        onSelectTile={onSelectTile}
+        onDeleteTile={onDeleteTile}
       />
     </div>
   );

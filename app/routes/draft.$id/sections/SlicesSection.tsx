@@ -4,14 +4,19 @@ import { useDraft } from "~/draftStore";
 import { DraftableSlice } from "../components/DraftableSlice";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
+import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 export function SlicesSection() {
   const slices = useDraft((state) => state.draft.slices);
 
+  const { adminMode } = useSafeOutletContext();
   const { selectSlice } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
   const { activePlayer, hydratedPlayers, currentlyPicking } =
     useHydratedDraft();
+
+  const { removeSystemFromSlice, openPlanetFinderForSlice, updateSliceName } =
+    useDraft((state) => state.actions);
 
   const canSelect = currentlyPicking && activePlayer?.sliceIdx === undefined;
 
@@ -33,6 +38,7 @@ export function SlicesSection() {
             id={`slice-${idx}`}
             slice={slice}
             player={hydratedPlayers.find((p) => p.sliceIdx === idx)}
+            modifiable={adminMode}
             onSelect={
               canSelect
                 ? () => {
@@ -41,6 +47,16 @@ export function SlicesSection() {
                       syncDraft();
                     }
                   }
+                : undefined
+            }
+            onSelectTile={
+              adminMode
+                ? (tile) => openPlanetFinderForSlice(idx, tile.idx)
+                : undefined
+            }
+            onDeleteTile={
+              adminMode
+                ? (tile) => removeSystemFromSlice(idx, tile.idx)
                 : undefined
             }
           />
