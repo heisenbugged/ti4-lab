@@ -17,8 +17,10 @@ export function useDraftValidationErrors() {
   return useMemo(() => {
     const errors = [];
 
-    if (numFactions !== undefined && numFactions < 6) {
-      errors.push("Number of factions to draft must be 6 or more");
+    if (numFactions !== undefined && numFactions < players.length) {
+      errors.push(
+        "Number of factions to draft must be at least the number of players",
+      );
     }
 
     slices.forEach((slice) => {

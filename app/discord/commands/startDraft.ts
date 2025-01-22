@@ -34,48 +34,82 @@ const data = new SlashCommandBuilder()
     option
       .setName("player5")
       .setDescription("Player 5's discord name")
-      .setRequired(true),
+      .setRequired(false)
+      .setAutocomplete(true),
   )
   .addStringOption((option) =>
     option
       .setName("player6")
       .setDescription("Player 6's discord name")
-      .setRequired(true),
+      .setRequired(false)
+      .setAutocomplete(true),
+  )
+  .addStringOption((option) =>
+    option
+      .setName("player7")
+      .setDescription("Player 7's discord name")
+      .setRequired(false),
+  )
+  .addStringOption((option) =>
+    option
+      .setName("player8")
+      .setDescription("Player 8's discord name")
+      .setRequired(false),
   );
 
 async function execute(interaction: ChatInputCommandInteraction) {
   const data = interaction.options.data;
   const players = [
-    data.find((option) => option.name === "player1")?.value as string,
-    data.find((option) => option.name === "player2")?.value as string,
-    data.find((option) => option.name === "player3")?.value as string,
-    data.find((option) => option.name === "player4")?.value as string,
-    data.find((option) => option.name === "player5")?.value as string,
-    data.find((option) => option.name === "player6")?.value as string,
-  ].map((name, idx) => {
-    if (name.startsWith("<@")) {
-      const memberId = name.substring(2, name.length - 1);
-      const member = interaction.guild?.members.cache.get(memberId)!;
-      const nickname = member.nickname;
-      const username = member.user.username;
+    data.find((option) => option.name === "player1")?.value as
+      | string
+      | undefined,
+    data.find((option) => option.name === "player2")?.value as
+      | string
+      | undefined,
+    data.find((option) => option.name === "player3")?.value as
+      | string
+      | undefined,
+    data.find((option) => option.name === "player4")?.value as
+      | string
+      | undefined,
+    data.find((option) => option.name === "player5")?.value as
+      | string
+      | undefined,
+    data.find((option) => option.name === "player6")?.value as
+      | string
+      | undefined,
+    data.find((option) => option.name === "player7")?.value as
+      | string
+      | undefined,
+    data.find((option) => option.name === "player8")?.value as
+      | string
+      | undefined,
+  ]
+    .filter((name) => !!name)
+    .map((name, idx) => {
+      if (name.startsWith("<@")) {
+        const memberId = name.substring(2, name.length - 1);
+        const member = interaction.guild?.members.cache.get(memberId)!;
+        const nickname = member.nickname;
+        const username = member.user.username;
+
+        const discordPlayer: DiscordPlayer = {
+          type: "identified",
+          playerId: idx,
+          memberId,
+          nickname: nickname ?? undefined,
+          username,
+        };
+        return discordPlayer;
+      }
 
       const discordPlayer: DiscordPlayer = {
-        type: "identified",
         playerId: idx,
-        memberId,
-        nickname: nickname ?? undefined,
-        username,
+        type: "unidentified",
+        name,
       };
       return discordPlayer;
-    }
-
-    const discordPlayer: DiscordPlayer = {
-      playerId: idx,
-      type: "unidentified",
-      name,
-    };
-    return discordPlayer;
-  });
+    });
 
   const discordData: DiscordData = {
     players,

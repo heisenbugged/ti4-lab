@@ -188,8 +188,42 @@ export default function DraftPrechoice() {
   const [hoveredMapType, setHoveredMapType] = useState<
     ChoosableDraftType | undefined
   >();
-  const [selectedMapType, setSelectedMapType] =
-    useState<ChoosableDraftType>("milty");
+  const [players, setPlayers] = useState<Player[]>(() => {
+    if (discordData?.players) {
+      return discordData.players.map((discordPlayer) => ({
+        id: discordPlayer.playerId,
+        name: discordPlayer.type === "unidentified" ? discordPlayer.name : "",
+      }));
+    }
+
+    return Array(6)
+      .fill(null)
+      .map((_, i) => ({
+        id: i,
+        name: "",
+      }));
+  });
+
+  const [selectedMapType, setSelectedMapType] = useState<ChoosableDraftType>(
+    () => {
+      // Default map type based on player count
+      switch (players.length) {
+        case 4:
+          return "milty4p";
+        case 5:
+          return "milty5p";
+        case 6:
+          return "milty"; // milty is the 6p version
+        case 7:
+          return "milty7p";
+        case 8:
+          return "milty8p";
+        default:
+          return "milty"; // fallback to 6p version
+      }
+    },
+  );
+
   const [isMultidraft, setIsMultidraft] = useState(false);
   const [numDrafts, setNumDrafts] = useState(2);
 
@@ -203,20 +237,6 @@ export default function DraftPrechoice() {
     setAllowHomePlanetSearch(false);
   };
 
-  const [players, setPlayers] = useState<Player[]>([
-    ...[0, 1, 2, 3, 4, 5].map((i) => {
-      const discordPlayer = discordData?.players.find(
-        (discordPlayer) => discordPlayer.playerId === i,
-      );
-      const name =
-        discordPlayer?.type === "unidentified" ? discordPlayer.name : "";
-
-      return {
-        id: i,
-        name,
-      };
-    }),
-  ]);
   const playerCount = players.length;
 
   const [numFactions, setNumFactions] = useState(playerCount);

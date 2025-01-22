@@ -11,6 +11,7 @@ import { DiscordData, Draft, DraftSelection, FactionId, Player } from "~/types";
 import {
   getDiscordPickMessage,
   addDiscordPickMessage,
+  deleteDiscordPickMessage,
 } from "~/drizzle/discordMessages.server";
 import { factions } from "~/data/factionData";
 import { hydratePlayers } from "~/hooks/useHydratedDraft";
@@ -112,6 +113,7 @@ export async function notifyPick(
   const previousMessageId = await getDiscordPickMessage(draftId, 1);
   if (previousMessageId) {
     await deleteMessage(draft, previousMessageId);
+    await deleteDiscordPickMessage(draftId, 1);
   }
 
   // Remove the previous 'it's your turn to draft' message if there is one.
@@ -130,7 +132,7 @@ export async function notifyPick(
     const previousPick = draft.selections[draft.selections.length - 1];
 
     const sentMessage = await channel?.send(
-      draftSelectionToMessage(previousPlayerName, previousPick),
+      draftSelectionToMessage(previousPlayerName, previousPick, draft),
     );
     await addDiscordPickMessage(draftId, 1, sentMessage.id);
   }
@@ -191,12 +193,14 @@ export async function editMessage(
 function draftSelectionToMessage(
   playerName: string,
   selection: DraftSelection,
+  draft: Draft,
 ) {
   if (selection.type === "SELECT_SPEAKER_ORDER") {
     return `${playerName} selected speaker order: ${selection.speakerOrder + 1}`;
   }
   if (selection.type === "SELECT_SLICE") {
-    return `${playerName} selected slice: ${selection.sliceIdx + 1}`;
+    const sliceName = draft.slices[selection.sliceIdx].name;
+    return `${playerName} selected slice: ${sliceName}`;
   }
   if (selection.type === "SELECT_FACTION") {
     const faction = factions[selection.factionId];
@@ -233,8 +237,13 @@ function getDraftSummaryMessage(draft: Draft) {
       ? factionEmojis[p.faction]
       : unpickedFactionEmoji;
 
-    const sliceEmoji =
-      p.sliceIdx !== undefined ? sliceEmojis[p.sliceIdx] : unpickedSliceEmoji;
+    let sliceEmoji = unpickedSliceEmoji;
+    if (p.sliceIdx !== undefined) {
+      const sliceName = draft.slices[p.sliceIdx].name
+        .replace("Slice ", "")
+        .slice(0, 1);
+      sliceEmoji = sliceEmojis[getAlphabetPosition(sliceName) - 1];
+    }
 
     const positionEmoji =
       p.seatIdx !== undefined
@@ -380,3 +389,10 @@ const factionEmojis: Record<FactionId, string> = {
   // TODO: Implement
   drahn: "",
 } as const;
+
+function getAlphabetPosition(char: string): number {
+  // Convert to lowercase to handle both cases
+  const normalized = char.toLowerCase();
+  // 'a' is charCode 97, so subtracting 96 gives position (1-26)
+  return normalized.charCodeAt(0) - 96;
+}

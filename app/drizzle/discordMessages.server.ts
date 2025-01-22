@@ -34,3 +34,14 @@ export async function addDiscordPickMessage(
       set: { messageId },
     });
 }
+
+export async function deleteDiscordPickMessage(draftId: string, pick: number) {
+  await db
+    .delete(draftDiscordMessages)
+    .where(
+      and(
+        eq(draftDiscordMessages.draftId, draftId),
+        eq(draftDiscordMessages.pick, pick),
+      ),
+    );
+}
