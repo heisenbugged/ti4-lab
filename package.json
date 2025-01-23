@@ -36,6 +36,7 @@
     "jotai-zustand": "^0.4.0",
     "music-metadata-browser": "^2.5.11",
     "puppeteer": "^22.10.0",
+    "querystring": "^0.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-loading-indicators": "^0.2.3",
