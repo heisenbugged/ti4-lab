@@ -11,45 +11,124 @@ export const factionIds: FactionId[] = [
 
 type FactionAudio = {
   battleAnthem: string;
+  battleAnthemDelay?: number;
   homeDefense: string[];
   homeInvasion?: string[];
   defenseOutnumbered?: string[];
   offenseSuperior?: string[];
   battleLines?: string[];
   jokes?: string[];
+  special: {
+    title: string;
+    uris: string[];
+  };
 };
 
 export const factionAudios: Record<FactionId, FactionAudio> = {
   muaat: {
     battleAnthem: "spotify:track:46h0MLW2ONEGKJTUdFNx5f",
-    homeDefense: ["/muaat-001.mp3"],
-    homeInvasion: ["/muaat-002.mp3"],
-    defenseOutnumbered: ["/muaat-003.mp3"],
-    offenseSuperior: ["/muaat-004.mp3"],
+    homeDefense: ["/voices/muaat/homedefense.mp3"],
+    homeInvasion: ["/voices/muaat/homeinvasion.mp3"],
+    defenseOutnumbered: ["/voices/muaat/defenseoutnumbered.mp3"],
+    offenseSuperior: ["/voices/muaat/offensesuperior.mp3"],
     battleLines: [
-      "/muaat-005.mp3",
-      "/muaat-006.mp3",
-      "/muaat-007.mp3",
-      "/muaat-008.mp3",
-      "/muaat-009.mp3",
-      "/muaat-010.mp3",
-      "/muaat-011.mp3",
-      "/muaat-012.mp3",
+      "/voices/muaat/battle1.mp3",
+      "/voices/muaat/battle2.mp3",
+      "/voices/muaat/battle3.mp3",
+      "/voices/muaat/battle4.mp3",
+      "/voices/muaat/battle5.mp3",
+      "/voices/muaat/battle6.mp3",
+      "/voices/muaat/battle7.mp3",
+      "/voices/muaat/battle8.mp3",
     ],
     jokes: [
-      "/muaat-016.mp3",
-      "/muaat-017.mp3",
-      "/muaat-018.mp3",
-      "/muaat-019.mp3",
+      "/voices/muaat/joke1.mp3",
+      "/voices/muaat/joke2.mp3",
+      "/voices/muaat/joke3.mp3",
     ],
+    special: {
+      title: "War Sun Built",
+      uris: ["/voices/muaat/special1.mp3", "/voices/muaat/special2.mp3"],
+    },
   },
   sol: {
     battleAnthem: "spotify:track:6Rlybp1JsE3GUjYp5rC0mo",
-    homeDefense: ["/sol.mp3"],
+    homeDefense: ["/voices/sol/homedefense.mp3"],
+    homeInvasion: ["/voices/sol/homeinvasion.mp3"],
+    defenseOutnumbered: ["/voices/sol/defenseoutnumbered.mp3"],
+    offenseSuperior: ["/voices/sol/offensesuperior.mp3"],
+    battleLines: [
+      "/voices/sol/battle1.mp3",
+      "/voices/sol/battle2.mp3",
+      "/voices/sol/battle3.mp3",
+      "/voices/sol/battle4.mp3",
+      "/voices/sol/battle5.mp3",
+      "/voices/sol/battle6.mp3",
+      "/voices/sol/battle7.mp3",
+      "/voices/sol/battle8.mp3",
+    ],
+    jokes: ["/voices/sol/joke1.mp3", "/voices/sol/joke2.mp3"],
+    special: {
+      title: "Orbital Drop",
+      uris: ["/voices/sol/special1.mp3", "/voices/sol/special2.mp3"],
+    },
   },
   hacan: {
+    battleAnthem: "spotify:track:61Ps2sXXwiYCcyAynt81JI",
+    battleAnthemDelay: 85000,
+    homeDefense: ["/voices/hacan/home-defense.mp3"],
+    homeInvasion: ["/voices/hacan/home-invasion.mp3"],
+    defenseOutnumbered: ["/voices/hacan/defense-outnumbered.mp3"],
+    offenseSuperior: ["/voices/hacan/offense-superior.mp3"],
+    battleLines: [
+      "/voices/hacan/battle-1.mp3",
+      "/voices/hacan/battle-2.mp3",
+      "/voices/hacan/battle-3.mp3",
+      "/voices/hacan/battle-4.mp3",
+      "/voices/hacan/battle-5.mp3",
+      "/voices/hacan/battle-6.mp3",
+      "/voices/hacan/battle-7.mp3",
+      "/voices/hacan/battle-8.mp3",
+    ],
+    jokes: ["/voices/hacan/joke1.mp3"],
+    special: {
+      title: "Trade used",
+      uris: ["/voices/hacan/special1.mp3", "/voices/hacan/special2.mp3"],
+    },
+  },
+  nomad: {
+    // https://open.spotify.com/track/2Qr9qyTz3NxoSlLOzLUefL?si=4d204c88244a4d3f
+    battleAnthem: "spotify:track:2Qr9qyTz3NxoSlLOzLUefL",
+    homeDefense: ["/voices/nomad/homedefense.mp3"],
+    homeInvasion: ["/voices/nomad/homeinvasion.mp3"],
+    defenseOutnumbered: ["/voices/nomad/defenseoutnumbered.mp3"],
+    offenseSuperior: ["/voices/nomad/offensesuperior.mp3"],
+    battleLines: [
+      "/voices/nomad/battle1.mp3",
+      "/voices/nomad/battle2.mp3",
+      "/voices/nomad/battle3.mp3",
+      "/voices/nomad/battle4.mp3",
+      "/voices/nomad/battle5.mp3",
+      "/voices/nomad/battle6.mp3",
+      "/voices/nomad/battle7.mp3",
+      "/voices/nomad/battle8.mp3",
+    ],
+    jokes: [
+      "/voices/nomad/joke1.mp3",
+      "/voices/nomad/joke2.mp3",
+      "/voices/nomad/joke3.mp3",
+    ],
+    special: {
+      title: "Calvary Sold",
+      uris: ["/voices/nomad/special1.mp3", "/voices/nomad/special2.mp3"],
+    },
+  },
+  xxcha: {
     battleAnthem: "spotify:track:another_track_id_here",
-    homeDefense: ["/hacan.mp3"],
+    special: {
+      title: "Diplomacy Used",
+      uris: [],
+    },
   },
 } as const;
 
@@ -61,10 +140,13 @@ export const getAudioSrc = (
     | "defenseOutnumbered"
     | "offenseSuperior"
     | "battleLines"
-    | "jokes",
+    | "jokes"
+    | "special",
 ): string => {
   const factionAudio = factionAudios[factionId];
   if (!factionAudio) return "";
+
+  if (type === "special") return shuffle(factionAudio.special?.uris ?? [])[0];
 
   return shuffle(factionAudio[type] ?? [])[0];
 };

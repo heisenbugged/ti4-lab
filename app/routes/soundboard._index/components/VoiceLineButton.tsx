@@ -11,34 +11,34 @@ interface VoiceLineControlProps {
   onPlay: () => void;
   onStop: () => void;
   width?: number | string;
+  label?: string;
 }
 
 const voiceLineConfig: Record<
   VoiceLineType,
   {
     color: string;
-    label: string;
     width?: string;
   }
 > = {
   battleLines: {
     color: "green",
-    label: "Battle Line",
     width: "120px",
   },
   homeDefense: {
     color: "blue",
-    label: "Home Defense",
     width: "140px",
   },
   homeInvasion: {
     color: "red",
-    label: "Home Invasion",
     width: "140px",
   },
   jokes: {
     color: "yellow",
-    label: "Joke",
+  },
+  special: {
+    color: "purple",
+    width: "150px",
   },
 };
 
@@ -49,6 +49,7 @@ export function VoiceLineButton({
   onPlay,
   onStop,
   width,
+  label,
 }: VoiceLineControlProps) {
   const config = voiceLineConfig[type];
   const isLoading = loadingAudio === `${faction}-${type}`;
@@ -72,7 +73,7 @@ export function VoiceLineButton({
       {isLoading ? (
         <Loader size="xs" type="bars" color={config.color} />
       ) : (
-        config.label
+        label ?? config.label
       )}
     </Button>
   );

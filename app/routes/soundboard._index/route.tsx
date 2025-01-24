@@ -12,7 +12,6 @@ import {
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-
 import { IconBrandSpotify } from "@tabler/icons-react";
 import querystring from "querystring";
 import { spotifyApi } from "~/vendors/spotifyApi";
@@ -29,7 +28,7 @@ type Track = {
   startTime?: number; // in milliseconds
 };
 
-const factionIds: FactionId[] = ["muaat", "sol", "hacan", "xxcha", "nomad"];
+const factionIds: FactionId[] = ["sol", "hacan", "nomad", "muaat", "xxcha"];
 
 export default function Audio() {
   const { spotifyClientId, spotifyCallbackUrl } =
@@ -55,10 +54,12 @@ export default function Audio() {
         lastKnownPositionRef.current = currentPlayback;
       }
 
+      const delay = factionAudios[factionId].battleAnthemDelay ?? 0;
+
       await spotifyApi.startPlayback(
         accessToken,
         factionAudios[factionId].battleAnthem,
-        0,
+        delay,
       );
       setIsWarMode(true);
     }
@@ -113,7 +114,7 @@ export default function Audio() {
     });
 
     voiceLineRef.current = sound;
-    const timeout = shouldStartBattle ? 200 : 0;
+    const timeout = shouldStartBattle ? 500 : 0;
     setTimeout(() => sound.play(), timeout);
   };
 
@@ -161,7 +162,7 @@ export default function Audio() {
   };
 
   return (
-    <Container py="xl">
+    <Container py="xl" maw={1400}>
       {!accessToken ? (
         <Button
           leftSection={<IconBrandSpotify />}
@@ -204,6 +205,7 @@ export default function Audio() {
                 <Group gap="md">
                   <VoiceLineButton
                     faction={faction}
+                    label="Battle Line"
                     type="battleLines"
                     loadingAudio={loadingAudio}
                     onPlay={() => playAudio(faction, "battleLines")}
@@ -211,6 +213,7 @@ export default function Audio() {
                   />
                   <VoiceLineButton
                     faction={faction}
+                    label="Home Defense"
                     type="homeDefense"
                     loadingAudio={loadingAudio}
                     onPlay={() => playAudio(faction, "homeDefense")}
@@ -218,13 +221,24 @@ export default function Audio() {
                   />
                   <VoiceLineButton
                     faction={faction}
+                    label="Planet Invasion"
                     type="homeInvasion"
                     loadingAudio={loadingAudio}
                     onPlay={() => playAudio(faction, "homeInvasion")}
                     onStop={stopAudio}
                   />
+
                   <VoiceLineButton
                     faction={faction}
+                    label={factionAudios[faction]?.special?.title ?? ""}
+                    type="special"
+                    loadingAudio={loadingAudio}
+                    onPlay={() => playAudio(faction, "special")}
+                    onStop={stopAudio}
+                  />
+                  <VoiceLineButton
+                    faction={faction}
+                    label="Joke"
                     type="jokes"
                     loadingAudio={loadingAudio}
                     onPlay={() => playAudio(faction, "jokes")}
