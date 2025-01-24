@@ -34,7 +34,7 @@ type Track = {
   startTime?: number; // in milliseconds
 };
 
-const factionIds: FactionId[] = ["sol", "hacan", "nomad", "muaat", "xxcha"];
+const factionIds: FactionId[] = ["sol", "hacan", "nomad", "xxcha", "muaat"];
 
 export default function Audio() {
   const [voiceLineMemory, setVoiceLineMemory] = useState<VoiceLineMemory>({});

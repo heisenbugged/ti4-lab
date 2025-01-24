@@ -128,11 +128,27 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
     },
   },
   xxcha: {
-    battleAnthem: "spotify:track:another_track_id_here",
+    battleAnthem: "spotify:track:5cvEWY2qrrPkkjv9x0a7ue",
+    homeDefense: ["/voices/xxcha/homedefense.mp3"],
+    homeInvasion: ["/voices/xxcha/homeinvasion.mp3"],
+    defenseOutnumbered: ["/voices/xxcha/defenseoutnumbered.mp3"],
+    offenseSuperior: ["/voices/xxcha/offensesuperior.mp3"],
+    battleLines: [
+      "/voices/xxcha/battle1.mp3",
+      "/voices/xxcha/battle2.mp3",
+      "/voices/xxcha/battle3.mp3",
+      "/voices/xxcha/battle4.mp3",
+      "/voices/xxcha/battle5.mp3",
+      "/voices/xxcha/battle6.mp3",
+      "/voices/xxcha/battle7.mp3",
+      "/voices/xxcha/battle8.mp3",
+      "/voices/xxcha/battle9.mp3",
+    ],
     special: {
       title: "Diplomacy Used",
-      uris: [],
+      uris: ["/voices/xxcha/special1.mp3", "/voices/xxcha/special2.mp3"],
     },
+    jokes: ["/voices/xxcha/joke1.mp3", "/voices/xxcha/joke2.mp3"],
   },
 } as const;
 
