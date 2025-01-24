@@ -15,10 +15,16 @@ import { factions } from "~/data/factionData";
 import { IconBrandSpotify } from "@tabler/icons-react";
 import querystring from "querystring";
 import { spotifyApi } from "~/vendors/spotifyApi";
-import { factionAudios, getAudioSrc } from "~/data/factionAudios";
+import { factionAudios, getAllSrcs, getAudioSrc } from "~/data/factionAudios";
 import { VoiceLineButton } from "./components/VoiceLineButton";
 import { json } from "@remix-run/server-runtime";
 import { useLoaderData } from "@remix-run/react";
+
+type VoiceLineMemory = {
+  [K in FactionId]?: {
+    [type: string]: string[];
+  };
+};
 
 type Track = {
   src: string;
@@ -31,6 +37,8 @@ type Track = {
 const factionIds: FactionId[] = ["sol", "hacan", "nomad", "muaat", "xxcha"];
 
 export default function Audio() {
+  const [voiceLineMemory, setVoiceLineMemory] = useState<VoiceLineMemory>({});
+
   const { spotifyClientId, spotifyCallbackUrl } =
     useLoaderData<typeof loader>();
   const lastKnownPositionRef = useRef<{
@@ -100,8 +108,54 @@ export default function Audio() {
     // Start battle for specific voice lines
     if (shouldStartBattle) startBattle(factionId);
 
+    // Get all possible lines for this faction/type
+    const allPossibleLines = getAllSrcs(factionId, type);
+    if (!allPossibleLines?.length) return;
+
+    // Get previously played lines
+    const playedLines = voiceLineMemory[factionId]?.[type] || [];
+
+    // Filter out previously played lines
+    const availableLines = allPossibleLines.filter(
+      (line) => !playedLines.includes(line),
+    );
+
+    // If no new lines available, reset memory for this faction/type
+    if (availableLines.length === 0) {
+      setVoiceLineMemory((prev) => ({
+        ...prev,
+        [factionId]: {
+          ...prev[factionId],
+          [type]: [],
+        },
+      }));
+      // Use all lines again
+      const selectedLine =
+        allPossibleLines[Math.floor(Math.random() * allPossibleLines.length)];
+      updateMemory(factionId, type, selectedLine);
+      playLine(selectedLine, shouldStartBattle);
+    } else {
+      // Select a random new line
+      const selectedLine =
+        availableLines[Math.floor(Math.random() * availableLines.length)];
+      updateMemory(factionId, type, selectedLine);
+      playLine(selectedLine, shouldStartBattle);
+    }
+  };
+
+  const updateMemory = (factionId: FactionId, type: string, line: string) => {
+    setVoiceLineMemory((prev) => ({
+      ...prev,
+      [factionId]: {
+        ...prev[factionId],
+        [type]: [...(prev[factionId]?.[type] || []), line],
+      },
+    }));
+  };
+
+  const playLine = (src: string, shouldStartBattle: boolean) => {
     const sound = new Howl({
-      src: [getAudioSrc(factionId, type)],
+      src: [src],
       html5: true,
       volume: volume,
       onend: () => {

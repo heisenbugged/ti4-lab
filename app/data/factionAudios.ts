@@ -70,7 +70,11 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
     jokes: ["/voices/sol/joke1.mp3", "/voices/sol/joke2.mp3"],
     special: {
       title: "Orbital Drop",
-      uris: ["/voices/sol/special1.mp3", "/voices/sol/special2.mp3"],
+      uris: [
+        "/voices/sol/special1.mp3",
+        "/voices/sol/special2.mp3",
+        "/voices/sol/special3.mp3",
+      ],
     },
   },
   hacan: {
@@ -149,4 +153,19 @@ export const getAudioSrc = (
   if (type === "special") return shuffle(factionAudio.special?.uris ?? [])[0];
 
   return shuffle(factionAudio[type] ?? [])[0];
+};
+
+export const getAllSrcs = (
+  factionId: FactionId,
+  type:
+    | "homeDefense"
+    | "homeInvasion"
+    | "defenseOutnumbered"
+    | "offenseSuperior"
+    | "battleLines"
+    | "jokes"
+    | "special",
+) => {
+  if (type === "special") return factionAudios[factionId].special.uris;
+  return factionAudios[factionId][type] ?? [];
 };
