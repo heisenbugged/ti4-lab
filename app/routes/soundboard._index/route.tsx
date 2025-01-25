@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Howl } from "howler";
 import {
   Text,
@@ -15,10 +15,15 @@ import { factions } from "~/data/factionData";
 import { IconBrandSpotify } from "@tabler/icons-react";
 import querystring from "querystring";
 import { spotifyApi } from "~/vendors/spotifyApi";
-import { factionAudios, getAllSrcs, getAudioSrc } from "~/data/factionAudios";
+import {
+  factionAudios,
+  getAllSrcs,
+  getAudioSrc,
+  LineType,
+} from "~/data/factionAudios";
 import { VoiceLineButton } from "./components/VoiceLineButton";
 import { json } from "@remix-run/server-runtime";
-import { useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 
 type VoiceLineMemory = {
   [K in FactionId]?: {
@@ -34,7 +39,14 @@ type Track = {
   startTime?: number; // in milliseconds
 };
 
-const factionIds: FactionId[] = ["sol", "hacan", "nomad", "xxcha", "muaat"];
+const factionIds: FactionId[] = [
+  "sol",
+  "hacan",
+  "nomad",
+  "xxcha",
+  "muaat",
+  "empyrean",
+];
 
 export default function Audio() {
   const [voiceLineMemory, setVoiceLineMemory] = useState<VoiceLineMemory>({});
@@ -51,7 +63,7 @@ export default function Audio() {
   const [volume, setVolume] = useState(1); // Add volume state
   const [isWarMode, setIsWarMode] = useState(false);
 
-  const { accessToken } = useSpotifyLogin();
+  const { accessToken, refreshSpotifyToken } = useSpotifyLogin();
 
   const startBattle = async (factionId: FactionId) => {
     if (!accessToken) return;
@@ -85,15 +97,7 @@ export default function Audio() {
     setLoadingAudio(null);
   };
 
-  const playAudio = (
-    factionId: FactionId,
-    type:
-      | "battleLines"
-      | "homeInvasion"
-      | "homeDefense"
-      | "battleLines"
-      | "jokes",
-  ) => {
+  const playAudio = (factionId: FactionId, type: LineType) => {
     voiceLineRef.current?.stop();
     setLoadingAudio(`${factionId}-${type}`);
 
@@ -228,6 +232,7 @@ export default function Audio() {
           Login with Spotify
         </Button>
       ) : undefined}
+
       {accessToken && <Text>Logged in to spotify</Text>}
 
       {isWarMode && (
@@ -265,6 +270,25 @@ export default function Audio() {
                     onPlay={() => playAudio(faction, "battleLines")}
                     onStop={stopAudio}
                   />
+                  <Stack gap="xs">
+                    <VoiceLineButton
+                      faction={faction}
+                      label="Outnumbered"
+                      type="defenseOutnumbered"
+                      loadingAudio={loadingAudio}
+                      onPlay={() => playAudio(faction, "defenseOutnumbered")}
+                      onStop={stopAudio}
+                    />
+                    <VoiceLineButton
+                      faction={faction}
+                      label="Superiority"
+                      type="offenseSuperior"
+                      loadingAudio={loadingAudio}
+                      onPlay={() => playAudio(faction, "offenseSuperior")}
+                      onStop={stopAudio}
+                    />
+                  </Stack>
+
                   <VoiceLineButton
                     faction={faction}
                     label="Home Defense"
@@ -344,11 +368,37 @@ interface SpotifyTokens {
   refreshToken: string | null;
 }
 
-export function useSpotifyLogin(): SpotifyTokens {
+export function useSpotifyLogin() {
   const [tokens, setTokens] = useState<SpotifyTokens>({
     accessToken: null,
     refreshToken: null,
   });
+  const refreshFetcher = useFetcher();
+
+  // Function to handle refresh
+  // Memoize the refresh function with useCallback
+  const refreshSpotifyToken = useCallback(() => {
+    refreshFetcher.submit(null, {
+      method: "get",
+      action: "/soundboard/refresh",
+    });
+  }, [refreshFetcher]);
+
+  // Set up automatic refresh every 15 minutes
+  useEffect(() => {
+    const refreshInterval = setInterval(refreshSpotifyToken, 15 * 60 * 1000);
+    return () => clearInterval(refreshInterval);
+  }, [refreshSpotifyToken]);
+
+  // handle refresh response
+  useEffect(() => {
+    if (refreshFetcher.data) {
+      setTokens((prev) => ({
+        ...prev,
+        accessToken: refreshFetcher.data.accessToken,
+      }));
+    }
+  }, [refreshFetcher.data]);
 
   // use effect is so it's done client side only
   useEffect(() => {
@@ -367,5 +417,5 @@ export function useSpotifyLogin(): SpotifyTokens {
     });
   }, []);
 
-  return tokens;
+  return { ...tokens, refreshSpotifyToken };
 }

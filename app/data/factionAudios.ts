@@ -9,6 +9,15 @@ export const factionIds: FactionId[] = [
   "nomad",
 ];
 
+export type LineType =
+  | "homeDefense"
+  | "homeInvasion"
+  | "defenseOutnumbered"
+  | "offenseSuperior"
+  | "battleLines"
+  | "jokes"
+  | "special";
+
 type FactionAudio = {
   battleAnthem: string;
   battleAnthemDelay?: number;
@@ -79,8 +88,8 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
   },
   hacan: {
     battleAnthem: "spotify:track:61Ps2sXXwiYCcyAynt81JI",
-    battleAnthemDelay: 85000,
-    homeDefense: ["/voices/hacan/home-defense.mp3"],
+    battleAnthemDelay: 153000,
+    homeDefense: ["/voices/hacan/home-defense-2.mp3"],
     homeInvasion: ["/voices/hacan/home-invasion.mp3"],
     defenseOutnumbered: ["/voices/hacan/defense-outnumbered.mp3"],
     offenseSuperior: ["/voices/hacan/offense-superior.mp3"],
@@ -101,7 +110,6 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
     },
   },
   nomad: {
-    // https://open.spotify.com/track/2Qr9qyTz3NxoSlLOzLUefL?si=4d204c88244a4d3f
     battleAnthem: "spotify:track:2Qr9qyTz3NxoSlLOzLUefL",
     homeDefense: ["/voices/nomad/homedefense.mp3"],
     homeInvasion: ["/voices/nomad/homeinvasion.mp3"],
@@ -150,19 +158,36 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
     },
     jokes: ["/voices/xxcha/joke1.mp3", "/voices/xxcha/joke2.mp3"],
   },
+  empyrean: {
+    battleAnthem: "spotify:track:018SQDupRTRsl1Wolu1X0c",
+    homeDefense: ["/voices/empyrean/homedefense.mp3"],
+    homeInvasion: ["/voices/empyrean/homeinvasion.mp3"],
+    defenseOutnumbered: ["/voices/empyrean/defenseoutnumbered.mp3"],
+    offenseSuperior: ["/voices/empyrean/offensesuperior.mp3"],
+    battleLines: [
+      "/voices/empyrean/battle1.mp3",
+      "/voices/empyrean/battle2.mp3",
+      "/voices/empyrean/battle3.mp3",
+      "/voices/empyrean/battle4.mp3",
+      "/voices/empyrean/battle5.mp3",
+      "/voices/empyrean/battle6.mp3",
+      "/voices/empyrean/battle7.mp3",
+      "/voices/empyrean/battle8.mp3",
+    ],
+    jokes: [
+      "/voices/empyrean/joke1.mp3",
+      "/voices/empyrean/joke2.mp3",
+      "/voices/empyrean/joke3.mp3",
+      "/voices/empyrean/joke4.mp3",
+    ],
+    special: {
+      title: "Frontier token",
+      uris: ["/voices/empyrean/special1.mp3", "/voices/empyrean/special2.mp3"],
+    },
+  },
 } as const;
 
-export const getAudioSrc = (
-  factionId: FactionId,
-  type:
-    | "homeDefense"
-    | "homeInvasion"
-    | "defenseOutnumbered"
-    | "offenseSuperior"
-    | "battleLines"
-    | "jokes"
-    | "special",
-): string => {
+export const getAudioSrc = (factionId: FactionId, type: LineType): string => {
   const factionAudio = factionAudios[factionId];
   if (!factionAudio) return "";
 

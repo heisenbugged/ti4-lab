@@ -1,12 +1,10 @@
-import { Button, Loader } from "@mantine/core";
-import { factionAudios } from "~/data/factionAudios";
+import { Button, ButtonProps, Loader } from "@mantine/core";
+import { factionAudios, LineType } from "~/data/factionAudios";
 import type { FactionId } from "~/types";
-
-type VoiceLineType = "battleLines" | "homeDefense" | "homeInvasion" | "jokes";
 
 interface VoiceLineControlProps {
   faction: FactionId;
-  type: VoiceLineType;
+  type: LineType;
   loadingAudio: string | null;
   onPlay: () => void;
   onStop: () => void;
@@ -15,15 +13,26 @@ interface VoiceLineControlProps {
 }
 
 const voiceLineConfig: Record<
-  VoiceLineType,
+  LineType,
   {
-    color: string;
+    color: ButtonProps["color"];
     width?: string;
+    size?: ButtonProps["size"];
   }
 > = {
   battleLines: {
     color: "green",
     width: "120px",
+  },
+  defenseOutnumbered: {
+    color: "teal",
+    width: "110px",
+    size: "compact-xs",
+  },
+  offenseSuperior: {
+    color: "teal",
+    width: "110px",
+    size: "compact-xs",
   },
   homeDefense: {
     color: "blue",
@@ -59,7 +68,7 @@ export function VoiceLineButton({
     <Button
       variant="light"
       color={config.color}
-      size="compact-md"
+      size={config.size ?? "compact-md"}
       disabled={isDisabled}
       onClick={() => {
         if (isLoading) {
