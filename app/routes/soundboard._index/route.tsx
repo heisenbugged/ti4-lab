@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import { Howl } from "howler";
+import { useEffect, useState } from "react";
 import {
   Text,
   Container,
@@ -9,9 +8,8 @@ import {
   Slider,
   Stack,
   TextInput,
-  Box,
 } from "@mantine/core";
-import { Draft, FactionId } from "~/types";
+import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
 import { factionAudios, LineType } from "~/data/factionAudios";
@@ -27,6 +25,7 @@ import QRCode from "react-qr-code";
 import { IconRefresh } from "@tabler/icons-react";
 
 export const factionIds: FactionId[] = [
+  "l1z1x",
   "sol",
   "hacan",
   "nomad",
@@ -263,6 +262,17 @@ export default function SoundboardMaster() {
                     onPlay={() => handlePlayAudio(faction, "special")}
                     onStop={stopAudio}
                   />
+                  {factionAudios[faction]?.special2 && (
+                    <VoiceLineButton
+                      faction={faction}
+                      label={factionAudios[faction]?.special2?.title ?? ""}
+                      type="special2"
+                      loadingAudio={loadingAudio}
+                      onPlay={() => handlePlayAudio(faction, "special2")}
+                      onStop={stopAudio}
+                    />
+                  )}
+
                   <VoiceLineButton
                     faction={faction}
                     label="Joke"

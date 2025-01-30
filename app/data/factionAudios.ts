@@ -16,7 +16,8 @@ export type LineType =
   | "offenseSuperior"
   | "battleLines"
   | "jokes"
-  | "special";
+  | "special"
+  | "special2";
 
 type FactionAudio = {
   battleAnthem: string;
@@ -31,9 +32,39 @@ type FactionAudio = {
     title: string;
     uris: string[];
   };
+  special2?: {
+    title: string;
+    uris: string[];
+  };
 };
 
 export const factionAudios: Record<FactionId, FactionAudio> = {
+  l1z1x: {
+    battleAnthem: "spotify:track:5HiAN0PZVXUSMgpiqrScC9",
+    homeDefense: ["/voices/l1z1x/homedefense.mp3"],
+    homeInvasion: ["/voices/l1z1x/homeinvasion.mp3"],
+    defenseOutnumbered: ["/voices/l1z1x/defenseoutnumbered.mp3"],
+    offenseSuperior: ["/voices/l1z1x/offensesuperior.mp3"],
+    battleLines: [
+      "/voices/l1z1x/battle1.mp3",
+      "/voices/l1z1x/battle2.mp3",
+      "/voices/l1z1x/battle3.mp3",
+      "/voices/l1z1x/battle4.mp3",
+      "/voices/l1z1x/battle5.mp3",
+      "/voices/l1z1x/battle6.mp3",
+      "/voices/l1z1x/battle7.mp3",
+      "/voices/l1z1x/battle8.mp3",
+    ],
+    jokes: ["/voices/l1z1x/joke1.mp3", "/voices/l1z1x/joke2.mp3"],
+    special: {
+      title: "Assimilation",
+      uris: ["/voices/l1z1x/special1.mp3", "/voices/l1z1x/special2.mp3"],
+    },
+    special2: {
+      title: "Harrow",
+      uris: ["/voices/l1z1x/special11.mp3", "/voices/l1z1x/special12.mp3"],
+    },
+  },
   muaat: {
     battleAnthem: "spotify:track:46h0MLW2ONEGKJTUdFNx5f",
     homeDefense: ["/voices/muaat/homedefense.mp3"],
@@ -207,8 +238,10 @@ export const getAllSrcs = (
     | "offenseSuperior"
     | "battleLines"
     | "jokes"
-    | "special",
+    | "special"
+    | "special2",
 ) => {
   if (type === "special") return factionAudios[factionId].special.uris;
+  if (type === "special2") return factionAudios[factionId].special2?.uris ?? [];
   return factionAudios[factionId][type] ?? [];
 };

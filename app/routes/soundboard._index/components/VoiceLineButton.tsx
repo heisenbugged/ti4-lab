@@ -50,6 +50,10 @@ const voiceLineConfig: Record<
     color: "purple",
     width: "150px",
   },
+  special2: {
+    color: "purple",
+    width: "150px",
+  },
 };
 
 export function VoiceLineButton({
