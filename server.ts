@@ -44,6 +44,31 @@ io.on("connection", (socket) => {
     socket.join("draft:" + draftId);
   });
 
+  socket.on("joinSoundboardSession", (sessionId) => {
+    console.log(socket.id, "joined soundboard session", sessionId);
+    socket.join("soundboard:" + sessionId);
+  });
+
+  socket.on("requestSessionData", (sessionId) => {
+    socket.to("soundboard:" + sessionId).emit("requestSessionData");
+  });
+
+  socket.on("sendSessionData", (sessionId, data) => {
+    socket.to("soundboard:" + sessionId).emit("sendSessionData", data);
+  });
+
+  socket.on("stopLine", (sessionId) => {
+    socket.to("soundboard:" + sessionId).emit("stopLine");
+  });
+
+  socket.on("lineFinished", (sessionId) => {
+    socket.to("soundboard:" + sessionId).emit("lineFinished");
+  });
+
+  socket.on("playLine", (sessionId, factionId, lineType) => {
+    socket.to("soundboard:" + sessionId).emit("playLine", factionId, lineType);
+  });
+
   socket.on("syncDraft", (draftId, data) => {
     console.log(socket.id, "synced draft", draftId);
     socket.to("draft:" + draftId).emit("syncDraft", data);

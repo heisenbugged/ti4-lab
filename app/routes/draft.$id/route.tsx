@@ -38,6 +38,7 @@ import { DraftablePlayerColorsSection } from "./sections/DraftablePlayerColorsSe
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { BanPhase } from "./sections/BanPhase";
 import { IconRefresh } from "@tabler/icons-react";
+import { useSocketConnection } from "~/useSocketConnection";
 
 export default function RunningDraft() {
   const { adminMode } = useSafeOutletContext();
@@ -52,32 +53,12 @@ export default function RunningDraft() {
   const { draftFinished } = useHydratedDraft();
 
   // Real-time socket connection to push and receive state updates.
-  const socket = useSocket();
-  const [isDisconnected, setIsDisconnected] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(false);
+  const { socket, isDisconnected, isReconnecting, reconnect } =
+    useSocketConnection({
+      onConnect: () => socket?.emit("joinDraft", result.id),
+    });
   useEffect(() => {
     if (!socket) return;
-
-    // join draft on every connect
-    // this way if there's a disconnection, a reconnection will rejoin the draft
-    socket.on("connect", () => {
-      socket.emit("joinDraft", result.id);
-      setIsDisconnected(false);
-    });
-
-    socket.on("disconnect", () => {
-      setIsDisconnected(true);
-    });
-
-    socket.on("reconnecting", () => {
-      console.log("reconnecting");
-      setIsReconnecting(true);
-    });
-
-    socket.on("reconnect_failed", () => {
-      setIsReconnecting(false);
-    });
-
     socket.on("syncDraft", (data) => {
       const draft = JSON.parse(data) as Draft;
       draftStore.draftActions.update(result.id!, draft);
@@ -95,12 +76,6 @@ export default function RunningDraft() {
       draftActions.setSelectedPlayer(parseInt(storedSelectedPlayer));
     }
   }, []);
-
-  const reconnect = () => {
-    setIsReconnecting(true);
-    socket?.disconnect();
-    socket?.connect();
-  };
 
   if (!draftStore.hydrated) return <LoadingOverlay />;
 

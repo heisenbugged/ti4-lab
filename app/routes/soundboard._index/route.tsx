@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Howl } from "howler";
 import {
   Text,
@@ -8,238 +8,178 @@ import {
   Group,
   Slider,
   Stack,
+  TextInput,
 } from "@mantine/core";
-import { FactionId } from "~/types";
+import { Draft, FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { IconBrandSpotify } from "@tabler/icons-react";
-import querystring from "querystring";
-import { spotifyApi } from "~/vendors/spotifyApi";
-import {
-  factionAudios,
-  getAllSrcs,
-  getAudioSrc,
-  LineType,
-} from "~/data/factionAudios";
+import { factionAudios, LineType } from "~/data/factionAudios";
 import { VoiceLineButton } from "./components/VoiceLineButton";
-import { json } from "@remix-run/server-runtime";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { ActionFunctionArgs, json, redirect } from "@remix-run/server-runtime";
+import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
+import { useAudioPlayer } from "./useAudioPlayer";
+import { SpotifyLoginButton } from "./components/SpotifyLoginButton";
+import { useSpotifyLogin } from "./useSpotifyLogin";
+import { createSession } from "~/drizzle/soundboardSession.server";
+import { useSocketConnection } from "~/useSocketConnection";
+import QRCode from "react-qr-code";
+import { IconRefresh } from "@tabler/icons-react";
 
-type VoiceLineMemory = {
-  [K in FactionId]?: {
-    [type: string]: string[];
-  };
-};
-
-type Track = {
-  src: string;
-  title: string;
-  artist: string;
-  duration?: number;
-  startTime?: number; // in milliseconds
-};
-
-const factionIds: FactionId[] = [
+export const factionIds: FactionId[] = [
   "sol",
   "hacan",
   "nomad",
   "xxcha",
-  "muaat",
   "empyrean",
+  "muaat",
 ];
 
-export default function Audio() {
-  const [voiceLineMemory, setVoiceLineMemory] = useState<VoiceLineMemory>({});
-
+export default function SoundboardMaster() {
   const { spotifyClientId, spotifyCallbackUrl } =
     useLoaderData<typeof loader>();
-  const lastKnownPositionRef = useRef<{
-    track: Track;
-    position: number;
-  } | null>(null);
+  const [playlistId, setPlaylistId] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (!playlistId) {
+      const stored = localStorage.getItem("spotifyPlaylistId");
+      setPlaylistId(stored || "6O6izIEToh3JI4sAtHQn6J");
+    }
 
+    if (playlistId) {
+      localStorage.setItem("spotifyPlaylistId", playlistId);
+    }
+  }, [playlistId]);
+
+  const [volume, setVolume] = useState(1);
+  const { accessToken } = useSpotifyLogin();
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session");
   const voiceLineRef = useRef<Howl | null>(null);
-  const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
-  const [volume, setVolume] = useState(1); // Add volume state
-  const [isWarMode, setIsWarMode] = useState(false);
 
-  const { accessToken, refreshSpotifyToken } = useSpotifyLogin();
-
-  const startBattle = async (factionId: FactionId) => {
-    if (!accessToken) return;
-    if (!isWarMode) {
-      const currentPlayback = await spotifyApi.getCurrentPlayback(accessToken);
-      console.log("currentPlayback", currentPlayback);
-      if (currentPlayback) {
-        lastKnownPositionRef.current = currentPlayback;
-      }
-
-      const delay = factionAudios[factionId].battleAnthemDelay ?? 0;
-
-      await spotifyApi.startPlayback(
-        accessToken,
-        factionAudios[factionId].battleAnthem,
-        delay,
-      );
-      setIsWarMode(true);
-    }
-  };
-
-  const endWar = async () => {
-    if (!accessToken || !lastKnownPositionRef.current) return;
-    await goBackToLastKnownPosition();
-    setLoadingAudio(null);
-    setIsWarMode(false);
-  };
-
-  const stopAudio = () => {
-    voiceLineRef.current?.stop();
-    setLoadingAudio(null);
-  };
-
-  const playAudio = (factionId: FactionId, type: LineType) => {
-    voiceLineRef.current?.stop();
-    setLoadingAudio(`${factionId}-${type}`);
-
-    const shouldStartBattle = [
-      "battleLines",
-      "homeInvasion",
-      "homeDefense",
-      "defenseOutnumbered",
-      "offenseSuperior",
-    ].includes(type);
-
-    // Start battle for specific voice lines
-    if (shouldStartBattle) startBattle(factionId);
-
-    // Get all possible lines for this faction/type
-    const allPossibleLines = getAllSrcs(factionId, type);
-    if (!allPossibleLines?.length) return;
-
-    // Get previously played lines
-    const playedLines = voiceLineMemory[factionId]?.[type] || [];
-
-    // Filter out previously played lines
-    const availableLines = allPossibleLines.filter(
-      (line) => !playedLines.includes(line),
+  const { socket, isDisconnected, isReconnecting, reconnect } =
+    useSocketConnection({
+      onConnect: () => socket?.emit("joinSoundboardSession", sessionId),
+    });
+  useEffect(() => {
+    if (!socket || !sessionId) return;
+    socket.emit("joinSoundboardSession", sessionId);
+    socket.on("requestSessionData", () =>
+      socket.emit("sendSessionData", sessionId, factionIds),
     );
+    socket.on("playLine", (factionId, lineType) =>
+      playAudio(factionId, lineType),
+    );
+    socket.on("stopLine", () => stopAudio());
+  }, [sessionId, socket]);
 
-    // If no new lines available, reset memory for this faction/type
-    if (availableLines.length === 0) {
-      setVoiceLineMemory((prev) => ({
-        ...prev,
-        [factionId]: {
-          ...prev[factionId],
-          [type]: [],
-        },
-      }));
-      // Use all lines again
-      const selectedLine =
-        allPossibleLines[Math.floor(Math.random() * allPossibleLines.length)];
-      updateMemory(factionId, type, selectedLine);
-      playLine(selectedLine, shouldStartBattle);
-    } else {
-      // Select a random new line
-      const selectedLine =
-        availableLines[Math.floor(Math.random() * availableLines.length)];
-      updateMemory(factionId, type, selectedLine);
-      playLine(selectedLine, shouldStartBattle);
-    }
-  };
-
-  const updateMemory = (factionId: FactionId, type: string, line: string) => {
-    setVoiceLineMemory((prev) => ({
-      ...prev,
-      [factionId]: {
-        ...prev[factionId],
-        [type]: [...(prev[factionId]?.[type] || []), line],
-      },
-    }));
-  };
-
-  const playLine = (src: string, shouldStartBattle: boolean) => {
-    const sound = new Howl({
-      src: [src],
-      html5: true,
-      volume: volume,
-      onend: () => {
-        setLoadingAudio(null);
-      },
-      onloaderror: () => {
-        setLoadingAudio(null);
-        console.error("Error loading audio");
+  const { playAudio, stopAudio, loadingAudio, isWarMode, endWar } =
+    useAudioPlayer({
+      accessToken,
+      playlistId: playlistId || "6O6izIEToh3JI4sAtHQn6J",
+      lineFinished: () => {
+        if (!socket) return;
+        socket.emit("lineFinished", sessionId);
       },
     });
 
-    voiceLineRef.current = sound;
-    const timeout = shouldStartBattle ? 500 : 0;
-    setTimeout(() => sound.play(), timeout);
-  };
-
-  const goBackToLastKnownPosition = async () => {
-    if (!accessToken) return;
-
-    voiceLineRef.current?.stop();
-
-    if (
-      lastKnownPositionRef.current &&
-      lastKnownPositionRef.current.context?.uri ===
-        "spotify:playlist:6O6izIEToh3JI4sAtHQn6J"
-    ) {
-      console.log("resuming playback");
-      await spotifyApi.resumePlaybackAtPosition(
-        accessToken,
-        "spotify:playlist:6O6izIEToh3JI4sAtHQn6J",
-        lastKnownPositionRef.current.track.uri,
-        lastKnownPositionRef.current.position,
-      );
-    } else {
-      console.log("no last known position");
-      // If no last known position, start playlist from beginning
-      await spotifyApi.startPlaylist(
-        accessToken,
-        "spotify:playlist:6O6izIEToh3JI4sAtHQn6J",
-      );
-    }
-  };
-
-  const spotifyAuthParams = {
-    response_type: "code",
-    client_id: spotifyClientId,
-    scope: [
-      "user-read-playback-state",
-      "user-modify-playback-state",
-      "user-read-currently-playing",
-      "app-remote-control",
-      "streaming",
-      "playlist-read-private",
-      "playlist-read-collaborative",
-      "user-read-playback-position",
-    ].join(" "),
-    redirect_uri: spotifyCallbackUrl,
+  const handlePlayAudio = (factionId: FactionId, type: LineType) => {
+    if (!socket) return;
+    playAudio(factionId, type);
   };
 
   return (
     <Container py="xl" maw={1400}>
-      {!accessToken ? (
+      {socket && isDisconnected && (
         <Button
-          leftSection={<IconBrandSpotify />}
-          color="green"
           variant="filled"
-          component="a"
-          href={`https://accounts.spotify.com/authorize?${querystring.stringify(spotifyAuthParams)}`}
+          size="md"
+          radius="xl"
+          leftSection={<IconRefresh size={20} />}
+          style={{
+            position: "fixed",
+            top: "100px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+          }}
+          onClick={reconnect}
+          loading={isReconnecting}
         >
-          Login with Spotify
-        </Button>
-      ) : undefined}
-
-      {accessToken && <Text>Logged in to spotify</Text>}
-
-      {isWarMode && (
-        <Button color="red" variant="filled" onClick={endWar} mb="xl">
-          End War
+          Refresh
         </Button>
       )}
+
+      <SpotifyLoginButton
+        accessToken={accessToken}
+        spotifyCallbackUrl={spotifyCallbackUrl}
+        spotifyClientId={spotifyClientId}
+      />
+      {accessToken && <Text>Logged in to spotify</Text>}
+
+      <Stack mb="xl" gap="md" mt="lg">
+        {sessionId && (
+          <Group align="center" gap="lg">
+            <Stack align="center" gap={4}>
+              <QRCode
+                value={`https://tidraft.com/soundboard/${sessionId}`}
+                size={200}
+              />
+              <Text size="sm" c="dimmed">
+                Scan to join session
+              </Text>
+            </Stack>
+            <Stack>
+              <Text fw={500}>Session Code: {sessionId}</Text>
+              <Text>https://tidraft.com/soundboard/{sessionId}</Text>
+            </Stack>
+          </Group>
+        )}
+
+        {/* Spotify Controls */}
+        <Group grow align="end">
+          <Group align="end" style={{ flex: 2 }}>
+            <TextInput
+              size="xl"
+              label="Playlist ID"
+              placeholder="Enter Spotify playlist ID"
+              description="Copy-paste the playlist ID from spotify that will be resumed when the war ends"
+              value={playlistId || ""}
+              onChange={(e) =>
+                setPlaylistId(extractPlaylistId(e.currentTarget.value))
+              }
+              style={{ flex: 1 }}
+            />
+            {/* end war button */}
+            <Button
+              size="xl"
+              color="red"
+              variant="filled"
+              onClick={endWar}
+              disabled={!isWarMode}
+            >
+              End War
+            </Button>
+
+            {!sessionId ? (
+              <Form method="post">
+                <Button type="submit" size="xl">
+                  Create Session
+                </Button>
+              </Form>
+            ) : (
+              <Button
+                size="xl"
+                color="blue"
+                variant="outline"
+                onClick={() =>
+                  (window.location.href = window.location.pathname)
+                }
+              >
+                End Session
+              </Button>
+            )}
+          </Group>
+        </Group>
+      </Stack>
 
       <Table verticalSpacing="lg" horizontalSpacing="lg">
         <Table.Thead>
@@ -267,7 +207,7 @@ export default function Audio() {
                     label="Battle Line"
                     type="battleLines"
                     loadingAudio={loadingAudio}
-                    onPlay={() => playAudio(faction, "battleLines")}
+                    onPlay={() => handlePlayAudio(faction, "battleLines")}
                     onStop={stopAudio}
                   />
                   <Stack gap="xs">
@@ -276,7 +216,9 @@ export default function Audio() {
                       label="Outnumbered"
                       type="defenseOutnumbered"
                       loadingAudio={loadingAudio}
-                      onPlay={() => playAudio(faction, "defenseOutnumbered")}
+                      onPlay={() =>
+                        handlePlayAudio(faction, "defenseOutnumbered")
+                      }
                       onStop={stopAudio}
                     />
                     <VoiceLineButton
@@ -284,7 +226,7 @@ export default function Audio() {
                       label="Superiority"
                       type="offenseSuperior"
                       loadingAudio={loadingAudio}
-                      onPlay={() => playAudio(faction, "offenseSuperior")}
+                      onPlay={() => handlePlayAudio(faction, "offenseSuperior")}
                       onStop={stopAudio}
                     />
                   </Stack>
@@ -294,7 +236,7 @@ export default function Audio() {
                     label="Home Defense"
                     type="homeDefense"
                     loadingAudio={loadingAudio}
-                    onPlay={() => playAudio(faction, "homeDefense")}
+                    onPlay={() => handlePlayAudio(faction, "homeDefense")}
                     onStop={stopAudio}
                   />
                   <VoiceLineButton
@@ -302,7 +244,7 @@ export default function Audio() {
                     label="Planet Invasion"
                     type="homeInvasion"
                     loadingAudio={loadingAudio}
-                    onPlay={() => playAudio(faction, "homeInvasion")}
+                    onPlay={() => handlePlayAudio(faction, "homeInvasion")}
                     onStop={stopAudio}
                   />
 
@@ -311,7 +253,7 @@ export default function Audio() {
                     label={factionAudios[faction]?.special?.title ?? ""}
                     type="special"
                     loadingAudio={loadingAudio}
-                    onPlay={() => playAudio(faction, "special")}
+                    onPlay={() => handlePlayAudio(faction, "special")}
                     onStop={stopAudio}
                   />
                   <VoiceLineButton
@@ -319,7 +261,7 @@ export default function Audio() {
                     label="Joke"
                     type="jokes"
                     loadingAudio={loadingAudio}
-                    onPlay={() => playAudio(faction, "jokes")}
+                    onPlay={() => handlePlayAudio(faction, "jokes")}
                     onStop={stopAudio}
                   />
                 </Group>
@@ -363,59 +305,12 @@ export const loader = async () => {
   });
 };
 
-interface SpotifyTokens {
-  accessToken: string | null;
-  refreshToken: string | null;
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await createSession();
+  return redirect(`/soundboard?session=${session.id}`);
 }
 
-export function useSpotifyLogin() {
-  const [tokens, setTokens] = useState<SpotifyTokens>({
-    accessToken: null,
-    refreshToken: null,
-  });
-  const refreshFetcher = useFetcher();
-
-  // Function to handle refresh
-  // Memoize the refresh function with useCallback
-  const refreshSpotifyToken = useCallback(() => {
-    refreshFetcher.submit(null, {
-      method: "get",
-      action: "/soundboard/refresh",
-    });
-  }, [refreshFetcher]);
-
-  // Set up automatic refresh every 15 minutes
-  useEffect(() => {
-    const refreshInterval = setInterval(refreshSpotifyToken, 15 * 60 * 1000);
-    return () => clearInterval(refreshInterval);
-  }, [refreshSpotifyToken]);
-
-  // handle refresh response
-  useEffect(() => {
-    if (refreshFetcher.data) {
-      setTokens((prev) => ({
-        ...prev,
-        accessToken: refreshFetcher.data.accessToken,
-      }));
-    }
-  }, [refreshFetcher.data]);
-
-  // use effect is so it's done client side only
-  useEffect(() => {
-    const getCookie = (name: string): string | null => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) {
-        return parts.pop()?.split(";").shift() || null;
-      }
-      return null;
-    };
-
-    setTokens({
-      accessToken: getCookie("spotifyAccessToken"),
-      refreshToken: getCookie("spotifyRefreshToken"),
-    });
-  }, []);
-
-  return { ...tokens, refreshSpotifyToken };
+export function extractPlaylistId(input: string) {
+  const match = input.match(/playlist[/:]([a-zA-Z0-9]{22})/);
+  return match ? match[1] : input;
 }

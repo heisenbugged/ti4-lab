@@ -8,6 +8,7 @@ interface VoiceLineControlProps {
   loadingAudio: string | null;
   onPlay: () => void;
   onStop: () => void;
+  size?: ButtonProps["size"];
   width?: number | string;
   label?: string;
 }
@@ -16,8 +17,8 @@ const voiceLineConfig: Record<
   LineType,
   {
     color: ButtonProps["color"];
-    width?: string;
     size?: ButtonProps["size"];
+    width?: string;
   }
 > = {
   battleLines: {
@@ -59,6 +60,7 @@ export function VoiceLineButton({
   onStop,
   width,
   label,
+  size,
 }: VoiceLineControlProps) {
   const config = voiceLineConfig[type];
   const isLoading = loadingAudio === `${faction}-${type}`;
@@ -68,7 +70,7 @@ export function VoiceLineButton({
     <Button
       variant="light"
       color={config.color}
-      size={config.size ?? "compact-md"}
+      size={size ?? config.size ?? "compact-md"}
       disabled={isDisabled}
       onClick={() => {
         if (isLoading) {
@@ -82,7 +84,7 @@ export function VoiceLineButton({
       {isLoading ? (
         <Loader size="xs" type="bars" color={config.color} />
       ) : (
-        label ?? config.label
+        label
       )}
     </Button>
   );

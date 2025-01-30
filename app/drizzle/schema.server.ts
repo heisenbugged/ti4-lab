@@ -64,3 +64,10 @@ export const multiDrafts = sqliteTable(
     urlNameIdx: index("multiDrafts_urlName_index").on(table.urlName),
   }),
 );
+
+export const soundboardSession = sqliteTable("soundboardSession", {
+  id: text("id").primaryKey(),
+  createdAt: text("createdAt")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});

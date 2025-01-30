@@ -82,13 +82,15 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       uris: [
         "/voices/sol/special1.mp3",
         "/voices/sol/special2.mp3",
-        "/voices/sol/special3.mp3",
+        // "/voices/sol/special3.mp3",
       ],
     },
   },
   hacan: {
     battleAnthem: "spotify:track:61Ps2sXXwiYCcyAynt81JI",
-    battleAnthemDelay: 153000,
+    // epic home system delay
+    // battleAnthemDelay: 153000,
+    battleAnthemDelay: 80000,
     homeDefense: ["/voices/hacan/home-defense-2.mp3"],
     homeInvasion: ["/voices/hacan/home-invasion.mp3"],
     defenseOutnumbered: ["/voices/hacan/defense-outnumbered.mp3"],
@@ -156,7 +158,7 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       title: "Diplomacy Used",
       uris: ["/voices/xxcha/special1.mp3", "/voices/xxcha/special2.mp3"],
     },
-    jokes: ["/voices/xxcha/joke1.mp3", "/voices/xxcha/joke2.mp3"],
+    jokes: ["/voices/xxcha/joke2.mp3"],
   },
   empyrean: {
     battleAnthem: "spotify:track:018SQDupRTRsl1Wolu1X0c",
