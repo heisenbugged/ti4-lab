@@ -145,5 +145,6 @@ export function useAudioPlayer({
     stopAudio,
     isWarMode,
     endWar,
+    voiceLineRef,
   };
 }

@@ -9,6 +9,7 @@ import {
   Slider,
   Stack,
   TextInput,
+  Box,
 } from "@mantine/core";
 import { Draft, FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -53,7 +54,6 @@ export default function SoundboardMaster() {
   const { accessToken } = useSpotifyLogin();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session");
-  const voiceLineRef = useRef<Howl | null>(null);
 
   const { socket, isDisconnected, isReconnecting, reconnect } =
     useSocketConnection({
@@ -71,15 +71,21 @@ export default function SoundboardMaster() {
     socket.on("stopLine", () => stopAudio());
   }, [sessionId, socket]);
 
-  const { playAudio, stopAudio, loadingAudio, isWarMode, endWar } =
-    useAudioPlayer({
-      accessToken,
-      playlistId: playlistId || "6O6izIEToh3JI4sAtHQn6J",
-      lineFinished: () => {
-        if (!socket) return;
-        socket.emit("lineFinished", sessionId);
-      },
-    });
+  const {
+    playAudio,
+    stopAudio,
+    loadingAudio,
+    isWarMode,
+    endWar,
+    voiceLineRef,
+  } = useAudioPlayer({
+    accessToken,
+    playlistId: playlistId || "6O6izIEToh3JI4sAtHQn6J",
+    lineFinished: () => {
+      if (!socket) return;
+      socket.emit("lineFinished", sessionId);
+    },
+  });
 
   const handlePlayAudio = (factionId: FactionId, type: LineType) => {
     if (!socket) return;
@@ -117,19 +123,20 @@ export default function SoundboardMaster() {
 
       <Stack mb="xl" gap="md" mt="lg">
         {sessionId && (
-          <Group align="center" gap="lg">
+          <Group gap="lg" justify="flex-end">
+            <Stack>
+              <Text fw={500}>Session Code: {sessionId}</Text>
+              <Text>https://tidraft.com/soundboard/{sessionId}</Text>
+            </Stack>
             <Stack align="center" gap={4}>
               <QRCode
                 value={`https://tidraft.com/soundboard/${sessionId}`}
                 size={200}
               />
+
               <Text size="sm" c="dimmed">
                 Scan to join session
               </Text>
-            </Stack>
-            <Stack>
-              <Text fw={500}>Session Code: {sessionId}</Text>
-              <Text>https://tidraft.com/soundboard/{sessionId}</Text>
             </Stack>
           </Group>
         )}
@@ -280,6 +287,7 @@ export default function SoundboardMaster() {
           value={volume}
           onChange={(newVolume) => {
             setVolume(newVolume);
+
             voiceLineRef.current?.volume(newVolume);
           }}
         />
