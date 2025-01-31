@@ -20,11 +20,8 @@ export function SpotifyLoginButton({
       "user-read-playback-state",
       "user-modify-playback-state",
       "user-read-currently-playing",
-      "app-remote-control",
-      "streaming",
       "playlist-read-private",
       "playlist-read-collaborative",
-      "user-read-playback-position",
     ].join(" "),
     redirect_uri: spotifyCallbackUrl,
   };

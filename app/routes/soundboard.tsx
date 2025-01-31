@@ -73,10 +73,11 @@ export default function LSGC4Index() {
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Audio" },
+    { title: "TI4 Soundboard" },
     {
       name: "description",
-      content: "Audio tool.",
+      content:
+        "Voice lines and music for the game Twilight Imperium 4th Edition.",
     },
   ];
 };

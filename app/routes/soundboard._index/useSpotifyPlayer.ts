@@ -1,30 +1,24 @@
-import { useRef } from "react";
-import { spotifyApi } from "~/vendors/spotifyApi";
-
-type Track = {
-  src: string;
-  title: string;
-  artist: string;
-  duration?: number;
-  startTime?: number;
-  uri: string;
-};
+import { useRef, useState } from "react";
+import { spotifyApi, SpotifyPlaybackState } from "~/vendors/spotifyApi";
 
 export function useSpotifyPlayer(
   accessToken: string | null,
   playlistId: string | null,
 ) {
-  const lastKnownPositionRef = useRef<{
-    track: Track;
-    position: number;
-    context?: {
-      uri: string;
-    };
-  } | null>(null);
+  const [currentPlayback, setCurrentPlayback] =
+    useState<SpotifyPlaybackState | null>(null);
 
-  const saveCurrentPosition = async () => {
+  const getCurrentPlayback = async (save: boolean = true) => {
     if (!accessToken) return;
     const currentPlayback = await spotifyApi.getCurrentPlayback(accessToken);
+    if (save) setCurrentPlayback(currentPlayback);
+    return currentPlayback;
+  };
+
+  const lastKnownPositionRef = useRef<SpotifyPlaybackState | null>(null);
+  const saveCurrentPosition = async () => {
+    if (!accessToken) return;
+    const currentPlayback = await getCurrentPlayback(false);
     if (currentPlayback) lastKnownPositionRef.current = currentPlayback;
   };
 
@@ -34,6 +28,8 @@ export function useSpotifyPlayer(
   ) => {
     if (!accessToken) return;
     await spotifyApi.startPlayback(accessToken, battleAnthemUri, delay);
+
+    await getCurrentPlayback();
   };
 
   const restoreLastPosition = async () => {
@@ -50,11 +46,13 @@ export function useSpotifyPlayer(
         lastKnownPositionRef.current.track.uri,
         lastKnownPositionRef.current.position,
       );
+      getCurrentPlayback();
     } else {
-      await spotifyApi.startPlaylist(
+      const playlistPlay = await spotifyApi.startPlaylist(
         accessToken,
         `spotify:playlist:${playlistId}`,
       );
+      getCurrentPlayback();
     }
   };
 
@@ -62,5 +60,6 @@ export function useSpotifyPlayer(
     saveCurrentPosition,
     startBattleAnthem,
     restoreLastPosition,
+    currentPlayback,
   };
 }

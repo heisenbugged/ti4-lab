@@ -22,8 +22,12 @@ export function useAudioPlayer({
   playlistId,
   lineFinished,
 }: Props) {
-  const { saveCurrentPosition, startBattleAnthem, restoreLastPosition } =
-    useSpotifyPlayer(accessToken, playlistId);
+  const {
+    saveCurrentPosition,
+    startBattleAnthem,
+    restoreLastPosition,
+    currentPlayback,
+  } = useSpotifyPlayer(accessToken, playlistId);
 
   const [voiceLineMemory, setVoiceLineMemory] = useState<VoiceLineMemory>({});
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
@@ -140,11 +144,12 @@ export function useAudioPlayer({
   return {
     loadingAudio,
     volume,
+    isWarMode,
+    voiceLineRef,
+    currentPlayback,
     setVolume,
     playAudio,
     stopAudio,
-    isWarMode,
     endWar,
-    voiceLineRef,
   };
 }

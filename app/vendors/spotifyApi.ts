@@ -1,3 +1,34 @@
+export type SpotifyPlaybackState = {
+  context: {
+    uri: string;
+    type: string;
+    href: string;
+    external_urls: {
+      spotify: string;
+    };
+  } | null;
+  track: {
+    name: string;
+    id: string;
+    uri: string;
+    external_urls: {
+      spotify: string;
+    };
+  };
+  position: number;
+  isPlaying: boolean;
+  artists: {
+    name: string;
+    id: string;
+    uri: string;
+  }[];
+  albumImage: {
+    height: number;
+    width: number;
+    url: string;
+  };
+};
+
 export const spotifyApi = {
   async exchangeCodeForToken(
     code: string,
@@ -95,7 +126,17 @@ export const spotifyApi = {
         track: data.item,
         position: data.progress_ms,
         isPlaying: data.is_playing,
-      };
+        artists: data.item.artists.map((artist: any) => ({
+          name: artist.name,
+          id: artist.id,
+          uri: artist.external_urls.spotify,
+        })),
+        albumImage: {
+          height: data.item.album.images[2].height,
+          width: data.item.album.images[2].width,
+          url: data.item.album.images[2].url,
+        },
+      } as SpotifyPlaybackState;
     } catch (error) {
       console.error("Error getting Spotify playback state:", error);
       return null;

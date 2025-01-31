@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   Text,
   Container,
@@ -8,6 +8,9 @@ import {
   Slider,
   Stack,
   TextInput,
+  Image,
+  Box,
+  Paper,
 } from "@mantine/core";
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -23,7 +26,7 @@ import { createSession } from "~/drizzle/soundboardSession.server";
 import { useSocketConnection } from "~/useSocketConnection";
 import QRCode from "react-qr-code";
 import { IconRefresh } from "@tabler/icons-react";
-
+import styles from "./styles.module.css";
 export const factionIds: FactionId[] = [
   "l1z1x",
   "sol",
@@ -43,10 +46,7 @@ export default function SoundboardMaster() {
       const stored = localStorage.getItem("spotifyPlaylistId");
       setPlaylistId(stored || "6O6izIEToh3JI4sAtHQn6J");
     }
-
-    if (playlistId) {
-      localStorage.setItem("spotifyPlaylistId", playlistId);
-    }
+    if (playlistId) localStorage.setItem("spotifyPlaylistId", playlistId);
   }, [playlistId]);
 
   const [volume, setVolume] = useState(1);
@@ -73,10 +73,11 @@ export default function SoundboardMaster() {
   const {
     playAudio,
     stopAudio,
+    endWar,
     loadingAudio,
     isWarMode,
-    endWar,
     voiceLineRef,
+    currentPlayback,
   } = useAudioPlayer({
     accessToken,
     playlistId: playlistId || "6O6izIEToh3JI4sAtHQn6J",
@@ -92,7 +93,7 @@ export default function SoundboardMaster() {
   };
 
   return (
-    <Container py="xl" maw={1400}>
+    <Container py="xl" maw={1400} pos="relative" mt="sm">
       {socket && isDisconnected && (
         <Button
           variant="filled"
@@ -113,16 +114,9 @@ export default function SoundboardMaster() {
         </Button>
       )}
 
-      <SpotifyLoginButton
-        accessToken={accessToken}
-        spotifyCallbackUrl={spotifyCallbackUrl}
-        spotifyClientId={spotifyClientId}
-      />
-      {accessToken && <Text>Logged in to spotify</Text>}
-
       <Stack mb="xl" gap="md" mt="lg">
         {sessionId && (
-          <Group gap="lg" justify="flex-end">
+          <Group gap="lg">
             <Stack>
               <Text fw={500}>Session Code: {sessionId}</Text>
               <Text>https://tidraft.com/soundboard/{sessionId}</Text>
@@ -140,30 +134,128 @@ export default function SoundboardMaster() {
           </Group>
         )}
 
+        {!accessToken && (
+          <Paper
+            radius="md"
+            p="md"
+            withBorder
+            maw={400}
+            pos="absolute"
+            right={0}
+            top={0}
+          >
+            <Stack>
+              <SpotifyLoginButton
+                accessToken={accessToken}
+                spotifyCallbackUrl={spotifyCallbackUrl}
+                spotifyClientId={spotifyClientId}
+              />
+              <Text size="sm" c="dimmed">
+                Log in with Spotify to control background music during peace and
+                war times. When war breaks out, the music will automatically
+                switch to more intense tracks, and return to the peaceful
+                playlist when war ends.
+              </Text>
+            </Stack>
+          </Paper>
+        )}
+
         {/* Spotify Controls */}
-        <Group grow align="end">
+        <Group grow align="end" justify="flex-end">
           <Group align="end" style={{ flex: 2 }}>
-            <TextInput
-              size="xl"
-              label="Playlist ID"
-              placeholder="Enter Spotify playlist ID"
-              description="Copy-paste the playlist ID from spotify that will be resumed when the war ends"
-              value={playlistId || ""}
-              onChange={(e) =>
-                setPlaylistId(extractPlaylistId(e.currentTarget.value))
-              }
-              style={{ flex: 1 }}
-            />
+            {accessToken && (
+              <Stack mt={12} w={300} style={{ overflow: "hidden" }}>
+                <Image
+                  src="/spotifylogo.svg"
+                  alt="Spotify Logo"
+                  style={{ width: 90, height: 24 }}
+                />
+                <Paper radius="md" p="xs" withBorder>
+                  {currentPlayback ? (
+                    <Group gap="md" wrap="nowrap">
+                      <Image
+                        src={currentPlayback.albumImage.url}
+                        alt="Album Art"
+                        width={currentPlayback.albumImage.width}
+                        height={currentPlayback.albumImage.height}
+                        radius="sm"
+                      />
+                      <Stack gap={2} style={{ overflow: "hidden" }}>
+                        <Text
+                          fw={500}
+                          size="sm"
+                          component="a"
+                          href={currentPlayback.track.external_urls.spotify}
+                          target="_blank"
+                          className={styles.hoverableTextLink}
+                          truncate
+                          style={{ maxWidth: "100%" }}
+                        >
+                          {currentPlayback.track.name}
+                        </Text>
+                        <Group gap={0}>
+                          {currentPlayback.artists.map((artist, index) => (
+                            <Fragment key={artist.id}>
+                              {index > 0 && (
+                                <Text c="dimmed" size="sm">
+                                  {" "}
+                                  ,{" "}
+                                </Text>
+                              )}
+                              <Text
+                                className={styles.hoverableTextLink}
+                                component="a"
+                                href={artist.uri}
+                                target="_blank"
+                                c="dimmed"
+                                size="sm"
+                              >
+                                {artist.name}
+                              </Text>
+                            </Fragment>
+                          ))}
+                        </Group>
+                      </Stack>
+                    </Group>
+                  ) : (
+                    <Group gap="md">
+                      <Box w={64} h={64} bg="dark.6" />
+                      <Stack gap={2}>
+                        <Box w={120} h={16} bg="dark.6" />
+                        <Box w={80} h={16} bg="dark.6" />
+                      </Stack>
+                    </Group>
+                  )}
+                </Paper>
+              </Stack>
+            )}
+
+            {accessToken && (
+              <TextInput
+                size="xl"
+                label="Playlist ID"
+                placeholder="Enter Spotify playlist ID"
+                description="Copy-paste the playlist ID from spotify that will be resumed when the war ends"
+                value={playlistId || ""}
+                onChange={(e) =>
+                  setPlaylistId(extractPlaylistId(e.currentTarget.value))
+                }
+                style={{ flex: 1 }}
+              />
+            )}
+
             {/* end war button */}
-            <Button
-              size="xl"
-              color="red"
-              variant="filled"
-              onClick={endWar}
-              disabled={!isWarMode}
-            >
-              End War
-            </Button>
+            {accessToken && (
+              <Button
+                size="xl"
+                color="red"
+                variant="filled"
+                onClick={endWar}
+                disabled={!isWarMode}
+              >
+                End War
+              </Button>
+            )}
 
             {!sessionId ? (
               <Form method="post">
