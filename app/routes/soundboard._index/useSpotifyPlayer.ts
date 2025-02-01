@@ -46,13 +46,17 @@ export function useSpotifyPlayer(
         lastKnownPositionRef.current.track.uri,
         lastKnownPositionRef.current.position,
       );
-      getCurrentPlayback();
+      setTimeout(() => {
+        getCurrentPlayback();
+      }, 500);
     } else {
-      const playlistPlay = await spotifyApi.startPlaylist(
+      await spotifyApi.startPlaylist(
         accessToken,
         `spotify:playlist:${playlistId}`,
       );
-      getCurrentPlayback();
+      setTimeout(() => {
+        getCurrentPlayback();
+      }, 500);
     }
   };
 

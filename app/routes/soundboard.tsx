@@ -1,5 +1,5 @@
 import { Button, Group, Switch, useMantineColorScheme } from "@mantine/core";
-import { json, MetaFunction } from "@remix-run/node";
+import { MetaFunction } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
 import { IconMoon, IconSun } from "@tabler/icons-react";
 import { useState } from "react";

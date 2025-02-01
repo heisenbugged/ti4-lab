@@ -15,6 +15,7 @@ import {
 } from "~/drizzle/discordMessages.server";
 import { factions } from "~/data/factionData";
 import { hydratePlayers } from "~/hooks/useHydratedDraft";
+import { draftSelectionToMessage } from "~/utils/selections";
 
 const commands = [startDraft];
 
@@ -190,36 +191,6 @@ export async function editMessage(
   }
 }
 
-function draftSelectionToMessage(
-  playerName: string,
-  selection: DraftSelection,
-  draft: Draft,
-) {
-  if (selection.type === "SELECT_SPEAKER_ORDER") {
-    return `${playerName} selected speaker order: ${selection.speakerOrder + 1}`;
-  }
-  if (selection.type === "SELECT_SLICE") {
-    const sliceName = draft.slices[selection.sliceIdx].name;
-    return `${playerName} selected slice: ${sliceName}`;
-  }
-  if (selection.type === "SELECT_FACTION") {
-    const faction = factions[selection.factionId];
-    return `${playerName} selected faction: ${faction.name}`;
-  }
-  if (selection.type === "SELECT_MINOR_FACTION") {
-    const minorFaction = factions[selection.minorFactionId];
-    return `${playerName} selected minor faction: ${minorFaction.name}`;
-  }
-  if (selection.type === "SELECT_SEAT") {
-    return `${playerName} selected seat: ${selection.seatIdx + 1}`;
-  }
-  if (selection.type === "SELECT_PLAYER_COLOR") {
-    return `${playerName} selected color: ${selection.color}`;
-  }
-
-  return "";
-}
-
 function getDraftSummaryMessage(draft: Draft) {
   const hydratedPlayers = hydratePlayers(
     draft.players,
@@ -276,8 +247,8 @@ function getDraftSummaryMessage(draft: Draft) {
   return ["# **__Draft Picks So Far__**:", ...orderedLines].join("\n");
 }
 
-const unpickedSliceEmoji = "<:sliceUnpicked:1225188657703682250>";
-const sliceEmojis: Record<number, string> = {
+export const unpickedSliceEmoji = "<:sliceUnpicked:1225188657703682250>";
+export const sliceEmojis: Record<number, string> = {
   0: "<:sliceA:1223132315476037773>",
   1: "<:sliceB:1223132318311387146>",
   2: "<:sliceC:1223132319947423787>",
@@ -306,8 +277,8 @@ const sliceEmojis: Record<number, string> = {
   25: "<:sliceZ:1227099640667701278>",
 };
 
-const unpickedPositionEmoji = "<:positionUnpicked:1227093640313180160>";
-const positionEmojis: Record<number, string> = {
+export const unpickedPositionEmoji = "<:positionUnpicked:1227093640313180160>";
+export const positionEmojis: Record<number, string> = {
   0: "<:position1:1222754925105381416>",
   1: "<:position2:1222754926174666843>",
   2: "<:position3:1222754927294550076>",
@@ -322,8 +293,8 @@ const positionEmojis: Record<number, string> = {
   11: "<:position12:1227093807372308550>",
 } as const;
 
-const unpickedFactionEmoji = "<:GoodDog:1068567308819255316>";
-const factionEmojis: Record<FactionId, string> = {
+export const unpickedFactionEmoji = "<:GoodDog:1068567308819255316>";
+export const factionEmojis: Record<FactionId, string> = {
   // Base Game Factions
   arborec: "<:Arborec:1156670455856513175>",
   argent: "<:Argent:1156670457123192873>",
@@ -390,7 +361,7 @@ const factionEmojis: Record<FactionId, string> = {
   drahn: "",
 } as const;
 
-function getAlphabetPosition(char: string): number {
+export function getAlphabetPosition(char: string): number {
   // Convert to lowercase to handle both cases
   const normalized = char.toLowerCase();
   // 'a' is charCode 97, so subtracting 96 gives position (1-26)

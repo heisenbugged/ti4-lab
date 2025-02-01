@@ -24,6 +24,7 @@ import { useAtom } from "jotai";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { PlanetFinder } from "./PlanetFinder";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
+import { DraftLogSection } from "./DraftLogSection";
 
 export function FinalizedDraft() {
   const { adminMode } = useSafeOutletContext();
@@ -101,6 +102,7 @@ export function FinalizedDraft() {
               </Table.Tbody>
             </Table>
           </Section>
+          <DraftLogSection />
           <Section>
             <SectionTitle title="Map String" />
             <Textarea>{mapString}</Textarea>

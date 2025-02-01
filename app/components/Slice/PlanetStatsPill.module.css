@@ -1,6 +1,5 @@
 .resources {
-    border-top-left-radius: var(--mantine-radius-md);
-    border-bottom-left-radius: var(--mantine-radius-md);
+
     @mixin light { background-color: var(--mantine-color-yellow-filled); }
     @mixin dark { background-color: var(--mantine-color-yellow-8); }
 }
@@ -10,14 +9,7 @@
     @mixin dark { background-color: var(--mantine-color-blue-8); }
 }
 
-.influence.withBorder {
-    border-top-right-radius: var(--mantine-radius-md);
-    border-bottom-right-radius: var(--mantine-radius-md);
-}
-
 .flex {
-    border-top-right-radius: var(--mantine-radius-md);
-    border-bottom-right-radius: var(--mantine-radius-md);
     @mixin light { background-color: var(--mantine-color-purple-2); }
     @mixin dark { background-color: var(--mantine-color-purple-6); }
 }
