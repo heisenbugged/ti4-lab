@@ -563,12 +563,28 @@ export default function DraftPrechoice() {
   const handleContinueFromSavedState = () => {
     try {
       const savedState = JSON.parse(savedStateJson);
+      const savedPlayerCount = savedState.players.length;
+      // the saved state player count might be different from the current player count
+      // so we need to adjust the players array
+      const adjustedPlayers =
+        players.length < savedPlayerCount
+          ? [
+              ...players,
+              ...Array(savedPlayerCount - players.length)
+                .fill(null)
+                .map((_, i) => ({
+                  id: players.length + i,
+                  name: "",
+                })),
+            ]
+          : players.slice(0, savedPlayerCount);
+
       navigate("/draft/new", {
         state: {
           savedDraftState: {
             ...savedState,
             integrations: { discord: discordData },
-            players,
+            players: adjustedPlayers,
             selections: [],
             pickOrder: [],
           } as Draft,

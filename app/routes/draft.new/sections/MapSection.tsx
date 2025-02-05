@@ -15,8 +15,9 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { Tile } from "~/types";
+import { PlayerSelection, Tile } from "~/types";
 import { systemData } from "~/data/systemData";
+import { hydrateMap } from "~/utils/map";
 
 export function MapSection() {
   const config = useDraftConfig();
