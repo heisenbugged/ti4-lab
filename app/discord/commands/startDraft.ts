@@ -34,15 +34,13 @@ const data = new SlashCommandBuilder()
     option
       .setName("player5")
       .setDescription("Player 5's discord name")
-      .setRequired(false)
-      .setAutocomplete(true),
+      .setRequired(false),
   )
   .addStringOption((option) =>
     option
       .setName("player6")
       .setDescription("Player 6's discord name")
-      .setRequired(false)
-      .setAutocomplete(true),
+      .setRequired(false),
   )
   .addStringOption((option) =>
     option
