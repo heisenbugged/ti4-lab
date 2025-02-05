@@ -88,20 +88,26 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
       {player && (
         <Stack
           align="center"
-          gap="6px"
+          gap={1}
           w={radius * 1.25}
           justify="center"
           style={{ zIndex: 1 }}
         >
           {player.faction && (
             <FactionIcon
-              visibleFrom="xs"
+              // visibleFrom="xs"
               faction={player.faction}
               style={{ maxWidth: radius * 0.6, maxHeight: radius * 0.6 }}
             />
           )}
           <PlayerChip player={player} size="lg" visibleFrom="lg" />
-          <PlayerChip player={player} size="md" hiddenFrom="lg" />
+          <PlayerChip
+            player={player}
+            size="md"
+            visibleFrom="md"
+            hiddenFrom="lg"
+          />
+          <PlayerChip player={player} size="sm" hiddenFrom="md" />
         </Stack>
       )}
     </Hex>
