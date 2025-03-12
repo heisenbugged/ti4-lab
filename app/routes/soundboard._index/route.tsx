@@ -25,7 +25,7 @@ import { useSpotifyLogin } from "./useSpotifyLogin";
 import { createSession } from "~/drizzle/soundboardSession.server";
 import { useSocketConnection } from "~/useSocketConnection";
 import QRCode from "react-qr-code";
-import { IconRefresh } from "@tabler/icons-react";
+import { IconMusic, IconRefresh } from "@tabler/icons-react";
 import styles from "./styles.module.css";
 export const factionIds: FactionId[] = [
   "l1z1x",
@@ -78,6 +78,7 @@ export default function SoundboardMaster() {
     isWarMode,
     voiceLineRef,
     currentPlayback,
+    startBattle,
   } = useAudioPlayer({
     accessToken,
     playlistId: playlistId || "6O6izIEToh3JI4sAtHQn6J",
@@ -165,11 +166,22 @@ export default function SoundboardMaster() {
           <Group align="end" style={{ flex: 2 }}>
             {accessToken && (
               <Stack mt={12} w={300} style={{ overflow: "hidden" }}>
-                <Image
-                  src="/spotifylogo.svg"
-                  alt="Spotify Logo"
-                  style={{ width: 90, height: 24 }}
-                />
+                <Group justify="space-between" align="center">
+                  <Image
+                    src="/spotifylogo.svg"
+                    alt="Spotify Logo"
+                    style={{ width: 90, height: 24 }}
+                  />
+                  <Button
+                    variant="outline"
+                    color="red"
+                    size="xs"
+                    component="a"
+                    href="/soundboard/logout"
+                  >
+                    Logout
+                  </Button>
+                </Group>
                 <Paper radius="md" p="xs" withBorder>
                   {currentPlayback ? (
                     <Group gap="md" wrap="nowrap">
@@ -300,6 +312,15 @@ export default function SoundboardMaster() {
               </Table.Td>
               <Table.Td>
                 <Group gap="md">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    color="green"
+                    p={6}
+                    onClick={() => startBattle(faction)}
+                  >
+                    <IconMusic size={16} />
+                  </Button>
                   <VoiceLineButton
                     faction={faction}
                     label="Battle Line"

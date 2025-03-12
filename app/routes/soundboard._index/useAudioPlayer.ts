@@ -151,5 +151,6 @@ export function useAudioPlayer({
     playAudio,
     stopAudio,
     endWar,
+    startBattle,
   };
 }
