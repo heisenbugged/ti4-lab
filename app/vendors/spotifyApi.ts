@@ -201,4 +201,47 @@ export const spotifyApi = {
       console.error("Error resuming Spotify playback:", error);
     }
   },
+
+  async getAvailableDevices(token: string) {
+    try {
+      const response = await fetch(
+        "https://api.spotify.com/v1/me/player/devices",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.devices;
+    } catch (error) {
+      console.error("Error getting available Spotify devices:", error);
+      return [];
+    }
+  },
+
+  async transferPlayback(token: string, deviceId: string) {
+    try {
+      await fetch("https://api.spotify.com/v1/me/player", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          device_ids: [deviceId],
+          play: true,
+        }),
+      });
+      return true;
+    } catch (error) {
+      console.error("Error transferring playback to device:", error);
+      return false;
+    }
+  },
 };
