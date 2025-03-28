@@ -183,6 +183,7 @@ export default function SoundboardMaster() {
     useLoaderData<typeof loader>();
   const [playlistId, setPlaylistId] = useState<string | undefined>(undefined);
   const [factionSlots, setFactionSlots] = useState<FactionId[]>([
+    "jolnar",
     "l1z1x",
     "sol",
     "hacan",

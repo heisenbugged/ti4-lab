@@ -39,6 +39,34 @@ type FactionAudio = {
 };
 
 export const factionAudios: Record<FactionId, FactionAudio> = {
+  jolnar: {
+    battleAnthem: "spotify:track:3xlr5CPOArA6UEw6f29st9",
+    homeDefense: ["/voices/jolnar/homedefense.mp3"],
+    homeInvasion: ["/voices/jolnar/homeinvasion.mp3"],
+    defenseOutnumbered: ["/voices/jolnar/defenseoutnumbered.mp3"],
+    offenseSuperior: ["/voices/jolnar/offensesuperior.mp3"],
+    battleLines: [
+      "/voices/jolnar/battle1.mp3",
+      "/voices/jolnar/battle2.mp3",
+      "/voices/jolnar/battle3.mp3",
+      "/voices/jolnar/battle4.mp3",
+      "/voices/jolnar/battle5.mp3",
+      "/voices/jolnar/battle6.mp3",
+      "/voices/jolnar/battle7.mp3",
+      "/voices/jolnar/battle8.mp3",
+    ],
+    special: {
+      title: "Tech Acquired",
+      uris: ["/voices/jolnar/special1.mp3", "/voices/jolnar/special2.mp3"],
+    },
+    jokes: [
+      "/voices/jolnar/joke1.mp3",
+      "/voices/jolnar/joke2.mp3",
+      "/voices/jolnar/joke3.mp3",
+      "/voices/jolnar/joke4.mp3",
+      "/voices/jolnar/joke5.mp3",
+    ],
+  },
   l1z1x: {
     battleAnthem: "spotify:track:5HiAN0PZVXUSMgpiqrScC9",
     homeDefense: ["/voices/l1z1x/homedefense.mp3"],
