@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useMemo } from "react";
 import {
   Text,
   Container,
@@ -16,6 +16,11 @@ import {
   Modal,
   List,
   Alert,
+  Badge,
+  Popover,
+  ScrollArea,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -41,6 +46,11 @@ import {
   IconDeviceMobile,
   IconDeviceSpeaker,
   IconDeviceUnknown,
+  IconPlayerSkipForward,
+  IconTrash,
+  IconX,
+  IconList,
+  IconInfoCircle,
 } from "@tabler/icons-react";
 import styles from "./styles.module.css";
 
@@ -178,6 +188,100 @@ const SpotifyDeviceSelector = ({
   );
 };
 
+// Voice Line Queue Display
+interface VoiceLineQueueProps {
+  queue: Array<{
+    factionId: FactionId;
+    type: LineType;
+    id: string;
+  }>;
+  onRemove: (id: string) => void;
+  onClear: () => void;
+}
+
+const VoiceLineQueue = ({ queue, onRemove, onClear }: VoiceLineQueueProps) => {
+  const [opened, setOpened] = useState(false);
+
+  if (queue.length === 0) {
+    return null;
+  }
+
+  return (
+    <Popover
+      opened={opened}
+      onChange={setOpened}
+      position="top"
+      width={300}
+      shadow="md"
+    >
+      <Popover.Target>
+        <Button
+          variant="subtle"
+          size="sm"
+          leftSection={<IconList size={16} />}
+          rightSection={
+            <Badge size="sm" circle variant="filled" color="blue">
+              {queue.length}
+            </Badge>
+          }
+          onClick={() => setOpened((o) => !o)}
+        >
+          Queue
+        </Button>
+      </Popover.Target>
+      <Popover.Dropdown>
+        <Stack>
+          <Group justify="space-between">
+            <Text fw={500}>Queued Voice Lines</Text>
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              onClick={onClear}
+              title="Clear queue"
+            >
+              <IconTrash size={16} />
+            </ActionIcon>
+          </Group>
+          <ScrollArea h={Math.min(200, queue.length * 60)} offsetScrollbars>
+            <Stack gap="xs">
+              {queue.map((item, index) => (
+                <Paper key={item.id} withBorder p="xs">
+                  <Group justify="space-between" wrap="nowrap">
+                    <Group gap="xs" style={{ flex: 1 }}>
+                      <Text size="sm" fw={700} c="dimmed">
+                        {index + 1}.
+                      </Text>
+                      <FactionIcon
+                        faction={item.factionId}
+                        style={{ width: 20, height: 20 }}
+                      />
+                      <Text size="sm" truncate style={{ flex: 1 }}>
+                        {item.type === "special"
+                          ? factionAudios[item.factionId]?.special?.title
+                          : item.type === "special2"
+                            ? factionAudios[item.factionId]?.special2?.title
+                            : LINE_TYPE_DISPLAY_NAMES[item.type]}
+                      </Text>
+                    </Group>
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      color="red"
+                      onClick={() => onRemove(item.id)}
+                    >
+                      <IconX size={14} />
+                    </ActionIcon>
+                  </Group>
+                </Paper>
+              ))}
+            </Stack>
+          </ScrollArea>
+        </Stack>
+      </Popover.Dropdown>
+    </Popover>
+  );
+};
+
 export default function SoundboardMaster() {
   const { spotifyClientId, spotifyCallbackUrl } =
     useLoaderData<typeof loader>();
@@ -227,6 +331,11 @@ export default function SoundboardMaster() {
     noActiveDeviceError,
     setNoActiveDeviceError,
     transferToDevice,
+    // Queue-related functions
+    removeFromQueue,
+    clearQueue,
+    voiceLineQueue,
+    isPlayingQueue,
   } = useAudioPlayer({
     accessToken,
     playlistId: playlistId || "6O6izIEToh3JI4sAtHQn6J",
@@ -237,10 +346,24 @@ export default function SoundboardMaster() {
     },
   });
 
+  // Create lookup maps for queued voice lines for quick checking if a voice line is queued
+  const queuedLinesMap = useMemo(() => {
+    const map = new Map<string, boolean>();
+
+    voiceLineQueue.forEach((item) => {
+      const key = `${item.factionId}-${item.type}`;
+      map.set(key, true);
+    });
+
+    return map;
+  }, [voiceLineQueue]);
+
+  const isVoiceLineQueued = (factionId: FactionId, type: LineType) => {
+    return queuedLinesMap.has(`${factionId}-${type}`);
+  };
+
   useEffect(() => {
-    if (accessToken) {
-      getDevices();
-    }
+    if (accessToken) getDevices();
   }, [accessToken]);
 
   const handlePlayAudio = async (factionId: FactionId, type: LineType) => {
@@ -567,6 +690,7 @@ export default function SoundboardMaster() {
                     loadingAudio={loadingAudio}
                     onPlay={() => handlePlayAudio(faction, "battleLines")}
                     onStop={handleStopAudio}
+                    isQueued={isVoiceLineQueued(faction, "battleLines")}
                   />
                   <Stack gap="xs">
                     <VoiceLineButton
@@ -578,6 +702,10 @@ export default function SoundboardMaster() {
                         handlePlayAudio(faction, "defenseOutnumbered")
                       }
                       onStop={handleStopAudio}
+                      isQueued={isVoiceLineQueued(
+                        faction,
+                        "defenseOutnumbered",
+                      )}
                     />
                     <VoiceLineButton
                       faction={faction}
@@ -586,6 +714,7 @@ export default function SoundboardMaster() {
                       loadingAudio={loadingAudio}
                       onPlay={() => handlePlayAudio(faction, "offenseSuperior")}
                       onStop={handleStopAudio}
+                      isQueued={isVoiceLineQueued(faction, "offenseSuperior")}
                     />
                   </Stack>
 
@@ -596,6 +725,7 @@ export default function SoundboardMaster() {
                     loadingAudio={loadingAudio}
                     onPlay={() => handlePlayAudio(faction, "homeDefense")}
                     onStop={handleStopAudio}
+                    isQueued={isVoiceLineQueued(faction, "homeDefense")}
                   />
                   <VoiceLineButton
                     faction={faction}
@@ -604,6 +734,7 @@ export default function SoundboardMaster() {
                     loadingAudio={loadingAudio}
                     onPlay={() => handlePlayAudio(faction, "homeInvasion")}
                     onStop={handleStopAudio}
+                    isQueued={isVoiceLineQueued(faction, "homeInvasion")}
                   />
 
                   <VoiceLineButton
@@ -613,6 +744,7 @@ export default function SoundboardMaster() {
                     loadingAudio={loadingAudio}
                     onPlay={() => handlePlayAudio(faction, "special")}
                     onStop={handleStopAudio}
+                    isQueued={isVoiceLineQueued(faction, "special")}
                   />
                   {factionAudios[faction]?.special2 && (
                     <VoiceLineButton
@@ -622,6 +754,7 @@ export default function SoundboardMaster() {
                       loadingAudio={loadingAudio}
                       onPlay={() => handlePlayAudio(faction, "special2")}
                       onStop={handleStopAudio}
+                      isQueued={isVoiceLineQueued(faction, "special2")}
                     />
                   )}
 
@@ -632,6 +765,7 @@ export default function SoundboardMaster() {
                     loadingAudio={loadingAudio}
                     onPlay={() => handlePlayAudio(faction, "jokes")}
                     onStop={handleStopAudio}
+                    isQueued={isVoiceLineQueued(faction, "jokes")}
                   />
                 </Group>
               </Table.Td>
@@ -639,7 +773,8 @@ export default function SoundboardMaster() {
           ))}
         </Table.Tbody>
       </Table>
-
+      <div style={{ height: 100 }} />
+      {/* Footer */}
       <Box
         component="footer"
         style={(theme) => ({
@@ -654,7 +789,7 @@ export default function SoundboardMaster() {
         })}
       >
         <Container size="xl" px={0}>
-          <Group gap="md">
+          <Group gap="md" align="center">
             <Group gap="xs">
               <Button
                 variant="filled"
@@ -679,6 +814,28 @@ export default function SoundboardMaster() {
                   <IconPlayerPlay size={16} />
                 )}
               </Button>
+
+              {/* Skip to next in queue button */}
+              {voiceLineQueue.length > 0 && (
+                <Tooltip label="Skip to next in queue">
+                  <ActionIcon
+                    variant="filled"
+                    color="blue"
+                    size="md"
+                    onClick={() => {
+                      stopAudio();
+                      if (voiceLineQueue.length > 0) {
+                        const nextItem = voiceLineQueue[0];
+                        playAudio(nextItem.factionId, nextItem.type, true);
+                        removeFromQueue(nextItem.id);
+                      }
+                    }}
+                  >
+                    <IconPlayerSkipForward size={16} />
+                  </ActionIcon>
+                </Tooltip>
+              )}
+
               {playingFaction && playingLineType && (
                 <Group gap="xs">
                   <FactionIcon
@@ -730,6 +887,13 @@ export default function SoundboardMaster() {
                 })}
               />
             </Group>
+
+            {/* Queue Display */}
+            <VoiceLineQueue
+              queue={voiceLineQueue}
+              onRemove={removeFromQueue}
+              onClear={clearQueue}
+            />
 
             <Group gap="xs">
               <Button

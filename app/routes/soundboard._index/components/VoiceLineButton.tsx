@@ -11,6 +11,7 @@ interface VoiceLineControlProps {
   size?: ButtonProps["size"];
   width?: number | string;
   label?: string;
+  isQueued?: boolean;
 }
 
 const voiceLineConfig: Record<
@@ -65,6 +66,7 @@ export function VoiceLineButton({
   width,
   label,
   size,
+  isQueued = false,
 }: VoiceLineControlProps) {
   const config = voiceLineConfig[type];
   const isLoading = loadingAudio === `${faction}-${type}`;
@@ -72,7 +74,7 @@ export function VoiceLineButton({
 
   return (
     <Button
-      variant="light"
+      variant={isQueued ? "outline" : "light"}
       color={config.color}
       size={size ?? config.size ?? "compact-md"}
       disabled={isDisabled}
@@ -87,6 +89,8 @@ export function VoiceLineButton({
     >
       {isLoading ? (
         <Loader size="xs" type="bars" color={config.color} />
+      ) : isQueued ? (
+        "Queued"
       ) : (
         label
       )}

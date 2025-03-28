@@ -11,11 +11,21 @@ type VoiceLineMemory = {
   };
 };
 
+// Define the type for a queued voice line
+type QueuedVoiceLine = {
+  factionId: FactionId;
+  type: LineType;
+  id: string; // Unique identifier for the queue item
+};
+
 type Props = {
   accessToken: string | null;
   playlistId: string | null;
   lineFinished: () => void;
 };
+
+// Auto-queue timeframe in milliseconds (2 second)
+const AUTO_QUEUE_TIMEFRAME = 2000;
 
 export function useAudioPlayer({
   accessToken,
@@ -45,6 +55,19 @@ export function useAudioPlayer({
   const progressIntervalRef = useRef<number | null>(null);
   const isWarModeRef = useRef(isWarMode);
 
+  // Track the last time a voice line was triggered
+  const lastVoiceLineTriggerTime = useRef<number>(0);
+
+  // Queue state
+  const [voiceLineQueue, setVoiceLineQueue] = useState<QueuedVoiceLine[]>([]);
+  // Keep a ref to the queue to access current values in callbacks
+  const voiceLineQueueRef = useRef<QueuedVoiceLine[]>([]);
+
+  // Update the ref whenever the queue state changes
+  useEffect(() => {
+    voiceLineQueueRef.current = voiceLineQueue;
+  }, [voiceLineQueue]);
+
   useEffect(() => {
     isWarModeRef.current = isWarMode;
   }, [isWarMode]);
@@ -56,6 +79,8 @@ export function useAudioPlayer({
       }
     };
   }, []);
+
+  // Remove the effect for checking queue items when audio stops playing
 
   const stopAudio = () => {
     voiceLineRef.current?.stop();
@@ -98,7 +123,96 @@ export function useAudioPlayer({
     setIsWarMode(false);
   };
 
-  const playAudio = (factionId: FactionId, type: LineType) => {
+  // Function to play the next item in the queue - this will now be called directly
+  const playNextFromQueue = () => {
+    // Use the ref to get the current queue state
+    const currentQueue = voiceLineQueueRef.current;
+
+    if (currentQueue.length === 0) {
+      return;
+    }
+
+    const nextItem = currentQueue[0];
+
+    // Update the queue state, removing the first item
+    const newQueue = currentQueue.slice(1);
+    voiceLineQueueRef.current = newQueue;
+    setVoiceLineQueue(newQueue);
+
+    // Play the next item - pass true to indicate it's from the queue
+    playAudio(nextItem.factionId, nextItem.type, true);
+  };
+
+  // Function to add a voice line to the queue
+  const addToQueue = (factionId: FactionId, type: LineType) => {
+    const queueItem: QueuedVoiceLine = {
+      factionId,
+      type,
+      id: `${factionId}-${type}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+    };
+
+    // Update both the state and the ref
+    const newQueue = [...voiceLineQueueRef.current, queueItem];
+    voiceLineQueueRef.current = newQueue;
+    setVoiceLineQueue(newQueue);
+
+    // Update the last trigger time to reset the 2-second window
+    // This ensures the timeout is from the last queued item, not the first
+    lastVoiceLineTriggerTime.current = Date.now();
+
+    // If nothing is currently playing, start playing from queue
+    if (!loadingAudio && voiceLineQueueRef.current.length === 1) {
+      playNextFromQueue();
+    }
+
+    return queueItem.id; // Return the ID so it can be referenced later
+  };
+
+  // Function to remove an item from the queue
+  const removeFromQueue = (id: string) => {
+    const newQueue = voiceLineQueueRef.current.filter((item) => item.id !== id);
+    voiceLineQueueRef.current = newQueue;
+    setVoiceLineQueue(newQueue);
+  };
+
+  // Function to clear the entire queue
+  const clearQueue = () => {
+    voiceLineQueueRef.current = [];
+    setVoiceLineQueue([]);
+  };
+
+  const playAudio = (
+    factionId: FactionId,
+    type: LineType,
+    isFromQueue = false,
+  ) => {
+    const now = Date.now();
+    const timeSinceLastTrigger = now - lastVoiceLineTriggerTime.current;
+
+    // If we're already playing something and this was triggered within the auto-queue timeframe,
+    // add it to the queue instead of playing immediately (unless it's already from the queue)
+    if (
+      !isFromQueue &&
+      loadingAudio &&
+      timeSinceLastTrigger < AUTO_QUEUE_TIMEFRAME
+    ) {
+      addToQueue(factionId, type);
+      return;
+    }
+
+    // If the voice line is triggered outside the auto-queue timeframe and it's not from the queue,
+    // clear any existing queue items
+    if (
+      !isFromQueue &&
+      timeSinceLastTrigger >= AUTO_QUEUE_TIMEFRAME &&
+      voiceLineQueueRef.current.length > 0
+    ) {
+      clearQueue();
+    }
+
+    // Update the last trigger time
+    lastVoiceLineTriggerTime.current = now;
+
     voiceLineRef.current?.stop();
     setLoadingAudio(`${factionId}-${type}`);
 
@@ -138,13 +252,13 @@ export function useAudioPlayer({
       const selectedLine =
         allPossibleLines[Math.floor(Math.random() * allPossibleLines.length)];
       updateMemory(factionId, type, selectedLine);
-      playLine(selectedLine, shouldStartBattle);
+      playLine(selectedLine, shouldStartBattle, isFromQueue);
     } else {
       // Select a random new line
       const selectedLine =
         availableLines[Math.floor(Math.random() * availableLines.length)];
       updateMemory(factionId, type, selectedLine);
-      playLine(selectedLine, shouldStartBattle);
+      playLine(selectedLine, shouldStartBattle, isFromQueue);
     }
   };
 
@@ -158,7 +272,11 @@ export function useAudioPlayer({
     }));
   };
 
-  const playLine = (src: string, shouldStartBattle: boolean) => {
+  const playLine = (
+    src: string,
+    shouldStartBattle: boolean,
+    isFromQueue: boolean = false,
+  ) => {
     const sound = new Howl({
       src: [src],
       html5: true,
@@ -171,10 +289,27 @@ export function useAudioPlayer({
           progressIntervalRef.current = null;
         }
         lineFinished();
+
+        // Get the most current queue state from the ref
+        const currentQueue = voiceLineQueueRef.current;
+
+        // Check if there are more items in the queue
+        if (currentQueue.length > 0) {
+          // Call playNextFromQueue directly after a short delay
+          setTimeout(playNextFromQueue, 100);
+        }
       },
       onloaderror: () => {
         setLoadingAudio(null);
         console.error("Error loading audio");
+
+        // Get the most current queue state from the ref
+        const currentQueue = voiceLineQueueRef.current;
+
+        // If loading failed and we have more queue items, try the next item
+        if (currentQueue.length > 0) {
+          setTimeout(playNextFromQueue, 100);
+        }
       },
       onplay: () => {
         if (progressIntervalRef.current) {
@@ -213,5 +348,11 @@ export function useAudioPlayer({
     isLoadingDevices,
     noActiveDeviceError,
     setNoActiveDeviceError,
+    // Queue-related functions
+    removeFromQueue,
+    clearQueue,
+    voiceLineQueue,
+    // Not needed anymore since we're not using it for decision making
+    isPlayingQueue: voiceLineQueue.length > 0,
   };
 }
