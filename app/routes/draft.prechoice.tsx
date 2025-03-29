@@ -54,6 +54,7 @@ import {
   IconFlagCog,
   IconInfoCircle,
   IconPlayerPlay,
+  IconSettings,
   IconShieldCog,
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
@@ -65,6 +66,11 @@ import { std4p } from "~/draft/std4p";
 import { FactionSettingsModal } from "~/components/FactionSettingsModal";
 import { getFactionPool } from "~/utils/factions";
 import { notifications } from "@mantine/notifications";
+import {
+  MiltySettingsModal,
+  DEFAULT_MILTY_SETTINGS,
+  MiltyDraftSettings,
+} from "~/components/MiltySettingsModal";
 
 type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 
@@ -241,9 +247,6 @@ export default function DraftPrechoice() {
 
   const [numFactions, setNumFactions] = useState(playerCount);
   const [numSlices, setNumSlices] = useState(playerCount);
-
-  const [minOptimalTotal, setMinOptimalTotal] = useState<number>(9);
-  const [maxOptimalTotal, setMaxOptimalTotal] = useState<number>(13);
 
   const [contentFlags, setContentFlags] = useState<ContentFlags>({
     excludeBaseFactions: false,
@@ -500,14 +503,25 @@ export default function DraftPrechoice() {
       allowHomePlanetSearch,
       allowEmptyTiles: allowEmptyMapTiles,
       numPreassignedFactions,
-      minOptimal: minOptimalTotal,
-      maxOptimal: maxOptimalTotal,
       draftPlayerColors,
       modifiers: banFactions ? { banFactions: { numFactions: 1 } } : undefined,
       allowedFactions: allowedFactions,
       requiredFactions: requiredFactions,
       factionStratification: stratifiedConfig,
     };
+
+    // Add Milty-specific settings if the selected map type is 'milty'
+    if (selectedMapType === "milty") {
+      draftSettings.sliceGenerationConfig = {
+        minOptimal: miltySettings.minOptimal ?? 9,
+        maxOptimal: miltySettings.maxOptimal ?? 13,
+        safePathToMecatol: miltySettings.safePathToMecatol,
+        highQualityAdjacent: miltySettings.highQualityAdjacent,
+        numAlphas: miltySettings.minAlphaWormholes,
+        numBetas: miltySettings.minBetaWormholes,
+        numLegendaries: miltySettings.minLegendaries,
+      };
+    }
 
     // both cannot be set at the same time
     if (minorFactionsInSharedPool) {
@@ -595,6 +609,15 @@ export default function DraftPrechoice() {
     }
   };
 
+  const [
+    miltySettingsOpened,
+    { open: openMiltySettings, close: closeMiltySettings },
+  ] = useDisclosure(false);
+
+  const [miltySettings, setMiltySettings] = useState<MiltyDraftSettings>(
+    DEFAULT_MILTY_SETTINGS,
+  );
+
   return (
     <Grid mt="lg">
       <FactionSettingsModal
@@ -608,6 +631,13 @@ export default function DraftPrechoice() {
         savedStratifiedConfig={stratifiedConfig}
         onClose={closeFactionSettings}
         onSave={handleSaveFactionSettings}
+      />
+
+      <MiltySettingsModal
+        opened={miltySettingsOpened}
+        settings={miltySettings}
+        onClose={closeMiltySettings}
+        onSave={(newSettings) => setMiltySettings(newSettings)}
       />
 
       <Modal
@@ -737,6 +767,40 @@ export default function DraftPrechoice() {
             >
               {Object.entries(MAPS).map(([type, { title, playerCount }]) => {
                 if (playerCount !== players.length) return null;
+
+                if (type === "milty") {
+                  return (
+                    <Group key={type} gap="xs">
+                      <Button
+                        miw="110px"
+                        color="blue"
+                        size="md"
+                        variant={
+                          selectedMapType === type ? "filled" : "outline"
+                        }
+                        ff="heading"
+                        onMouseOver={() =>
+                          setHoveredMapType(type as ChoosableDraftType)
+                        }
+                        onMouseDown={() =>
+                          handleChangeSelectedMapType(
+                            type as ChoosableDraftType,
+                          )
+                        }
+                      >
+                        {title}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        color="blue"
+                        size="md"
+                        onClick={() => openMiltySettings()}
+                      >
+                        <IconSettings size={18} />
+                      </Button>
+                    </Group>
+                  );
+                }
 
                 return (
                   <Button
@@ -974,38 +1038,6 @@ export default function DraftPrechoice() {
           <Collapse in={showAdvancedSettings}>
             <Stack>
               <SectionTitle title="Advanced Options" />
-
-              {mapType === "milty" && (
-                <Group>
-                  <NumberStepper
-                    value={minOptimalTotal}
-                    decrease={() => setMinOptimalTotal((v) => v - 1)}
-                    increase={() => setMinOptimalTotal((v) => v + 1)}
-                    decreaseDisabled={minOptimalTotal <= 0}
-                    increaseDisabled={
-                      minOptimalTotal >= maxOptimalTotal ||
-                      minOptimalTotal >= 11
-                    }
-                  />
-                  <Text>Minimum optimal total</Text>
-                </Group>
-              )}
-
-              {mapType === "milty" && (
-                <Group>
-                  <NumberStepper
-                    value={maxOptimalTotal}
-                    decrease={() => setMaxOptimalTotal((v) => v - 1)}
-                    increase={() => setMaxOptimalTotal((v) => v + 1)}
-                    decreaseDisabled={
-                      maxOptimalTotal <= minOptimalTotal ||
-                      maxOptimalTotal <= 10
-                    }
-                    increaseDisabled={maxOptimalTotal >= 20}
-                  />
-                  <Text>Maximum optimal total</Text>
-                </Group>
-              )}
 
               <Switch
                 checked={draftSpeaker}

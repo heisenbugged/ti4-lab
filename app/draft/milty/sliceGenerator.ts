@@ -1,12 +1,7 @@
 import { SystemId, SystemIds } from "~/types";
 import { SLICE_SHAPES } from "../sliceShapes";
 import { miltySystemTiers } from "~/data/miltyTileTiers";
-import {
-  ChoosableTier,
-  MiltyExtendedSettings,
-  SliceGenerationConfig,
-  TieredSystems,
-} from "../types";
+import { ChoosableTier, SliceGenerationConfig, TieredSystems } from "../types";
 import { shuffle } from "../helpers/randomization";
 import {
   filterTieredSystems,
@@ -39,9 +34,6 @@ export function generateSlices(
   },
   sliceShape: string[] = SLICE_SHAPES.milty,
 ) {
-  // Extract extended settings from config if available
-  const extendedSettings = config.extendedSettings;
-
   const allTieredSystems = availableSystems.reduce(
     (acc, id) => {
       const tier = miltySystemTiers[id];
@@ -133,10 +125,17 @@ export function generateSlices(
     slices[sliceIndex] = slice;
   }
 
-  // Apply additional processing for extended milty settings
-  return extendedSettings
-    ? postProcessSlices(slices, extendedSettings)
-    : slices;
+  // Check for safe path to Mecatol requirement
+  if (config.safePathToMecatol && config.safePathToMecatol > 0) {
+    ensureSafePathToMecatol(slices, config.safePathToMecatol);
+  }
+
+  // Check for high-quality adjacent to home requirement
+  if (config.highQualityAdjacent && config.highQualityAdjacent > 0) {
+    ensureHighQualityAdjacent(slices, config.highQualityAdjacent);
+  }
+
+  return slices;
 }
 
 // Function to check if a slice has a safe path to Mecatol
@@ -165,32 +164,6 @@ function hasHighQualityAdjacent(slice: SystemIds): boolean {
   }
 
   return false;
-}
-
-// Post-process the slices to ensure they meet extended settings criteria
-function postProcessSlices(
-  slices: SystemIds[],
-  settings: MiltyExtendedSettings,
-): SystemIds[] {
-  // Debug logging
-  console.log("Post-processing slices with settings:", settings);
-
-  // Check for safe path to Mecatol requirement
-  if (settings.safePathToMecatol > 0) {
-    ensureSafePathToMecatol(slices, settings.safePathToMecatol);
-  }
-
-  // Check for high-quality adjacent to home requirement
-  if (settings.highQualityAdjacent > 0) {
-    ensureHighQualityAdjacent(slices, settings.highQualityAdjacent);
-  }
-
-  // Check for minimum red tiles
-  if (settings.minRedTiles > 0) {
-    ensureMinimumRedTiles(slices, settings.minRedTiles);
-  }
-
-  return slices;
 }
 
 // Ensure a minimum number of slices have a safe path to Mecatol
@@ -316,24 +289,4 @@ function ensureHighQualityAdjacent(
       slices[sliceIndex] = slice;
     }
   });
-}
-
-// Ensure a minimum number of red tiles across all slices
-function ensureMinimumRedTiles(slices: SystemIds[], minRedTiles: number): void {
-  // Count all red tiles across all slices
-  const redTileCount = slices.reduce((count, slice) => {
-    const redTilesInSlice = slice.filter(
-      (systemId) => miltySystemTiers[systemId] === "red",
-    ).length;
-    return count + redTilesInSlice;
-  }, 0);
-
-  // If we already meet the criteria, we're done
-  if (redTileCount >= minRedTiles) return;
-
-  // Otherwise, we need to work with what we have.
-  // This is a complex requirement that would require re-generating the slices
-  console.warn(
-    `Could not meet minimum red tiles requirement. Found ${redTileCount}, needed ${minRedTiles}.`,
-  );
 }
