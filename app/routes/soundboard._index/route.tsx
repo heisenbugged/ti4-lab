@@ -773,7 +773,28 @@ export default function SoundboardMaster() {
           ))}
         </Table.Tbody>
       </Table>
+
+      {/* Credits section - now a regular footer at bottom of content */}
+      <Box
+        style={(theme) => ({
+          borderTop: `1px solid ${theme.colors.dark[6]}`,
+          marginTop: theme.spacing.xl,
+          marginBottom: theme.spacing.xl,
+          paddingTop: theme.spacing.md,
+          paddingBottom: theme.spacing.md,
+          textAlign: "center",
+        })}
+      >
+        <Text size="xs" c="dimmed" fs="italic">
+          Many thanks to Cacotopos for writing, direction, and general
+          feedback/support. Absol for lore accuracy. Xane225 for a ridiculous
+          amount of editing.
+        </Text>
+      </Box>
+
+      {/* Spacing div to prevent content from being hidden behind fixed player */}
       <div style={{ height: 100 }} />
+
       {/* Footer */}
       <Box
         component="footer"
