@@ -1,4 +1,4 @@
-import { DraftType } from "./draft";
+import { DraftType, SliceGenerationConfig } from "./draft";
 
 export type GameSet =
   | "base"
@@ -201,6 +201,9 @@ export type DraftSettings = {
   minOptimal?: number;
   maxOptimal?: number;
   draftPlayerColors?: boolean;
+
+  /** Configuration for slice generation */
+  sliceGenerationConfig?: SliceGenerationConfig;
 
   adminPassword?: string;
 

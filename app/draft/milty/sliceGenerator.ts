@@ -1,7 +1,12 @@
 import { SystemId, SystemIds } from "~/types";
 import { SLICE_SHAPES } from "../sliceShapes";
 import { miltySystemTiers } from "~/data/miltyTileTiers";
-import { ChoosableTier, SliceGenerationConfig, TieredSystems } from "../types";
+import {
+  ChoosableTier,
+  MiltyExtendedSettings,
+  SliceGenerationConfig,
+  TieredSystems,
+} from "../types";
 import { shuffle } from "../helpers/randomization";
 import {
   filterTieredSystems,
@@ -13,6 +18,14 @@ import {
 } from "../helpers/sliceGeneration";
 import { systemData } from "~/data/systemData";
 import { optimalStatsForSystems } from "~/utils/map";
+
+// Define the path indices to Mecatol - these are the same for all slices
+// Represents the straight line path from home system to the center
+// This is the standard path for any slice
+const MECATOL_PATH = [1, 4];
+
+// Define which tiles are adjacent to home systems
+const HOME_ADJACENT_TILES = [1, 2, 3]; // Indices in the slice array for tiles adjacent to home
 
 export function generateSlices(
   sliceCount: number,
@@ -26,6 +39,9 @@ export function generateSlices(
   },
   sliceShape: string[] = SLICE_SHAPES.milty,
 ) {
+  // Extract extended settings from config if available
+  const extendedSettings = config.extendedSettings;
+
   const allTieredSystems = availableSystems.reduce(
     (acc, id) => {
       const tier = miltySystemTiers[id];
@@ -110,12 +126,214 @@ export function generateSlices(
   const slices: SystemIds[] | undefined = gatherSlices();
   if (!slices) return undefined;
 
-  // finally, we separate anomalies
+  // separate anomalies
   for (let sliceIndex = 0; sliceIndex < slices.length; sliceIndex++) {
     let slice = slices[sliceIndex];
     slice = separateAnomalies(slice, sliceShape);
     slices[sliceIndex] = slice;
   }
 
+  // Apply additional processing for extended milty settings
+  return extendedSettings
+    ? postProcessSlices(slices, extendedSettings)
+    : slices;
+}
+
+// Function to check if a slice has a safe path to Mecatol
+function hasPathToMecatol(slice: SystemIds): boolean {
+  // Check if any tile in the path is an anomaly
+  for (const tileIndex of MECATOL_PATH) {
+    if (tileIndex >= slice.length) continue; // Skip if index out of bounds
+
+    const systemId = slice[tileIndex];
+    const system = systemData[systemId];
+    if (system.anomalies.length > 0) return false;
+  }
+
+  return true;
+}
+
+// Function to check if a slice has high-quality tiles adjacent to home
+function hasHighQualityAdjacent(slice: SystemIds): boolean {
+  // Check if any of the adjacent tiles is a high-quality (high tier) tile
+  for (const tileIndex of HOME_ADJACENT_TILES) {
+    if (tileIndex >= slice.length) continue; // Skip if index out of bounds
+
+    const systemId = slice[tileIndex];
+    const tier = miltySystemTiers[systemId];
+    if (tier === "high") return true;
+  }
+
+  return false;
+}
+
+// Post-process the slices to ensure they meet extended settings criteria
+function postProcessSlices(
+  slices: SystemIds[],
+  settings: MiltyExtendedSettings,
+): SystemIds[] {
+  // Debug logging
+  console.log("Post-processing slices with settings:", settings);
+
+  // Check for safe path to Mecatol requirement
+  if (settings.safePathToMecatol > 0) {
+    ensureSafePathToMecatol(slices, settings.safePathToMecatol);
+  }
+
+  // Check for high-quality adjacent to home requirement
+  if (settings.highQualityAdjacent > 0) {
+    ensureHighQualityAdjacent(slices, settings.highQualityAdjacent);
+  }
+
+  // Check for minimum red tiles
+  if (settings.minRedTiles > 0) {
+    ensureMinimumRedTiles(slices, settings.minRedTiles);
+  }
+
   return slices;
+}
+
+// Ensure a minimum number of slices have a safe path to Mecatol
+function ensureSafePathToMecatol(
+  slices: SystemIds[],
+  minSafePathCount: number,
+): void {
+  // Count slices that already have a safe path
+  const safePathSlices = slices.filter(hasPathToMecatol);
+
+  // If we already meet the criteria, we're done
+  if (safePathSlices.length >= minSafePathCount) return;
+
+  // Get indices of slices without safe paths
+  const unsafeSliceIndices = slices
+    .map((slice, index) => ({ slice, index }))
+    .filter(({ slice }) => !hasPathToMecatol(slice))
+    .map(({ index }) => index);
+
+  // Number of slices we need to fix
+  const slicesToFix = Math.min(
+    minSafePathCount - safePathSlices.length,
+    unsafeSliceIndices.length,
+  );
+
+  // Process only as many slices as needed to meet requirements
+  unsafeSliceIndices.slice(0, slicesToFix).forEach((sliceIndex) => {
+    // Create a modified copy of the slice
+    const slice = [...slices[sliceIndex]];
+
+    // Find all anomalies on the path
+    const anomaliesOnPath = MECATOL_PATH.filter(
+      (pathIndex) => pathIndex < slice.length,
+    ).filter((pathIndex) => {
+      const system = systemData[slice[pathIndex]];
+      return system.anomalies.length > 0;
+    });
+
+    // Find all non-path indices that aren't anomalies
+    const nonPathNonAnomalyIndices = Array.from({ length: slice.length })
+      .map((_, index) => index)
+      .filter((index) => !MECATOL_PATH.includes(index))
+      .filter((index) => {
+        const system = systemData[slice[index]];
+        return system.anomalies.length === 0;
+      });
+
+    // Perform swaps to fix the path if possible
+    const swapsNeeded = Math.min(
+      anomaliesOnPath.length,
+      nonPathNonAnomalyIndices.length,
+    );
+
+    for (let i = 0; i < swapsNeeded; i++) {
+      const pathIndex = anomaliesOnPath[i];
+      const nonPathIndex = nonPathNonAnomalyIndices[i];
+
+      // Swap the tiles
+      [slice[pathIndex], slice[nonPathIndex]] = [
+        slice[nonPathIndex],
+        slice[pathIndex],
+      ];
+    }
+
+    // Update the slice if we've fixed it
+    if (hasPathToMecatol(slice)) slices[sliceIndex] = slice;
+  });
+}
+
+// Ensure a minimum number of slices have high-quality tiles adjacent to home
+function ensureHighQualityAdjacent(
+  slices: SystemIds[],
+  minHighQualityCount: number,
+): void {
+  // Count slices that already have high-quality adjacent tiles
+  const highQualitySlices = slices.filter(hasHighQualityAdjacent);
+
+  // If we already meet the criteria, we're done
+  if (highQualitySlices.length >= minHighQualityCount) return;
+
+  // Get indices of slices without high-quality adjacent tiles
+  const lowQualitySliceIndices = slices
+    .map((slice, index) => ({ slice, index }))
+    .filter(({ slice }) => !hasHighQualityAdjacent(slice))
+    .map(({ index }) => index);
+
+  // Number of slices we need to fix
+  const slicesToFix = Math.min(
+    minHighQualityCount - highQualitySlices.length,
+    lowQualitySliceIndices.length,
+  );
+
+  // Process only as many slices as needed to meet requirements
+  lowQualitySliceIndices.slice(0, slicesToFix).forEach((sliceIndex) => {
+    const slice = [...slices[sliceIndex]];
+
+    // Find indices of high-quality tiles not adjacent to home
+    const highQualityIndices = Array.from({ length: slice.length })
+      .map((_, index) => index)
+      .filter((index) => !HOME_ADJACENT_TILES.includes(index))
+      .filter((index) => miltySystemTiers[slice[index]] === "high");
+
+    // Find indices of non-high-quality tiles adjacent to home
+    const nonHighQualityAdjacentIndices = HOME_ADJACENT_TILES.filter(
+      (index) => index < slice.length,
+    ).filter((index) => miltySystemTiers[slice[index]] !== "high");
+
+    // If we have both types of tiles, we can do a swap
+    if (
+      highQualityIndices.length > 0 &&
+      nonHighQualityAdjacentIndices.length > 0
+    ) {
+      const highQualityIndex = highQualityIndices[0];
+      const adjacentIndex = nonHighQualityAdjacentIndices[0];
+
+      // Swap the tiles
+      [slice[adjacentIndex], slice[highQualityIndex]] = [
+        slice[highQualityIndex],
+        slice[adjacentIndex],
+      ];
+
+      // Update the slice
+      slices[sliceIndex] = slice;
+    }
+  });
+}
+
+// Ensure a minimum number of red tiles across all slices
+function ensureMinimumRedTiles(slices: SystemIds[], minRedTiles: number): void {
+  // Count all red tiles across all slices
+  const redTileCount = slices.reduce((count, slice) => {
+    const redTilesInSlice = slice.filter(
+      (systemId) => miltySystemTiers[systemId] === "red",
+    ).length;
+    return count + redTilesInSlice;
+  }, 0);
+
+  // If we already meet the criteria, we're done
+  if (redTileCount >= minRedTiles) return;
+
+  // Otherwise, we need to work with what we have.
+  // This is a complex requirement that would require re-generating the slices
+  console.warn(
+    `Could not meet minimum red tiles requirement. Found ${redTileCount}, needed ${minRedTiles}.`,
+  );
 }

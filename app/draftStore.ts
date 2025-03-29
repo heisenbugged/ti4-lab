@@ -784,10 +784,15 @@ export function initializeSlices(
   const config = draftConfig[settings.type];
   if (!settings.randomizeSlices) return emptySlices(config, settings.numSlices);
 
-  const rawSlices = config.generateSlices(settings.numSlices, systemPool, {
-    maxOptimal: settings.maxOptimal,
-    minOptimal: settings.minOptimal,
-  });
+  // Add sliceGenerationConfig with extended settings if available
+  const rawSlices = config.generateSlices(
+    settings.numSlices,
+    systemPool,
+    settings.sliceGenerationConfig ?? {
+      maxOptimal: settings.maxOptimal,
+      minOptimal: settings.minOptimal,
+    },
+  );
 
   if (!rawSlices) return undefined;
   return systemIdsToSlices(config, rawSlices);

@@ -32,12 +32,20 @@ export type DraftType =
 
 export type MapSize = 3 | 4;
 
+// Extended Milty settings interface
+export interface MiltyExtendedSettings {
+  minRedTiles: number;
+  safePathToMecatol: number;
+  highQualityAdjacent: number;
+}
+
 export type SliceGenerationConfig = {
   numAlphas?: number;
   numBetas?: number;
   numLegendaries?: number;
   maxOptimal?: number;
   minOptimal?: number;
+  extendedSettings?: MiltyExtendedSettings;
 };
 
 export type DraftConfig = {
