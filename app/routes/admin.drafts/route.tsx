@@ -1,10 +1,5 @@
-import { Button, Group, Stack, Table, Text, Title } from "@mantine/core";
-import {
-  ActionFunctionArgs,
-  json,
-  LoaderFunction,
-  LoaderFunctionArgs,
-} from "@remix-run/node";
+import { Button, Group, Table, Text } from "@mantine/core";
+import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
   Link,
@@ -13,9 +8,6 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import { findDrafts } from "~/drizzle/draft.server";
-import { Draft } from "~/types";
-
-import classes from "~/components/Surface.module.css";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { eq } from "drizzle-orm";
