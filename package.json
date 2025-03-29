@@ -12,7 +12,8 @@
     "db:migrations": "drizzle-kit generate --dialect=sqlite --out=./app/drizzle/migrations --schema=./app/drizzle/schema.server.ts",
     "db:backup": "flyctl ssh sftp get -a ti4-lab /data/sqlite.db ~/Downloads/ti4-lab_$(date +'%d_%m_%Y').db",
     "typecheck": "tsc",
-    "test": "vitest"
+    "test": "vitest",
+    "sync-voices:wrangler": "node sync-voices-wrangler.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -29,6 +30,7 @@
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.30.10",
+    "global": "^4.4.0",
     "howler": "^2.2.4",
     "immer": "^10.1.1",
     "isbot": "^4.1.0",
@@ -47,6 +49,7 @@
     "socket.io-client": "^4.7.5",
     "tsx": "^4.12.0",
     "uuid": "^9.0.1",
+    "wrangler": "^4.6.0",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

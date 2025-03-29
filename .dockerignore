@@ -2,3 +2,5 @@ node_modules
 /.cache
 .env
 sqlite.db
+/assets
+.voice-sync-cache.json
