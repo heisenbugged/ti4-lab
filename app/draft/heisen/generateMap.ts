@@ -63,16 +63,15 @@ const SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "low", "high"] },
 ];
 
-// NOTE: These indices do NOT include Mecatol Rex as 'index 0'
-// Define core slices - the slices adjacent to Mecatol Rex
-// These are the specific core slices consisting of positions around Mecatol Rex
+// NOTE: These indices are 0-based positions in the mapStringOrder array
+// Define core slices - the slices adjacent to Mecatol Rex (index 0)
 const CORE_SLICES = [
-  [0, 17, 7], // 12 o'clock core
-  [1, 9, 7], // 2 o'clock core
-  [2, 11, 9], // 4 o'clock core
-  [3, 13, 11], // 6 o'clock core
-  [4, 15, 13], // 8 o'clock core
-  [5, 15, 17], // 10 o'clock core
+  [1, 18, 8], // 12 o'clock core
+  [2, 10, 8], // 2 o'clock core
+  [3, 12, 10], // 4 o'clock core
+  [4, 14, 12], // 6 o'clock core
+  [5, 16, 14], // 8 o'clock core
+  [6, 16, 18], // 10 o'clock core
 ];
 
 // Define the optimal value range for core slices
@@ -151,7 +150,7 @@ export function generateMap(
 
   const tileLocations = shuffle(
     config.modifiableMapTiles.map((idx) => ({
-      mapIdx: idx - 1,
+      mapIdx: idx,
       position: mapStringOrder[idx],
     })),
   );
@@ -287,8 +286,8 @@ export function generateMap(
 
   const map = generateEmptyMap(config);
   Object.entries(chosenMapLocations).forEach(([mapIdx, systemId]) => {
-    const existing = map[Number(mapIdx) + 1];
-    map[Number(mapIdx) + 1] = {
+    const existing = map[Number(mapIdx)];
+    map[Number(mapIdx)] = {
       ...existing,
       type: "SYSTEM",
       systemId,
@@ -440,9 +439,8 @@ function fillCoreSlices(
       }
 
       // If still no suitable systems, use any system from the desired tier
-      if (candidateSystems.length === 0) {
+      if (candidateSystems.length === 0)
         candidateSystems = tieredSystems[desiredTier];
-      }
 
       // Pre-evaluate how each candidate would affect the slice's optimal value
       if (candidateSystems.length > 1) {
@@ -493,124 +491,10 @@ function fillCoreSlices(
 
         // Remove the selected system from tieredSystems
         const tierIndex = tieredSystems[desiredTier].indexOf(selectedSystem);
-        if (tierIndex !== -1) {
-          tieredSystems[desiredTier].splice(tierIndex, 1);
-        }
+        if (tierIndex !== -1) tieredSystems[desiredTier].splice(tierIndex, 1);
       }
     }
   }
-
-  // After placing all tiles, check if any core slice is significantly unbalanced
-  // and try to fix it by swapping systems
-  balanceCoreSlices(coreSlices, chosenMapLocations, tieredSystems);
-}
-
-/**
- * Balance core slices by swapping systems if necessary to improve optimal value distribution
- */
-function balanceCoreSlices(
-  coreSlices: number[][],
-  chosenMapLocations: Record<number, SystemId>,
-  tieredSystems: Record<ChoosableTier, SystemId[]>,
-) {
-  const sliceStats = calculateCoreSliceStats(coreSlices, chosenMapLocations);
-  const sliceOptimalValues = sliceStats.map(
-    (stats) => stats.resources + stats.influence + stats.flex,
-  );
-
-  const minOptimal = Math.min(...sliceOptimalValues);
-  const maxOptimal = Math.max(...sliceOptimalValues);
-
-  // If the slices are already balanced enough, don't make changes
-  if (maxOptimal - minOptimal <= 3) {
-    return;
-  }
-
-  // Find the richest and poorest slices
-  const richestSliceIndex = sliceOptimalValues.indexOf(maxOptimal);
-  const poorestSliceIndex = sliceOptimalValues.indexOf(minOptimal);
-
-  // Try to find a pair of systems to swap that would improve balance
-  const richestSlice = coreSlices[richestSliceIndex];
-  const poorestSlice = coreSlices[poorestSliceIndex];
-
-  // Get systems in each slice
-  const richestSliceSystems = richestSlice
-    .filter((pos) => chosenMapLocations[pos])
-    .map((pos) => ({ pos, id: chosenMapLocations[pos] }));
-
-  const poorestSliceSystems = poorestSlice
-    .filter((pos) => chosenMapLocations[pos])
-    .map((pos) => ({ pos, id: chosenMapLocations[pos] }));
-
-  // Try each possible swap and see if it improves balance
-  for (const richSystem of richestSliceSystems) {
-    for (const poorSystem of poorestSliceSystems) {
-      // Skip if either system is a wormhole, legendary, or has adjacency issues
-      const richHasAdjAnomalies = hasAdjacentAnomaliesAtPosition(
-        richSystem.pos,
-        chosenMapLocations,
-        poorSystem.id,
-      );
-      const poorHasAdjAnomalies = hasAdjacentAnomaliesAtPosition(
-        poorSystem.pos,
-        chosenMapLocations,
-        richSystem.id,
-      );
-
-      if (richHasAdjAnomalies || poorHasAdjAnomalies) {
-        continue;
-      }
-
-      // Create a copy of the map with the swap applied
-      const newMap = { ...chosenMapLocations };
-      newMap[richSystem.pos] = poorSystem.id;
-      newMap[poorSystem.pos] = richSystem.id;
-
-      // Calculate new optimal values
-      const newSliceStats = calculateCoreSliceStats(coreSlices, newMap);
-      const newOptimalValues = newSliceStats.map(
-        (stats) => stats.resources + stats.influence + stats.flex,
-      );
-
-      const newMinOptimal = Math.min(...newOptimalValues);
-      const newMaxOptimal = Math.max(...newOptimalValues);
-
-      // If this swap improves balance, apply it
-      if (newMaxOptimal - newMinOptimal < maxOptimal - minOptimal) {
-        chosenMapLocations[richSystem.pos] = poorSystem.id;
-        chosenMapLocations[poorSystem.pos] = richSystem.id;
-        return; // Stop after first improvement
-      }
-    }
-  }
-}
-
-/**
- * Check if placing a system at a position would create adjacent anomalies
- */
-function hasAdjacentAnomaliesAtPosition(
-  position: number,
-  chosenMapLocations: Record<number, SystemId>,
-  testSystemId: SystemId,
-): boolean {
-  // Skip if the test system is not an anomaly
-  if (systemData[testSystemId].anomalies.length === 0) {
-    return false;
-  }
-
-  // Get adjacent positions
-  const adjacentPositions = getAdjacentPositions(position);
-
-  // Check if any adjacent system is also an anomaly
-  for (const adjPos of adjacentPositions) {
-    const adjSystemId = chosenMapLocations[adjPos];
-    if (adjSystemId && systemData[adjSystemId].anomalies.length > 0) {
-      return true; // Found adjacent anomalies
-    }
-  }
-
-  return false;
 }
 
 /**
@@ -618,7 +502,7 @@ function hasAdjacentAnomaliesAtPosition(
  */
 function getAdjacentPositions(position: number): number[] {
   // Convert position index to actual coordinates in the hex grid
-  const posCoords = mapStringOrder[position + 1];
+  const posCoords = mapStringOrder[position];
   if (!posCoords) return [];
 
   const adjacentPositions: number[] = [];
@@ -649,7 +533,7 @@ function getAdjacentPositions(position: number): number[] {
     );
 
     if (adjIndex !== -1) {
-      adjacentPositions.push(adjIndex - 1);
+      adjacentPositions.push(adjIndex);
     }
   }
 
