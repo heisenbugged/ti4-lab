@@ -66,9 +66,11 @@ export function MapSection() {
       <SectionTitle title="Full Map">
         <Group gap={2}>
           {/* TODO: disable map randomization if not allowed by the draft config */}
-          <Button size="xs" onMouseDown={randomizeMap} bg="gray">
-            <IconDice6Filled size={24} />
-          </Button>
+          {config.allowIndependentMapRandomization !== false && (
+            <Button size="xs" onMouseDown={randomizeMap} bg="gray">
+              <IconDice6Filled size={24} />
+            </Button>
+          )}
           <Button size="xs" onMouseDown={clearMap} bg="red">
             Clear
           </Button>

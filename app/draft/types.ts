@@ -100,6 +100,11 @@ export type DraftConfig = {
    */
   wOffsetMultiplier?: number;
 
+  /**
+   * Whether to allow independent map randomization.
+   */
+  allowIndependentMapRandomization?: boolean;
+
   generateMap?: (
     settings: DraftSettings,
     systemPool: SystemId[],

@@ -49,6 +49,7 @@ export const heisen: DraftConfig = {
       [0, 1],
     ],
   } as Record<number, [number, number][]>,
+  allowIndependentMapRandomization: false,
   generateMap,
   generateSlices,
 };
