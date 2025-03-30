@@ -38,6 +38,16 @@ import { shuffle } from "./draft/helpers/randomization";
 import { factions } from "./data/factionData";
 import { notifications } from "@mantine/notifications";
 
+// Define SelectionType type based on the selection types used in the code
+type SelectionType =
+  | "SELECT_SLICE"
+  | "SELECT_SPEAKER_ORDER"
+  | "SELECT_FACTION"
+  | "SELECT_MINOR_FACTION"
+  | "SELECT_PLAYER_COLOR"
+  | "SELECT_SEAT"
+  | "BAN_FACTION";
+
 /// V2
 type DraftV2State = {
   initialized: boolean;
@@ -173,6 +183,128 @@ const initialState = {
   draft: emptyDraft(),
 };
 
+// Helper functions for refactoring
+
+// 1. Refactoring selection actions
+const makeSelection = (
+  state: any,
+  type: SelectionType,
+  playerId: number,
+  payload: Record<string, any>,
+) => {
+  const alreadySelected = state.draft.selections.find(
+    (s: any) => s.playerId === playerId && s.type === type,
+  );
+  if (alreadySelected) return;
+
+  state.draft.selections.push({
+    type,
+    playerId,
+    ...payload,
+  });
+};
+
+// 2. Refactoring faction stratification notification
+const resetStratification = (state: any) => {
+  if (state.draft.settings.factionStratification) {
+    notifications.show({
+      message: "Faction stratification was reset.",
+      color: "blue",
+    });
+    state.draft.settings.factionStratification = undefined;
+  }
+};
+
+const addSystemToMap = (draft: Draft, tileIdx: number, system: System) => {
+  draft.presetMap[tileIdx] = {
+    idx: tileIdx,
+    position: draft.presetMap[tileIdx].position,
+    type: "SYSTEM",
+    systemId: system.id,
+    rotation: system.rotation,
+  };
+};
+
+const addSystemToSlice = (
+  draft: Draft,
+  sliceIdx: number,
+  tileIdx: number,
+  system: System,
+) => {
+  draft.slices[sliceIdx].tiles[tileIdx] = {
+    ...draft.slices[sliceIdx].tiles[tileIdx],
+    type: "SYSTEM",
+    systemId: system.id,
+    rotation: system.rotation,
+  };
+};
+
+const removeSystemFromMap = (draft: Draft, tileIdx: number) => {
+  draft.presetMap[tileIdx] = {
+    idx: tileIdx,
+    position: draft.presetMap[tileIdx].position,
+    type: "OPEN",
+  };
+};
+
+const removeSystemFromSlice = (
+  draft: Draft,
+  sliceIdx: number,
+  tileIdx: number,
+) => {
+  draft.slices[sliceIdx].tiles[tileIdx] = {
+    ...draft.slices[sliceIdx].tiles[tileIdx],
+    type: "OPEN",
+  };
+};
+
+// 7. Refactoring modal management
+const setModalState = (
+  state: any,
+  modalType: "factionSettings" | "planetFinder",
+  isOpen: boolean,
+  modalParams?: any,
+) => {
+  if (modalType === "factionSettings") {
+    state.factionSettingsModal = isOpen;
+  } else if (modalType === "planetFinder") {
+    if (isOpen && modalParams) {
+      state.planetFinderModal = modalParams;
+    } else {
+      state.planetFinderModal = undefined;
+    }
+  }
+};
+
+// 8. Refactoring filter logic
+const getAvailableFactions = (
+  pool: FactionId[],
+  currentFactions: FactionId[],
+  minorFactions?: FactionId[] | null,
+) => {
+  return pool.filter(
+    (f) =>
+      !currentFactions.includes(f) &&
+      (!minorFactions || !minorFactions.includes(f)),
+  );
+};
+
+const getAvailableSystems = (
+  systemPool: SystemId[],
+  usedIds: SystemId[],
+  includeIds: SystemId[] = [],
+) => {
+  return systemPool.filter(
+    (s) => !usedIds.includes(s) || includeIds.includes(s),
+  );
+};
+
+// 6. Initialize pools - extracted common functionality for initialization
+const initializePools = (state: any, settings: DraftSettings) => {
+  state.factionPool = getFactionPool(settings.factionGameSets);
+  state.systemPool = getSystemPool(settings.tileGameSets);
+};
+
 export const draftStore = createStore<DraftV2State>()(
   immer((set) => ({
     ...initialState,
@@ -185,9 +317,7 @@ export const draftStore = createStore<DraftV2State>()(
           state.draftUrl = draftUrl;
           state.draft = draft;
 
-          state.factionPool = getFactionPool(draft.settings.factionGameSets);
-          state.systemPool = getSystemPool(draft.settings.tileGameSets);
-
+          initializePools(state, draft.settings);
           state.hydrated = true;
         });
       },
@@ -210,96 +340,42 @@ export const draftStore = createStore<DraftV2State>()(
 
       selectSlice: (playerId: number, sliceIdx: number) =>
         set((state) => {
-          const alreadySelected = state.draft.selections.find(
-            (s) => s.playerId === playerId && s.type === "SELECT_SLICE",
-          );
-          if (alreadySelected) return;
-
-          state.draft.selections.push({
-            type: "SELECT_SLICE",
-            playerId,
-            sliceIdx,
-          });
+          makeSelection(state, "SELECT_SLICE", playerId, { sliceIdx });
         }),
 
       selectSpeakerOrder: (playerId: number, speakerOrder: number) =>
         set((state) => {
-          const alreadySelected = state.draft.selections.find(
-            (s) => s.playerId === playerId && s.type === "SELECT_SPEAKER_ORDER",
-          );
-          if (alreadySelected) return;
-
-          state.draft.selections.push({
-            type: "SELECT_SPEAKER_ORDER",
-            playerId,
+          makeSelection(state, "SELECT_SPEAKER_ORDER", playerId, {
             speakerOrder,
           });
         }),
 
       selectFaction: (playerId: number, factionId: FactionId) =>
         set((state) => {
-          const alreadySelected = state.draft.selections.find(
-            (s) => s.playerId === playerId && s.type === "SELECT_FACTION",
-          );
-          if (alreadySelected) return;
-
-          state.draft.selections.push({
-            type: "SELECT_FACTION",
-            playerId,
-            factionId,
-          });
+          makeSelection(state, "SELECT_FACTION", playerId, { factionId });
         }),
 
       selectMinorFaction: (playerId: number, minorFactionId: FactionId) =>
         set((state) => {
-          const alreadySelected = state.draft.selections.find(
-            (s) => s.playerId === playerId && s.type === "SELECT_MINOR_FACTION",
-          );
-          if (alreadySelected) return;
-
-          state.draft.selections.push({
-            type: "SELECT_MINOR_FACTION",
-            playerId,
+          makeSelection(state, "SELECT_MINOR_FACTION", playerId, {
             minorFactionId,
           });
         }),
 
       selectPlayerColor: (playerId: number, color: InGameColor) =>
         set((state) => {
-          const alreadySelected = state.draft.selections.find(
-            (s) => s.playerId === playerId && s.type === "SELECT_PLAYER_COLOR",
-          );
-          if (alreadySelected) return;
-
-          state.draft.selections.push({
-            type: "SELECT_PLAYER_COLOR",
-            playerId,
-            color,
-          });
+          makeSelection(state, "SELECT_PLAYER_COLOR", playerId, { color });
         }),
 
       selectSeat: (playerId: number, seatIdx: number) =>
         set((state) => {
-          const alreadySelected = state.draft.selections.find(
-            (s) => s.playerId === playerId && s.type === "SELECT_SEAT",
-          );
-          if (alreadySelected) return;
-
-          state.draft.selections.push({
-            type: "SELECT_SEAT",
-            playerId,
-            seatIdx,
-          });
+          makeSelection(state, "SELECT_SEAT", playerId, { seatIdx });
         }),
 
       banFaction: (playerId: PlayerId, factionId: FactionId) =>
         set((state) => {
           if (!state.draft.settings.modifiers?.banFactions) return;
-          state.draft.selections.push({
-            type: "BAN_FACTION",
-            playerId,
-            factionId,
-          });
+          makeSelection(state, "BAN_FACTION", playerId, { factionId });
 
           const modifier = state.draft.settings.modifiers.banFactions;
           const totalBans = modifier.numFactions * state.draft.players.length;
@@ -330,12 +406,12 @@ export const draftStore = createStore<DraftV2State>()(
     actions: {
       openFactionSettings: () =>
         set((state) => {
-          state.factionSettingsModal = true;
+          setModalState(state, "factionSettings", true);
         }),
 
       closeFactionSettings: () =>
         set((state) => {
-          state.factionSettingsModal = false;
+          setModalState(state, "factionSettings", false);
         }),
 
       changeFactionSettings: (
@@ -365,7 +441,7 @@ export const draftStore = createStore<DraftV2State>()(
             availableFactions,
           );
 
-          state.factionSettingsModal = false;
+          setModalState(state, "factionSettings", false);
           state.draft.settings.numFactions = numFactions;
           state.draft.settings.requiredFactions = requiredFactions;
           state.draft.settings.allowedFactions = availableFactions;
@@ -381,8 +457,7 @@ export const draftStore = createStore<DraftV2State>()(
       initializeDraftFromSavedState: (draft: Draft) =>
         set((state) => {
           state.draft = draft;
-          state.factionPool = getFactionPool(draft.settings.factionGameSets);
-          state.systemPool = getSystemPool(draft.settings.tileGameSets);
+          initializePools(state, draft.settings);
           state.initialized = true;
           state.hydrated = false;
         }),
@@ -400,9 +475,8 @@ export const draftStore = createStore<DraftV2State>()(
           draft.players = players;
           draft.integrations = integrations;
 
-          // intialize pools based on game sets.
-          state.factionPool = getFactionPool(settings.factionGameSets);
-          state.systemPool = getSystemPool(settings.tileGameSets);
+          // initialize pools based on game sets
+          initializePools(state, settings);
 
           draft.availableFactions = randomizeFactions(
             settings.numFactions,
@@ -417,8 +491,9 @@ export const draftStore = createStore<DraftV2State>()(
 
           const numMinorFactions = settings.numMinorFactions;
           if (numMinorFactions) {
-            const otherFactions = state.factionPool.filter(
-              (f) => !draft.availableFactions.includes(f),
+            const otherFactions = getAvailableFactions(
+              state.factionPool,
+              draft.availableFactions,
             );
             draft.availableMinorFactions = shuffle(
               otherFactions,
@@ -471,8 +546,9 @@ export const draftStore = createStore<DraftV2State>()(
       randomizeMinorFactions: () =>
         set(({ draft, factionPool }) => {
           if (!draft.settings.numMinorFactions) return;
-          const availableFactions = factionPool.filter(
-            (f) => !draft.availableFactions.includes(f),
+          const availableFactions = getAvailableFactions(
+            factionPool,
+            draft.availableFactions,
           );
 
           draft.availableMinorFactions = shuffle(
@@ -484,10 +560,10 @@ export const draftStore = createStore<DraftV2State>()(
       addRandomMinorFaction: () =>
         set(({ draft, factionPool }) => {
           if (!draft.settings.numMinorFactions) return;
-          const availableMinorFactions = factionPool.filter(
-            (f) =>
-              !draft.availableFactions.includes(f) &&
-              !draft.availableMinorFactions?.includes(f),
+          const availableMinorFactions = getAvailableFactions(
+            factionPool,
+            draft.availableFactions,
+            draft.availableMinorFactions,
           );
           const idx = Math.floor(Math.random() * availableMinorFactions.length);
           draft.availableMinorFactions?.push(availableMinorFactions[idx]);
@@ -536,20 +612,14 @@ export const draftStore = createStore<DraftV2State>()(
         }),
       addRandomFaction: () =>
         set((state) => {
-          if (state.draft.settings.factionStratification) {
-            notifications.show({
-              message: "Faction stratification was reset.",
-              color: "blue",
-            });
-            state.draft.settings.factionStratification = undefined;
-          }
+          resetStratification(state);
 
           const { draft, factionPool } = state;
           const pool = state.draft.settings.allowedFactions ?? factionPool;
-          const availableFactions = pool.filter(
-            (f) =>
-              !draft.availableFactions.includes(f) &&
-              !draft.availableMinorFactions?.includes(f),
+          const availableFactions = getAvailableFactions(
+            pool,
+            draft.availableFactions,
+            draft.availableMinorFactions,
           );
           const idx = Math.floor(Math.random() * availableFactions.length);
           draft.availableFactions.push(availableFactions[idx]);
@@ -558,13 +628,7 @@ export const draftStore = createStore<DraftV2State>()(
 
       removeLastFaction: () =>
         set(({ draft }) => {
-          if (draft.settings.factionStratification) {
-            notifications.show({
-              message: "Faction stratification was reset.",
-              color: "blue",
-            });
-            draft.settings.factionStratification = undefined;
-          }
+          resetStratification({ draft });
 
           const availableFactions = draft.availableFactions.slice(0, -1);
           draft.settings.numFactions = availableFactions.length;
@@ -574,13 +638,7 @@ export const draftStore = createStore<DraftV2State>()(
       removeFaction: (id: FactionId) =>
         set(({ draft }) => {
           let confirmation = true;
-          if (draft.settings.factionStratification) {
-            notifications.show({
-              message: "Faction stratification was reset.",
-              color: "blue",
-            });
-            draft.settings.factionStratification = undefined;
-          }
+          resetStratification({ draft });
 
           draft.settings.numFactions = draft.availableFactions.length - 1;
           draft.availableFactions = draft.availableFactions.filter(
@@ -591,62 +649,44 @@ export const draftStore = createStore<DraftV2State>()(
       // planet finder actions
       openPlanetFinderForMap: (tileIdx: number) =>
         set((state) => {
-          state.planetFinderModal = {
+          setModalState(state, "planetFinder", true, {
             mode: "map",
             tileIdx,
-          };
+          });
         }),
 
       openPlanetFinderForSlice: (sliceIdx: number, tileIdx: number) =>
         set((state) => {
-          state.planetFinderModal = {
+          setModalState(state, "planetFinder", true, {
             mode: "slice",
             sliceIdx,
             tileIdx,
-          };
+          });
         }),
 
       closePlanetFinder: () =>
         set((state) => {
-          state.planetFinderModal = undefined;
+          setModalState(state, "planetFinder", false);
         }),
 
       // system actions
       addSystemToMap: (tileIdx: number, system: System) =>
         set(({ draft }) => {
-          draft.presetMap[tileIdx] = {
-            idx: tileIdx,
-            position: draft.presetMap[tileIdx].position,
-            type: "SYSTEM",
-            systemId: system.id,
-            rotation: system.rotation,
-          };
+          addSystemToMap(draft, tileIdx, system);
         }),
       removeSystemFromMap: (tileIdx: number) =>
         set(({ draft }) => {
-          draft.presetMap[tileIdx] = {
-            idx: tileIdx,
-            position: draft.presetMap[tileIdx].position,
-            type: "OPEN",
-          };
+          removeSystemFromMap(draft, tileIdx);
         }),
 
       // slice actions
       addSystemToSlice: (sliceIdx: number, tileIdx: number, system: System) =>
         set(({ draft }) => {
-          draft.slices[sliceIdx].tiles[tileIdx] = {
-            ...draft.slices[sliceIdx].tiles[tileIdx],
-            type: "SYSTEM",
-            systemId: system.id,
-            rotation: system.rotation,
-          };
+          addSystemToSlice(draft, sliceIdx, tileIdx, system);
         }),
       removeSystemFromSlice: (sliceIdx: number, tileIdx: number) =>
         set(({ draft }) => {
-          draft.slices[sliceIdx].tiles[tileIdx] = {
-            ...draft.slices[sliceIdx].tiles[tileIdx],
-            type: "OPEN",
-          };
+          removeSystemFromSlice(draft, sliceIdx, tileIdx);
         }),
       clearSlice: (sliceIdx: number) =>
         set(({ draft }) => {
@@ -697,8 +737,10 @@ export const draftStore = createStore<DraftV2State>()(
           const systemsInSlice = systemIdsInSlice(draft.slices[sliceIdx]);
           const usedIds = getUsedSystemIds(draft.slices, draft.presetMap);
 
-          const availableSystems = systemPool.filter(
-            (s) => !usedIds.includes(s) || systemsInSlice.includes(s),
+          const availableSystems = getAvailableSystems(
+            systemPool,
+            usedIds,
+            systemsInSlice,
           );
 
           const generated = config.generateSlices(1, availableSystems, {
@@ -724,9 +766,8 @@ export const draftStore = createStore<DraftV2State>()(
         set(({ draft, systemPool }) => {
           const config = draftConfig[draft.settings.type];
           const usedIds = getUsedSystemIdsInMap(draft.presetMap);
-          const availableSystems = systemPool.filter(
-            (s) => !usedIds.includes(s),
-          );
+          const availableSystems = getAvailableSystems(systemPool, usedIds);
+
           const rawSlices = config.generateSlices(
             draft.settings.numSlices,
             availableSystems,
@@ -735,15 +776,8 @@ export const draftStore = createStore<DraftV2State>()(
 
           if (rawSlices) {
             draft.slices = systemIdsToSlices(config, rawSlices);
+            draft.slices = setSliceNames(draft.slices);
           }
-
-          // TODO: Remove duplication between this and initializeDraft
-          // get cool names!
-          const sliceLength = draft.slices.length;
-          const sliceNames = getRandomSliceNames(sliceLength);
-          draft.slices.forEach((slice, idx) => {
-            slice.name = `Slice ${sliceNames[idx]}`;
-          });
         }),
     },
   })),
