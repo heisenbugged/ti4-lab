@@ -1,4 +1,4 @@
-import { fisherYatesShuffle } from "~/stats";
+import { shuffle } from "~/draft/helpers/randomization";
 
 export const sliceWords = {
   A: [
@@ -344,10 +344,7 @@ export const sliceWords = {
 };
 
 export const getRandomSliceNames = (count: number): string[] =>
-  fisherYatesShuffle(Object.keys(sliceWords), count).map(
+  shuffle(Object.keys(sliceWords), count).map(
     (letter) =>
-      fisherYatesShuffle(
-        [...sliceWords[letter as keyof typeof sliceWords]],
-        1,
-      )[0],
+      shuffle([...sliceWords[letter as keyof typeof sliceWords]], 1)[0],
   );

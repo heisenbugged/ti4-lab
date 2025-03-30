@@ -20,7 +20,7 @@ import { useCreateDraft } from "../draft.new/useCreateDraft";
 import { generateEmptyMap } from "~/utils/map";
 import { randomizeFactions } from "~/draftStore";
 import { getFactionPool } from "~/utils/factions";
-import { fisherYatesShuffle } from "~/stats";
+import { shuffle } from "~/draft/helpers/randomization";
 
 const configByPlayerCount: Record<number, DraftConfig> = {
   4: draftConfig.milty4p,
@@ -64,8 +64,8 @@ export default function DraftTournament() {
     const adjustedFactions =
       Number(numFactions) - Math.max(0, 6 - players.length);
     const adjustedSliceCount = slices.length - Math.max(0, 6 - players.length);
-    const adjustedSlices = fisherYatesShuffle(slices, adjustedSliceCount).sort(
-      (a, b) => a.name.localeCompare(b.name),
+    const adjustedSlices = shuffle(slices, adjustedSliceCount).sort((a, b) =>
+      a.name.localeCompare(b.name),
     );
 
     createDraft({

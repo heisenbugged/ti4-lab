@@ -14,7 +14,6 @@ import {
   FactionStratification,
 } from "./types";
 import { generateEmptyMap } from "./utils/map";
-import { fisherYatesShuffle } from "./stats";
 import { draftConfig } from "./draft/draftConfig";
 import { DraftConfig } from "./draft/types";
 import { immer } from "zustand/middleware/immer";
@@ -421,20 +420,21 @@ export const draftStore = createStore<DraftV2State>()(
             const otherFactions = state.factionPool.filter(
               (f) => !draft.availableFactions.includes(f),
             );
-            draft.availableMinorFactions = fisherYatesShuffle(
+            draft.availableMinorFactions = shuffle(
               otherFactions,
               numMinorFactions,
             );
           }
 
-          if (config.generateMap !== undefined) {
-            const generated = config.generateMap(settings, state.systemPool);
-            if (generated) {
-              draft.presetMap = generated.map;
-              // TODO: Respect new name logic in here.
-              // instead of it being overridden below.
-              draft.slices = systemIdsToSlices(config, generated.slices);
-            }
+          // Generate map and slices using the utility function
+          const generated = generateMapAndSlices(
+            config,
+            settings,
+            state.systemPool,
+          );
+          if (generated) {
+            draft.presetMap = generated.presetMap;
+            draft.slices = generated.slices;
           } else {
             const slices = initializeSlices(settings, state.systemPool);
             if (slices) draft.slices = slices;
@@ -446,12 +446,8 @@ export const draftStore = createStore<DraftV2State>()(
             );
           }
 
-          // get cool names!
-          const sliceLength = draft.slices.length;
-          const sliceNames = getRandomSliceNames(sliceLength);
-          draft.slices.forEach((slice, idx) => {
-            slice.name = `Slice ${sliceNames[idx]}`;
-          });
+          // Set slice names using the utility function
+          draft.slices = setSliceNames(draft.slices);
 
           state.draft.settings = settings;
           state.initialized = true;
@@ -479,7 +475,7 @@ export const draftStore = createStore<DraftV2State>()(
             (f) => !draft.availableFactions.includes(f),
           );
 
-          draft.availableMinorFactions = fisherYatesShuffle(
+          draft.availableMinorFactions = shuffle(
             availableFactions,
             draft.settings.numMinorFactions,
           );
@@ -677,22 +673,16 @@ export const draftStore = createStore<DraftV2State>()(
       randomizeAll: () =>
         set(({ draft, systemPool }) => {
           const config = draftConfig[draft.settings.type];
-          if (config.generateMap === undefined) return;
-
-          // TODO: Reduce duplication between this and initializeDraft
-          const generated = config.generateMap(draft.settings, systemPool);
+          const generated = generateMapAndSlices(
+            config,
+            draft.settings,
+            systemPool,
+          );
           if (generated) {
-            draft.presetMap = generated.map;
-            draft.slices = systemIdsToSlices(config, generated.slices);
+            draft.presetMap = generated.presetMap;
+            draft.slices = generated.slices;
+            draft.slices = setSliceNames(draft.slices);
           }
-
-          // TODO: Remove duplication between this and initializeDraft
-          // get cool names!
-          const sliceLength = draft.slices.length;
-          const sliceNames = getRandomSliceNames(sliceLength);
-          draft.slices.forEach((slice, idx) => {
-            slice.name = `Slice ${sliceNames[idx]}`;
-          });
         }),
 
       randomizeMap: () =>
@@ -818,7 +808,7 @@ export function randomizeMap(
     .map((t) => (t.type === "SYSTEM" ? t.systemId : undefined))
     .filter((t) => !!t) as SystemId[];
 
-  const filteredSystemIds = fisherYatesShuffle(
+  const filteredSystemIds = shuffle(
     systemPool.filter((id) => !usedSystemIds.includes(id)),
     numMapTiles,
   );
@@ -914,3 +904,29 @@ export function randomizeFactions(
 }
 
 const factionGameSet = (faction: FactionId) => factions[faction].set;
+
+// Helper functions to remove duplication
+function generateMapAndSlices(
+  config: DraftConfig,
+  settings: DraftSettings,
+  systemPool: SystemId[],
+) {
+  if (config.generateMap === undefined) return null;
+  const generated = config.generateMap(settings, systemPool);
+  if (!generated) return null;
+  return {
+    presetMap: generated.map,
+    slices: systemIdsToSlices(config, generated.slices),
+  };
+}
+
+function setSliceNames(slices: Slice[]) {
+  const sliceLength = slices.length;
+  const sliceNames = getRandomSliceNames(sliceLength);
+
+  slices.forEach((slice, idx) => {
+    slice.name = `Slice ${sliceNames[idx]}`;
+  });
+
+  return slices;
+}

@@ -10,7 +10,7 @@ import {
 } from "~/draftStore";
 import { createDraft } from "~/drizzle/draft.server";
 import { createMultiDraft } from "~/drizzle/multiDraft.server";
-import { fisherYatesShuffle } from "~/stats";
+import { shuffle } from "~/draft/helpers/randomization";
 import { DiscordData, Draft, DraftSettings, FactionId, Player } from "~/types";
 import { createDraftOrder } from "~/utils/draftOrder.server";
 
@@ -51,10 +51,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const otherFactions = factionPool.filter(
         (f) => !availableFactions.includes(f),
       );
-      availableMinorFactions = fisherYatesShuffle(
-        otherFactions,
-        numMinorFactions,
-      );
+      availableMinorFactions = shuffle(otherFactions, numMinorFactions);
     }
 
     const slices = initializeSlices(settings, systemPool);

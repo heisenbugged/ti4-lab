@@ -18,7 +18,7 @@ export function weightedChoice<T>(options: Option<T>[]) {
     if (target <= option.weight) {
       let result = option.value;
       if (Array.isArray(result)) {
-        result = [...result]; // shallow copy
+        result = [...result] as typeof result; // shallow copy
       }
       return result;
     }
@@ -30,8 +30,9 @@ export function weightedChoice<T>(options: Option<T>[]) {
 /**
  * Performs a Fisher-Yates shuffle on the given array and returns the shuffled array.
  * Makes an internal copy of the array to avoid modifying the original.
+ * Optionally returns only the first x elements if specified.
  */
-export function shuffle<T>(array: T[]) {
+export function shuffle<T>(array: T[], x?: number): T[] {
   // Copy the original array to avoid modifying it
   const copiedArray = array.slice();
 
@@ -41,5 +42,9 @@ export function shuffle<T>(array: T[]) {
     [copiedArray[i], copiedArray[j]] = [copiedArray[j], copiedArray[i]]; // Swap elements
   }
 
+  // Return the first x elements of the shuffled array if x is provided
+  if (x !== undefined) {
+    return copiedArray.slice(0, x);
+  }
   return copiedArray;
 }

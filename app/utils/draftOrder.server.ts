@@ -1,5 +1,4 @@
 import { shuffle } from "~/draft/helpers/randomization";
-import { fisherYatesShuffle } from "~/stats";
 import { DraftSettings, FactionId, Player, PlayerId } from "~/types";
 
 export function createDraftOrder(
@@ -7,7 +6,7 @@ export function createDraftOrder(
   settings: DraftSettings,
   availableFactions: FactionId[],
 ) {
-  const playerIds = fisherYatesShuffle(
+  const playerIds = shuffle(
     players.map((p) => p.id),
     players.length,
   );
