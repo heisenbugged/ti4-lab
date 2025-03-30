@@ -740,10 +740,7 @@ export const draftStore = createStore<DraftV2State>()(
           const rawSlices = config.generateSlices(
             draft.settings.numSlices,
             availableSystems,
-            {
-              minOptimal: draft.settings.minOptimal,
-              maxOptimal: draft.settings.maxOptimal,
-            },
+            draft.settings.sliceGenerationConfig,
           );
 
           if (rawSlices) {

@@ -254,7 +254,13 @@ export function MiltySettingsModal({
         </Group>
 
         <Group justify="flex-end" mt="md">
-          <Button variant="default" onClick={onClose}>
+          <Button
+            variant="default"
+            onClick={() => {
+              setLocalSettings(settings);
+              onClose();
+            }}
+          >
             Cancel
           </Button>
           <Button
