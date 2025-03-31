@@ -17,6 +17,10 @@ import { PlanetTrait, SystemIds, SystemId, DraftSettings } from "~/types";
 import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
+import {
+  getAdjacentPositions,
+  hasAdjacentAnomalies,
+} from "../common/sliceGenerator";
 
 const MAP_WORMHOLES = [
   { weight: 1, value: { numAlphas: 3, numBetas: 3 } },
@@ -495,79 +499,6 @@ function fillCoreSlices(
       }
     }
   }
-}
-
-/**
- * Get positions adjacent to the given position in the hexagonal grid
- */
-function getAdjacentPositions(position: number): number[] {
-  // Convert position index to actual coordinates in the hex grid
-  const posCoords = mapStringOrder[position];
-  if (!posCoords) return [];
-
-  const adjacentPositions: number[] = [];
-
-  // In a hex grid, adjacent hexes are at these relative coordinates:
-  const adjacentOffsets = [
-    { x: 1, y: 0, z: -1 }, // right
-    { x: 1, y: -1, z: 0 }, // upper right
-    { x: 0, y: -1, z: 1 }, // upper left
-    { x: -1, y: 0, z: 1 }, // left
-    { x: -1, y: 1, z: 0 }, // bottom left
-    { x: 0, y: 1, z: -1 }, // bottom right
-  ];
-
-  // Check each adjacent direction
-  for (const offset of adjacentOffsets) {
-    const adjX = posCoords.x + offset.x;
-    const adjY = posCoords.y + offset.y;
-    const adjZ = offset.z !== undefined ? posCoords.z + offset.z : -adjX - adjY; // Calculate z if not provided
-
-    // Find the index of this adjacent position in mapStringOrder
-    const adjIndex = mapStringOrder.findIndex(
-      (coords) =>
-        coords.x === adjX &&
-        coords.y === adjY &&
-        (coords.z === adjZ ||
-          (coords.z === undefined && -adjX - adjY === adjZ)),
-    );
-
-    if (adjIndex !== -1) {
-      adjacentPositions.push(adjIndex);
-    }
-  }
-
-  return adjacentPositions;
-}
-
-/**
- * Check if there are any adjacent anomalies in the map
- */
-function hasAdjacentAnomalies(
-  chosenMapLocations: Record<number, SystemId>,
-): boolean {
-  // For each position with a system
-  for (const [posStr, systemId] of Object.entries(chosenMapLocations)) {
-    const position = parseInt(posStr);
-
-    // Skip if not an anomaly
-    if (systemData[systemId].anomalies.length === 0) {
-      continue;
-    }
-
-    // Get adjacent positions
-    const adjacentPositions = getAdjacentPositions(position);
-
-    // Check if any adjacent system is also an anomaly
-    for (const adjPos of adjacentPositions) {
-      const adjSystemId = chosenMapLocations[adjPos];
-      if (adjSystemId && systemData[adjSystemId].anomalies.length > 0) {
-        return true; // Found adjacent anomalies
-      }
-    }
-  }
-
-  return false;
 }
 
 type Swap = { toRemove: SystemId; toAdd: SystemId };

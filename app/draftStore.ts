@@ -939,7 +939,6 @@ export function randomizeFactions(
 
 const factionGameSet = (faction: FactionId) => factions[faction].set;
 
-// Helper functions to remove duplication
 function generateMapAndSlices(
   config: DraftConfig,
   settings: DraftSettings,

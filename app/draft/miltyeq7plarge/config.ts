@@ -1,5 +1,5 @@
 import { rotateSlice } from "~/utils/hexagonal";
-import { generateSlices } from "../miltyeq/sliceGenerator";
+import { generateSlices, generateMap } from "../miltyeq/sliceGenerator";
 import { DraftConfig } from "../types";
 
 const slice: [number, number][] = [
@@ -47,4 +47,5 @@ export const miltyeq7plarge: DraftConfig = {
     6: rotateSlice(slice, 1),
   } as Record<number, [number, number][]>,
   generateSlices,
+  generateMap,
 };

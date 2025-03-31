@@ -1,4 +1,4 @@
-import { SystemId, SystemIds } from "~/types";
+import { DraftSettings, Map, SystemId, SystemIds } from "~/types";
 import {
   groupSystemsByTier,
   separateAnomalies,
@@ -7,11 +7,17 @@ import {
 import { systemData } from "~/data/systemData";
 import {
   ChoosableTier,
+  DraftConfig,
   SliceGenerationConfig,
   TieredSlice,
   TieredSystems,
 } from "../types";
 import { shuffle } from "../helpers/randomization";
+import { mapStringOrder } from "~/data/mapStringOrder";
+import { generateEmptyMap } from "~/utils/map";
+import { draftConfig } from "../draftConfig";
+import { systemIdsInSlice, systemIdsToSlices } from "~/utils/slice";
+import { calculateMapStats } from "~/hooks/useFullMapStats";
 
 // Define the path indices to Mecatol - these are the same for all slices
 // Represents the straight line path from home system to the center
@@ -41,6 +47,91 @@ export type CoreGenerateSlicesArgs = {
     slices: SystemIds[],
     config: SliceGenerationConfig,
   ) => void;
+};
+
+/**
+ * Generate a map and slices using a core function.
+ */
+export function coreGenerateMap(
+  settings: DraftSettings,
+  systemPool: SystemId[],
+  attempts: number = 0,
+  generateSlices: (
+    sliceCount: number,
+    availableSystems: SystemId[],
+    config?: SliceGenerationConfig,
+  ) => SystemIds[] | undefined,
+) {
+  const config = draftConfig[settings.type];
+  const map = generateEmptyMap(config);
+  const numMapTiles = config.modifiableMapTiles.length;
+  const slices = generateSlices(
+    settings.numSlices,
+    systemPool,
+    settings.sliceGenerationConfig,
+  );
+
+  if (!slices) return undefined;
+  const usedSystemIds = slices.flat(1);
+  const remainingSystemIds = shuffle(
+    systemPool.filter((id) => !usedSystemIds.includes(id)),
+  );
+  const mapSystemIds = shuffle(remainingSystemIds).slice(0, numMapTiles);
+
+  // fill map with chosen systems
+  config.modifiableMapTiles.forEach((idx) => {
+    map[idx] = {
+      idx: idx,
+      position: mapStringOrder[idx],
+      type: "SYSTEM",
+      systemId: mapSystemIds.pop()!,
+    };
+  });
+
+  // if we have gone past max attempts, return the map regardless of validation
+  if (attempts > 1000) return { map, slices, valid: false };
+  if (!validateMap(config, settings, map, slices)) {
+    return coreGenerateMap(settings, systemPool, attempts + 1, generateSlices);
+  }
+
+  return { map, slices, valid: true };
+}
+
+const validateMap = (
+  config: DraftConfig,
+  settings: DraftSettings,
+  map: Map,
+  slices: SystemIds[],
+) => {
+  // For validating 'globals', we grab the N richest slices.
+  const slicesToValidate = systemIdsToSlices(config, slices)
+    .slice(0, config.numPlayers)
+    .map((s) => systemIdsInSlice(s));
+
+  const stats = calculateMapStats(slicesToValidate, map);
+
+  const redTilesRequired = Math.floor(
+    numTilesAvailable(config) * RED_TILE_RATIO,
+  );
+
+  const maxLegendaries = Math.max(
+    settings.sliceGenerationConfig?.numLegendaries ?? 0,
+    3,
+  );
+
+  const chosenMapLocations = map.reduce(
+    (acc, tile) => {
+      if (tile.type === "SYSTEM") acc[tile.idx] = tile.systemId;
+      return acc;
+    },
+    {} as Record<number, SystemId>,
+  );
+
+  return (
+    stats.redTiles >= redTilesRequired &&
+    stats.totalLegendary <= maxLegendaries &&
+    !hasAdjacentAnomalies(chosenMapLocations)
+  );
 };
 
 /**
@@ -315,4 +406,97 @@ export function ensureHighQualityAdjacent(
       slices[sliceIndex] = slice;
     }
   });
+}
+
+// Regular 6p map has 36 tiles, 11 of which are red.
+// This ratio is used to calculate the number of red tiles that should be required for a given map size.
+export const RED_TILE_RATIO = 11 / 36;
+
+export const numTilesAvailable = (config: DraftConfig) => {
+  // subtract 1 because the center tile is not editable (mecatol rex)
+  const rawTotal = ringToTiles(config.mapSize ?? 3) - 1;
+  return (
+    rawTotal -
+    config.closedMapTiles.length -
+    // only subtract preset tiles that are hyperlanes
+    // as those aren't 'real' tiles.
+    Object.values(config.presetTiles).filter(
+      (tile) => systemData[tile.systemId].hyperlanes !== undefined,
+    ).length
+  );
+};
+
+export const ringToTiles = (numberRings: number): number => {
+  if (numberRings < 0) return 0;
+  if (numberRings === 0) return 1;
+
+  return 1 + 3 * numberRings * (numberRings + 1);
+};
+
+/**
+ * Check if there are any adjacent anomalies in the map
+ */
+export function hasAdjacentAnomalies(
+  chosenMapLocations: Record<number, SystemId>,
+): boolean {
+  // For each position with a system
+  for (const [posStr, systemId] of Object.entries(chosenMapLocations)) {
+    // Skip if not an anomaly
+    if (systemData[systemId].anomalies.length === 0) continue;
+
+    const position = parseInt(posStr);
+    const adjacentPositions = getAdjacentPositions(position);
+
+    // Check if any adjacent system is also an anomaly
+    for (const adjPos of adjacentPositions) {
+      const adjSystemId = chosenMapLocations[adjPos];
+      if (adjSystemId && systemData[adjSystemId].anomalies.length > 0) {
+        return true; // Found adjacent anomalies
+      }
+    }
+  }
+
+  return false;
+}
+/**
+ * Get positions adjacent to the given position in the hexagonal grid
+ */
+export function getAdjacentPositions(position: number): number[] {
+  // Convert position index to actual coordinates in the hex grid
+  const posCoords = mapStringOrder[position];
+  if (!posCoords) return [];
+
+  const adjacentPositions: number[] = [];
+
+  // In a hex grid, adjacent hexes are at these relative coordinates:
+  const adjacentOffsets = [
+    { x: 1, y: 0, z: -1 }, // right
+    { x: 1, y: -1, z: 0 }, // upper right
+    { x: 0, y: -1, z: 1 }, // upper left
+    { x: -1, y: 0, z: 1 }, // left
+    { x: -1, y: 1, z: 0 }, // bottom left
+    { x: 0, y: 1, z: -1 }, // bottom right
+  ];
+
+  // Check each adjacent direction
+  for (const offset of adjacentOffsets) {
+    const adjX = posCoords.x + offset.x;
+    const adjY = posCoords.y + offset.y;
+    const adjZ = offset.z !== undefined ? posCoords.z + offset.z : -adjX - adjY; // Calculate z if not provided
+
+    // Find the index of this adjacent position in mapStringOrder
+    const adjIndex = mapStringOrder.findIndex(
+      (coords) =>
+        coords.x === adjX &&
+        coords.y === adjY &&
+        (coords.z === adjZ ||
+          (coords.z === undefined && -adjX - adjY === adjZ)),
+    );
+
+    if (adjIndex !== -1) {
+      adjacentPositions.push(adjIndex);
+    }
+  }
+
+  return adjacentPositions;
 }

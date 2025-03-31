@@ -1,14 +1,7 @@
-import { DraftSettings, Map, SystemId, SystemIds } from "~/types";
+import { DraftSettings, SystemId, SystemIds } from "~/types";
 import { SLICE_SHAPES } from "../sliceShapes";
 import { miltySystemTiers } from "~/data/miltyTileTiers";
-import {
-  ChoosableTier,
-  DraftConfig,
-  SliceChoice,
-  SliceGenerationConfig,
-  TieredSlice,
-  TieredSystems,
-} from "../types";
+import { SliceChoice, SliceGenerationConfig, TieredSystems } from "../types";
 import { shuffle, weightedChoice } from "../helpers/randomization";
 import {
   filterTieredSystems,
@@ -17,12 +10,8 @@ import {
   isLegendary,
 } from "../helpers/sliceGeneration";
 import { systemData } from "~/data/systemData";
-import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
-import { mapStringOrder } from "~/data/mapStringOrder";
-import { draftConfig } from "../draftConfig";
-import { calculateMapStats } from "~/hooks/useFullMapStats";
-import { systemIdsInSlice, systemIdsToSlices } from "~/utils/slice";
-import { coreGenerateSlices } from "../common/sliceGenerator";
+import { optimalStatsForSystems } from "~/utils/map";
+import { coreGenerateMap, coreGenerateSlices } from "../common/sliceGenerator";
 
 const SLICE_CHOICES: SliceChoice[] = [
   // 2 red
@@ -45,60 +34,12 @@ const DEFAULT_SLICE_CONFIG: SliceGenerationConfig = {
   minOptimal: undefined,
 };
 
-export function generateMap(
+export const generateMap = (
   settings: DraftSettings,
   systemPool: SystemId[],
   attempts: number = 0,
-) {
-  const config = draftConfig[settings.type];
-  const map = generateEmptyMap(config);
-  const numMapTiles = config.modifiableMapTiles.length;
+) => coreGenerateMap(settings, systemPool, attempts, generateSlices);
 
-  const slices = generateSlices(settings.numSlices, systemPool, {
-    maxOptimal: settings.maxOptimal,
-    minOptimal: settings.minOptimal,
-  });
-  if (!slices) return undefined;
-  const usedSystemIds = slices.flat(1);
-  const remainingSystemIds = shuffle(
-    systemPool.filter((id) => !usedSystemIds.includes(id)),
-  );
-  const mapSystemIds = shuffle(remainingSystemIds).slice(0, numMapTiles);
-
-  // fill map with chosen systems
-  config.modifiableMapTiles.forEach((idx) => {
-    map[idx] = {
-      idx: idx,
-      position: mapStringOrder[idx],
-      type: "SYSTEM",
-      systemId: mapSystemIds.pop()!,
-    };
-  });
-
-  // if we have gone past max attempts, return the map regardless of validation
-  if (attempts > 1000) return { map, slices, valid: false };
-
-  // validate map has a minimum of 11 anomalies. only for miltyeq, as smaller map configurations
-  // need different validations and haven't figured that out yet.
-  if (settings.type === "miltyeq" && !validateMap(config, map, slices)) {
-    return generateMap(settings, systemPool, attempts + 1);
-  }
-
-  return { map, slices, valid: true };
-}
-
-const validateMap = (config: DraftConfig, map: Map, slices: SystemIds[]) => {
-  // For validating 'globals', we grab the N richest slices.
-  const slicesToValidate = systemIdsToSlices(config, slices)
-    .slice(0, config.numPlayers)
-    .map((s) => systemIdsInSlice(s));
-
-  const stats = calculateMapStats(slicesToValidate, map);
-
-  return stats.redTiles >= 11 && stats.totalLegendary <= 3;
-};
-
-// Refactored to use the common implementation
 export const generateSlices = (
   sliceCount: number,
   availableSystems: SystemId[],
