@@ -37,6 +37,7 @@ import { getRandomSliceNames } from "./data/sliceWords";
 import { shuffle } from "./draft/helpers/randomization";
 import { factions } from "./data/factionData";
 import { notifications } from "@mantine/notifications";
+import { coreRerollSlice, coreRerollMap } from "./draft/common/sliceGenerator";
 
 // Define SelectionType type based on the selection types used in the code
 type SelectionType =
@@ -726,40 +727,69 @@ export const draftStore = createStore<DraftV2State>()(
         }),
 
       randomizeMap: () =>
-        set(({ draft, systemPool }) => {
-          const config = draftConfig[draft.settings.type];
-          draft.presetMap = randomizeMap(config, draft.slices, systemPool);
+        set(({ draft }) => {
+          const result = coreRerollMap(
+            draft.settings,
+            draft.slices.map((slice) => systemIdsInSlice(slice)),
+          );
+
+          if (!result) {
+            notifications.show({
+              message:
+                "Could not generate a valid slice with the given parameters",
+              color: "red",
+            });
+            return;
+          }
+
+          if (!result.valid) {
+            notifications.show({
+              message: "Generated slice may not be optimal",
+              color: "yellow",
+            });
+          }
+
+          draft.presetMap = result.map;
         }),
 
       randomizeSlice: (sliceIdx: number) =>
         set(({ draft, systemPool }) => {
-          const config = draftConfig[draft.settings.type];
-          const systemsInSlice = systemIdsInSlice(draft.slices[sliceIdx]);
-          const usedIds = getUsedSystemIds(draft.slices, draft.presetMap);
-
-          const availableSystems = getAvailableSystems(
-            systemPool,
-            usedIds,
-            systemsInSlice,
+          // Convert slices to raw system ID arrays for coreRerollSlice
+          const slicesAsSystemIds = draft.slices.map((slice) =>
+            systemIdsInSlice(slice),
           );
 
-          const generated = config.generateSlices(1, availableSystems, {
-            numAlphas: 0,
-            numBetas: 0,
-            numLegendaries: 0,
-          });
+          // Call coreRerollSlice to generate a new slice
+          const result = coreRerollSlice(
+            draft.settings,
+            draft.presetMap,
+            slicesAsSystemIds,
+            sliceIdx,
+          );
 
-          if (generated == undefined) {
-            alert("Could not generate slice with given parameters");
+          // Handle the result
+          if (!result) {
+            notifications.show({
+              message:
+                "Could not generate a valid slice with the given parameters",
+              color: "red",
+            });
             return;
           }
-          const rawSlice = generated[0];
 
+          // Update the slice with the newly generated one
           draft.slices[sliceIdx] = systemIdsToSlice(
-            config,
+            draftConfig[draft.settings.type],
             draft.slices[sliceIdx].name,
-            rawSlice,
+            result.slice,
           );
+
+          if (!result.valid) {
+            notifications.show({
+              message: "Generated slice may not be optimal",
+              color: "yellow",
+            });
+          }
         }),
 
       randomizeSlices: () =>

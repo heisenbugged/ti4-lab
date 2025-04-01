@@ -18,6 +18,7 @@ import { generateEmptyMap } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
 import { systemIdsInSlice, systemIdsToSlices } from "~/utils/slice";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
+import { getSystemPool } from "~/utils/system";
 
 // Define the path indices to Mecatol - these are the same for all slices
 // Represents the straight line path from home system to the center
@@ -48,6 +49,67 @@ export type CoreGenerateSlicesArgs = {
     config: SliceGenerationConfig,
   ) => void;
 };
+
+export function coreRerollSlice(
+  settings: DraftSettings,
+  map: Map,
+  slices: SystemIds[],
+  sliceToRerollIdx: number,
+): { slice: SystemIds; valid: boolean } | undefined {
+  const config = draftConfig[settings.type];
+
+  // Collect systems that are currently in use (in the map and other slices)
+  const systemsInMap = map
+    .filter((tile) => tile.type === "SYSTEM")
+    .map((tile) => (tile as { systemId: SystemId }).systemId);
+
+  const systemsInOtherSlices = slices
+    .filter((_, idx) => idx !== sliceToRerollIdx)
+    .flat();
+
+  // Get all system IDs from the original systems pool that aren't in use
+  const allSystems = getSystemPool(settings.tileGameSets);
+  const availableSystems = allSystems.filter(
+    (id) => !systemsInMap.includes(id) && !systemsInOtherSlices.includes(id),
+  );
+
+  const maxAttempts = 1000;
+  function attemptReroll(
+    currentAttempt: number,
+  ): { slice: SystemIds; valid: boolean } | undefined {
+    if (currentAttempt > maxAttempts) return undefined;
+
+    const newSlices = config.generateSlices(1, availableSystems, {
+      ...settings.sliceGenerationConfig,
+      numAlphas: 0,
+      numBetas: 0,
+      numLegendaries: 0,
+    });
+    if (!newSlices || newSlices.length === 0) return undefined;
+
+    const newSlice = newSlices[0];
+    const updatedSlices = [...slices];
+    updatedSlices[sliceToRerollIdx] = newSlice;
+
+    const isMapValid = validateMap(config, settings, map, updatedSlices);
+    if (!isMapValid) return attemptReroll(currentAttempt + 1);
+    return {
+      slice: newSlice,
+      valid: isMapValid,
+    };
+  }
+
+  return attemptReroll(0);
+}
+
+export const coreRerollMap = (settings: DraftSettings, slices: SystemIds[]) =>
+  coreGenerateMap(
+    settings,
+    getSystemPool(settings.tileGameSets),
+    0,
+    // do not generate slices, just re-use the existing slices
+    () => slices,
+  );
 
 /**
  * Generate a map and slices using a core function.
