@@ -11,7 +11,12 @@ import {
 } from "../helpers/sliceGeneration";
 import { systemData } from "~/data/systemData";
 import { optimalStatsForSystems } from "~/utils/map";
-import { coreGenerateMap, coreGenerateSlices } from "../common/sliceGenerator";
+import {
+  coreGenerateMap,
+  coreGenerateSlices,
+  postProcessSlices,
+} from "../common/sliceGenerator";
+import { DEFAULT_MILTYEQ_SETTINGS } from "~/components/MiltyEqSettingsModal";
 
 const SLICE_CHOICES: SliceChoice[] = [
   // 2 red
@@ -26,13 +31,7 @@ const SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "med", "low", "low"] }, // 4
 ];
 
-const DEFAULT_SLICE_CONFIG: SliceGenerationConfig = {
-  numAlphas: 2,
-  numBetas: 2,
-  numLegendaries: 1,
-  maxOptimal: undefined,
-  minOptimal: undefined,
-};
+const DEFAULT_CONFIG = DEFAULT_MILTYEQ_SETTINGS;
 
 export const generateMap = (
   settings: DraftSettings,
@@ -46,9 +45,10 @@ export const generateSlices = (
   config?: SliceGenerationConfig,
 ) =>
   coreGenerateSlices({
+    mecatolPath: [1, 3],
     sliceCount,
     availableSystems,
-    config: config ?? DEFAULT_SLICE_CONFIG,
+    config: config ?? DEFAULT_CONFIG,
     sliceShape: SLICE_SHAPES.milty_eq,
     systemTiers: miltySystemTiers,
     getSliceTiers: () => shuffle(weightedChoice(SLICE_CHOICES)),
@@ -60,9 +60,10 @@ export const generateSlices = (
       const betas = filterTieredSystems(systems, isBeta).length;
       const legendaries = filterTieredSystems(systems, isLegendary).length;
 
-      const minAlphas = config.numAlphas ?? 2;
-      const minBetas = config.numBetas ?? 2;
-      const minLegendaries = config.numLegendaries ?? 1;
+      const minAlphas = config.numAlphas ?? DEFAULT_CONFIG.minAlphaWormholes;
+      const minBetas = config.numBetas ?? DEFAULT_CONFIG.minBetaWormholes;
+      const minLegendaries =
+        config.numLegendaries ?? DEFAULT_CONFIG.minLegendaries;
       return (
         alphas >= minAlphas &&
         betas >= minBetas &&
@@ -80,9 +81,14 @@ export const generateSlices = (
 
       const optimal = optimalStatsForSystems(systems);
       const totalOptimal = optimal.resources + optimal.influence + optimal.flex;
-      if (totalOptimal > 10) return false;
-      if (totalOptimal < 6) return false;
+
+      const minOptimal = config.minOptimal ?? DEFAULT_CONFIG.minOptimal;
+      const maxOptimal = config.maxOptimal ?? DEFAULT_CONFIG.maxOptimal;
+
+      if (maxOptimal !== undefined && totalOptimal > maxOptimal) return false;
+      if (minOptimal !== undefined && totalOptimal < minOptimal) return false;
 
       return true;
     },
+    postProcessSlices,
   });

@@ -19,10 +19,7 @@ import { draftConfig } from "../draftConfig";
 import { systemIdsInSlice, systemIdsToSlices } from "~/utils/slice";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
 import { getSystemPool } from "~/utils/system";
-
-// Define the path indices to Mecatol - these are the same for all slices
-// Represents the straight line path from home system to the center
-export const MECATOL_PATH = [1, 4];
+import { miltySystemTiers } from "~/data/miltyTileTiers";
 
 // Define which tiles are adjacent to home systems
 export const HOME_ADJACENT_TILES = [1, 2, 3];
@@ -34,6 +31,7 @@ export type CoreGenerateSlicesArgs = {
   systemTiers: Record<string, ChoosableTier>;
   availableSystems: SystemId[];
   config: SliceGenerationConfig;
+  mecatolPath: number[] | undefined;
 
   // Strategy functions
   getSliceTiers: () => TieredSlice;
@@ -47,6 +45,7 @@ export type CoreGenerateSlicesArgs = {
   postProcessSlices?: (
     slices: SystemIds[],
     config: SliceGenerationConfig,
+    mecatolPath: number[] | undefined,
   ) => void;
 };
 
@@ -201,6 +200,7 @@ const validateMap = (
  * Can be used by both milty and miltyeq slice generators.
  */
 export function coreGenerateSlices({
+  mecatolPath,
   availableSystems,
   systemTiers,
   sliceShape,
@@ -293,16 +293,22 @@ export function coreGenerateSlices({
 
   // Run any post-processing if provided
   if (postProcessSlices) {
-    postProcessSlices(slices, config);
+    postProcessSlices(slices, config, mecatolPath);
   }
 
   return slices;
 }
 
 // Function to check if a slice has a safe path to Mecatol
-export function hasPathToMecatol(slice: SystemIds): boolean {
+export function hasPathToMecatol(
+  slice: SystemIds,
+  mecatolPath: number[] | undefined,
+): boolean {
+  // If no mecatolPath is specified in the config, always return true
+  if (!mecatolPath || mecatolPath.length === 0) return true;
+
   // Check if any tile in the path is an anomaly
-  for (const tileIndex of MECATOL_PATH) {
+  for (const tileIndex of mecatolPath) {
     if (tileIndex >= slice.length) continue; // Skip if index out of bounds
 
     const systemId = slice[tileIndex];
@@ -336,48 +342,44 @@ export function hasHighQualityAdjacent(
 export function ensureSafePathToMecatol(
   slices: SystemIds[],
   minSafePathCount: number,
+  mecatolPath: number[] | undefined,
 ): void {
-  // Count slices that already have a safe path
-  const safePathSlices = slices.filter(hasPathToMecatol);
+  if (!mecatolPath || mecatolPath.length === 0) return;
 
-  // If we already meet the criteria, we're done
+  const safePathSlices = slices.filter((slice) =>
+    hasPathToMecatol(slice, mecatolPath),
+  );
   if (safePathSlices.length >= minSafePathCount) return;
 
   // Get indices of slices without safe paths
   const unsafeSliceIndices = slices
     .map((slice, index) => ({ slice, index }))
-    .filter(({ slice }) => !hasPathToMecatol(slice))
+    .filter(({ slice }) => !hasPathToMecatol(slice, mecatolPath))
     .map(({ index }) => index);
 
-  // Number of slices we need to fix
   const slicesToFix = Math.min(
     minSafePathCount - safePathSlices.length,
     unsafeSliceIndices.length,
   );
 
-  // Process only as many slices as needed to meet requirements
   unsafeSliceIndices.slice(0, slicesToFix).forEach((sliceIndex) => {
-    // Create a modified copy of the slice
     const slice = [...slices[sliceIndex]];
 
-    // Find all anomalies on the path
-    const anomaliesOnPath = MECATOL_PATH.filter(
-      (pathIndex) => pathIndex < slice.length,
-    ).filter((pathIndex) => {
-      const system = systemData[slice[pathIndex]];
-      return system.anomalies.length > 0;
-    });
+    const anomaliesOnPath = mecatolPath
+      .filter((pathIndex) => pathIndex < slice.length)
+      .filter((pathIndex) => {
+        const system = systemData[slice[pathIndex]];
+        return system.anomalies.length > 0;
+      });
 
-    // Find all non-path indices that aren't anomalies
     const nonPathNonAnomalyIndices = Array.from({ length: slice.length })
       .map((_, index) => index)
-      .filter((index) => !MECATOL_PATH.includes(index))
+      .filter((index) => !mecatolPath.includes(index))
       .filter((index) => {
         const system = systemData[slice[index]];
         return system.anomalies.length === 0;
       });
 
-    // Perform swaps to fix the path if possible
     const swapsNeeded = Math.min(
       anomaliesOnPath.length,
       nonPathNonAnomalyIndices.length,
@@ -395,7 +397,7 @@ export function ensureSafePathToMecatol(
     }
 
     // Update the slice if we've fixed it
-    if (hasPathToMecatol(slice)) slices[sliceIndex] = slice;
+    if (hasPathToMecatol(slice, mecatolPath)) slices[sliceIndex] = slice;
   });
 }
 
@@ -562,3 +564,24 @@ export function getAdjacentPositions(position: number): number[] {
 
   return adjacentPositions;
 }
+
+// Post-processing function for Mecatol path and high-quality adjacent requirements
+export const postProcessSlices = (
+  slices: SystemIds[],
+  config: SliceGenerationConfig,
+  mecatolPath: number[] | undefined,
+) => {
+  // Check for safe path to Mecatol requirement
+  if (config.safePathToMecatol && config.safePathToMecatol > 0) {
+    ensureSafePathToMecatol(slices, config.safePathToMecatol, mecatolPath);
+  }
+
+  // Check for high-quality adjacent to home requirement
+  if (config.highQualityAdjacent && config.highQualityAdjacent > 0) {
+    ensureHighQualityAdjacent(
+      slices,
+      config.highQualityAdjacent,
+      miltySystemTiers,
+    );
+  }
+};

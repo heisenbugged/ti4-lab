@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, Group, Modal, Stack } from "@mantine/core";
 import { SettingStepper } from "~/components/SettingStepper";
 
-export interface MiltyDraftSettings {
+export interface MiltyEqDraftSettings {
   minOptimal?: number;
   maxOptimal?: number;
 
@@ -13,9 +13,9 @@ export interface MiltyDraftSettings {
   minLegendaries: number;
 }
 
-export const DEFAULT_MILTY_SETTINGS: MiltyDraftSettings = {
-  minOptimal: 9,
-  maxOptimal: 13,
+export const DEFAULT_MILTYEQ_SETTINGS: MiltyEqDraftSettings = {
+  minOptimal: 6,
+  maxOptimal: 10,
   safePathToMecatol: 0,
   highQualityAdjacent: 0,
   minAlphaWormholes: 2,
@@ -25,22 +25,22 @@ export const DEFAULT_MILTY_SETTINGS: MiltyDraftSettings = {
 
 type Props = {
   opened: boolean;
-  settings: MiltyDraftSettings;
+  settings: MiltyEqDraftSettings;
   onClose: () => void;
-  onSave: (newSettings: MiltyDraftSettings) => void;
+  onSave: (newSettings: MiltyEqDraftSettings) => void;
 };
 
-export function MiltySettingsModal({
+export function MiltyEqSettingsModal({
   opened,
   onClose,
   settings,
   onSave,
 }: Props) {
   const [localSettings, setLocalSettings] =
-    useState<MiltyDraftSettings>(settings);
+    useState<MiltyEqDraftSettings>(settings);
 
   const handleSettingChange = (
-    property: keyof MiltyDraftSettings,
+    property: keyof MiltyEqDraftSettings,
     value: number | undefined,
   ) => {
     setLocalSettings((prev) => ({
@@ -53,7 +53,7 @@ export function MiltySettingsModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title="Milty Draft Settings"
+      title="Milty EQ Draft Settings"
       size="xl"
     >
       <Stack p="md">
@@ -65,7 +65,7 @@ export function MiltySettingsModal({
               value={localSettings.minOptimal}
               onChange={handleSettingChange}
               allowUndefined={true}
-              defaultValue={DEFAULT_MILTY_SETTINGS.minOptimal}
+              defaultValue={DEFAULT_MILTYEQ_SETTINGS.minOptimal}
             />
 
             <SettingStepper
@@ -74,7 +74,7 @@ export function MiltySettingsModal({
               value={localSettings.maxOptimal}
               onChange={handleSettingChange}
               allowUndefined={true}
-              defaultValue={DEFAULT_MILTY_SETTINGS.maxOptimal}
+              defaultValue={DEFAULT_MILTYEQ_SETTINGS.maxOptimal}
             />
 
             <SettingStepper

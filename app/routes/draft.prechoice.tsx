@@ -71,6 +71,11 @@ import {
   DEFAULT_MILTY_SETTINGS,
   MiltyDraftSettings,
 } from "~/components/MiltySettingsModal";
+import {
+  MiltyEqSettingsModal,
+  DEFAULT_MILTYEQ_SETTINGS,
+  MiltyEqDraftSettings,
+} from "~/components/MiltyEqSettingsModal";
 
 type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 
@@ -513,13 +518,26 @@ export default function DraftPrechoice() {
     // Add Milty-specific settings if the selected map type is 'milty'
     if (selectedMapType === "milty") {
       draftSettings.sliceGenerationConfig = {
-        minOptimal: miltySettings.minOptimal ?? 9,
-        maxOptimal: miltySettings.maxOptimal ?? 13,
+        minOptimal: miltySettings.minOptimal,
+        maxOptimal: miltySettings.maxOptimal,
         safePathToMecatol: miltySettings.safePathToMecatol,
         highQualityAdjacent: miltySettings.highQualityAdjacent,
         numAlphas: miltySettings.minAlphaWormholes,
         numBetas: miltySettings.minBetaWormholes,
         numLegendaries: miltySettings.minLegendaries,
+      };
+    }
+
+    // Add MiltyEq-specific settings if the selected map type is 'miltyeq'
+    if (selectedMapType === "miltyeq") {
+      draftSettings.sliceGenerationConfig = {
+        minOptimal: miltyEqSettings.minOptimal,
+        maxOptimal: miltyEqSettings.maxOptimal,
+        safePathToMecatol: miltyEqSettings.safePathToMecatol,
+        highQualityAdjacent: miltyEqSettings.highQualityAdjacent,
+        numAlphas: miltyEqSettings.minAlphaWormholes,
+        numBetas: miltyEqSettings.minBetaWormholes,
+        numLegendaries: miltyEqSettings.minLegendaries,
       };
     }
 
@@ -618,6 +636,16 @@ export default function DraftPrechoice() {
     DEFAULT_MILTY_SETTINGS,
   );
 
+  // Add MiltyEq settings state and modal control
+  const [
+    miltyEqSettingsOpened,
+    { open: openMiltyEqSettings, close: closeMiltyEqSettings },
+  ] = useDisclosure(false);
+
+  const [miltyEqSettings, setMiltyEqSettings] = useState<MiltyEqDraftSettings>(
+    DEFAULT_MILTYEQ_SETTINGS,
+  );
+
   return (
     <Grid mt="lg">
       <FactionSettingsModal
@@ -638,6 +666,13 @@ export default function DraftPrechoice() {
         settings={miltySettings}
         onClose={closeMiltySettings}
         onSave={(newSettings) => setMiltySettings(newSettings)}
+      />
+
+      <MiltyEqSettingsModal
+        opened={miltyEqSettingsOpened}
+        settings={miltyEqSettings}
+        onClose={closeMiltyEqSettings}
+        onSave={(newSettings) => setMiltyEqSettings(newSettings)}
       />
 
       <Modal
@@ -768,57 +803,80 @@ export default function DraftPrechoice() {
               {Object.entries(MAPS).map(([type, { title, playerCount }]) => {
                 if (playerCount !== players.length) return null;
 
-                if (type === "milty") {
-                  return (
-                    <Group key={type} gap="xs">
-                      <Button
-                        miw="110px"
-                        color="blue"
-                        size="md"
-                        variant={
-                          selectedMapType === type ? "filled" : "outline"
-                        }
-                        ff="heading"
-                        onMouseOver={() =>
-                          setHoveredMapType(type as ChoosableDraftType)
-                        }
-                        onMouseDown={() =>
-                          handleChangeSelectedMapType(
-                            type as ChoosableDraftType,
-                          )
-                        }
-                      >
-                        {title}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        color="blue"
-                        size="md"
-                        onClick={() => openMiltySettings()}
-                      >
-                        <IconSettings size={18} />
-                      </Button>
-                    </Group>
-                  );
-                }
+                // Dictionary mapping map types to their settings opener functions
+                const settingsOpeners: Partial<
+                  Record<ChoosableDraftType, () => void>
+                > = {
+                  milty: openMiltySettings,
+                  miltyeq: openMiltyEqSettings,
+                };
+
+                const openSettings =
+                  settingsOpeners[type as ChoosableDraftType];
 
                 return (
-                  <Button
-                    key={type}
-                    miw="150px"
-                    color="blue"
-                    size="md"
-                    variant={selectedMapType === type ? "filled" : "outline"}
-                    ff="heading"
-                    onMouseOver={() =>
-                      setHoveredMapType(type as ChoosableDraftType)
-                    }
-                    onMouseDown={() =>
-                      handleChangeSelectedMapType(type as ChoosableDraftType)
-                    }
-                  >
-                    {title}
-                  </Button>
+                  <Grid key={type} gutter="xs" columns={12}>
+                    {openSettings ? (
+                      <>
+                        <Grid.Col span={9}>
+                          <Button
+                            w="100%"
+                            color="blue"
+                            size="md"
+                            variant={
+                              selectedMapType === type ? "filled" : "outline"
+                            }
+                            ff="heading"
+                            onMouseOver={() =>
+                              setHoveredMapType(type as ChoosableDraftType)
+                            }
+                            onMouseDown={() =>
+                              handleChangeSelectedMapType(
+                                type as ChoosableDraftType,
+                              )
+                            }
+                          >
+                            {title}
+                          </Button>
+                        </Grid.Col>
+                        <Grid.Col span={3}>
+                          <Button
+                            variant="outline"
+                            color="blue"
+                            size="md"
+                            onClick={() => {
+                              setSelectedMapType(type as ChoosableDraftType);
+                              openSettings();
+                            }}
+                          >
+                            <IconSettings size={18} />
+                          </Button>
+                        </Grid.Col>
+                      </>
+                    ) : (
+                      <Grid.Col span={12}>
+                        <Button
+                          w="100%"
+                          color="blue"
+                          size="md"
+                          variant={
+                            selectedMapType === type ? "filled" : "outline"
+                          }
+                          ff="heading"
+                          onMouseOver={() =>
+                            setHoveredMapType(type as ChoosableDraftType)
+                          }
+                          onMouseDown={() =>
+                            handleChangeSelectedMapType(
+                              type as ChoosableDraftType,
+                            )
+                          }
+                        >
+                          {title}
+                        </Button>
+                      </Grid.Col>
+                    )}
+                  </Grid>
                 );
               })}
               <Divider />

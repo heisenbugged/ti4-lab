@@ -12,8 +12,7 @@ import { systemData } from "~/data/systemData";
 import { optimalStatsForSystems } from "~/utils/map";
 import {
   coreGenerateSlices,
-  ensureSafePathToMecatol,
-  ensureHighQualityAdjacent,
+  postProcessSlices,
 } from "../common/sliceGenerator";
 
 export function generateSlices(
@@ -68,28 +67,8 @@ export function generateSlices(
     return true;
   };
 
-  // Post-processing function for Mecatol path and high-quality adjacent requirements
-  const postProcessSlices = (
-    slices: SystemIds[],
-    config: SliceGenerationConfig,
-  ) => {
-    // Check for safe path to Mecatol requirement
-    if (config.safePathToMecatol && config.safePathToMecatol > 0) {
-      console.log("Ensuring safe path to Mecatol");
-      ensureSafePathToMecatol(slices, config.safePathToMecatol);
-    }
-
-    // Check for high-quality adjacent to home requirement
-    if (config.highQualityAdjacent && config.highQualityAdjacent > 0) {
-      ensureHighQualityAdjacent(
-        slices,
-        config.highQualityAdjacent,
-        miltySystemTiers,
-      );
-    }
-  };
-
   return coreGenerateSlices({
+    mecatolPath: [1, 4],
     sliceCount,
     availableSystems,
     config,
