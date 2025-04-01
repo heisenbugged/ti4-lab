@@ -269,7 +269,14 @@ export function generateMap(
   // since we fix a number of wormholes and legendaries, this biases
   // the random sampling towards blue/red planets. we do some post-processing
   // to ensure that the distribution of planet traits is more balanced.
-  const { swaps } = rebalanceTraits(usedSystems(), remainingSystems());
+  const { swaps } = rebalanceTraits(
+    usedSystems(),
+    remainingSystems(),
+    [],
+    0,
+    10,
+    chosenMapLocations,
+  );
   swaps.forEach(({ toRemove, toAdd }) => {
     // swap on map, if on map
     const idx = Object.values(chosenMapLocations).indexOf(toRemove);
@@ -508,42 +515,121 @@ const rebalanceTraits = (
   swaps: Swap[] = [],
   attempts: number = 0,
   maxAttempts: number = 10,
+  mapLocations: Record<number, SystemId> = {},
 ): { swaps: Swap[] } => {
-  const planetTraits = countPlanetTraits(usedSystems);
-  const { spread, maxTrait, minTrait } = calculateSpread(planetTraits);
-  if (spread < 5 || attempts >= maxAttempts) return { swaps };
+  // Create copies of arrays to avoid modifying the originals
+  const usedSystemsCopy = [...usedSystems];
+  const availableSystemsCopy = [...availableSystems];
 
-  const candidateToRemove = usedSystems
-    .filter((id) =>
-      systemData[id].planets.find(({ trait }) => trait === maxTrait),
-    )
+  // Count planet traits in the current used systems
+  const planetTraits = countPlanetTraits(usedSystemsCopy);
+  const { spread, maxTrait, minTrait } = calculateSpread(planetTraits);
+
+  // Exit conditions: spread is acceptable or too many attempts
+  if (attempts >= maxAttempts)
+    console.log("Failed to rebalance after maximum attempts");
+  if (spread < 3 || attempts >= maxAttempts) return { swaps };
+
+  const systemsOnMap = Object.values(mapLocations);
+
+  // Find best swap that reduces the trait imbalance
+  let bestSwap: {
+    toRemove: SystemId;
+    toAdd: SystemId;
+    newSpread: number;
+  } | null = null;
+
+  // First, identify systems that have the most common trait and could be swapped out
+  const candidatesToRemove = usedSystemsCopy
+    .filter((id) => {
+      // Must have at least one planet with the most common trait
+      const hasMaxTrait = systemData[id].planets.some(
+        ({ trait }) => trait === maxTrait,
+      );
+      // If it's on the map and has wormholes, don't swap it to avoid breaking wormhole placement
+      const isSafeToRemove = !(
+        systemsOnMap.includes(id) && systemData[id].wormholes.length > 0
+      );
+      return hasMaxTrait && isSafeToRemove;
+    })
     .sort(
+      // Sort by how many planets have the max trait, most first
       (a, b) =>
         systemData[b].planets.filter(({ trait }) => trait === maxTrait).length -
         systemData[a].planets.filter(({ trait }) => trait === maxTrait).length,
-    )[0];
+    );
 
-  if (!candidateToRemove) return { swaps };
+  // Try each candidate for removal
+  for (const toRemove of candidatesToRemove) {
+    // Find possible additions that have the least common trait
+    const possibleAdditions = availableSystemsCopy.filter((id) => {
+      // Must have at least one planet with the least common trait
+      const hasMinTrait = systemData[id].planets.some(
+        ({ trait }) => trait === minTrait,
+      );
 
-  // find a planet with the desired trait
-  const candidateToAdd = availableSystems.find(
-    (id) =>
-      systemData[id].planets.find(({ trait }) => trait === minTrait) &&
-      systemData[id].planets.length ===
-        systemData[candidateToRemove].planets.length,
-  )!;
+      // Planet count constraint is relaxed - allow +/-1 difference to increase swap opportunities
+      const planetCountMatches =
+        Math.abs(
+          systemData[id].planets.length - systemData[toRemove].planets.length,
+        ) <= 1;
 
-  if (!candidateToAdd) return { swaps };
+      // If the system to remove is on the map and has wormholes, ensure replacement also has wormholes
+      const wormholesMatch =
+        systemsOnMap.includes(toRemove) &&
+        systemData[toRemove].wormholes.length > 0
+          ? systemData[id].wormholes.length > 0
+          : true;
 
-  // modify 'used' and 'available' systems
-  usedSystems = usedSystems.filter((id) => id !== candidateToRemove);
-  usedSystems.push(candidateToAdd);
+      return hasMinTrait && planetCountMatches && wormholesMatch;
+    });
 
-  availableSystems = availableSystems.filter((id) => id !== candidateToAdd);
-  availableSystems.push(candidateToRemove);
+    // Evaluate each possible swap to find the one that gives the best balance
+    for (const toAdd of possibleAdditions) {
+      // Create a temporary state with this swap applied
+      const tempUsed = usedSystemsCopy
+        .filter((id) => id !== toRemove)
+        .concat(toAdd);
 
-  swaps.push({ toRemove: candidateToRemove, toAdd: candidateToAdd });
-  return rebalanceTraits(usedSystems, availableSystems, swaps, attempts + 1);
+      // Calculate the new trait distribution
+      const newTraits = countPlanetTraits(tempUsed);
+      const { spread: newSpread } = calculateSpread(newTraits);
+
+      // Update best swap if this one is better
+      if (bestSwap === null || newSpread < bestSwap.newSpread) {
+        bestSwap = { toRemove, toAdd, newSpread };
+      }
+    }
+  }
+
+  // If no swap was found that improves balance, return current swaps
+  if (!bestSwap || bestSwap.newSpread >= spread) {
+    return { swaps };
+  }
+
+  // Apply the best swap
+  const { toRemove, toAdd } = bestSwap;
+
+  // Update the passed-in arrays for the next iteration
+  const newUsedSystems = usedSystemsCopy
+    .filter((id) => id !== toRemove)
+    .concat(toAdd);
+  const newAvailableSystems = availableSystemsCopy
+    .filter((id) => id !== toAdd)
+    .concat(toRemove);
+
+  // Add this swap to our list of swaps
+  swaps.push({ toRemove, toAdd });
+
+  // Continue rebalancing recursively
+  return rebalanceTraits(
+    newUsedSystems,
+    newAvailableSystems,
+    swaps,
+    attempts + 1,
+    maxAttempts,
+    mapLocations,
+  );
 };
 
 /**
