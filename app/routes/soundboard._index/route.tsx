@@ -285,6 +285,7 @@ export default function SoundboardMaster() {
     useLoaderData<typeof loader>();
   const [playlistId, setPlaylistId] = useState<string | undefined>(undefined);
   const [factionSlots, setFactionSlots] = useState<FactionId[]>([
+    "saar",
     "jolnar",
     "l1z1x",
     "sol",
@@ -292,6 +293,7 @@ export default function SoundboardMaster() {
     "nomad",
     "xxcha",
     "empyrean",
+    "muaat",
   ]);
   const [isVoiceLinePlaying, setIsVoiceLinePlaying] = useState(false);
 

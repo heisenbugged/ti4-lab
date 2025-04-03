@@ -46,6 +46,36 @@ type FactionAudio = {
 };
 
 export const factionAudios: Record<FactionId, FactionAudio> = {
+  saar: {
+    battleAnthem: "spotify:track:3xlr5CPOArA6UEw6f29st9",
+    homeDefense: [`${CDN_BASE_URL}/voices/saar/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/saar/homeinvasion.mp3`],
+    defenseOutnumbered: [`${CDN_BASE_URL}/voices/saar/defenseoutnumbered.mp3`],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/saar/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/saar/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/saar/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/saar/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/saar/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/saar/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/saar/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/saar/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/saar/battle8.mp3`,
+      `${CDN_BASE_URL}/voices/saar/battle9.mp3`,
+      `${CDN_BASE_URL}/voices/saar/battle10.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/saar/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/saar/joke2.mp3`,
+    ],
+    special: {
+      title: "Enter Asteroid",
+      uris: [
+        `${CDN_BASE_URL}/voices/saar/special1.mp3`,
+        `${CDN_BASE_URL}/voices/saar/special2.mp3`,
+      ],
+    },
+  },
   jolnar: {
     battleAnthem: "spotify:track:3xlr5CPOArA6UEw6f29st9",
     homeDefense: [`${CDN_BASE_URL}/voices/jolnar/homedefense.mp3`],
