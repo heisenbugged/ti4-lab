@@ -69,13 +69,8 @@ export function SpotifyLoginButton({
     <>
       {!accessToken ? (
         <>
-          <Button
-            leftSection={<IconBrandSpotify />}
-            color="green"
-            variant="filled"
-            onClick={handleLoginClick}
-          >
-            Login with Spotify
+          <Button color="green" variant="filled" onClick={handleLoginClick}>
+            Login
           </Button>
 
           <EULAModal

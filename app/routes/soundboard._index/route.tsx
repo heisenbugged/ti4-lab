@@ -12,7 +12,6 @@ import {
   Box,
   Paper,
   Select,
-  lighten,
   Modal,
   List,
   Alert,
@@ -172,7 +171,6 @@ const SpotifyDeviceSelector = ({
                   variant={device.is_active ? "filled" : "outline"}
                   onClick={() => onSelectDevice(device.id)}
                   fullWidth
-                  leftSection={getDeviceIcon(device.type)}
                 >
                   {device.name} {device.is_active && "(active)"}
                 </Button>
@@ -494,11 +492,16 @@ export default function SoundboardMaster() {
             top={0}
           >
             <Stack>
-              <SpotifyLoginButton
-                accessToken={accessToken}
-                spotifyCallbackUrl={spotifyCallbackUrl}
-                spotifyClientId={spotifyClientId}
-              />
+              <Group align="center" gap="md" justify="space-between">
+                <div style={{ flex: 0.5, height: 38 }}>
+                  <img src="/spotifylogo.svg" alt="Spotify Logo" />
+                </div>
+                <SpotifyLoginButton
+                  accessToken={accessToken}
+                  spotifyCallbackUrl={spotifyCallbackUrl}
+                  spotifyClientId={spotifyClientId}
+                />
+              </Group>
               <Text size="sm" c="dimmed">
                 Log in with Spotify to control background music during peace and
                 war times. When war breaks out, the music will automatically
@@ -512,6 +515,52 @@ export default function SoundboardMaster() {
         {/* Spotify Controls */}
         <Group grow align="end" justify="flex-end">
           <Group align="end" style={{ flex: 2 }}>
+            {accessToken && (
+              <TextInput
+                size="xl"
+                label="Playlist ID"
+                placeholder="Enter Spotify playlist ID"
+                description="Copy-paste the playlist ID from spotify that will be resumed when the war ends"
+                value={playlistId || ""}
+                onChange={(e) =>
+                  setPlaylistId(extractPlaylistId(e.currentTarget.value))
+                }
+                style={{ flex: 1 }}
+              />
+            )}
+
+            {/* end war button */}
+            {accessToken && (
+              <Button
+                size="xl"
+                color="red"
+                variant="filled"
+                onClick={endWar}
+                disabled={!isWarMode}
+              >
+                End War
+              </Button>
+            )}
+
+            {!sessionId ? (
+              <Form method="post">
+                <Button type="submit" size="xl">
+                  Create Session
+                </Button>
+              </Form>
+            ) : (
+              <Button
+                size="xl"
+                color="blue"
+                variant="outline"
+                onClick={() =>
+                  (window.location.href = window.location.pathname)
+                }
+              >
+                End Session
+              </Button>
+            )}
+
             {accessToken && (
               <Stack mt={12} w={300} style={{ overflow: "hidden" }}>
                 <Group justify="space-between" align="center">
@@ -588,52 +637,6 @@ export default function SoundboardMaster() {
                   )}
                 </Paper>
               </Stack>
-            )}
-
-            {accessToken && (
-              <TextInput
-                size="xl"
-                label="Playlist ID"
-                placeholder="Enter Spotify playlist ID"
-                description="Copy-paste the playlist ID from spotify that will be resumed when the war ends"
-                value={playlistId || ""}
-                onChange={(e) =>
-                  setPlaylistId(extractPlaylistId(e.currentTarget.value))
-                }
-                style={{ flex: 1 }}
-              />
-            )}
-
-            {/* end war button */}
-            {accessToken && (
-              <Button
-                size="xl"
-                color="red"
-                variant="filled"
-                onClick={endWar}
-                disabled={!isWarMode}
-              >
-                End War
-              </Button>
-            )}
-
-            {!sessionId ? (
-              <Form method="post">
-                <Button type="submit" size="xl">
-                  Create Session
-                </Button>
-              </Form>
-            ) : (
-              <Button
-                size="xl"
-                color="blue"
-                variant="outline"
-                onClick={() =>
-                  (window.location.href = window.location.pathname)
-                }
-              >
-                End Session
-              </Button>
             )}
           </Group>
         </Group>
