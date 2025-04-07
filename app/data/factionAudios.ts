@@ -46,6 +46,36 @@ type FactionAudio = {
 };
 
 export const factionAudios: Record<FactionId, FactionAudio> = {
+  barony: {
+    battleAnthem: "spotify:track:1N7LRc9YuyMjWKEkrmlogM",
+    homeDefense: [`${CDN_BASE_URL}/voices/barony/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/barony/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/barony/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/barony/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/barony/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/barony/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/barony/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/barony/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/barony/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/barony/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/barony/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/barony/battle8.mp3`,
+    ],
+    special: {
+      title: "War Funding",
+      uris: [
+        `${CDN_BASE_URL}/voices/barony/special1.mp3`,
+        `${CDN_BASE_URL}/voices/barony/special2.mp3`,
+      ],
+    },
+    jokes: [
+      `${CDN_BASE_URL}/voices/barony/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/barony/joke2.mp3`,
+    ],
+  },
   saar: {
     battleAnthem: "spotify:track:3xlr5CPOArA6UEw6f29st9",
     homeDefense: [`${CDN_BASE_URL}/voices/saar/homedefense.mp3`],
