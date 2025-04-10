@@ -166,6 +166,11 @@ export type FactionStratification = {
   ["discordant|discordantexp"]?: number;
 };
 
+export type MinorFactionsMode =
+  | { mode: "random" }
+  | { mode: "sharedPool" }
+  | { mode: "separatePool"; numMinorFactions: number };
+
 export type DraftSettings = {
   type: DraftType;
   factionGameSets: GameSet[];
@@ -189,27 +194,28 @@ export type DraftSettings = {
 
   /** For faction bags. # of factions in each 'bag' */
   numPreassignedFactions?: number;
-  /** Minor factions variant. */
-  numMinorFactions?: number;
-  /** If true, minor factions are in the same pool as major factions. */
-  minorFactionsInSharedPool?: boolean;
+
   modifiers?: {
     banFactions?: {
       numFactions: number;
     };
   };
-  minOptimal?: number;
-  maxOptimal?: number;
   draftPlayerColors?: boolean;
+  adminPassword?: string;
 
   /** Configuration for slice generation */
   sliceGenerationConfig?: SliceGenerationConfig;
 
-  adminPassword?: string;
+  /** Minor factions variant. */
+  minorFactionsMode?: MinorFactionsMode;
 
   // Legacy settings
   allowEmptyTiles: boolean;
   randomizeSlices: boolean;
+  minOptimal?: number; // now in sliceGenerationConfig
+  maxOptimal?: number; // now in sliceGenerationConfig
+  numMinorFactions?: number; // now in minorFactionsMode
+  minorFactionsInSharedPool?: boolean; // now in minorFactionsMode
 };
 
 export type DiscordPlayer =

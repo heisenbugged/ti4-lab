@@ -20,6 +20,8 @@ import {
   Switch,
   Text,
   Textarea,
+  Radio,
+  SimpleGrid,
 } from "@mantine/core";
 import {
   DiscordData,
@@ -30,6 +32,7 @@ import {
   Draft,
   FactionId,
   FactionStratification,
+  MinorFactionsMode,
 } from "~/types";
 import { useEffect, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
@@ -50,18 +53,17 @@ import {
   IconBrandDiscordFilled,
   IconChevronDown,
   IconChevronUp,
+  IconDice,
   IconFile,
-  IconFlagCog,
   IconInfoCircle,
   IconPlayerPlay,
   IconSettings,
-  IconShieldCog,
+  IconUser,
+  IconUsersGroup,
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { useDisclosure } from "@mantine/hooks";
 import { hydrateDemoMap } from "~/utils/map";
-
-import "../components/draftprechoice.css";
 import { std4p } from "~/draft/std4p";
 import { FactionSettingsModal } from "~/components/FactionSettingsModal";
 import { getFactionPool } from "~/utils/factions";
@@ -76,6 +78,7 @@ import {
   DEFAULT_MILTYEQ_SETTINGS,
   MiltyEqDraftSettings,
 } from "~/components/MiltyEqSettingsModal";
+import { HoverRadioCard } from "~/components/HoverRadioCard";
 
 type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
 
@@ -186,6 +189,81 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
   },
 };
 
+type FactionCountState = {
+  numFactions: number;
+  minorFactionsMode: MinorFactionsMode | undefined;
+  preassignedFactions: number | undefined;
+};
+
+// Derived UI constraints for factions
+type FactionConstraints = {
+  minNumFactions: number;
+  maxNumFactions: number;
+  minPreassignedFactions: number;
+  maxPreassignedFactions: number;
+  minMinorFactions: number;
+  maxMinorFactions: number;
+};
+
+// Centralized state update action types
+type FactionStateAction =
+  | { type: "SET_NUM_FACTIONS"; value: number }
+  | { type: "INCREMENT_NUM_FACTIONS" }
+  | { type: "DECREMENT_NUM_FACTIONS" }
+  | { type: "TOGGLE_MINOR_FACTIONS" }
+  | { type: "SET_MINOR_FACTIONS_MODE"; mode: "random" | "shared" | "separate" }
+  | { type: "INCREMENT_MINOR_FACTIONS" }
+  | { type: "DECREMENT_MINOR_FACTIONS" }
+  | { type: "TOGGLE_PREASSIGNED_FACTIONS" }
+  | { type: "INCREMENT_PREASSIGNED_FACTIONS"; increment?: number }
+  | { type: "DECREMENT_PREASSIGNED_FACTIONS"; decrement?: number }
+  | { type: "RESET_SETTINGS" }
+  | { type: "STRATIFICATION_CHANGED"; numFactions: number };
+
+// Centralized function to calculate faction count constraints
+const calculateFactionConstraints = (
+  playerCount: number,
+  maxFactionCount: number,
+  factionState: FactionCountState,
+): FactionConstraints => {
+  // Calculate base minimum factions based on minor factions mode
+  const baseMinFactions =
+    factionState.minorFactionsMode?.mode === "sharedPool"
+      ? playerCount * 2
+      : playerCount;
+
+  // If using preassigned factions, minimum is preassigned value times player count
+  const minNumFactions =
+    factionState.preassignedFactions !== undefined
+      ? factionState.preassignedFactions * playerCount
+      : baseMinFactions;
+
+  const maxNumFactions =
+    maxFactionCount -
+    (factionState.minorFactionsMode?.mode === "separatePool"
+      ? factionState.minorFactionsMode.numMinorFactions
+      : 0);
+
+  const maxPreassignedFactions = Math.floor(maxFactionCount / playerCount);
+
+  return {
+    minNumFactions,
+    maxNumFactions,
+    minPreassignedFactions: 1,
+    maxPreassignedFactions,
+    minMinorFactions: playerCount,
+    maxMinorFactions:
+      factionState.minorFactionsMode?.mode === "sharedPool"
+        ? 0 // Not applicable
+        : maxFactionCount - factionState.numFactions,
+  };
+};
+
+// Helper functions for faction calculations
+const calculateMaxFactionCount = (factionGameSets: GameSet[]): number => {
+  return getFactionCount(factionGameSets);
+};
+
 export default function DraftPrechoice() {
   const submit = useSubmit();
   const location = useLocation();
@@ -241,16 +319,21 @@ export default function DraftPrechoice() {
   const handleChangeSelectedMapType = (mapType: ChoosableDraftType) => {
     setSelectedMapType(mapType);
 
-    // reset all other settings when changing map type
-    setNumPreassignedFactions(undefined);
-    setNumMinorFactions(undefined);
+    // Reset all settings related to factions when changing map type
+    updateFactionState({ type: "RESET_SETTINGS" });
     setAllowEmptyMapTiles(false);
     setAllowHomePlanetSearch(false);
   };
 
   const playerCount = players.length;
 
-  const [numFactions, setNumFactions] = useState(playerCount);
+  // Centralized faction count state
+  const [factionState, setFactionState] = useState<FactionCountState>({
+    numFactions: playerCount,
+    minorFactionsMode: undefined,
+    preassignedFactions: undefined,
+  });
+
   const [numSlices, setNumSlices] = useState(playerCount);
 
   const [contentFlags, setContentFlags] = useState<ContentFlags>({
@@ -288,43 +371,190 @@ export default function DraftPrechoice() {
   const [draftSpeaker, setDraftSpeaker] = useState<boolean>(false);
   const [banFactions, setBanFactions] = useState<boolean>(false);
 
-  const [numPreassignedFactions, setNumPreassignedFactions] = useState<
-    number | undefined
-  >();
-
-  const [minorFactionsEnabled, setMinorFactionsEnabled] =
-    useState<boolean>(false);
-  const [numMinorFactions, setNumMinorFactions] = useState<number | undefined>(
-    undefined,
-  );
-  const [minorFactionsInSharedPool, setMinorFactionsInSharedPool] =
-    useState<boolean>(false);
-
+  // Get faction game sets based on content flags
   const tileGameSets = getTileSetsFromFlags(contentFlags);
   const factionGameSets = getFactionGameSetsFromFlags(contentFlags);
+  const maxFactionCount = calculateMaxFactionCount(factionGameSets);
 
-  const maxFactionCount = getFactionCount(factionGameSets);
-  const maxPreassigned = Math.floor(maxFactionCount / playerCount);
-  const minNumFactions = minorFactionsInSharedPool
-    ? playerCount * 2
-    : playerCount;
-  const maxNumFactions = maxFactionCount - (numMinorFactions ?? 0);
+  // Calculate derived constraints for UI
+  const factionConstraints = calculateFactionConstraints(
+    playerCount,
+    maxFactionCount,
+    factionState,
+  );
 
-  const handleChangeNumFactions = (num: number) => {
-    if (stratifiedConfig !== undefined) {
-      notifications.show({
-        message: "Faction stratification was reset.",
-        color: "blue",
-      });
-      setStratifiedConfig(undefined);
-    }
-    setNumFactions(num);
+  // Centralized faction state update function
+  const updateFactionState = (action: FactionStateAction) => {
+    setFactionState((prevState) => {
+      // If faction stratification needs to be reset, do it here
+      if (
+        action.type !== "STRATIFICATION_CHANGED" &&
+        stratifiedConfig !== undefined
+      ) {
+        notifications.show({
+          message: "Faction stratification was reset.",
+          color: "blue",
+        });
+        setStratifiedConfig(undefined);
+      }
+
+      let newState = { ...prevState };
+
+      switch (action.type) {
+        case "SET_NUM_FACTIONS":
+          newState.numFactions = action.value;
+          break;
+
+        case "INCREMENT_NUM_FACTIONS":
+          // Only increment if not using preassigned factions
+          if (!prevState.preassignedFactions) {
+            newState.numFactions = prevState.numFactions + 1;
+          }
+          break;
+
+        case "DECREMENT_NUM_FACTIONS":
+          // Only decrement if not using preassigned factions
+          if (!prevState.preassignedFactions) {
+            newState.numFactions = prevState.numFactions - 1;
+          }
+          break;
+
+        case "TOGGLE_MINOR_FACTIONS":
+          if (!prevState.minorFactionsMode) {
+            // Turning on minor factions
+            newState.minorFactionsMode = { mode: "random" };
+            setAllowEmptyMapTiles(true);
+          } else {
+            // Turning off minor factions
+            newState.minorFactionsMode = undefined;
+            setAllowEmptyMapTiles(false);
+          }
+          break;
+
+        case "SET_MINOR_FACTIONS_MODE":
+          switch (action.mode) {
+            case "random":
+              newState.minorFactionsMode = { mode: "random" };
+              setAllowEmptyMapTiles(true);
+              break;
+            case "shared":
+              newState.minorFactionsMode = { mode: "sharedPool" };
+              newState.numFactions = playerCount * 2;
+              break;
+            case "separate":
+              newState.minorFactionsMode = {
+                mode: "separatePool",
+                numMinorFactions: playerCount,
+              };
+              setAllowEmptyMapTiles(true);
+              break;
+          }
+          break;
+
+        case "INCREMENT_MINOR_FACTIONS":
+          if (
+            prevState.minorFactionsMode?.mode === "separatePool" &&
+            prevState.minorFactionsMode.numMinorFactions <
+              factionConstraints.maxMinorFactions
+          ) {
+            newState.minorFactionsMode = {
+              mode: "separatePool",
+              numMinorFactions:
+                prevState.minorFactionsMode.numMinorFactions + 1,
+            };
+          }
+          break;
+
+        case "DECREMENT_MINOR_FACTIONS":
+          if (
+            prevState.minorFactionsMode?.mode === "separatePool" &&
+            prevState.minorFactionsMode.numMinorFactions >
+              factionConstraints.minMinorFactions
+          ) {
+            newState.minorFactionsMode = {
+              mode: "separatePool",
+              numMinorFactions:
+                prevState.minorFactionsMode.numMinorFactions - 1,
+            };
+          }
+          break;
+
+        case "TOGGLE_PREASSIGNED_FACTIONS":
+          if (prevState.preassignedFactions === undefined) {
+            const defaultValue = 2;
+            newState.preassignedFactions = defaultValue;
+          } else {
+            newState.preassignedFactions = undefined;
+          }
+          break;
+
+        case "INCREMENT_PREASSIGNED_FACTIONS":
+          if (prevState.preassignedFactions !== undefined) {
+            const increment = action.increment || 1;
+            const newValue = Math.min(
+              prevState.preassignedFactions + increment,
+              factionConstraints.maxPreassignedFactions,
+            );
+            newState.preassignedFactions = newValue;
+          }
+          break;
+
+        case "DECREMENT_PREASSIGNED_FACTIONS":
+          if (prevState.preassignedFactions !== undefined) {
+            const decrement = action.decrement || 1;
+            const newValue = Math.max(
+              prevState.preassignedFactions - decrement,
+              factionConstraints.minPreassignedFactions,
+            );
+            newState.preassignedFactions = newValue;
+          }
+          break;
+
+        case "RESET_SETTINGS":
+          newState = {
+            numFactions: playerCount,
+            minorFactionsMode: undefined,
+            preassignedFactions: undefined,
+          };
+          break;
+
+        case "STRATIFICATION_CHANGED":
+          newState.numFactions = action.numFactions;
+          break;
+      }
+
+      // Calculate the target number of factions based on state
+      let targetNumFactions = newState.numFactions;
+
+      // If using preassigned factions, override the target
+      if (newState.preassignedFactions !== undefined) {
+        targetNumFactions = newState.preassignedFactions * playerCount;
+      }
+
+      const newFactionConstraints = calculateFactionConstraints(
+        playerCount,
+        maxFactionCount,
+        newState,
+      );
+
+      // Apply faction number constraints
+      newState.numFactions = Math.min(
+        Math.max(targetNumFactions, newFactionConstraints.minNumFactions),
+        newFactionConstraints.maxNumFactions,
+      );
+
+      return newState;
+    });
   };
 
+  // Update factions if max count changes due to content flags
   useEffect(() => {
-    if (numFactions > maxFactionCount) {
-      handleChangeNumFactions(maxFactionCount);
-    }
+    setFactionState((prev) => {
+      if (prev.numFactions > maxFactionCount) {
+        return { ...prev, numFactions: maxFactionCount };
+      }
+      return prev;
+    });
   }, [maxFactionCount]);
 
   const [allowedFactions, setAllowedFactions] = useState<
@@ -350,12 +580,21 @@ export default function DraftPrechoice() {
       (acc, curr) => acc + curr,
       0,
     );
+
     if (numStratifiedFactions > 0) {
-      setNumFactions(numStratifiedFactions);
+      updateFactionState({
+        type: "STRATIFICATION_CHANGED",
+        numFactions: numStratifiedFactions,
+      });
     } else {
-      setNumFactions(
-        Math.max(numFactions, playerCount, requiredFactions?.length ?? 0),
-      );
+      updateFactionState({
+        type: "STRATIFICATION_CHANGED",
+        numFactions: Math.max(
+          factionState.numFactions,
+          playerCount,
+          requiredFactions?.length ?? 0,
+        ),
+      });
     }
 
     closeFactionSettings();
@@ -385,76 +624,6 @@ export default function DraftPrechoice() {
     setRequiredFactions(undefined);
   }, [contentFlags]);
 
-  const handleToggleMinorFactions = () => {
-    // toggling to true
-    if (!minorFactionsEnabled) {
-      setMinorFactionsEnabled(true);
-      setMinorFactionsInSharedPool(false);
-      setNumMinorFactions(playerCount);
-      setAllowEmptyMapTiles(true);
-    } else {
-      // toggling to false
-      setMinorFactionsEnabled(false);
-      setMinorFactionsInSharedPool(false);
-      setNumMinorFactions(undefined);
-      setAllowEmptyMapTiles(false);
-    }
-  };
-
-  const handleToggleMinorFactionsInSharedPool = () => {
-    // if toggling to true, we need at least 2*player count in factions
-    if (minorFactionsInSharedPool === false) {
-      handleChangeNumFactions(playerCount * 2);
-      setNumMinorFactions(undefined);
-      setMinorFactionsInSharedPool(true);
-    } else {
-      // toggling to false
-      if (minorFactionsEnabled) {
-        setNumMinorFactions(playerCount);
-      }
-      setNumPreassignedFactions(undefined);
-      setMinorFactionsInSharedPool(false);
-    }
-  };
-
-  const handleAddMinorFaction = () => {
-    if (numMinorFactions === undefined) return;
-    setNumMinorFactions(numMinorFactions + 1);
-  };
-
-  const handleRemoveMinorFaction = () => {
-    if (numMinorFactions === undefined) return;
-    setNumMinorFactions(numMinorFactions - 1);
-  };
-
-  const handleTogglePreassignedFactions = () => {
-    if (numPreassignedFactions === undefined) {
-      handleIncreasePreassignedFactions(2);
-    } else {
-      setNumPreassignedFactions(undefined);
-      handleChangeNumFactions(playerCount);
-    }
-  };
-
-  const handleIncreasePreassignedFactions = (num = 1) => {
-    const preassignedNo =
-      numPreassignedFactions !== undefined
-        ? Number(numPreassignedFactions) + num
-        : num;
-
-    setNumPreassignedFactions(preassignedNo);
-    handleChangeNumFactions(preassignedNo * playerCount);
-  };
-
-  const handleDecreasePreassignedFactions = (num = 1) => {
-    const preassignedNo =
-      numPreassignedFactions !== undefined
-        ? Number(numPreassignedFactions) - num
-        : num;
-    setNumPreassignedFactions(preassignedNo);
-    handleChangeNumFactions(preassignedNo * playerCount);
-  };
-
   const resetSelectedMap = (numPlayers: number) => {
     if (MAPS[selectedMapType].playerCount !== numPlayers) {
       // find first eligible map type
@@ -475,7 +644,11 @@ export default function DraftPrechoice() {
     ]);
 
     const numPlayers = players.length + 1;
-    if (numFactions < numPlayers) handleChangeNumFactions(numPlayers);
+
+    if (factionState.numFactions < numPlayers) {
+      updateFactionState({ type: "SET_NUM_FACTIONS", value: numPlayers });
+    }
+
     if (numSlices < numPlayers) setNumSlices(numPlayers);
     resetSelectedMap(numPlayers);
   };
@@ -500,14 +673,15 @@ export default function DraftPrechoice() {
       factionGameSets,
       tileGameSets,
       type: selectedMapType,
-      numFactions: Number(numFactions),
+      numFactions: factionState.numFactions,
+      randomizeMap: !factionState.minorFactionsMode,
+      numPreassignedFactions: factionState.preassignedFactions,
+      minorFactionsMode: factionState.minorFactionsMode,
       numSlices: Number(numSlices),
       randomizeSlices: true,
-      randomizeMap: !minorFactionsEnabled,
       draftSpeaker,
       allowHomePlanetSearch,
       allowEmptyTiles: allowEmptyMapTiles,
-      numPreassignedFactions,
       draftPlayerColors,
       modifiers: banFactions ? { banFactions: { numFactions: 1 } } : undefined,
       allowedFactions: allowedFactions,
@@ -538,14 +712,16 @@ export default function DraftPrechoice() {
         numAlphas: miltyEqSettings.minAlphaWormholes,
         numBetas: miltyEqSettings.minBetaWormholes,
         numLegendaries: miltyEqSettings.minLegendaries,
+        hasMinorFactions: !!factionState.minorFactionsMode,
       };
     }
 
     // both cannot be set at the same time
-    if (minorFactionsInSharedPool) {
+    if (factionState.minorFactionsMode?.mode === "sharedPool") {
       draftSettings.minorFactionsInSharedPool = true;
-    } else if (numMinorFactions !== undefined) {
-      draftSettings.numMinorFactions = numMinorFactions;
+    } else if (factionState.minorFactionsMode?.mode === "separatePool") {
+      draftSettings.numMinorFactions =
+        factionState.minorFactionsMode.numMinorFactions;
     }
 
     if (isMultidraft) {
@@ -943,15 +1119,22 @@ export default function DraftPrechoice() {
             >
               <Box mt="xs">
                 <NumberStepper
-                  value={numFactions}
-                  decrease={() => handleChangeNumFactions(numFactions - 1)}
-                  increase={() => handleChangeNumFactions(numFactions + 1)}
+                  value={factionState.numFactions}
+                  decrease={() =>
+                    updateFactionState({ type: "DECREMENT_NUM_FACTIONS" })
+                  }
+                  increase={() =>
+                    updateFactionState({ type: "INCREMENT_NUM_FACTIONS" })
+                  }
                   decreaseDisabled={
-                    !!numPreassignedFactions || numFactions <= minNumFactions
+                    !!factionState.preassignedFactions ||
+                    factionState.numFactions <=
+                      factionConstraints.minNumFactions
                   }
                   increaseDisabled={
-                    !!numPreassignedFactions ||
-                    numFactions >= maxFactionCount - (numMinorFactions ?? 0)
+                    !!factionState.preassignedFactions ||
+                    factionState.numFactions >=
+                      factionConstraints.maxNumFactions
                   }
                 />
               </Box>
@@ -966,48 +1149,6 @@ export default function DraftPrechoice() {
             >
               Configure faction pool
             </Button>
-
-            {mapType === "miltyeq" && (
-              <Group>
-                <Switch
-                  label="Minor factions"
-                  description="Will provide a pool of 'minor factions' to draft. Minor factions are placed in the left equidistant system slots."
-                  checked={minorFactionsEnabled}
-                  onChange={handleToggleMinorFactions}
-                />
-
-                {minorFactionsEnabled && (
-                  <Group align="center" justify="center" mb="lg" mx="md">
-                    <Input.Wrapper
-                      label="# of Minor Factions"
-                      opacity={minorFactionsInSharedPool ? 0.5 : 1}
-                    >
-                      <Box mt="xs">
-                        <NumberStepper
-                          value={numMinorFactions}
-                          decrease={handleRemoveMinorFaction}
-                          increase={handleAddMinorFaction}
-                          decreaseDisabled={
-                            minorFactionsInSharedPool ||
-                            Number(numMinorFactions) <= playerCount
-                          }
-                          increaseDisabled={
-                            minorFactionsInSharedPool ||
-                            Number(numMinorFactions) >= maxNumFactions
-                          }
-                        />
-                      </Box>
-                    </Input.Wrapper>
-                    <Text>OR</Text>
-                    <Checkbox
-                      label="Minor factions in shared pool"
-                      checked={minorFactionsInSharedPool}
-                      onChange={handleToggleMinorFactionsInSharedPool}
-                    />
-                  </Group>
-                )}
-              </Group>
-            )}
 
             <Input.Wrapper
               label="# of Slices"
@@ -1046,6 +1187,96 @@ export default function DraftPrechoice() {
               </Input.Wrapper>
             )}
           </Group>
+
+          <Stack>
+            {mapType === "miltyeq" && (
+              <Switch
+                label="Minor Factions"
+                description="Enable minor factions variant"
+                checked={!!factionState.minorFactionsMode}
+                onChange={() =>
+                  updateFactionState({ type: "TOGGLE_MINOR_FACTIONS" })
+                }
+              />
+            )}
+            {factionState.minorFactionsMode && (
+              <>
+                <Text size="sm" c="dimmed" mt="xs">
+                  Choose minor factions mode:
+                </Text>
+                <SimpleGrid cols={3} spacing="md">
+                  <HoverRadioCard
+                    title="Random"
+                    icon={<IconDice size={24} />}
+                    description="Randomly preplaces home systems"
+                    checked={factionState.minorFactionsMode.mode === "random"}
+                    onMouseDown={() =>
+                      updateFactionState({
+                        type: "SET_MINOR_FACTIONS_MODE",
+                        mode: "random",
+                      })
+                    }
+                  />
+
+                  <HoverRadioCard
+                    title="Shared Pool"
+                    icon={<IconUsersGroup size={24} />}
+                    description="Draft minor factions from the same pool as regular factions"
+                    checked={
+                      factionState.minorFactionsMode.mode === "sharedPool"
+                    }
+                    onMouseDown={() =>
+                      updateFactionState({
+                        type: "SET_MINOR_FACTIONS_MODE",
+                        mode: "shared",
+                      })
+                    }
+                  />
+
+                  <HoverRadioCard
+                    title="Separate Pool"
+                    icon={<IconUser size={24} />}
+                    description="Draft minor factions from a separate pool"
+                    checked={
+                      factionState.minorFactionsMode.mode === "separatePool"
+                    }
+                    onMouseDown={() =>
+                      updateFactionState({
+                        type: "SET_MINOR_FACTIONS_MODE",
+                        mode: "separate",
+                      })
+                    }
+                  >
+                    {factionState.minorFactionsMode.mode === "separatePool" && (
+                      <NumberStepper
+                        value={factionState.minorFactionsMode.numMinorFactions}
+                        decrease={(e) => {
+                          e.stopPropagation();
+                          updateFactionState({
+                            type: "DECREMENT_MINOR_FACTIONS",
+                          });
+                        }}
+                        increase={(e) => {
+                          e.stopPropagation();
+                          updateFactionState({
+                            type: "INCREMENT_MINOR_FACTIONS",
+                          });
+                        }}
+                        decreaseDisabled={
+                          factionState.minorFactionsMode.numMinorFactions <=
+                          factionConstraints.minMinorFactions
+                        }
+                        increaseDisabled={
+                          factionState.minorFactionsMode.numMinorFactions >=
+                          factionConstraints.maxMinorFactions
+                        }
+                      />
+                    )}
+                  </HoverRadioCard>
+                </SimpleGrid>
+              </>
+            )}
+          </Stack>
 
           <Stack>
             <Checkbox
@@ -1109,25 +1340,43 @@ export default function DraftPrechoice() {
                 description="When draft starts, players will ban one faction each. The tool then rolls the remaining factions."
                 checked={banFactions}
                 onChange={() => setBanFactions((v) => !v)}
-                disabled={minorFactionsInSharedPool}
+                disabled={factionState.minorFactionsMode?.mode === "sharedPool"}
               />
 
               <Group>
                 <Switch
                   label="Faction bags"
                   description="If turned on, will pre-assign a 'bag' of # factions to each player. A player then chooses a faction only from their assigned 'bag' during the draft."
-                  checked={Number(numPreassignedFactions) > 0}
-                  onChange={handleTogglePreassignedFactions}
-                  disabled={minorFactionsInSharedPool}
+                  checked={Number(factionState.preassignedFactions) > 0}
+                  onChange={() =>
+                    updateFactionState({ type: "TOGGLE_PREASSIGNED_FACTIONS" })
+                  }
+                  disabled={
+                    factionState.minorFactionsMode?.mode === "sharedPool"
+                  }
                 />
 
-                {numPreassignedFactions !== undefined && (
+                {factionState.preassignedFactions !== undefined && (
                   <NumberStepper
-                    value={numPreassignedFactions}
-                    decrease={() => handleDecreasePreassignedFactions(1)}
-                    increase={() => handleIncreasePreassignedFactions(1)}
-                    decreaseDisabled={numPreassignedFactions <= 1}
-                    increaseDisabled={numPreassignedFactions >= maxPreassigned}
+                    value={factionState.preassignedFactions}
+                    decrease={() =>
+                      updateFactionState({
+                        type: "DECREMENT_PREASSIGNED_FACTIONS",
+                      })
+                    }
+                    increase={() =>
+                      updateFactionState({
+                        type: "INCREMENT_PREASSIGNED_FACTIONS",
+                      })
+                    }
+                    decreaseDisabled={
+                      factionState.preassignedFactions <=
+                      factionConstraints.minPreassignedFactions
+                    }
+                    increaseDisabled={
+                      factionState.preassignedFactions >=
+                      factionConstraints.maxPreassignedFactions
+                    }
                   />
                 )}
               </Group>

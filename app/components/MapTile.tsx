@@ -5,7 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
-import { Button, Stack, alpha } from "@mantine/core";
+import { Button, Stack, Text, alpha } from "@mantine/core";
 import { Hex } from "./Hex";
 
 import "./MapTile.css";
@@ -186,18 +186,18 @@ function AbstractArtMapTile(props: Props) {
         {Tile}
 
         {/* debug information */}
-        {/* <div
-        style={{
-          position: "absolute",
-          top: radius * 0.5,
-          left: radius * 0.5,
-          color: "white",
-          backgroundColor: "black",
-          padding: "2px",
-        }}
-      >
-        <Text>{tile.idx}</Text>
-      </div> */}
+        <div
+          style={{
+            position: "absolute",
+            top: radius * 0.5,
+            left: radius * 0.5,
+            color: "white",
+            backgroundColor: "black",
+            padding: "2px",
+          }}
+        >
+          <Text>{tile.idx}</Text>
+        </div>
 
         {showOverlay && !isDragging && !isOver && (
           <div className="modify-tile-overlay" onMouseUp={onSelect}>

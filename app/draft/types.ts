@@ -40,6 +40,7 @@ export type SliceGenerationConfig = {
   minOptimal?: number;
   safePathToMecatol?: number;
   highQualityAdjacent?: number;
+  hasMinorFactions?: boolean;
 };
 
 export type DraftConfig = {

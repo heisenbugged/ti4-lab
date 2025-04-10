@@ -2,8 +2,8 @@ import { Button, Group, Text } from "@mantine/core";
 
 type Props = {
   value?: number;
-  decrease: () => void;
-  increase: () => void;
+  decrease: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  increase: (e: React.MouseEvent<HTMLButtonElement>) => void;
   decreaseDisabled: boolean;
   increaseDisabled: boolean;
 };
