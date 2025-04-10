@@ -186,7 +186,7 @@ function AbstractArtMapTile(props: Props) {
         {Tile}
 
         {/* debug information */}
-        <div
+        {/* <div
           style={{
             position: "absolute",
             top: radius * 0.5,
@@ -197,7 +197,7 @@ function AbstractArtMapTile(props: Props) {
           }}
         >
           <Text>{tile.idx}</Text>
-        </div>
+        </div> */}
 
         {showOverlay && !isDragging && !isOver && (
           <div className="modify-tile-overlay" onMouseUp={onSelect}>
