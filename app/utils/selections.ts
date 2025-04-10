@@ -28,5 +28,9 @@ export function draftSelectionToMessage(
     return `${playerName} selected color: ${selection.color}`;
   }
 
+  if (selection.type === "BAN_FACTION") {
+    return `${playerName} banned faction: ${selection.factionId}`;
+  }
+
   return "";
 }

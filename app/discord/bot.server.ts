@@ -7,13 +7,12 @@ import {
   TextChannel,
 } from "discord.js";
 import startDraft from "./commands/startDraft";
-import { DiscordData, Draft, DraftSelection, FactionId, Player } from "~/types";
+import { DiscordData, Draft, FactionId, Player } from "~/types";
 import {
   getDiscordPickMessage,
   addDiscordPickMessage,
   deleteDiscordPickMessage,
 } from "~/drizzle/discordMessages.server";
-import { factions } from "~/data/factionData";
 import { hydratePlayers } from "~/hooks/useHydratedDraft";
 import { draftSelectionToMessage } from "~/utils/selections";
 
