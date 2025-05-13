@@ -40,10 +40,10 @@ export function useAudioPlayer({
     getAndUpdateDevices,
     transferToDevice,
     availableDevices,
-    activeDevice,
     isLoadingDevices,
     noActiveDeviceError,
     setNoActiveDeviceError,
+    playbackRestrictions,
   } = useSpotifyPlayer(accessToken, playlistId);
 
   const [voiceLineMemory, setVoiceLineMemory] = useState<VoiceLineMemory>({});
@@ -330,29 +330,26 @@ export function useAudioPlayer({
   };
 
   return {
-    loadingAudio,
-    volume,
-    isWarMode,
-    voiceLineRef,
-    currentPlayback,
-    audioProgress,
-    setVolume,
     playAudio,
     stopAudio,
     endWar,
+    loadingAudio,
+    isWarMode,
+    voiceLineRef,
+    currentPlayback,
     startBattle,
+    audioProgress,
     getDevices: getAndUpdateDevices,
-    transferToDevice,
     availableDevices,
-    activeDevice,
     isLoadingDevices,
     noActiveDeviceError,
     setNoActiveDeviceError,
+    transferToDevice,
+    playbackRestrictions,
     // Queue-related functions
     removeFromQueue,
     clearQueue,
     voiceLineQueue,
-    // Not needed anymore since we're not using it for decision making
     isPlayingQueue: voiceLineQueue.length > 0,
   };
 }

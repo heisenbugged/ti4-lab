@@ -27,6 +27,9 @@ export type SpotifyPlaybackState = {
     width: number;
     url: string;
   };
+  device: {
+    is_restricted: boolean;
+  };
 };
 
 export const spotifyApi = {
@@ -136,6 +139,8 @@ export const spotifyApi = {
           width: data.item.album.images[2].width,
           url: data.item.album.images[2].url,
         },
+        device: data.device,
+        actions: data.actions,
       } as SpotifyPlaybackState;
     } catch (error) {
       console.error("Error getting Spotify playback state:", error);

@@ -20,6 +20,7 @@ import {
   ScrollArea,
   ActionIcon,
   Tooltip,
+  Anchor,
 } from "@mantine/core";
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -34,6 +35,7 @@ import { useSpotifyLogin } from "./useSpotifyLogin";
 import { createSession } from "~/drizzle/soundboardSession.server";
 import { useSocketConnection } from "~/useSocketConnection";
 import QRCode from "react-qr-code";
+import { SpotifyPlaybackState } from "~/vendors/spotifyApi";
 import {
   IconMusic,
   IconRefresh,
@@ -280,6 +282,132 @@ const VoiceLineQueue = ({ queue, onRemove, onClear }: VoiceLineQueueProps) => {
   );
 };
 
+interface SpotifyPlaybackUIProps {
+  currentPlayback: SpotifyPlaybackState | null;
+}
+
+const SpotifyPlaybackUI = ({ currentPlayback }: SpotifyPlaybackUIProps) => {
+  if (!currentPlayback) return <></>;
+
+  return (
+    <>
+      <Group justify="space-between" align="center">
+        <Image
+          src="/spotifylogo.svg"
+          alt="Spotify Logo"
+          style={{ width: 90, height: 24 }}
+        />
+        <Button
+          variant="outline"
+          color="red"
+          size="xs"
+          component="a"
+          href="/soundboard/logout"
+        >
+          Logout
+        </Button>
+      </Group>
+      <Paper radius="md" p="xs" withBorder>
+        <Group gap="md" wrap="nowrap">
+          <Image
+            src={currentPlayback.albumImage.url}
+            alt="Album Art"
+            width={currentPlayback.albumImage.width}
+            height={currentPlayback.albumImage.height}
+            radius="sm"
+          />
+          <Stack gap={2} style={{ overflow: "hidden" }}>
+            <Tooltip label={currentPlayback.track.name} openDelay={500}>
+              <Text
+                fw={500}
+                size="sm"
+                component="a"
+                href={currentPlayback.track.external_urls.spotify}
+                target="_blank"
+                className={styles.hoverableTextLink}
+                truncate
+                style={{ maxWidth: "100%" }}
+              >
+                {currentPlayback.track.name}
+              </Text>
+            </Tooltip>
+            <Group gap={0}>
+              {currentPlayback.artists.map(
+                (
+                  artist: { id: string; name: string; uri: string },
+                  index: number,
+                ) => (
+                  <Fragment key={artist.id}>
+                    {index > 0 && (
+                      <Text c="dimmed" size="sm">
+                        {" "}
+                        ,{" "}
+                      </Text>
+                    )}
+                    <Tooltip label={artist.name} openDelay={500}>
+                      <Text
+                        className={styles.hoverableTextLink}
+                        component="a"
+                        href={artist.uri}
+                        target="_blank"
+                        c="dimmed"
+                        size="sm"
+                        truncate
+                      >
+                        {artist.name}
+                      </Text>
+                    </Tooltip>
+                  </Fragment>
+                ),
+              )}
+            </Group>
+          </Stack>
+        </Group>
+      </Paper>
+    </>
+  );
+};
+
+// New component for Spotify playlist UI
+interface SpotifyPlaylistUIProps {
+  playlistId: string | undefined;
+  setPlaylistId: (id: string) => void;
+  isWarMode: boolean;
+  endWar: () => void;
+}
+
+const SpotifyPlaylistUI = ({
+  playlistId,
+  setPlaylistId,
+  isWarMode,
+  endWar,
+}: SpotifyPlaylistUIProps) => {
+  return (
+    <Group align="end" style={{ flex: 1 }}>
+      <TextInput
+        size="xl"
+        label="Playlist ID"
+        placeholder="Enter Spotify playlist ID"
+        description="Copy-paste the playlist ID from spotify that will be resumed when the war ends"
+        value={playlistId || ""}
+        onChange={(e) =>
+          setPlaylistId(extractPlaylistId(e.currentTarget.value))
+        }
+        style={{ flex: 1 }}
+      />
+      <Button
+        size="xl"
+        color="red"
+        variant="filled"
+        onClick={endWar}
+        disabled={!isWarMode}
+      >
+        End War
+      </Button>
+    </Group>
+  );
+};
+
 export default function SoundboardMaster() {
   const { spotifyClientId, spotifyCallbackUrl } =
     useLoaderData<typeof loader>();
@@ -332,11 +460,10 @@ export default function SoundboardMaster() {
     noActiveDeviceError,
     setNoActiveDeviceError,
     transferToDevice,
-    // Queue-related functions
+    voiceLineQueue,
+    playbackRestrictions,
     removeFromQueue,
     clearQueue,
-    voiceLineQueue,
-    isPlayingQueue,
   } = useAudioPlayer({
     accessToken,
     playlistId: playlistId || "6O6izIEToh3JI4sAtHQn6J",
@@ -517,131 +644,52 @@ export default function SoundboardMaster() {
 
         {/* Spotify Controls */}
         <Group grow align="end" justify="flex-end">
-          <Group align="end" style={{ flex: 2 }}>
-            {accessToken && (
-              <TextInput
-                size="xl"
-                label="Playlist ID"
-                placeholder="Enter Spotify playlist ID"
-                description="Copy-paste the playlist ID from spotify that will be resumed when the war ends"
-                value={playlistId || ""}
-                onChange={(e) =>
-                  setPlaylistId(extractPlaylistId(e.currentTarget.value))
-                }
-                style={{ flex: 1 }}
-              />
-            )}
+          {accessToken && playbackRestrictions === false ? (
+            <SpotifyPlaylistUI
+              playlistId={playlistId}
+              setPlaylistId={setPlaylistId}
+              isWarMode={isWarMode}
+              endWar={endWar}
+            />
+          ) : null}
 
-            {/* end war button */}
-            {accessToken && (
-              <Button
-                size="xl"
-                color="red"
-                variant="filled"
-                onClick={endWar}
-                disabled={!isWarMode}
-              >
-                End War
+          {!sessionId ? (
+            <Form method="post">
+              <Button type="submit" size="xl">
+                Create Session
               </Button>
-            )}
+            </Form>
+          ) : (
+            <Button
+              size="xl"
+              color="blue"
+              variant="outline"
+              onClick={() => (window.location.href = window.location.pathname)}
+            >
+              End Session
+            </Button>
+          )}
 
-            {!sessionId ? (
-              <Form method="post">
-                <Button type="submit" size="xl">
-                  Create Session
-                </Button>
-              </Form>
-            ) : (
-              <Button
-                size="xl"
-                color="blue"
-                variant="outline"
-                onClick={() =>
-                  (window.location.href = window.location.pathname)
-                }
-              >
-                End Session
-              </Button>
-            )}
-
-            {accessToken && (
-              <Stack mt={12} w={300} style={{ overflow: "hidden" }}>
-                <Group justify="space-between" align="center">
-                  <Image
-                    src="/spotifylogo.svg"
-                    alt="Spotify Logo"
-                    style={{ width: 90, height: 24 }}
-                  />
-                  <Button
-                    variant="outline"
-                    color="red"
-                    size="xs"
-                    component="a"
-                    href="/soundboard/logout"
+          {accessToken && (
+            <Stack mt={12} w={300} style={{ overflow: "hidden" }}>
+              {playbackRestrictions === null ? null : playbackRestrictions ? (
+                <Alert color="blue" title="Spotify Premium Required">
+                  Spotify Premium lets you play any track, podcast episode or
+                  audiobook, ad-free and with better audio quality. Go to{" "}
+                  <Anchor
+                    href="https://spotify.com/premium"
+                    target="_blank"
+                    c="blue"
                   >
-                    Logout
-                  </Button>
-                </Group>
-                <Paper radius="md" p="xs" withBorder>
-                  {currentPlayback ? (
-                    <Group gap="md" wrap="nowrap">
-                      <Image
-                        src={currentPlayback.albumImage.url}
-                        alt="Album Art"
-                        width={currentPlayback.albumImage.width}
-                        height={currentPlayback.albumImage.height}
-                        radius="sm"
-                      />
-                      <Stack gap={2} style={{ overflow: "hidden" }}>
-                        <Text
-                          fw={500}
-                          size="sm"
-                          component="a"
-                          href={currentPlayback.track.external_urls.spotify}
-                          target="_blank"
-                          className={styles.hoverableTextLink}
-                          truncate
-                          style={{ maxWidth: "100%" }}
-                        >
-                          {currentPlayback.track.name}
-                        </Text>
-                        <Group gap={0}>
-                          {currentPlayback.artists.map((artist, index) => (
-                            <Fragment key={artist.id}>
-                              {index > 0 && (
-                                <Text c="dimmed" size="sm">
-                                  {" "}
-                                  ,{" "}
-                                </Text>
-                              )}
-                              <Text
-                                className={styles.hoverableTextLink}
-                                component="a"
-                                href={artist.uri}
-                                target="_blank"
-                                c="dimmed"
-                                size="sm"
-                              >
-                                {artist.name}
-                              </Text>
-                            </Fragment>
-                          ))}
-                        </Group>
-                      </Stack>
-                    </Group>
-                  ) : (
-                    <Group gap="md">
-                      <Box w={64} h={64} bg="dark.6" />
-                      <Stack gap={2}>
-                        <Box w={120} h={16} bg="dark.6" />
-                        <Box w={80} h={16} bg="dark.6" />
-                      </Stack>
-                    </Group>
-                  )}
-                </Paper>
-              </Stack>
-            )}
-          </Group>
+                    spotify.com/premium
+                  </Anchor>{" "}
+                  to try it for free.
+                </Alert>
+              ) : (
+                <SpotifyPlaybackUI currentPlayback={currentPlayback} />
+              )}
+            </Stack>
+          )}
         </Group>
       </Stack>
 
@@ -854,7 +902,6 @@ export default function SoundboardMaster() {
                       if (voiceLineQueue.length > 0) {
                         const nextItem = voiceLineQueue[0];
                         playAudio(nextItem.factionId, nextItem.type, true);
-                        removeFromQueue(nextItem.id);
                       }
                     }}
                   >

@@ -323,6 +323,7 @@ export default function DraftPrechoice() {
     updateFactionState({ type: "RESET_SETTINGS" });
     setAllowEmptyMapTiles(false);
     setAllowHomePlanetSearch(false);
+    setDraftSpeaker(mapType === "heisen" || mapType === "heisen8p");
   };
 
   const playerCount = players.length;

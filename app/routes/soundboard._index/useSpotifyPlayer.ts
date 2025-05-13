@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { spotifyApi, SpotifyPlaybackState } from "~/vendors/spotifyApi";
 
 export type SpotifyDevice = {
@@ -10,6 +10,8 @@ export type SpotifyDevice = {
   type: string;
   volume_percent: number;
 };
+
+export type SpotifyRestrictions = boolean | null;
 
 export function useSpotifyPlayer(
   accessToken: string | null,
@@ -160,6 +162,10 @@ export function useSpotifyPlayer(
     }
   };
 
+  useEffect(() => {
+    if (accessToken) getCurrentPlayback();
+  }, [accessToken]);
+
   return {
     saveCurrentPosition,
     startBattleAnthem,
@@ -172,5 +178,6 @@ export function useSpotifyPlayer(
     isLoadingDevices,
     noActiveDeviceError,
     setNoActiveDeviceError,
+    playbackRestrictions: currentPlayback?.device?.is_restricted,
   };
 }
