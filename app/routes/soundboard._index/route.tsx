@@ -25,7 +25,7 @@ import {
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { factionAudios, LineType } from "~/data/factionAudios";
+import { factionAudios, factionIds, LineType } from "~/data/factionAudios";
 import { VoiceLineButton } from "./components/VoiceLineButton";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/server-runtime";
 import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
@@ -443,6 +443,18 @@ export default function SoundboardMaster() {
     useSocketConnection({
       onConnect: () => socket?.emit("joinSoundboardSession", sessionId),
     });
+
+  useEffect(() => {
+    if (!socket || !sessionId) return;
+    socket.emit("joinSoundboardSession", sessionId);
+    socket.on("requestSessionData", () =>
+      socket.emit("sendSessionData", sessionId, factionIds),
+    );
+    socket.on("playLine", (factionId, lineType) =>
+      playAudio(factionId, lineType),
+    );
+    socket.on("stopLine", () => stopAudio());
+  }, [sessionId, socket]);
 
   const {
     playAudio,
