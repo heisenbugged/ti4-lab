@@ -423,6 +423,7 @@ export default function SoundboardMaster() {
     "vulraith",
     "yin",
     "yssaril",
+    "mahact",
     "barony",
     "saar",
     "jolnar",

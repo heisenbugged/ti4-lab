@@ -46,6 +46,38 @@ type FactionAudio = {
 };
 
 export const factionAudios: Record<FactionId, FactionAudio> = {
+  mahact: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/mahact/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/mahact/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/mahact/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/mahact/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/mahact/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/mahact/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/joke3.mp3`,
+      `${CDN_BASE_URL}/voices/mahact/joke4.mp3`,
+    ],
+    special: {
+      title: "Commander Acquired",
+      uris: [
+        `${CDN_BASE_URL}/voices/mahact/special1.mp3`,
+        `${CDN_BASE_URL}/voices/mahact/special2.mp3`,
+      ],
+    },
+  },
   yssaril: {
     battleAnthem: "",
     homeDefense: [`${CDN_BASE_URL}/voices/yssaril/homedefense.mp3`],
