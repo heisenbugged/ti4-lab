@@ -413,6 +413,16 @@ export default function SoundboardMaster() {
     useLoaderData<typeof loader>();
   const [playlistId, setPlaylistId] = useState<string | undefined>(undefined);
   const [factionSlots, setFactionSlots] = useState<FactionId[]>([
+    "arborec",
+    "argent",
+    "mentak",
+    "naalu",
+    "naazrokha",
+    "nekro",
+    "titans",
+    "vulraith",
+    "yin",
+    "yssaril",
     "barony",
     "saar",
     "jolnar",

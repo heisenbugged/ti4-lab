@@ -46,6 +46,325 @@ type FactionAudio = {
 };
 
 export const factionAudios: Record<FactionId, FactionAudio> = {
+  yssaril: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/yssaril/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/yssaril/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/yssaril/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/yssaril/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/yssaril/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/yssaril/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/yssaril/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/yssaril/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/yssaril/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/yssaril/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/yssaril/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/yssaril/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/yssaril/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/yssaril/joke2.mp3`,
+    ],
+    special: {
+      title: "Action Card Stolen/Drawn",
+      uris: [
+        `${CDN_BASE_URL}/voices/yssaril/special1.mp3`,
+        `${CDN_BASE_URL}/voices/yssaril/special2.mp3`,
+      ],
+    },
+  },
+  vulraith: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/vuilraith/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/vuilraith/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/vuilraith/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/vuilraith/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/vuilraith/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/vuilraith/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/vuilraith/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/vuilraith/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/vuilraith/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/vuilraith/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/vuilraith/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/vuilraith/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/vuilraith/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/vuilraith/joke2.mp3`,
+    ],
+    special: {
+      title: "Devour (Capture)",
+      uris: [
+        `${CDN_BASE_URL}/voices/vuilraith/special1.mp3`,
+        `${CDN_BASE_URL}/voices/vuilraith/special2.mp3`,
+      ],
+    },
+  },
+  titans: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/titan/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/titan/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/titans/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/titans/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/titans/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/titans/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/titans/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/titans/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/titans/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/titans/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/titans/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/titans/battle8.mp3`,
+      `${CDN_BASE_URL}/voices/titans/battle9.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/titans/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/titans/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/titans/joke3.mp3`,
+    ],
+    special: {
+      title: "Sleeper Awakened",
+      uris: [
+        `${CDN_BASE_URL}/voices/titans/special1.mp3`,
+        `${CDN_BASE_URL}/voices/titans/special2.mp3`,
+      ],
+    },
+  },
+  nekro: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/nekro/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/nekro/homeinvasion.mp3`],
+    defenseOutnumbered: [`${CDN_BASE_URL}/voices/nekro/defenseoutnumbered.mp3`],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/nekro/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/nekro/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/battle7.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/nekro/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/joke3.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/joke4.mp3`,
+      `${CDN_BASE_URL}/voices/nekro/joke5.mp3`,
+    ],
+    special: {
+      title: "Tech Assimilated",
+      uris: [
+        `${CDN_BASE_URL}/voices/nekro/special1.mp3`,
+        `${CDN_BASE_URL}/voices/nekro/special2.mp3`,
+        `${CDN_BASE_URL}/voices/nekro/special3.mp3`,
+      ],
+    },
+  },
+  naazrokha: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/naazrhoka/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/naazrhoka/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/naazrhoka/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/naazrhoka/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/naazrhoka/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/naazrhoka/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/naazrhoka/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/naazrhoka/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/naazrhoka/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/naazrhoka/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/naazrhoka/battle7.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/naazrhoka/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/naazrhoka/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/naazrhoka/joke3.mp3`,
+    ],
+    special: {
+      title: "Relic Acquired",
+      uris: [
+        `${CDN_BASE_URL}/voices/naazrhoka/specialrelic1.mp3`,
+        `${CDN_BASE_URL}/voices/naazrhoka/specialrelic2.mp3`,
+      ],
+    },
+    special2: {
+      title: "Black Market Forgery",
+      uris: [
+        `${CDN_BASE_URL}/voices/naazrhoka/specialforgery1.mp3`,
+        `${CDN_BASE_URL}/voices/naazrhoka/specialforgery2.mp3`,
+        `${CDN_BASE_URL}/voices/naazrhoka/specialforgery3.mp3`,
+      ],
+    },
+  },
+  naalu: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/naalu/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/naalu/homeinvasion.mp3`],
+    defenseOutnumbered: [`${CDN_BASE_URL}/voices/naalu/defenseoutnumbered.mp3`],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/naalu/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/naalu/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/naalu/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/joke3.mp3`,
+      `${CDN_BASE_URL}/voices/naalu/joke4.mp3`,
+    ],
+    special: {
+      title: "Foresight",
+      uris: [
+        `${CDN_BASE_URL}/voices/naalu/special1.mp3`,
+        `${CDN_BASE_URL}/voices/naalu/special2.mp3`,
+      ],
+    },
+  },
+  mentak: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/mentak/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/mentak/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/mentak/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/mentak/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/mentak/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/mentak/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/joke3.mp3`,
+      `${CDN_BASE_URL}/voices/mentak/joke4.mp3`,
+    ],
+    special: {
+      title: "Pillage",
+      uris: [
+        `${CDN_BASE_URL}/voices/mentak/special1.mp3`,
+        `${CDN_BASE_URL}/voices/mentak/special2.mp3`,
+        `${CDN_BASE_URL}/voices/mentak/special3.mp3`,
+      ],
+    },
+    special2: {
+      title: "Ambush",
+      uris: [`${CDN_BASE_URL}/voices/mentak/specialb.mp3`],
+    },
+  },
+  argent: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/argent/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/argent/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/argent/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/argent/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/argent/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/argent/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/argent/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/argent/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/argent/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/argent/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/argent/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/argent/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/argent/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/argent/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/argent/joke3.mp3`,
+    ],
+    special: {
+      title: "Raid Formation",
+      uris: [
+        `${CDN_BASE_URL}/voices/argent/special1.mp3`,
+        `${CDN_BASE_URL}/voices/argent/special2.mp3`,
+      ],
+    },
+  },
+  arborec: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/arborec/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/arborec/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/arborec/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/arborec/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/arborec/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/arborec/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/arborec/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/arborec/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/arborec/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/arborec/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/arborec/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/arborec/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/arborec/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/arborec/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/arborec/joke3.mp3`,
+    ],
+    special: {
+      title: "Huge Build (Hero)",
+      uris: [
+        `${CDN_BASE_URL}/voices/arborec/special1.mp3`,
+        `${CDN_BASE_URL}/voices/arborec/special2.mp3`,
+      ],
+    },
+  },
+  yin: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/yin/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/yin/homeinvasion.mp3`],
+    defenseOutnumbered: [`${CDN_BASE_URL}/voices/yin/defenseoutnumbered.mp3`],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/yin/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/yin/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/yin/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/yin/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/yin/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/yin/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/yin/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/yin/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/yin/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/yin/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/yin/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/yin/joke3.mp3`,
+    ],
+    special: {
+      title: "Van Haugh Explodes",
+      uris: [
+        `${CDN_BASE_URL}/voices/yin/special1.mp3`,
+        `${CDN_BASE_URL}/voices/yin/special2.mp3`,
+      ],
+    },
+  },
   barony: {
     battleAnthem: "spotify:track:1N7LRc9YuyMjWKEkrmlogM",
     homeDefense: [`${CDN_BASE_URL}/voices/barony/homedefense.mp3`],

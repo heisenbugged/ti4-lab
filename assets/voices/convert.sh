@@ -14,14 +14,17 @@ find . -type f -name "*.wav" | while read -r wavfile; do
     # Extract just the filename without path and extension
     filename=$(basename "$wavfile" .wav)
 
+    # Get the directory of the source file
+    dir=$(dirname "$wavfile")
+
     echo "Converting: $wavfile"
 
-    # Convert to mp3 in the current directory
-    ffmpeg -i "$wavfile" -q:a 0 "./$filename.mp3" -hide_banner -loglevel error
+    # Convert to mp3 in the same directory as the source file
+    ffmpeg -i "$wavfile" -q:a 0 "$dir/$filename.mp3" -hide_banner -loglevel error
 
     # Check if conversion was successful
     if [ $? -eq 0 ]; then
-        echo "Successfully converted: $filename.mp3"
+        echo "Successfully converted: $dir/$filename.mp3"
         ((count++))
     else
         echo "Failed to convert: $wavfile"
