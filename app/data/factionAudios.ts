@@ -189,8 +189,6 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       `${CDN_BASE_URL}/voices/nekro/joke1.mp3`,
       `${CDN_BASE_URL}/voices/nekro/joke2.mp3`,
       `${CDN_BASE_URL}/voices/nekro/joke3.mp3`,
-      `${CDN_BASE_URL}/voices/nekro/joke4.mp3`,
-      `${CDN_BASE_URL}/voices/nekro/joke5.mp3`,
     ],
     special: {
       title: "Tech Assimilated",
@@ -556,10 +554,22 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
   },
   sol: {
     battleAnthem: "spotify:track:6Rlybp1JsE3GUjYp5rC0mo",
-    homeDefense: [`${CDN_BASE_URL}/voices/sol/homedefense.mp3`],
-    homeInvasion: [`${CDN_BASE_URL}/voices/sol/homeinvasion.mp3`],
-    defenseOutnumbered: [`${CDN_BASE_URL}/voices/sol/defenseoutnumbered.mp3`],
-    offenseSuperior: [`${CDN_BASE_URL}/voices/sol/offensesuperior.mp3`],
+    homeDefense: [
+      // `${CDN_BASE_URL}/voices/sol/homedefense.mp3`,
+      `${CDN_BASE_URL}/voices/sol/homedefense2.mp3`,
+    ],
+    homeInvasion: [
+      `${CDN_BASE_URL}/voices/sol/homeinvasion.mp3`,
+      `${CDN_BASE_URL}/voices/sol/homeinvasion2.mp3`,
+    ],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/sol/defenseoutnumbered.mp3`,
+      `${CDN_BASE_URL}/voices/sol/defenseoutnumbered2.mp3`,
+    ],
+    offenseSuperior: [
+      `${CDN_BASE_URL}/voices/sol/offensesuperior.mp3`,
+      `${CDN_BASE_URL}/voices/sol/offensesuperior2.mp3`,
+    ],
     battleLines: [
       `${CDN_BASE_URL}/voices/sol/battle1.mp3`,
       `${CDN_BASE_URL}/voices/sol/battle2.mp3`,
@@ -569,10 +579,21 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       `${CDN_BASE_URL}/voices/sol/battle6.mp3`,
       `${CDN_BASE_URL}/voices/sol/battle7.mp3`,
       `${CDN_BASE_URL}/voices/sol/battle8.mp3`,
+      `${CDN_BASE_URL}/voices/sol/battle9.mp3`,
+      `${CDN_BASE_URL}/voices/sol/battle10.mp3`,
+      `${CDN_BASE_URL}/voices/sol/battle11.mp3`,
+      `${CDN_BASE_URL}/voices/sol/battle12.mp3`,
+      `${CDN_BASE_URL}/voices/sol/battle13.mp3`,
+      `${CDN_BASE_URL}/voices/sol/battle14.mp3`,
+      `${CDN_BASE_URL}/voices/sol/battle15.mp3`,
+      `${CDN_BASE_URL}/voices/sol/battle16.mp3`,
+      `${CDN_BASE_URL}/voices/sol/battle17.mp3`,
     ],
     jokes: [
       `${CDN_BASE_URL}/voices/sol/joke1.mp3`,
       `${CDN_BASE_URL}/voices/sol/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/sol/joke3.mp3`,
+      `${CDN_BASE_URL}/voices/sol/joke4.mp3`,
     ],
     special: {
       title: "Orbital Drop",

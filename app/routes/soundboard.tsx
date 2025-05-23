@@ -16,7 +16,7 @@ export type DraftOrderContext = {
   setAccessibleColors: (value: boolean) => void;
 };
 
-export default function LSGC4Index() {
+export default function SoundboardShell() {
   const [originalArt, setOriginalArt] = useState(false);
   const [accessibleColors, setAccessibleColors] = useState(false);
   const [adminMode, setAdminMode] = useState(false);

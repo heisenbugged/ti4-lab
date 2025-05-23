@@ -6,13 +6,15 @@ import {
   Table,
   Textarea,
   Title,
+  Badge,
+  Group,
 } from "@mantine/core";
 import { useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
 import { SummaryRow } from "./SummaryRow";
 import { useMemo, useState } from "react";
 import { SummaryCard } from "./MidDraftSummary";
-import { Link } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import {
   hydratedMapStringAtom,
@@ -25,8 +27,10 @@ import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { PlanetFinder } from "./PlanetFinder";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { DraftLogSection } from "./DraftLogSection";
+import styles from "./FinalizedDraft.module.css";
 
 export function FinalizedDraft() {
+  const navigate = useNavigate();
   const { adminMode } = useSafeOutletContext();
 
   const config = useDraftConfig();
@@ -53,10 +57,41 @@ export function FinalizedDraft() {
   );
   const [mapString] = useAtom(hydratedMapStringAtom);
 
+  const handleSoundboardClick = () => {
+    const factionIds = hydratedPlayers
+      .map((p) => p.faction)
+      .filter(Boolean)
+      .join(",");
+    navigate(`/soundboard?factions=${factionIds}`);
+  };
+
   return (
     <Stack mt="lg" gap={30}>
       <PlanetFinder onSystemSelected={syncDraft} />
-      <Title>Draft complete!</Title>
+      <Group justify="space-between">
+        <Title>Draft complete!</Title>
+        <Box pos="relative">
+          <Badge
+            size="lg"
+            variant="filled"
+            color="orange"
+            pos="absolute"
+            top={-10}
+            right={-10}
+            style={{ zIndex: 1 }}
+          >
+            NEW
+          </Badge>
+          {/* <Button
+            size="xl"
+            variant="outline"
+            onClick={handleSoundboardClick}
+            className={styles.soundboardButton}
+          >
+            Load Soundboard
+          </Button> */}
+        </Box>
+      </Group>
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <Stack flex={1} gap="xl">
           <Section>

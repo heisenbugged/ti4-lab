@@ -408,33 +408,43 @@ const SpotifyPlaylistUI = ({
   );
 };
 
+const DEFAULT_FACTION_SLOTS: FactionId[] = [
+  "arborec",
+  "argent",
+  "mentak",
+  "naalu",
+  "naazrokha",
+  "nekro",
+  "titans",
+  "vulraith",
+  "yin",
+  "yssaril",
+  "mahact",
+  "barony",
+  "saar",
+  "jolnar",
+  "l1z1x",
+  "sol",
+  "hacan",
+  "nomad",
+  "xxcha",
+  "empyrean",
+  "muaat",
+];
+
 export default function SoundboardMaster() {
   const { spotifyClientId, spotifyCallbackUrl } =
     useLoaderData<typeof loader>();
   const [playlistId, setPlaylistId] = useState<string | undefined>(undefined);
-  const [factionSlots, setFactionSlots] = useState<FactionId[]>([
-    "arborec",
-    "argent",
-    "mentak",
-    "naalu",
-    "naazrokha",
-    "nekro",
-    "titans",
-    "vulraith",
-    "yin",
-    "yssaril",
-    "mahact",
-    "barony",
-    "saar",
-    "jolnar",
-    "l1z1x",
-    "sol",
-    "hacan",
-    "nomad",
-    "xxcha",
-    "empyrean",
-    "muaat",
-  ]);
+  const [searchParams] = useSearchParams();
+  const factionsParam = searchParams.get("factions");
+  const sessionId = searchParams.get("session");
+  const [factionSlots, setFactionSlots] = useState<FactionId[]>(() => {
+    if (factionsParam) {
+      return factionsParam.split(",") as FactionId[];
+    }
+    return DEFAULT_FACTION_SLOTS;
+  });
   const [isVoiceLinePlaying, setIsVoiceLinePlaying] = useState(false);
 
   useEffect(() => {
@@ -447,8 +457,6 @@ export default function SoundboardMaster() {
 
   const [volume, setVolume] = useState(1);
   const { accessToken } = useSpotifyLogin();
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get("session");
 
   const { socket, isDisconnected, isReconnecting, reconnect } =
     useSocketConnection({
