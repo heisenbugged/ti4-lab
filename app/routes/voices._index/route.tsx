@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, useMemo } from "react";
+import { Fragment, useEffect, useState, useMemo, useRef } from "react";
 import {
   Text,
   Container,
@@ -43,6 +43,13 @@ import {
   IconInfoCircle,
 } from "@tabler/icons-react";
 import { SectionTitle } from "~/components/Section";
+import {
+  trackPageView,
+  trackVoiceLineClick,
+  trackButtonClick,
+  trackSessionEvent,
+  trackTimeOnPage,
+} from "~/lib/analytics.client";
 
 // Line type display names dictionary
 const LINE_TYPE_DISPLAY_NAMES: Record<LineType, string> = {
@@ -194,6 +201,36 @@ export default function VoicesMaster() {
   });
   const [isVoiceLinePlaying, setIsVoiceLinePlaying] = useState(false);
   const [volume, setVolume] = useState(1);
+  const timeOnPageTracker = useRef<(() => void) | null>(null);
+
+  // Analytics: Track page view and time on page
+  useEffect(() => {
+    trackPageView({
+      route: "/voices",
+      sessionId: sessionId || undefined,
+    });
+
+    // Start tracking time on page
+    const tracker = trackTimeOnPage("/voices", sessionId || undefined);
+    timeOnPageTracker.current = tracker || null;
+
+    // Track time on page when component unmounts
+    return () => {
+      if (timeOnPageTracker.current) {
+        timeOnPageTracker.current();
+      }
+    };
+  }, [sessionId]);
+
+  // Track session events
+  useEffect(() => {
+    if (sessionId) {
+      trackSessionEvent({
+        action: "session_joined",
+        sessionId: sessionId,
+      });
+    }
+  }, [sessionId]);
 
   const { socket, isDisconnected, isReconnecting, reconnect } =
     useSocketConnection({
@@ -249,6 +286,15 @@ export default function VoicesMaster() {
 
   const handlePlayAudio = async (factionId: FactionId, type: LineType) => {
     if (!socket) return;
+
+    // Analytics: Track voice line click
+    trackVoiceLineClick({
+      faction: factionId,
+      lineType: type,
+      sessionId: sessionId || undefined,
+      isQueued: isVoiceLineQueued(factionId, type),
+    });
+
     playAudio(factionId, type);
     setIsVoiceLinePlaying(true);
   };
@@ -256,6 +302,37 @@ export default function VoicesMaster() {
   const handleStopAudio = () => {
     stopAudio();
     setIsVoiceLinePlaying(false);
+  };
+
+  const handleCreateSession = () => {
+    trackButtonClick({
+      buttonType: "create_session",
+      context: "voices_page",
+    });
+  };
+
+  const handleEndSession = () => {
+    trackButtonClick({
+      buttonType: "end_session",
+      context: "voices_page",
+      sessionId: sessionId || undefined,
+    });
+
+    if (sessionId) {
+      trackSessionEvent({
+        action: "session_ended",
+        sessionId: sessionId,
+      });
+    }
+  };
+
+  const handleReconnect = () => {
+    trackButtonClick({
+      buttonType: "reconnect",
+      context: "voices_page",
+      sessionId: sessionId || undefined,
+    });
+    reconnect();
   };
 
   // New helper method to format the loading audio text
@@ -297,7 +374,7 @@ export default function VoicesMaster() {
             transform: "translateX(-50%)",
             zIndex: 1000,
           }}
-          onClick={reconnect}
+          onClick={handleReconnect}
           loading={isReconnecting}
         >
           Refresh
@@ -325,7 +402,7 @@ export default function VoicesMaster() {
 
         <Group grow align="end" justify="flex-end">
           {!sessionId ? (
-            <Form method="post">
+            <Form method="post" onSubmit={handleCreateSession}>
               <Button type="submit" size="xl">
                 Create Session
               </Button>
@@ -335,7 +412,10 @@ export default function VoicesMaster() {
               size="xl"
               color="blue"
               variant="outline"
-              onClick={() => (window.location.href = window.location.pathname)}
+              onClick={() => {
+                handleEndSession();
+                window.location.href = window.location.pathname;
+              }}
             >
               End Session
             </Button>
@@ -377,6 +457,13 @@ export default function VoicesMaster() {
                         const newSlots = [...factionSlots];
                         newSlots[index] = newFaction as FactionId;
                         setFactionSlots(newSlots);
+
+                        // Analytics: Track faction selection
+                        trackButtonClick({
+                          buttonType: "faction_select",
+                          context: `${faction}_to_${newFaction}`,
+                          sessionId: sessionId || undefined,
+                        });
                       }
                     }}
                     data={factionData}
@@ -717,9 +804,23 @@ export default function VoicesMaster() {
                     if (voiceLineRef.current?.playing()) {
                       voiceLineRef.current.pause();
                       setIsVoiceLinePlaying(false);
+
+                      // Analytics: Track pause action
+                      trackButtonClick({
+                        buttonType: "pause_audio",
+                        context: "footer_player",
+                        sessionId: sessionId || undefined,
+                      });
                     } else {
                       voiceLineRef.current?.play();
                       setIsVoiceLinePlaying(true);
+
+                      // Analytics: Track resume action
+                      trackButtonClick({
+                        buttonType: "resume_audio",
+                        context: "footer_player",
+                        sessionId: sessionId || undefined,
+                      });
                     }
                   }
                 }}
@@ -740,6 +841,13 @@ export default function VoicesMaster() {
                     color="blue"
                     size="md"
                     onClick={() => {
+                      // Analytics: Track skip action
+                      trackButtonClick({
+                        buttonType: "skip_to_next",
+                        context: "footer_player",
+                        sessionId: sessionId || undefined,
+                      });
+
                       stopAudio();
                       if (voiceLineQueue.length > 0) {
                         const nextItem = voiceLineQueue[0];
@@ -781,6 +889,13 @@ export default function VoicesMaster() {
                     const duration = voiceLineRef.current.duration();
                     const seekPosition = duration * newPosition;
                     voiceLineRef.current.seek(seekPosition);
+
+                    // Analytics: Track seek action
+                    trackButtonClick({
+                      buttonType: "audio_seek",
+                      context: "footer_player",
+                      sessionId: sessionId || undefined,
+                    });
                   }
                 }}
                 disabled={!loadingAudio}
@@ -807,8 +922,24 @@ export default function VoicesMaster() {
             {/* Queue Display */}
             <VoiceLineQueue
               queue={voiceLineQueue}
-              onRemove={removeFromQueue}
-              onClear={clearQueue}
+              onRemove={(id) => {
+                removeFromQueue(id);
+                // Analytics: Track queue removal
+                trackButtonClick({
+                  buttonType: "remove_from_queue",
+                  context: "queue_popup",
+                  sessionId: sessionId || undefined,
+                });
+              }}
+              onClear={() => {
+                clearQueue();
+                // Analytics: Track queue clear
+                trackButtonClick({
+                  buttonType: "clear_queue",
+                  context: "queue_popup",
+                  sessionId: sessionId || undefined,
+                });
+              }}
             />
 
             <Group gap="xs">
@@ -819,9 +950,23 @@ export default function VoicesMaster() {
                   if (volume > 0) {
                     setVolume(0);
                     voiceLineRef.current?.volume(0);
+
+                    // Analytics: Track mute action
+                    trackButtonClick({
+                      buttonType: "mute_audio",
+                      context: "footer_player",
+                      sessionId: sessionId || undefined,
+                    });
                   } else {
                     setVolume(0.5);
                     voiceLineRef.current?.volume(0.5);
+
+                    // Analytics: Track unmute action
+                    trackButtonClick({
+                      buttonType: "unmute_audio",
+                      context: "footer_player",
+                      sessionId: sessionId || undefined,
+                    });
                   }
                 }}
               >
@@ -840,6 +985,15 @@ export default function VoicesMaster() {
                 onChange={(newVolume) => {
                   setVolume(newVolume);
                   voiceLineRef.current?.volume(newVolume);
+
+                  // Analytics: Track volume change (debounced to avoid spam)
+                  if (newVolume % 0.1 === 0) {
+                    trackButtonClick({
+                      buttonType: "volume_change",
+                      context: "footer_player",
+                      sessionId: sessionId || undefined,
+                    });
+                  }
                 }}
               />
             </Group>

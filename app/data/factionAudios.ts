@@ -222,18 +222,18 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       `${CDN_BASE_URL}/voices/naazrhoka/joke3.mp3`,
     ],
     special: {
-      title: "Relic Acquired",
+      title: "Black Market Forgery",
       uris: [
         `${CDN_BASE_URL}/voices/naazrhoka/specialrelic1.mp3`,
         `${CDN_BASE_URL}/voices/naazrhoka/specialrelic2.mp3`,
+        `${CDN_BASE_URL}/voices/naazrhoka/specialforgery3.mp3`,
       ],
     },
     special2: {
-      title: "Black Market Forgery",
+      title: "Relic Acquired",
       uris: [
         `${CDN_BASE_URL}/voices/naazrhoka/specialforgery1.mp3`,
         `${CDN_BASE_URL}/voices/naazrhoka/specialforgery2.mp3`,
-        `${CDN_BASE_URL}/voices/naazrhoka/specialforgery3.mp3`,
       ],
     },
   },
@@ -600,7 +600,10 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       uris: [
         `${CDN_BASE_URL}/voices/sol/special1.mp3`,
         `${CDN_BASE_URL}/voices/sol/special2.mp3`,
-        // `${CDN_BASE_URL}/voices/sol/special3.mp3`,
+        `${CDN_BASE_URL}/voices/sol/special3.mp3`,
+        `${CDN_BASE_URL}/voices/sol/special4.mp3`,
+        `${CDN_BASE_URL}/voices/sol/special5.mp3`,
+        `${CDN_BASE_URL}/voices/sol/special6.mp3`,
       ],
     },
   },
