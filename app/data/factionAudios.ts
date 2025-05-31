@@ -4,18 +4,6 @@ import type { FactionId } from "~/types";
 // Add a base URL for your Cloudflare R2 CDN
 const CDN_BASE_URL = "https://pub-0d0c405d32714102a425f3be2f199990.r2.dev";
 
-// Update factionIds to include all factions used in factionAudios
-export const factionIds: FactionId[] = [
-  "muaat",
-  "sol",
-  "hacan",
-  "xxcha",
-  "nomad",
-  "jolnar",
-  "l1z1x",
-  "empyrean",
-];
-
 export type LineType =
   | "homeDefense"
   | "homeInvasion"
@@ -46,6 +34,97 @@ type FactionAudio = {
 };
 
 export const factionAudios: Record<FactionId, FactionAudio> = {
+  creuss: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/ghosts/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/ghosts/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/ghosts/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/ghosts/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/ghosts/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/ghosts/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/joke3.mp3`,
+      `${CDN_BASE_URL}/voices/ghosts/joke4.mp3`,
+    ],
+    special: {
+      title: "Wormhole Placed",
+      uris: [
+        `${CDN_BASE_URL}/voices/ghosts/special1.mp3`,
+        `${CDN_BASE_URL}/voices/ghosts/special2.mp3`,
+      ],
+    },
+  },
+  winnu: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/winnu/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/winnu/homeinvasion.mp3`],
+    defenseOutnumbered: [`${CDN_BASE_URL}/voices/winnu/defenseoutnumbered.mp3`],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/winnu/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/winnu/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/winnu/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/winnu/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/winnu/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/winnu/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/winnu/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/winnu/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/winnu/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/winnu/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/winnu/joke2.mp3`,
+      `${CDN_BASE_URL}/voices/winnu/joke3.mp3`,
+    ],
+    special: {
+      title: "Mecatol Rex Taken",
+      uris: [
+        `${CDN_BASE_URL}/voices/winnu/special1.mp3`,
+        `${CDN_BASE_URL}/voices/winnu/special2.mp3`,
+      ],
+    },
+  },
+  sardakk: {
+    battleAnthem: "",
+    homeDefense: [`${CDN_BASE_URL}/voices/sardakk/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/sardakk/homeinvasion.mp3`],
+    defenseOutnumbered: [
+      `${CDN_BASE_URL}/voices/sardakk/defenseoutnumbered.mp3`,
+    ],
+    offenseSuperior: [`${CDN_BASE_URL}/voices/sardakk/offensesuperior.mp3`],
+    battleLines: [
+      `${CDN_BASE_URL}/voices/sardakk/battle1.mp3`,
+      `${CDN_BASE_URL}/voices/sardakk/battle2.mp3`,
+      `${CDN_BASE_URL}/voices/sardakk/battle3.mp3`,
+      `${CDN_BASE_URL}/voices/sardakk/battle4.mp3`,
+      `${CDN_BASE_URL}/voices/sardakk/battle5.mp3`,
+      `${CDN_BASE_URL}/voices/sardakk/battle6.mp3`,
+      `${CDN_BASE_URL}/voices/sardakk/battle7.mp3`,
+      `${CDN_BASE_URL}/voices/sardakk/battle8.mp3`,
+    ],
+    jokes: [
+      `${CDN_BASE_URL}/voices/sardakk/joke1.mp3`,
+      `${CDN_BASE_URL}/voices/sardakk/joke2.mp3`,
+    ],
+    special: {
+      title: "Exotrireme II ability",
+      uris: [
+        `${CDN_BASE_URL}/voices/sardakk/special1.mp3`,
+        `${CDN_BASE_URL}/voices/sardakk/special2.mp3`,
+      ],
+    },
+  },
   mahact: {
     battleAnthem: "",
     homeDefense: [`${CDN_BASE_URL}/voices/mahact/homedefense.mp3`],
@@ -140,8 +219,8 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
   },
   titans: {
     battleAnthem: "",
-    homeDefense: [`${CDN_BASE_URL}/voices/titan/homedefense.mp3`],
-    homeInvasion: [`${CDN_BASE_URL}/voices/titan/homeinvasion.mp3`],
+    homeDefense: [`${CDN_BASE_URL}/voices/titans/homedefense.mp3`],
+    homeInvasion: [`${CDN_BASE_URL}/voices/titans/homeinvasion.mp3`],
     defenseOutnumbered: [
       `${CDN_BASE_URL}/voices/titans/defenseoutnumbered.mp3`,
     ],

@@ -28,6 +28,7 @@ import { PlanetFinder } from "./PlanetFinder";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { DraftLogSection } from "./DraftLogSection";
 import styles from "./FinalizedDraft.module.css";
+import { trackButtonClick } from "~/lib/analytics.client";
 
 export function FinalizedDraft() {
   const navigate = useNavigate();
@@ -62,7 +63,14 @@ export function FinalizedDraft() {
       .map((p) => p.faction)
       .filter(Boolean)
       .join(",");
-    navigate(`/soundboard?factions=${factionIds}`);
+
+    // Track button click with PostHog
+    trackButtonClick({
+      buttonType: "load_soundboard",
+      context: "finalized_draft",
+    });
+
+    navigate(`/voices?factions=${factionIds}`);
   };
 
   return (
@@ -82,14 +90,14 @@ export function FinalizedDraft() {
           >
             NEW
           </Badge>
-          {/* <Button
+          <Button
             size="xl"
             variant="outline"
             onClick={handleSoundboardClick}
             className={styles.soundboardButton}
           >
             Load Soundboard
-          </Button> */}
+          </Button>
         </Box>
       </Group>
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>

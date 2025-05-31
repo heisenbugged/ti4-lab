@@ -22,7 +22,7 @@ import {
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { factionAudios, factionIds, LineType } from "~/data/factionAudios";
+import { factionAudios, LineType } from "~/data/factionAudios";
 import { VoiceLineButton } from "../soundboard._index/components/VoiceLineButton";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/server-runtime";
 import { Form, useSearchParams } from "@remix-run/react";
@@ -66,25 +66,28 @@ const LINE_TYPE_DISPLAY_NAMES: Record<LineType, string> = {
 const DEFAULT_FACTION_SLOTS: FactionId[] = [
   "arborec",
   "argent",
+  "barony",
+  "creuss",
+  "empyrean",
+  "hacan",
+  "jolnar",
+  "l1z1x",
+  "mahact",
   "mentak",
+  "muaat",
   "naalu",
   "naazrokha",
   "nekro",
+  "nomad",
+  "saar",
+  "sardakk",
+  "sol",
   "titans",
   "vulraith",
+  "winnu",
+  "xxcha",
   "yin",
   "yssaril",
-  "mahact",
-  "barony",
-  "saar",
-  "jolnar",
-  "l1z1x",
-  "sol",
-  "hacan",
-  "nomad",
-  "xxcha",
-  "empyrean",
-  "muaat",
 ];
 
 const factionData = Object.entries(factions)
@@ -241,7 +244,7 @@ export default function VoicesMaster() {
     if (!socket || !sessionId) return;
     socket.emit("joinSoundboardSession", sessionId);
     socket.on("requestSessionData", () =>
-      socket.emit("sendSessionData", sessionId, factionIds),
+      socket.emit("sendSessionData", sessionId, factionSlots),
     );
     socket.on("playLine", (factionId, lineType) =>
       playAudio(factionId, lineType),

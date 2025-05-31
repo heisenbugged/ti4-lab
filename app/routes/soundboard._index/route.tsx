@@ -25,7 +25,7 @@ import {
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { factionAudios, factionIds, LineType } from "~/data/factionAudios";
+import { factionAudios, LineType } from "~/data/factionAudios";
 import { VoiceLineButton } from "./components/VoiceLineButton";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/server-runtime";
 import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
