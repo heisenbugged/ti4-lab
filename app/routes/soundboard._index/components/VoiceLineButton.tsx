@@ -38,7 +38,7 @@ const voiceLineConfig: Record<
   },
   homeDefense: {
     color: "blue",
-    width: "140px",
+    width: "200px",
   },
   homeInvasion: {
     color: "red",
@@ -49,7 +49,7 @@ const voiceLineConfig: Record<
   },
   special: {
     color: "purple",
-    width: "150px",
+    width: "180px",
   },
   special2: {
     color: "purple",

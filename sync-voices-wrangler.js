@@ -57,6 +57,7 @@ try {
 
   // Get all voice files
   const voiceFiles = getVoiceFiles(VOICES_DIR);
+  console.log(`Found ${voiceFiles.length} voice files to check`);
 
   // Check which files have changed
   const changedFiles = [];
@@ -66,9 +67,12 @@ try {
     const r2Path = `voices/${relativePath.replace(/\\/g, '/')}`;
     const currentHash = getFileHash(filePath);
 
+    console.log(`Checking ${relativePath}:`);
+    console.log(`  Current hash: ${currentHash}`);
+    console.log(`  Cached hash: ${fileCache[relativePath] || 'none'}`);
+
     if (!fileCache[relativePath] || fileCache[relativePath] !== currentHash) {
       changedFiles.push({ localPath: filePath, r2Path, hash: currentHash });
-      fileCache[relativePath] = currentHash;
     }
   });
 
@@ -80,17 +84,23 @@ try {
     // Upload each changed file
     changedFiles.forEach(file => {
       console.log(`  - ${file.r2Path}`);
-      execSync(
-        `npx wrangler r2 object put ${R2_BUCKET_NAME}/${file.r2Path} --file=${file.localPath} --remote`,
-        { stdio: 'inherit' }
-      );
+      try {
+        execSync(
+          `npx wrangler r2 object put ${R2_BUCKET_NAME}/${file.r2Path} --file=${file.localPath} --remote`,
+          { stdio: 'inherit' }
+        );
+        // Only update cache after successful upload
+        const relativePath = path.relative(VOICES_DIR, file.localPath);
+        fileCache[relativePath] = file.hash;
+        fs.writeFileSync(CACHE_FILE, JSON.stringify(fileCache, null, 2));
+      } catch (error) {
+        console.error(`❌ Failed to upload ${file.r2Path}:`, error.message);
+        throw error; // Re-throw to trigger the outer catch block
+      }
     });
 
     console.log('✅ Voice files sync complete!');
   }
-
-  // Save updated cache
-  fs.writeFileSync(CACHE_FILE, JSON.stringify(fileCache, null, 2));
 
 } catch (error) {
   console.error('❌ Error syncing voice files:', error.message);

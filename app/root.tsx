@@ -15,6 +15,7 @@ import {
   ColorSchemeScript,
   MantineProvider,
   createTheme,
+  mantineHtmlProps,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import type { Socket } from "socket.io-client";
@@ -160,7 +161,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const result = useRouteLoaderData<typeof loader>("root");
 
   return (
-    <html lang="en">
+    <html lang="en" {...mantineHtmlProps}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -208,6 +209,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Notifications />
           <SocketProvider socket={socket}>{children}</SocketProvider>
         </MantineProvider>
+
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -56,7 +56,9 @@ export function useSpotifyPlayer(
 
       // If we have an active device, proceed with playback
       await spotifyApi.startPlayback(accessToken, battleAnthemUri, delay);
-      await getCurrentPlayback();
+      setTimeout(() => {
+        getCurrentPlayback();
+      }, 500);
     } catch (error) {
       console.error("Error starting battle anthem:", error);
       setNoActiveDeviceError(true);
