@@ -127,7 +127,7 @@ export default function SoundboardProxy() {
 
         <VoiceLineButton
           faction={faction}
-          label="Home Defense"
+          label="Home Defense (Epic Speech)"
           type="homeDefense"
           loadingAudio={loadingAudio}
           onPlay={() => handlePlayAudio(faction, "homeDefense")}

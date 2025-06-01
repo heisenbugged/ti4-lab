@@ -2,7 +2,8 @@ import { shuffle } from "~/draft/helpers/randomization";
 import type { FactionId } from "~/types";
 
 // Add a base URL for your Cloudflare R2 CDN
-const CDN_BASE_URL = "https://pub-0d0c405d32714102a425f3be2f199990.r2.dev";
+export const CDN_BASE_URL =
+  "https://pub-0d0c405d32714102a425f3be2f199990.r2.dev";
 
 export type LineType =
   | "homeDefense"

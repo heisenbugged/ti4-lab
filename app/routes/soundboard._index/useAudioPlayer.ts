@@ -1,6 +1,11 @@
 import { Howl } from "howler";
 import { useEffect, useRef, useState } from "react";
-import { factionAudios, getAllSrcs, LineType } from "~/data/factionAudios";
+import {
+  CDN_BASE_URL,
+  factionAudios,
+  getAllSrcs,
+  LineType,
+} from "~/data/factionAudios";
 import { FactionId } from "~/types";
 import { useSpotifyLogin } from "./useSpotifyLogin";
 import { useSpotifyPlayer, SpotifyDevice } from "./useSpotifyPlayer";
@@ -16,11 +21,14 @@ type QueuedVoiceLine = {
   factionId: FactionId;
   type: LineType;
   id: string; // Unique identifier for the queue item
+  shouldPlayTransmission: boolean; // Whether this item should play transmission
+  transmissionIndex?: number; // Which transmission to use
 };
 
 type Props = {
   accessToken: string | null;
   playlistId: string | null;
+  transmissionsEnabled?: boolean;
   lineFinished: () => void;
 };
 
@@ -30,6 +38,7 @@ const AUTO_QUEUE_TIMEFRAME = 2000;
 export function useAudioPlayer({
   accessToken,
   playlistId,
+  transmissionsEnabled,
   lineFinished,
 }: Props) {
   const {
@@ -50,6 +59,7 @@ export function useAudioPlayer({
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
   const [volume, setVolume] = useState(1);
   const voiceLineRef = useRef<Howl | null>(null);
+  const transmissionRef = useRef<Howl | null>(null);
   const [isWarMode, setIsWarMode] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const progressIntervalRef = useRef<number | null>(null);
@@ -72,6 +82,16 @@ export function useAudioPlayer({
     isWarModeRef.current = isWarMode;
   }, [isWarMode]);
 
+  // Cleanup function for transmission audio
+  useEffect(() => {
+    return () => {
+      if (transmissionRef.current) {
+        transmissionRef.current.unload();
+        transmissionRef.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
     return () => {
       if (progressIntervalRef.current) {
@@ -84,6 +104,7 @@ export function useAudioPlayer({
 
   const stopAudio = () => {
     voiceLineRef.current?.stop();
+    transmissionRef.current?.stop();
     setLoadingAudio(null);
     setAudioProgress(0);
     if (progressIntervalRef.current) {
@@ -128,10 +149,7 @@ export function useAudioPlayer({
     // Use the ref to get the current queue state
     const currentQueue = voiceLineQueueRef.current;
 
-    if (currentQueue.length === 0) {
-      return;
-    }
-
+    if (currentQueue.length === 0) return;
     const nextItem = currentQueue[0];
 
     // Update the queue state, removing the first item
@@ -139,16 +157,28 @@ export function useAudioPlayer({
     voiceLineQueueRef.current = newQueue;
     setVoiceLineQueue(newQueue);
 
-    // Play the next item - pass true to indicate it's from the queue
-    playAudio(nextItem.factionId, nextItem.type, true);
+    // Play the next item with its transmission flag and index
+    playAudio(
+      nextItem.factionId,
+      nextItem.type,
+      true,
+      !nextItem.shouldPlayTransmission,
+      nextItem.transmissionIndex,
+    );
   };
 
   // Function to add a voice line to the queue
-  const addToQueue = (factionId: FactionId, type: LineType) => {
+  const addToQueue = (
+    factionId: FactionId,
+    type: LineType,
+    transmissionIndex?: number,
+  ) => {
     const queueItem: QueuedVoiceLine = {
       factionId,
       type,
       id: `${factionId}-${type}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      shouldPlayTransmission: false,
+      transmissionIndex,
     };
 
     // Update both the state and the ref
@@ -185,6 +215,8 @@ export function useAudioPlayer({
     factionId: FactionId,
     type: LineType,
     isFromQueue = false,
+    skipTransmission = false,
+    transmissionIndex?: number,
   ) => {
     const now = Date.now();
     const timeSinceLastTrigger = now - lastVoiceLineTriggerTime.current;
@@ -196,7 +228,7 @@ export function useAudioPlayer({
       loadingAudio &&
       timeSinceLastTrigger < AUTO_QUEUE_TIMEFRAME
     ) {
-      addToQueue(factionId, type);
+      addToQueue(factionId, type, transmissionIndex);
       return;
     }
 
@@ -239,6 +271,9 @@ export function useAudioPlayer({
       (line) => !playedLines.includes(line),
     );
 
+    // Determine if we should play transmission
+    const shouldPlayTransmission = !skipTransmission;
+
     // If no new lines available, reset memory for this faction/type
     if (availableLines.length === 0) {
       setVoiceLineMemory((prev) => ({
@@ -252,13 +287,27 @@ export function useAudioPlayer({
       const selectedLine =
         allPossibleLines[Math.floor(Math.random() * allPossibleLines.length)];
       updateMemory(factionId, type, selectedLine);
-      playLine(selectedLine, shouldStartBattle, isFromQueue);
+      playLine(
+        selectedLine,
+        shouldStartBattle,
+        isFromQueue,
+        shouldPlayTransmission,
+        factionId,
+        transmissionIndex,
+      );
     } else {
       // Select a random new line
       const selectedLine =
         availableLines[Math.floor(Math.random() * availableLines.length)];
       updateMemory(factionId, type, selectedLine);
-      playLine(selectedLine, shouldStartBattle, isFromQueue);
+      playLine(
+        selectedLine,
+        shouldStartBattle,
+        isFromQueue,
+        shouldPlayTransmission,
+        factionId,
+        transmissionIndex,
+      );
     }
   };
 
@@ -276,57 +325,112 @@ export function useAudioPlayer({
     src: string,
     shouldStartBattle: boolean,
     isFromQueue: boolean = false,
+    shouldPlayTransmission: boolean = false,
+    factionId?: FactionId,
+    transmissionIndexParam?: number,
   ) => {
-    const sound = new Howl({
-      src: [src],
-      html5: true,
-      volume: volume,
-      onend: () => {
-        setLoadingAudio(null);
-        setAudioProgress(0);
-        if (progressIntervalRef.current) {
-          window.clearInterval(progressIntervalRef.current);
-          progressIntervalRef.current = null;
-        }
-        lineFinished();
+    // Only play transmission if explicitly told to do so
+    if (shouldPlayTransmission && transmissionsEnabled && factionId) {
+      // Use the provided transmission index, or default to 0
+      const transmissionIndex = transmissionIndexParam ?? 0;
+      // Ensure the index is within bounds (1-8 transmission files available)
+      const safeTransmissionIndex = (transmissionIndex % 8) + 1;
+      const transmissionSrc = `${CDN_BASE_URL}/voices/transmissions/transmission${safeTransmissionIndex}.mp3`;
 
-        // Get the most current queue state from the ref
-        const currentQueue = voiceLineQueueRef.current;
+      // Clean up previous transmission if it exists
+      if (transmissionRef.current) {
+        transmissionRef.current.unload();
+        transmissionRef.current = null;
+      }
 
-        // Check if there are more items in the queue
-        if (currentQueue.length > 0) {
-          // Call playNextFromQueue directly after a short delay
-          setTimeout(playNextFromQueue, 100);
-        }
-      },
-      onloaderror: () => {
-        setLoadingAudio(null);
-        console.error("Error loading audio");
+      // Create and load the transmission sound on-demand
+      const transmissionSound = new Howl({
+        src: [transmissionSrc],
+        html5: true,
+        volume: volume,
+        preload: true,
+        onend: () => {
+          // After transmission ends, immediately play the main voice line
+          playMainVoiceLine();
+        },
+        onloaderror: () => {
+          console.error(
+            `Error loading transmission${safeTransmissionIndex} audio, playing voice line directly`,
+          );
+          // If transmission fails to load, play voice line directly
+          playMainVoiceLine();
+        },
+      });
 
-        // Get the most current queue state from the ref
-        const currentQueue = voiceLineQueueRef.current;
+      transmissionRef.current = transmissionSound;
 
-        // If loading failed and we have more queue items, try the next item
-        if (currentQueue.length > 0) {
-          setTimeout(playNextFromQueue, 100);
-        }
-      },
-      onplay: () => {
-        if (progressIntervalRef.current) {
-          window.clearInterval(progressIntervalRef.current);
-        }
+      // Start the transmission
+      const timeout = shouldStartBattle ? 500 : 0;
+      setTimeout(() => transmissionSound.play(), timeout);
+    } else {
+      // No transmission, play voice line directly
+      const timeout = shouldStartBattle ? 500 : 0;
+      setTimeout(() => playMainVoiceLine(), timeout);
+    }
 
-        progressIntervalRef.current = window.setInterval(() => {
-          if (!sound.playing()) return;
-          const progress = sound.seek() / sound.duration() || 0;
-          setAudioProgress(progress);
-        }, 5);
-      },
-    });
+    function playMainVoiceLine() {
+      // Clean up previous voice line if it exists
+      if (voiceLineRef.current) {
+        voiceLineRef.current.stop();
+      }
 
-    voiceLineRef.current = sound;
-    const timeout = shouldStartBattle ? 500 : 0;
-    setTimeout(() => sound.play(), timeout);
+      const sound = new Howl({
+        src: [src],
+        html5: true,
+        pool: 3,
+        volume: volume,
+        preload: true,
+        onend: () => {
+          setLoadingAudio(null);
+          setAudioProgress(0);
+          if (progressIntervalRef.current) {
+            window.clearInterval(progressIntervalRef.current);
+            progressIntervalRef.current = null;
+          }
+          lineFinished();
+
+          // Get the most current queue state from the ref
+          const currentQueue = voiceLineQueueRef.current;
+
+          // Check if there are more items in the queue
+          if (currentQueue.length > 0) {
+            // Call playNextFromQueue directly after a short delay
+            setTimeout(playNextFromQueue, 100);
+          }
+        },
+        onloaderror: () => {
+          setLoadingAudio(null);
+          console.error("Error loading audio");
+
+          // Get the most current queue state from the ref
+          const currentQueue = voiceLineQueueRef.current;
+
+          // If loading failed and we have more queue items, try the next item
+          if (currentQueue.length > 0) {
+            setTimeout(playNextFromQueue, 100);
+          }
+        },
+        onplay: () => {
+          if (progressIntervalRef.current) {
+            window.clearInterval(progressIntervalRef.current);
+          }
+
+          progressIntervalRef.current = window.setInterval(() => {
+            if (!sound.playing()) return;
+            const progress = sound.seek() / sound.duration() || 0;
+            setAudioProgress(progress);
+          }, 5);
+        },
+      });
+
+      voiceLineRef.current = sound;
+      sound.play();
+    }
   };
 
   return {

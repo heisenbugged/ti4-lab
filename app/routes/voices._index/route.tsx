@@ -18,6 +18,8 @@ import {
   Box,
   Alert,
   Anchor,
+  Modal,
+  Switch,
 } from "@mantine/core";
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -41,6 +43,7 @@ import {
   IconList,
   IconRefresh,
   IconInfoCircle,
+  IconQrcode,
 } from "@tabler/icons-react";
 import { SectionTitle } from "~/components/Section";
 import {
@@ -50,6 +53,7 @@ import {
   trackSessionEvent,
   trackTimeOnPage,
 } from "~/lib/analytics.client";
+import { ClientOnly } from "remix-utils/client-only";
 
 // Line type display names dictionary
 const LINE_TYPE_DISPLAY_NAMES: Record<LineType, string> = {
@@ -192,6 +196,40 @@ const VoiceLineQueue = ({ queue, onRemove, onClear }: VoiceLineQueueProps) => {
   );
 };
 
+// Client-only component for transmissions toggle
+const TransmissionsToggle = ({
+  sessionId,
+  checked,
+  onChange,
+}: {
+  sessionId: string | null;
+  checked: boolean;
+  onChange: (enabled: boolean) => void;
+}) => {
+  const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.currentTarget.checked;
+
+    // Notify parent component
+    onChange(newValue);
+
+    // Analytics: Track transmission toggle
+    trackButtonClick({
+      buttonType: "transmission_toggle",
+      context: newValue ? "transmission_on" : "transmission_off",
+      sessionId: sessionId || undefined,
+    });
+  };
+
+  return (
+    <Switch
+      label="Transmissions"
+      size="md"
+      checked={checked}
+      onChange={handleToggle}
+    />
+  );
+};
+
 export default function VoicesMaster() {
   const [searchParams] = useSearchParams();
   const factionsParam = searchParams.get("factions");
@@ -205,6 +243,21 @@ export default function VoicesMaster() {
   const [isVoiceLinePlaying, setIsVoiceLinePlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const timeOnPageTracker = useRef<(() => void) | null>(null);
+  const [qrModalOpened, setQrModalOpened] = useState(false);
+  const [transmissionsEnabled, setTransmissionsEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("transmissionsEnabled");
+      return saved === "true";
+    }
+    return false;
+  });
+  const transmissionsEnabledRef = useRef(transmissionsEnabled);
+
+  const changeTransmissionsEnabled = (enabled: boolean) => {
+    localStorage.setItem("transmissionsEnabled", enabled.toString());
+    transmissionsEnabledRef.current = enabled;
+    setTransmissionsEnabled(enabled);
+  };
 
   // Analytics: Track page view and time on page
   useEffect(() => {
@@ -223,6 +276,13 @@ export default function VoicesMaster() {
         timeOnPageTracker.current();
       }
     };
+  }, [sessionId]);
+
+  // Show QR modal when session is first created
+  useEffect(() => {
+    if (sessionId) {
+      setQrModalOpened(true);
+    }
   }, [sessionId]);
 
   // Track session events
@@ -246,9 +306,15 @@ export default function VoicesMaster() {
     socket.on("requestSessionData", () =>
       socket.emit("sendSessionData", sessionId, factionSlots),
     );
-    socket.on("playLine", (factionId, lineType) =>
-      playAudio(factionId, lineType),
-    );
+    socket.on("playLine", (factionId, lineType) => {
+      playAudio(
+        factionId,
+        lineType,
+        true,
+        !transmissionsEnabledRef.current,
+        factionSlots.indexOf(factionId),
+      );
+    });
     socket.on("stopLine", () => stopAudio());
   }, [sessionId, socket]);
 
@@ -264,6 +330,7 @@ export default function VoicesMaster() {
   } = useAudioPlayer({
     accessToken: null,
     playlistId: null,
+    transmissionsEnabled: true,
     lineFinished: () => {
       if (!socket) return;
       socket.emit("lineFinished", sessionId);
@@ -290,6 +357,12 @@ export default function VoicesMaster() {
   const handlePlayAudio = async (factionId: FactionId, type: LineType) => {
     if (!socket) return;
 
+    // Calculate transmission index based on faction's position in slots
+    const factionSlotIndex = factionSlots.findIndex(
+      (slot) => slot === factionId,
+    );
+    const transmissionIndex = factionSlotIndex >= 0 ? factionSlotIndex : 0;
+
     // Analytics: Track voice line click
     trackVoiceLineClick({
       faction: factionId,
@@ -298,7 +371,7 @@ export default function VoicesMaster() {
       isQueued: isVoiceLineQueued(factionId, type),
     });
 
-    playAudio(factionId, type);
+    playAudio(factionId, type, false, !transmissionsEnabled, transmissionIndex);
     setIsVoiceLinePlaying(true);
   };
 
@@ -312,6 +385,15 @@ export default function VoicesMaster() {
       buttonType: "create_session",
       context: "voices_page",
     });
+  };
+
+  const handleShowQrCode = () => {
+    trackButtonClick({
+      buttonType: "show_qr_code",
+      context: "voices_page",
+      sessionId: sessionId || undefined,
+    });
+    setQrModalOpened(true);
   };
 
   const handleEndSession = () => {
@@ -363,7 +445,7 @@ export default function VoicesMaster() {
     : [null, null];
 
   return (
-    <Container py="xl" maw={1400} pos="relative" mt="sm">
+    <Container py="xl" maw={1600} pos="relative" mt="sm">
       {socket && isDisconnected && (
         <Button
           variant="filled"
@@ -385,49 +467,50 @@ export default function VoicesMaster() {
       )}
 
       <Stack mb="xl" gap="md" mt="lg">
-        {sessionId && (
-          <Group gap="lg">
-            <Stack>
-              <Text fw={500}>Session Code: {sessionId}</Text>
-              <Text>https://tidraft.com/voices/{sessionId}</Text>
-            </Stack>
-            <Stack align="center" gap={4}>
-              <QRCode
-                value={`https://tidraft.com/voices/${sessionId}`}
-                size={200}
-              />
-              <Text size="sm" c="dimmed">
-                Scan to join session
-              </Text>
-            </Stack>
-          </Group>
-        )}
-
-        <Group grow align="end" justify="flex-end">
-          {!sessionId ? (
+        <Group justify="space-between" align="center" wrap="wrap" gap="md">
+          {/* Left component - changes based on session state */}
+          {sessionId ? (
+            <Group gap="md" align="center" wrap="wrap">
+              <Stack gap="xs">
+                <Text fw={500}>Session Code: {sessionId}</Text>
+                <Text size="sm" c="dimmed">
+                  https://tidraft.com/voices/{sessionId}
+                </Text>
+              </Stack>
+              <Button
+                variant="filled"
+                color="blue"
+                leftSection={<IconQrcode size={16} />}
+                onClick={handleShowQrCode}
+              >
+                Show QR Code
+              </Button>
+              <Button
+                variant="filled"
+                color="red"
+                onClick={() => {
+                  handleEndSession();
+                  window.location.href = window.location.pathname;
+                }}
+              >
+                End Session
+              </Button>
+            </Group>
+          ) : (
             <Form method="post" onSubmit={handleCreateSession}>
               <Button type="submit" size="xl">
                 Create Session
               </Button>
             </Form>
-          ) : (
-            <Button
-              size="xl"
-              color="blue"
-              variant="outline"
-              onClick={() => {
-                handleEndSession();
-                window.location.href = window.location.pathname;
-              }}
-            >
-              End Session
-            </Button>
           )}
+
+          {/* Right component - always the same alert */}
           <Alert
             variant="light"
             color="blue"
             title="How to use Voice Lines"
             icon={<IconInfoCircle />}
+            style={{ flex: "0 1 600px", minWidth: "300px" }}
           >
             Trigger voice lines when pivotal moments happen in your play
             sessions. Use the &apos;create session&apos; feature to allow
@@ -437,6 +520,27 @@ export default function VoicesMaster() {
         </Group>
       </Stack>
 
+      {/* Transmissions Toggle - positioned top right above table */}
+      <Group justify="flex-end">
+        <ClientOnly>
+          {() => (
+            <TransmissionsToggle
+              sessionId={sessionId}
+              checked={transmissionsEnabled}
+              onChange={(enabled) => {
+                changeTransmissionsEnabled(enabled);
+
+                // Analytics: Track transmission toggle
+                trackButtonClick({
+                  buttonType: "transmission_toggle",
+                  context: enabled ? "transmission_on" : "transmission_off",
+                  sessionId: sessionId || undefined,
+                });
+              }}
+            />
+          )}
+        </ClientOnly>
+      </Group>
       <Table verticalSpacing="lg" horizontalSpacing="lg">
         <Table.Thead>
           <Table.Tr>
@@ -514,7 +618,7 @@ export default function VoicesMaster() {
 
                   <VoiceLineButton
                     faction={faction}
-                    label="Home Defense"
+                    label="Home Defense (Long)"
                     type="homeDefense"
                     loadingAudio={loadingAudio}
                     onPlay={() => handlePlayAudio(faction, "homeDefense")}
@@ -1003,6 +1107,30 @@ export default function VoicesMaster() {
           </Group>
         </Container>
       </Box>
+
+      {/* QR Code Modal */}
+      <Modal
+        opened={qrModalOpened}
+        onClose={() => setQrModalOpened(false)}
+        title="Session QR Code"
+        centered
+        size="xl"
+      >
+        <Stack align="center" gap="md">
+          {sessionId && (
+            <QRCode
+              value={`https://tidraft.com/voices/${sessionId}`}
+              size={600}
+            />
+          )}
+          <Text size="sm" c="dimmed" ta="center">
+            Scan this QR code to join the session
+          </Text>
+          <Text size="xs" c="dimmed" ta="center">
+            https://tidraft.com/voices/{sessionId}
+          </Text>
+        </Stack>
+      </Modal>
     </Container>
   );
 }
