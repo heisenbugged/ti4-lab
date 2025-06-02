@@ -2039,7 +2039,7 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       {
         url: `${CDN_BASE_URL}/voices/sol/offensesuperior.mp3`,
         caption:
-          "Their fleets are rust, their tactics ancient, their resolve shattered. Crush them swiftly — this is the fate of those who defy the Federation!",
+          "Look at them - scrambling like ants under the boots of Sol's might. Pathetic. This is not a battle; it’s a reminder of why we are destined to rule the galaxy!",
       },
       {
         url: `${CDN_BASE_URL}/voices/sol/offensesuperior2.mp3`,
