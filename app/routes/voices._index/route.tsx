@@ -303,6 +303,37 @@ const TransmissionsToggle = ({
   );
 };
 
+// Helper function to calculate the remaining line count for a specific faction and line type
+const getRemainingLineCount = (
+  factionId: FactionId,
+  type: LineType,
+  voiceLineMemory: {
+    [K in FactionId]?: {
+      [type: string]: string[];
+    };
+  },
+): number => {
+  const factionData = factionAudios[factionId];
+  if (!factionData) return 0;
+
+  // Get total count for this line type
+  let totalCount = 0;
+  if (type === "special") {
+    totalCount = factionData.special?.entries?.length || 0;
+  } else if (type === "special2") {
+    totalCount = factionData.special2?.entries?.length || 0;
+  } else {
+    const typeData = factionData[type];
+    totalCount = Array.isArray(typeData) ? typeData.length : 0;
+  }
+
+  // Get played count from memory
+  const playedCount = voiceLineMemory[factionId]?.[type]?.length || 0;
+
+  // Return remaining count
+  return Math.max(0, totalCount - playedCount);
+};
+
 export default function VoicesMaster() {
   const [searchParams] = useSearchParams();
   const factionsParam = searchParams.get("factions");
@@ -355,6 +386,7 @@ export default function VoicesMaster() {
     voiceLineQueue,
     removeFromQueue,
     clearQueue,
+    voiceLineMemory,
   } = useAudioPlayer({
     accessToken: null,
     playlistId: null,
@@ -696,6 +728,11 @@ export default function VoicesMaster() {
                     onPlay={() => handlePlayAudio(faction, "battleLines")}
                     onStop={handleStopAudio}
                     isQueued={isVoiceLineQueued(faction, "battleLines")}
+                    lineCount={getRemainingLineCount(
+                      faction,
+                      "battleLines",
+                      voiceLineMemory,
+                    )}
                   />
                   <Stack gap="xs">
                     <VoiceLineButton
@@ -711,6 +748,11 @@ export default function VoicesMaster() {
                         faction,
                         "defenseOutnumbered",
                       )}
+                      lineCount={getRemainingLineCount(
+                        faction,
+                        "defenseOutnumbered",
+                        voiceLineMemory,
+                      )}
                     />
                     <VoiceLineButton
                       faction={faction}
@@ -720,6 +762,11 @@ export default function VoicesMaster() {
                       onPlay={() => handlePlayAudio(faction, "offenseSuperior")}
                       onStop={handleStopAudio}
                       isQueued={isVoiceLineQueued(faction, "offenseSuperior")}
+                      lineCount={getRemainingLineCount(
+                        faction,
+                        "offenseSuperior",
+                        voiceLineMemory,
+                      )}
                     />
                   </Stack>
 
@@ -731,6 +778,11 @@ export default function VoicesMaster() {
                     onPlay={() => handlePlayAudio(faction, "homeDefense")}
                     onStop={handleStopAudio}
                     isQueued={isVoiceLineQueued(faction, "homeDefense")}
+                    lineCount={getRemainingLineCount(
+                      faction,
+                      "homeDefense",
+                      voiceLineMemory,
+                    )}
                   />
                   <VoiceLineButton
                     faction={faction}
@@ -740,6 +792,11 @@ export default function VoicesMaster() {
                     onPlay={() => handlePlayAudio(faction, "homeInvasion")}
                     onStop={handleStopAudio}
                     isQueued={isVoiceLineQueued(faction, "homeInvasion")}
+                    lineCount={getRemainingLineCount(
+                      faction,
+                      "homeInvasion",
+                      voiceLineMemory,
+                    )}
                   />
 
                   <VoiceLineButton
@@ -750,6 +807,11 @@ export default function VoicesMaster() {
                     onPlay={() => handlePlayAudio(faction, "special")}
                     onStop={handleStopAudio}
                     isQueued={isVoiceLineQueued(faction, "special")}
+                    lineCount={getRemainingLineCount(
+                      faction,
+                      "special",
+                      voiceLineMemory,
+                    )}
                   />
                   {factionAudios[faction]?.special2 && (
                     <VoiceLineButton
@@ -760,6 +822,11 @@ export default function VoicesMaster() {
                       onPlay={() => handlePlayAudio(faction, "special2")}
                       onStop={handleStopAudio}
                       isQueued={isVoiceLineQueued(faction, "special2")}
+                      lineCount={getRemainingLineCount(
+                        faction,
+                        "special2",
+                        voiceLineMemory,
+                      )}
                     />
                   )}
 
@@ -771,6 +838,11 @@ export default function VoicesMaster() {
                     onPlay={() => handlePlayAudio(faction, "jokes")}
                     onStop={handleStopAudio}
                     isQueued={isVoiceLineQueued(faction, "jokes")}
+                    lineCount={getRemainingLineCount(
+                      faction,
+                      "jokes",
+                      voiceLineMemory,
+                    )}
                   />
                 </Group>
               </Table.Td>

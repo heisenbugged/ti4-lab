@@ -275,62 +275,42 @@ export function useAudioPlayer({
       (line) => !playedLines.includes(line),
     );
 
-    // Determine if we should play transmission
     const shouldPlayTransmission = !skipTransmission;
+    const shouldResetMemory = availableLines.length === 0;
 
-    // If no new lines available, reset memory for this faction/type
-    if (availableLines.length === 0) {
-      setVoiceLineMemory((prev) => ({
-        ...prev,
-        [factionId]: {
-          ...prev[factionId],
-          [type]: [],
-        },
-      }));
-      // Use all lines again
-      const selectedEntry = getRandomAudioEntry(factionId, type);
-      if (!selectedEntry) return;
+    // If no new lines available, reset memory and use all lines again
+    // Otherwise, select from available lines
+    const selectedEntry = shouldResetMemory
+      ? getRandomAudioEntry(factionId, type)
+      : getRandomAudioEntry(factionId, type, availableLines);
+    if (!selectedEntry) return;
 
-      updateMemory(factionId, type, selectedEntry.url);
-      setCurrentAudio(selectedEntry);
-      playLine(
-        selectedEntry.url,
-        shouldStartBattle,
-        isFromQueue,
-        shouldPlayTransmission,
-        factionId,
-        transmissionIndex,
-      );
+    // Determine what the new voice line list should be
+    const existingLinesForType = voiceLineMemory[factionId]?.[type] || [];
+    let newVoiceLineList: string[];
+    if (shouldResetMemory) {
+      newVoiceLineList = [selectedEntry.url];
     } else {
-      // Select a random new line from available ones
-      const selectedEntry = getRandomAudioEntry(
-        factionId,
-        type,
-        availableLines,
-      );
-      if (!selectedEntry) return;
-
-      updateMemory(factionId, type, selectedEntry.url);
-      setCurrentAudio(selectedEntry);
-      playLine(
-        selectedEntry.url,
-        shouldStartBattle,
-        isFromQueue,
-        shouldPlayTransmission,
-        factionId,
-        transmissionIndex,
-      );
+      newVoiceLineList = [...existingLinesForType, selectedEntry.url];
     }
-  };
 
-  const updateMemory = (factionId: FactionId, type: string, line: string) => {
     setVoiceLineMemory((prev) => ({
       ...prev,
       [factionId]: {
         ...prev[factionId],
-        [type]: [...(prev[factionId]?.[type] || []), line],
+        [type]: newVoiceLineList,
       },
     }));
+
+    setCurrentAudio(selectedEntry);
+    playLine(
+      selectedEntry.url,
+      shouldStartBattle,
+      isFromQueue,
+      shouldPlayTransmission,
+      factionId,
+      transmissionIndex,
+    );
   };
 
   const playLine = (
@@ -470,5 +450,7 @@ export function useAudioPlayer({
     clearQueue,
     voiceLineQueue,
     isPlayingQueue: voiceLineQueue.length > 0,
+    // Voice line memory for tracking played lines
+    voiceLineMemory,
   };
 }

@@ -12,6 +12,7 @@ interface VoiceLineControlProps {
   width?: number | string;
   label?: string;
   isQueued?: boolean;
+  lineCount?: number; // Remaining count of voice lines
 }
 
 const voiceLineConfig: Record<
@@ -57,22 +58,6 @@ const voiceLineConfig: Record<
   },
 };
 
-// Helper function to count the number of voice lines for a button
-const getVoiceLineCount = (faction: FactionId, type: LineType): number => {
-  const factionData = factionAudios[faction];
-  if (!factionData) return 0;
-
-  if (type === "special") {
-    return factionData.special?.entries?.length || 0;
-  }
-  if (type === "special2") {
-    return factionData.special2?.entries?.length || 0;
-  }
-
-  const typeData = factionData[type];
-  return Array.isArray(typeData) ? typeData.length : 0;
-};
-
 export function VoiceLineButton({
   faction,
   type,
@@ -83,11 +68,11 @@ export function VoiceLineButton({
   label,
   size,
   isQueued = false,
+  lineCount,
 }: VoiceLineControlProps) {
   const config = voiceLineConfig[type];
   const isLoading = loadingAudio === `${faction}-${type}`;
   const isDisabled = !factionAudios[faction]?.[type];
-  const lineCount = getVoiceLineCount(faction, type);
 
   return (
     <Button
@@ -112,7 +97,7 @@ export function VoiceLineButton({
       ) : (
         label
       )}
-      {!isLoading && !isQueued && lineCount > 1 && (
+      {!isLoading && !isQueued && lineCount !== undefined && lineCount > 1 && (
         <Badge
           size="xs"
           variant="filled"
