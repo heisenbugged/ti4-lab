@@ -1,4 +1,4 @@
-import { Button, ButtonProps, Loader } from "@mantine/core";
+import { Button, ButtonProps, Loader, Badge, Group } from "@mantine/core";
 import { factionAudios, LineType } from "~/data/factionAudios";
 import type { FactionId } from "~/types";
 
@@ -57,6 +57,22 @@ const voiceLineConfig: Record<
   },
 };
 
+// Helper function to count the number of voice lines for a button
+const getVoiceLineCount = (faction: FactionId, type: LineType): number => {
+  const factionData = factionAudios[faction];
+  if (!factionData) return 0;
+
+  if (type === "special") {
+    return factionData.special?.entries?.length || 0;
+  }
+  if (type === "special2") {
+    return factionData.special2?.entries?.length || 0;
+  }
+
+  const typeData = factionData[type];
+  return Array.isArray(typeData) ? typeData.length : 0;
+};
+
 export function VoiceLineButton({
   faction,
   type,
@@ -71,6 +87,7 @@ export function VoiceLineButton({
   const config = voiceLineConfig[type];
   const isLoading = loadingAudio === `${faction}-${type}`;
   const isDisabled = !factionAudios[faction]?.[type];
+  const lineCount = getVoiceLineCount(faction, type);
 
   return (
     <Button
@@ -86,6 +103,7 @@ export function VoiceLineButton({
         onPlay();
       }}
       w={width ?? config.width}
+      style={{ position: "relative", overflow: "visible" }}
     >
       {isLoading ? (
         <Loader size="xs" type="bars" color={config.color} />
@@ -93,6 +111,22 @@ export function VoiceLineButton({
         "Queued"
       ) : (
         label
+      )}
+      {!isLoading && !isQueued && lineCount > 1 && (
+        <Badge
+          size="xs"
+          variant="filled"
+          c="white"
+          pos="absolute"
+          top="-6px"
+          right="-6px"
+          fz="11px"
+          h="16px"
+          miw="16px"
+          p="0 4px"
+        >
+          {lineCount}
+        </Badge>
       )}
     </Button>
   );
