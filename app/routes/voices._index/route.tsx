@@ -54,6 +54,7 @@ import {
   trackTimeOnPage,
 } from "~/lib/analytics.client";
 import { ClientOnly } from "remix-utils/client-only";
+import styles from "./ClosedCaptions.module.css";
 
 // Line type display names dictionary
 const LINE_TYPE_DISPLAY_NAMES: Record<LineType, string> = {
@@ -196,6 +197,78 @@ const VoiceLineQueue = ({ queue, onRemove, onClear }: VoiceLineQueueProps) => {
   );
 };
 
+// Closed Captions Display Component
+interface ClosedCaptionsProps {
+  caption: string;
+  visible: boolean;
+  factionId: FactionId;
+}
+
+const ClosedCaptions = ({
+  caption,
+  visible,
+  factionId,
+}: ClosedCaptionsProps) => {
+  if (!visible || !caption) return null;
+
+  return (
+    <Box className={styles.container}>
+      <Paper withBorder className={styles.paper}>
+        <Group gap="xs" justify="center" align="center">
+          <FactionIcon faction={factionId} style={{ width: 24, height: 24 }} />
+          <Text fw={600} c="white" ta="center" className={styles.text}>
+            {caption}
+          </Text>
+        </Group>
+      </Paper>
+    </Box>
+  );
+};
+
+// Client-only component for closed captions toggle
+const ClosedCaptionsToggle = ({
+  sessionId,
+  checked,
+  onChange,
+}: {
+  sessionId: string | null;
+  checked: boolean;
+  onChange: (enabled: boolean) => void;
+}) => {
+  const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.currentTarget.checked;
+
+    // Notify parent component
+    onChange(newValue);
+
+    // Analytics: Track CC toggle
+    trackButtonClick({
+      buttonType: "closed_captions_toggle",
+      context: newValue ? "cc_on" : "cc_off",
+      sessionId: sessionId || undefined,
+    });
+  };
+
+  return (
+    <Switch
+      label={
+        <Box
+          py={2}
+          px="md"
+          style={{ borderRadius: 4, border: "1px solid white" }}
+        >
+          <Text size="xs" fw={700} style={{ fontFamily: "monospace" }}>
+            CC
+          </Text>
+        </Box>
+      }
+      size="md"
+      checked={checked}
+      onChange={handleToggle}
+    />
+  );
+};
+
 // Client-only component for transmissions toggle
 const TransmissionsToggle = ({
   sessionId,
@@ -253,11 +326,56 @@ export default function VoicesMaster() {
   });
   const transmissionsEnabledRef = useRef(transmissionsEnabled);
 
+  const [closedCaptionsEnabled, setClosedCaptionsEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("closedCaptionsEnabled");
+      return saved === "true";
+    }
+    return false;
+  });
+
   const changeTransmissionsEnabled = (enabled: boolean) => {
     localStorage.setItem("transmissionsEnabled", enabled.toString());
     transmissionsEnabledRef.current = enabled;
     setTransmissionsEnabled(enabled);
   };
+
+  const changeClosedCaptionsEnabled = (enabled: boolean) => {
+    localStorage.setItem("closedCaptionsEnabled", enabled.toString());
+    setClosedCaptionsEnabled(enabled);
+  };
+
+  const {
+    playAudio,
+    stopAudio,
+    loadingAudio,
+    currentAudio,
+    voiceLineRef,
+    audioProgress,
+    voiceLineQueue,
+    removeFromQueue,
+    clearQueue,
+  } = useAudioPlayer({
+    accessToken: null,
+    playlistId: null,
+    transmissionsEnabled: true,
+    lineFinished: () => {
+      if (!socket) return;
+      socket.emit("lineFinished", sessionId);
+      setIsVoiceLinePlaying(false);
+    },
+  });
+
+  // Derive current caption from playing audio state - much simpler now!
+  const currentCaption =
+    closedCaptionsEnabled && currentAudio?.caption
+      ? currentAudio.caption
+      : null;
+
+  const currentCaptionFaction =
+    currentCaption && loadingAudio
+      ? (loadingAudio.split("-")[0] as FactionId)
+      : null;
 
   // Analytics: Track page view and time on page
   useEffect(() => {
@@ -317,26 +435,6 @@ export default function VoicesMaster() {
     });
     socket.on("stopLine", () => stopAudio());
   }, [sessionId, socket]);
-
-  const {
-    playAudio,
-    stopAudio,
-    loadingAudio,
-    voiceLineRef,
-    audioProgress,
-    voiceLineQueue,
-    removeFromQueue,
-    clearQueue,
-  } = useAudioPlayer({
-    accessToken: null,
-    playlistId: null,
-    transmissionsEnabled: true,
-    lineFinished: () => {
-      if (!socket) return;
-      socket.emit("lineFinished", sessionId);
-      setIsVoiceLinePlaying(false);
-    },
-  });
 
   // Create lookup maps for queued voice lines for quick checking if a voice line is queued
   const queuedLinesMap = useMemo(() => {
@@ -520,8 +618,17 @@ export default function VoicesMaster() {
         </Group>
       </Stack>
 
-      {/* Transmissions Toggle - positioned top right above table */}
-      <Group justify="flex-end">
+      {/* Transmissions and CC Toggles - positioned top right above table */}
+      <Group justify="flex-end" gap="md">
+        <ClientOnly>
+          {() => (
+            <ClosedCaptionsToggle
+              sessionId={sessionId}
+              checked={closedCaptionsEnabled}
+              onChange={changeClosedCaptionsEnabled}
+            />
+          )}
+        </ClientOnly>
         <ClientOnly>
           {() => (
             <TransmissionsToggle
@@ -1131,6 +1238,15 @@ export default function VoicesMaster() {
           </Text>
         </Stack>
       </Modal>
+
+      {/* Closed Captions Display */}
+      {currentCaption && currentCaptionFaction && (
+        <ClosedCaptions
+          caption={currentCaption}
+          visible={closedCaptionsEnabled}
+          factionId={currentCaptionFaction}
+        />
+      )}
     </Container>
   );
 }

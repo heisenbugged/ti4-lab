@@ -4,7 +4,9 @@ import {
   CDN_BASE_URL,
   factionAudios,
   getAllSrcs,
+  getRandomAudioEntry,
   LineType,
+  type AudioEntry,
 } from "~/data/factionAudios";
 import { FactionId } from "~/types";
 import { useSpotifyLogin } from "./useSpotifyLogin";
@@ -57,6 +59,7 @@ export function useAudioPlayer({
 
   const [voiceLineMemory, setVoiceLineMemory] = useState<VoiceLineMemory>({});
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<AudioEntry | null>(null);
   const [volume, setVolume] = useState(1);
   const voiceLineRef = useRef<Howl | null>(null);
   const transmissionRef = useRef<Howl | null>(null);
@@ -106,6 +109,7 @@ export function useAudioPlayer({
     voiceLineRef.current?.stop();
     transmissionRef.current?.stop();
     setLoadingAudio(null);
+    setCurrentAudio(null);
     setAudioProgress(0);
     if (progressIntervalRef.current) {
       window.clearInterval(progressIntervalRef.current);
@@ -284,11 +288,13 @@ export function useAudioPlayer({
         },
       }));
       // Use all lines again
-      const selectedLine =
-        allPossibleLines[Math.floor(Math.random() * allPossibleLines.length)];
-      updateMemory(factionId, type, selectedLine);
+      const selectedEntry = getRandomAudioEntry(factionId, type);
+      if (!selectedEntry) return;
+
+      updateMemory(factionId, type, selectedEntry.url);
+      setCurrentAudio(selectedEntry);
       playLine(
-        selectedLine,
+        selectedEntry.url,
         shouldStartBattle,
         isFromQueue,
         shouldPlayTransmission,
@@ -296,12 +302,18 @@ export function useAudioPlayer({
         transmissionIndex,
       );
     } else {
-      // Select a random new line
-      const selectedLine =
-        availableLines[Math.floor(Math.random() * availableLines.length)];
-      updateMemory(factionId, type, selectedLine);
+      // Select a random new line from available ones
+      const selectedEntry = getRandomAudioEntry(
+        factionId,
+        type,
+        availableLines,
+      );
+      if (!selectedEntry) return;
+
+      updateMemory(factionId, type, selectedEntry.url);
+      setCurrentAudio(selectedEntry);
       playLine(
-        selectedLine,
+        selectedEntry.url,
         shouldStartBattle,
         isFromQueue,
         shouldPlayTransmission,
@@ -387,6 +399,7 @@ export function useAudioPlayer({
         preload: true,
         onend: () => {
           setLoadingAudio(null);
+          setCurrentAudio(null);
           setAudioProgress(0);
           if (progressIntervalRef.current) {
             window.clearInterval(progressIntervalRef.current);
@@ -405,6 +418,7 @@ export function useAudioPlayer({
         },
         onloaderror: () => {
           setLoadingAudio(null);
+          setCurrentAudio(null);
           console.error("Error loading audio");
 
           // Get the most current queue state from the ref
@@ -438,6 +452,7 @@ export function useAudioPlayer({
     stopAudio,
     endWar,
     loadingAudio,
+    currentAudio,
     isWarMode,
     voiceLineRef,
     currentPlayback,
