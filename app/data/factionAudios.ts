@@ -13,11 +13,27 @@ export type LineType =
   | "battleLines"
   | "jokes"
   | "special"
-  | "special2";
+  | "special2"
+  | "roleplayYes"
+  | "roleplayNo"
+  | "roleplayIRefuse"
+  | "roleplayDealWithIt"
+  | "roleplayNotEnough"
+  | "roleplayTooMuch"
+  | "roleplaySabotage"
+  | "roleplayFire"
+  | "announcerWarsundown"
+  | "announcerBreak"
+  | "announcerInvasionstopped"
+  | "announcerAnnihilation"
+  | "announcerDreaddown"
+  | "announcerCriticalhit"
+  | "announcerAgenda";
 
 export type AudioEntry = {
   url: string;
   caption?: string;
+  noTransmission?: boolean;
 };
 
 type FactionAudio = {
@@ -29,6 +45,15 @@ type FactionAudio = {
   offenseSuperior?: AudioEntry[];
   battleLines?: AudioEntry[];
   jokes?: AudioEntry[];
+  roleplay?: AudioEntry[];
+  roleplayYes?: AudioEntry[];
+  roleplayNo?: AudioEntry[];
+  roleplayIRefuse?: AudioEntry[];
+  roleplayDealWithIt?: AudioEntry[];
+  roleplayNotEnough?: AudioEntry[];
+  roleplayTooMuch?: AudioEntry[];
+  roleplaySabotage?: AudioEntry[];
+  roleplayFire?: AudioEntry[];
   special: {
     title: string;
     entries: AudioEntry[];
@@ -543,7 +568,7 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
     },
   },
   vulraith: {
-    battleAnthem: "",
+    battleAnthem: "spotify:track:6Rlybp1JsE3GUjYp5rC0mo",
     homeDefense: [
       {
         url: `${CDN_BASE_URL}/voices/vuilraith/homedefense.mp3`,
@@ -614,6 +639,62 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
         caption: "[Burp]",
       },
       { url: `${CDN_BASE_URL}/voices/vuilraith/joke2.mp3` },
+    ],
+    roleplayYes: [
+      {
+        url: `${CDN_BASE_URL}/voices/vuilraith/yes.mp3`,
+        caption: "Yes.",
+        noTransmission: true,
+      },
+    ],
+    roleplayNo: [
+      {
+        url: `${CDN_BASE_URL}/voices/vuilraith/no.mp3`,
+        caption: "No.",
+        noTransmission: true,
+      },
+    ],
+    roleplayIRefuse: [
+      {
+        url: `${CDN_BASE_URL}/voices/vuilraith/irefuse.mp3`,
+        caption: "I refuse.",
+        noTransmission: true,
+      },
+    ],
+    roleplayDealWithIt: [
+      {
+        url: `${CDN_BASE_URL}/voices/vuilraith/dealwithit.mp3`,
+        caption: "Deal with it.",
+        noTransmission: true,
+      },
+    ],
+    roleplayNotEnough: [
+      {
+        url: `${CDN_BASE_URL}/voices/vuilraith/thatsnotenough.mp3`,
+        caption: "That's not enough.",
+        noTransmission: true,
+      },
+    ],
+    roleplayTooMuch: [
+      {
+        url: `${CDN_BASE_URL}/voices/vuilraith/thatstoomuch.mp3`,
+        caption: "That's too much.",
+        noTransmission: true,
+      },
+    ],
+    roleplaySabotage: [
+      {
+        url: `${CDN_BASE_URL}/voices/vuilraith/sabotage.mp3`,
+        caption: "Sabotage.",
+        noTransmission: true,
+      },
+    ],
+    roleplayFire: [
+      {
+        url: `${CDN_BASE_URL}/voices/vuilraith/fire.mp3`,
+        caption: "Fire!",
+        noTransmission: true,
+      },
     ],
     special: {
       title: "Devour (Capture)",
@@ -838,7 +919,8 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
     },
   },
   naazrokha: {
-    battleAnthem: "",
+    battleAnthem: "spotify:track:57bgtoPSgt236HzfBOd8kj",
+    battleAnthemDelay: 40000,
     homeDefense: [
       {
         url: `${CDN_BASE_URL}/voices/naazrhoka/homedefense.mp3`,
@@ -1581,7 +1663,8 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
     ],
   },
   saar: {
-    battleAnthem: "spotify:track:3xlr5CPOArA6UEw6f29st9",
+    battleAnthem: "spotify:track:0G21yYKMZoHa30cYVi1iA8",
+    battleAnthemDelay: 28000,
     homeDefense: [
       {
         url: `${CDN_BASE_URL}/voices/saar/homedefense.mp3`,
@@ -2039,7 +2122,7 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       {
         url: `${CDN_BASE_URL}/voices/sol/offensesuperior.mp3`,
         caption:
-          "Look at them - scrambling like ants under the boots of Sol's might. Pathetic. This is not a battle; it’s a reminder of why we are destined to rule the galaxy!",
+          "Look at them - scrambling like ants under the boots of Sol's might. Pathetic. This is not a battle; it's a reminder of why we are destined to rule the galaxy!",
       },
       {
         url: `${CDN_BASE_URL}/voices/sol/offensesuperior2.mp3`,
@@ -2259,6 +2342,62 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
         caption: "Everyone knows that Hacan has the best art.",
       },
     ],
+    roleplayYes: [
+      {
+        url: `${CDN_BASE_URL}/voices/hacan/yes.mp3`,
+        caption: "Yes.",
+        noTransmission: true,
+      },
+    ],
+    roleplayNo: [
+      {
+        url: `${CDN_BASE_URL}/voices/hacan/no.mp3`,
+        caption: "No.",
+        noTransmission: true,
+      },
+    ],
+    roleplayIRefuse: [
+      {
+        url: `${CDN_BASE_URL}/voices/hacan/irefuse.mp3`,
+        caption: "I refuse.",
+        noTransmission: true,
+      },
+    ],
+    roleplayDealWithIt: [
+      {
+        url: `${CDN_BASE_URL}/voices/hacan/dealwithit.mp3`,
+        caption: "Deal with it.",
+        noTransmission: true,
+      },
+    ],
+    roleplayNotEnough: [
+      {
+        url: `${CDN_BASE_URL}/voices/hacan/thatsnotenough.mp3`,
+        caption: "That's not enough.",
+        noTransmission: true,
+      },
+    ],
+    roleplayTooMuch: [
+      {
+        url: `${CDN_BASE_URL}/voices/hacan/thatstoomuch.mp3`,
+        caption: "That's too much.",
+        noTransmission: true,
+      },
+    ],
+    roleplaySabotage: [
+      {
+        url: `${CDN_BASE_URL}/voices/hacan/sabotage.mp3`,
+        caption: "Sabotage.",
+        noTransmission: true,
+      },
+    ],
+    roleplayFire: [
+      {
+        url: `${CDN_BASE_URL}/voices/hacan/fire.mp3`,
+        caption: "Fire!",
+        noTransmission: true,
+      },
+    ],
     special: {
       title: "Trade used",
       entries: [
@@ -2371,6 +2510,62 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       {
         url: `${CDN_BASE_URL}/voices/nomad/joke3.mp3`,
         caption: "I wonder when they'll notice we're printing our own credits.",
+      },
+    ],
+    roleplayYes: [
+      {
+        url: `${CDN_BASE_URL}/voices/nomad/yes.mp3`,
+        caption: "Yes.",
+        noTransmission: true,
+      },
+    ],
+    roleplayNo: [
+      {
+        url: `${CDN_BASE_URL}/voices/nomad/no.mp3`,
+        caption: "No.",
+        noTransmission: true,
+      },
+    ],
+    roleplayIRefuse: [
+      {
+        url: `${CDN_BASE_URL}/voices/nomad/irefuse.mp3`,
+        caption: "I refuse.",
+        noTransmission: true,
+      },
+    ],
+    roleplayDealWithIt: [
+      {
+        url: `${CDN_BASE_URL}/voices/nomad/dealwithit.mp3`,
+        caption: "Deal with it.",
+        noTransmission: true,
+      },
+    ],
+    roleplayNotEnough: [
+      {
+        url: `${CDN_BASE_URL}/voices/nomad/thatsnotenough.mp3`,
+        caption: "That's not enough.",
+        noTransmission: true,
+      },
+    ],
+    roleplayTooMuch: [
+      {
+        url: `${CDN_BASE_URL}/voices/nomad/thatstoomuch.mp3`,
+        caption: "That's too much.",
+        noTransmission: true,
+      },
+    ],
+    roleplaySabotage: [
+      {
+        url: `${CDN_BASE_URL}/voices/nomad/sabotage.mp3`,
+        caption: "Sabotage.",
+        noTransmission: true,
+      },
+    ],
+    roleplayFire: [
+      {
+        url: `${CDN_BASE_URL}/voices/nomad/fire.mp3`,
+        caption: "Fire!",
+        noTransmission: true,
       },
     ],
     special: {
@@ -2585,7 +2780,81 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
   },
 } as const;
 
+// Announcer audio data - not tied to any faction
+export const announcerAudios = {
+  announcerWarsundown: [
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/warsundown.mp3`,
+      caption: "War Sun down!",
+      noTransmission: true,
+    },
+  ],
+  announcerBreak: [
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/break1.mp3`,
+      caption: "Break time - Round 1",
+      noTransmission: true,
+    },
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/break2.mp3`,
+      caption: "Break time - Round 2",
+      noTransmission: true,
+    },
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/break3.mp3`,
+      caption: "Break time - Round 3",
+      noTransmission: true,
+    },
+  ],
+  announcerInvasionstopped: [
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/invasionstopped.mp3`,
+      caption: "Invasion stopped!",
+      noTransmission: true,
+    },
+  ],
+  announcerAnnihilation: [
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/annihilation.mp3`,
+      caption: "Total annihilation!",
+      noTransmission: true,
+    },
+  ],
+  announcerDreaddown: [
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/dreaddown.mp3`,
+      caption: "Dreadnought down!",
+      noTransmission: true,
+    },
+  ],
+  announcerCriticalhit: [
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/criticalhit.mp3`,
+      caption: "Critical hit!",
+      noTransmission: true,
+    },
+  ],
+  announcerAgenda: [
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/agenda2.mp3`,
+      caption: "Agenda Phase - Part 2",
+      noTransmission: true,
+    },
+    {
+      url: `${CDN_BASE_URL}/voices/announcer/agenda1.mp3`,
+      caption: "Agenda Phase - Part 1",
+      noTransmission: true,
+    },
+  ],
+};
+
 export const getAudioSrc = (factionId: FactionId, type: LineType): string => {
+  // Handle announcer types
+  if (type.startsWith("announcer")) {
+    const entries = announcerAudios[type as keyof typeof announcerAudios] ?? [];
+    return entries.length > 0 ? shuffle(entries.map((e) => e.url))[0] : "";
+  }
+
   const factionAudio = factionAudios[factionId];
   if (!factionAudio) return "";
 
@@ -2595,7 +2864,8 @@ export const getAudioSrc = (factionId: FactionId, type: LineType): string => {
     return shuffle(factionAudio.special2.entries.map((e) => e.url))[0];
 
   // For other types, we need to handle the AudioEntry array
-  const entries = (factionAudio[type] as AudioEntry[]) ?? [];
+  const entries =
+    (factionAudio[type as keyof FactionAudio] as AudioEntry[]) ?? [];
   return entries.length > 0 ? shuffle(entries.map((e) => e.url))[0] : "";
 };
 
@@ -2604,6 +2874,18 @@ export const getRandomAudioEntry = (
   type: LineType,
   availableUrls?: string[],
 ): AudioEntry | null => {
+  // Handle announcer types
+  if (type.startsWith("announcer")) {
+    let entries = announcerAudios[type as keyof typeof announcerAudios] ?? [];
+
+    // If availableUrls is provided, filter to only include those
+    if (availableUrls) {
+      entries = entries.filter((entry) => availableUrls.includes(entry.url));
+    }
+
+    return entries.length > 0 ? shuffle([...entries])[0] : null;
+  }
+
   const factionAudio = factionAudios[factionId];
   if (!factionAudio) return null;
 
@@ -2614,7 +2896,7 @@ export const getRandomAudioEntry = (
   } else if (type === "special2" && factionAudio.special2) {
     entries = factionAudio.special2.entries;
   } else {
-    entries = (factionAudio[type] as AudioEntry[]) ?? [];
+    entries = (factionAudio[type as keyof FactionAudio] as AudioEntry[]) ?? [];
   }
 
   // If availableUrls is provided, filter to only include those
@@ -2625,22 +2907,23 @@ export const getRandomAudioEntry = (
   return entries.length > 0 ? shuffle([...entries])[0] : null;
 };
 
-export const getAllSrcs = (
-  factionId: FactionId,
-  type:
-    | "homeDefense"
-    | "homeInvasion"
-    | "defenseOutnumbered"
-    | "offenseSuperior"
-    | "battleLines"
-    | "jokes"
-    | "special"
-    | "special2",
-) => {
+export const getAllSrcs = (factionId: FactionId, type: LineType) => {
+  // Handle announcer types
+  if (type.startsWith("announcer")) {
+    const entries = announcerAudios[type as keyof typeof announcerAudios] ?? [];
+    return entries.map((e) => e.url);
+  }
+
   if (type === "special")
     return factionAudios[factionId].special.entries.map((e) => e.url);
   if (type === "special2")
     return factionAudios[factionId].special2?.entries.map((e) => e.url) ?? [];
-  const entries = (factionAudios[factionId][type] as AudioEntry[]) ?? [];
+
+  // For other faction-specific types
+  const factionAudio = factionAudios[factionId];
+  if (!factionAudio) return [];
+
+  const entries =
+    (factionAudio[type as keyof FactionAudio] as AudioEntry[]) ?? [];
   return entries.map((e) => e.url);
 };

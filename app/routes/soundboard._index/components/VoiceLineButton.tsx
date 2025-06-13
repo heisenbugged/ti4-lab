@@ -56,6 +56,38 @@ const voiceLineConfig: Record<
     color: "purple",
     width: "150px",
   },
+  roleplayYes: {
+    color: "gray",
+    width: "80px",
+  },
+  roleplayNo: {
+    color: "gray",
+    width: "80px",
+  },
+  roleplayIRefuse: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplayDealWithIt: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplayNotEnough: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplayTooMuch: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplaySabotage: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplayFire: {
+    color: "gray",
+    width: "80px",
+  },
 };
 
 export function VoiceLineButton({
