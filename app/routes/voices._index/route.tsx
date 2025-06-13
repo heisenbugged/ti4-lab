@@ -602,11 +602,13 @@ export default function VoicesMaster() {
 
   useEffect(() => {
     if (!socket || !sessionId) return;
+
     socket.emit("joinSoundboardSession", sessionId);
-    socket.on("requestSessionData", () =>
-      socket.emit("sendSessionData", sessionId, factionSlots),
-    );
-    socket.on("playLine", (factionId, lineType) => {
+
+    const handleRequestSessionData = () =>
+      socket.emit("sendSessionData", sessionId, factionSlots);
+
+    const handlePlayLine = (factionId: FactionId, lineType: LineType) => {
       playAudio(
         factionId,
         lineType,
@@ -614,8 +616,20 @@ export default function VoicesMaster() {
         !transmissionsEnabledRef.current,
         factionSlots.indexOf(factionId),
       );
-    });
-    socket.on("stopLine", () => stopAudio());
+    };
+
+    const handleStopLine = () => stopAudio();
+
+    socket.on("requestSessionData", handleRequestSessionData);
+    socket.on("playLine", handlePlayLine);
+    socket.on("stopLine", handleStopLine);
+
+    // CRITICAL: Clean up event listeners when effect re-runs or component unmounts
+    return () => {
+      socket.off("requestSessionData", handleRequestSessionData);
+      socket.off("playLine", handlePlayLine);
+      socket.off("stopLine", handleStopLine);
+    };
   }, [sessionId, socket, factionSlots, playAudio, stopAudio]);
 
   // Create lookup maps for queued voice lines for quick checking if a voice line is queued

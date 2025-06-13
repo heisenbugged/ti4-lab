@@ -229,6 +229,12 @@ export function useAudioPlayer({
     skipTransmission = false,
     transmissionIndex?: number,
   ) => {
+    // CRITICAL: Stop any existing transmission IMMEDIATELY to prevent stacking
+    if (transmissionRef.current) {
+      transmissionRef.current.stop();
+      transmissionRef.current = null;
+    }
+
     const now = Date.now();
     const timeSinceLastTrigger = now - lastVoiceLineTriggerTime.current;
 
@@ -388,6 +394,15 @@ export function useAudioPlayer({
     factionId?: FactionId,
     transmissionIndexParam?: number,
   ) => {
+    console.log(
+      "playLine",
+      src,
+      shouldStartBattle,
+      isFromQueue,
+      shouldPlayTransmission,
+      factionId,
+      transmissionIndexParam,
+    );
     // CRITICAL: Always cleanup any existing transmission first to prevent stacking
     if (transmissionRef.current) {
       transmissionRef.current.stop();
