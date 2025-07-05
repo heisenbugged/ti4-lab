@@ -1,4 +1,4 @@
-import { Button, ButtonProps, Loader } from "@mantine/core";
+import { Button, ButtonProps, Loader, Badge, Group } from "@mantine/core";
 import { factionAudios, LineType } from "~/data/factionAudios";
 import type { FactionId } from "~/types";
 
@@ -12,6 +12,7 @@ interface VoiceLineControlProps {
   width?: number | string;
   label?: string;
   isQueued?: boolean;
+  lineCount?: number; // Remaining count of voice lines
 }
 
 const voiceLineConfig: Record<
@@ -55,6 +56,38 @@ const voiceLineConfig: Record<
     color: "purple",
     width: "150px",
   },
+  roleplayYes: {
+    color: "gray",
+    width: "80px",
+  },
+  roleplayNo: {
+    color: "gray",
+    width: "80px",
+  },
+  roleplayIRefuse: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplayDealWithIt: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplayNotEnough: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplayTooMuch: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplaySabotage: {
+    color: "gray",
+    width: "120px",
+  },
+  roleplayFire: {
+    color: "gray",
+    width: "80px",
+  },
 };
 
 export function VoiceLineButton({
@@ -67,6 +100,7 @@ export function VoiceLineButton({
   label,
   size,
   isQueued = false,
+  lineCount,
 }: VoiceLineControlProps) {
   const config = voiceLineConfig[type];
   const isLoading = loadingAudio === `${faction}-${type}`;
@@ -86,6 +120,7 @@ export function VoiceLineButton({
         onPlay();
       }}
       w={width ?? config.width}
+      style={{ position: "relative", overflow: "visible" }}
     >
       {isLoading ? (
         <Loader size="xs" type="bars" color={config.color} />
@@ -93,6 +128,22 @@ export function VoiceLineButton({
         "Queued"
       ) : (
         label
+      )}
+      {!isLoading && !isQueued && lineCount !== undefined && lineCount > 1 && (
+        <Badge
+          size="xs"
+          variant="filled"
+          c="white"
+          pos="absolute"
+          top="-6px"
+          right="-6px"
+          fz="11px"
+          h="16px"
+          miw="16px"
+          p="0 4px"
+        >
+          {lineCount}
+        </Badge>
       )}
     </Button>
   );

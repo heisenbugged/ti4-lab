@@ -1,24 +1,27 @@
 import { Howl } from "howler";
 import { useEffect, useRef, useState } from "react";
 import {
+  announcerAudios,
   CDN_BASE_URL,
   factionAudios,
   getAllSrcs,
+  getRandomAudioEntry,
   LineType,
+  type AudioEntry,
 } from "~/data/factionAudios";
 import { FactionId } from "~/types";
 import { useSpotifyLogin } from "./useSpotifyLogin";
 import { useSpotifyPlayer, SpotifyDevice } from "./useSpotifyPlayer";
 
 type VoiceLineMemory = {
-  [K in FactionId]?: {
+  [K in FactionId | "announcer"]?: {
     [type: string]: string[];
   };
 };
 
 // Define the type for a queued voice line
 type QueuedVoiceLine = {
-  factionId: FactionId;
+  factionId: FactionId | "announcer";
   type: LineType;
   id: string; // Unique identifier for the queue item
   shouldPlayTransmission: boolean; // Whether this item should play transmission
@@ -57,6 +60,7 @@ export function useAudioPlayer({
 
   const [voiceLineMemory, setVoiceLineMemory] = useState<VoiceLineMemory>({});
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<AudioEntry | null>(null);
   const [volume, setVolume] = useState(1);
   const voiceLineRef = useRef<Howl | null>(null);
   const transmissionRef = useRef<Howl | null>(null);
@@ -104,8 +108,15 @@ export function useAudioPlayer({
 
   const stopAudio = () => {
     voiceLineRef.current?.stop();
-    transmissionRef.current?.stop();
+
+    // Properly cleanup transmission
+    if (transmissionRef.current) {
+      transmissionRef.current.stop();
+      transmissionRef.current = null;
+    }
+
     setLoadingAudio(null);
+    setCurrentAudio(null);
     setAudioProgress(0);
     if (progressIntervalRef.current) {
       window.clearInterval(progressIntervalRef.current);
@@ -169,7 +180,7 @@ export function useAudioPlayer({
 
   // Function to add a voice line to the queue
   const addToQueue = (
-    factionId: FactionId,
+    factionId: FactionId | "announcer",
     type: LineType,
     transmissionIndex?: number,
   ) => {
@@ -212,12 +223,18 @@ export function useAudioPlayer({
   };
 
   const playAudio = (
-    factionId: FactionId,
+    factionId: FactionId | "announcer",
     type: LineType,
     isFromQueue = false,
     skipTransmission = false,
     transmissionIndex?: number,
   ) => {
+    // CRITICAL: Stop any existing transmission IMMEDIATELY to prevent stacking
+    if (transmissionRef.current) {
+      transmissionRef.current.stop();
+      transmissionRef.current = null;
+    }
+
     const now = Date.now();
     const timeSinceLastTrigger = now - lastVoiceLineTriggerTime.current;
 
@@ -248,6 +265,61 @@ export function useAudioPlayer({
     voiceLineRef.current?.stop();
     setLoadingAudio(`${factionId}-${type}`);
 
+    // Handle announcer types differently
+    if (factionId === "announcer") {
+      // Get all possible lines for this announcer type
+      const allPossibleLines =
+        announcerAudios[type as keyof typeof announcerAudios]?.map(
+          (entry: any) => entry.url,
+        ) || [];
+      if (!allPossibleLines?.length) return;
+
+      // Get previously played lines for announcer
+      const playedLines = voiceLineMemory["announcer"]?.[type] || [];
+
+      // Filter out previously played lines
+      const availableLines = allPossibleLines.filter(
+        (line: string) => !playedLines.includes(line),
+      );
+
+      const shouldResetMemory = availableLines.length === 0;
+
+      // If no new lines available, reset memory and use all lines again
+      // Otherwise, select from available lines
+      const selectedEntry = shouldResetMemory
+        ? getRandomAudioEntry("announcer" as any, type)
+        : getRandomAudioEntry("announcer" as any, type, availableLines);
+      if (!selectedEntry) return;
+
+      // Determine what the new voice line list should be
+      const existingLinesForType = voiceLineMemory["announcer"]?.[type] || [];
+      let newVoiceLineList: string[];
+      if (shouldResetMemory) {
+        newVoiceLineList = [selectedEntry.url];
+      } else {
+        newVoiceLineList = [...existingLinesForType, selectedEntry.url];
+      }
+
+      setVoiceLineMemory((prev) => ({
+        ...prev,
+        ["announcer"]: {
+          ...prev["announcer"],
+          [type]: newVoiceLineList,
+        },
+      }));
+
+      setCurrentAudio(selectedEntry);
+      playLine(
+        selectedEntry.url,
+        false, // announcer never starts battle
+        isFromQueue,
+        false, // announcer never plays transmission
+        undefined,
+        undefined,
+      );
+      return;
+    }
+
     const shouldStartBattle = [
       "battleLines",
       "homeInvasion",
@@ -257,68 +329,61 @@ export function useAudioPlayer({
     ].includes(type);
 
     // Start battle for specific voice lines
-    if (shouldStartBattle) startBattle(factionId);
+    if (shouldStartBattle) startBattle(factionId as FactionId);
 
     // Get all possible lines for this faction/type
-    const allPossibleLines = getAllSrcs(factionId, type);
+    const allPossibleLines = getAllSrcs(factionId as FactionId, type);
     if (!allPossibleLines?.length) return;
 
+    const factionIdKey = factionId as FactionId;
+
     // Get previously played lines
-    const playedLines = voiceLineMemory[factionId]?.[type] || [];
+    const playedLines = voiceLineMemory[factionIdKey]?.[type] || [];
 
     // Filter out previously played lines
     const availableLines = allPossibleLines.filter(
       (line) => !playedLines.includes(line),
     );
 
-    // Determine if we should play transmission
-    const shouldPlayTransmission = !skipTransmission;
+    const shouldResetMemory = availableLines.length === 0;
 
-    // If no new lines available, reset memory for this faction/type
-    if (availableLines.length === 0) {
-      setVoiceLineMemory((prev) => ({
-        ...prev,
-        [factionId]: {
-          ...prev[factionId],
-          [type]: [],
-        },
-      }));
-      // Use all lines again
-      const selectedLine =
-        allPossibleLines[Math.floor(Math.random() * allPossibleLines.length)];
-      updateMemory(factionId, type, selectedLine);
-      playLine(
-        selectedLine,
-        shouldStartBattle,
-        isFromQueue,
-        shouldPlayTransmission,
-        factionId,
-        transmissionIndex,
-      );
+    // If no new lines available, reset memory and use all lines again
+    // Otherwise, select from available lines
+    const selectedEntry = shouldResetMemory
+      ? getRandomAudioEntry(factionIdKey, type)
+      : getRandomAudioEntry(factionIdKey, type, availableLines);
+    if (!selectedEntry) return;
+
+    // Check if this specific audio entry has noTransmission flag
+    const shouldPlayTransmission =
+      !skipTransmission && !selectedEntry.noTransmission;
+
+    // Determine what the new voice line list should be
+    const existingLinesForType = voiceLineMemory[factionIdKey]?.[type] || [];
+    let newVoiceLineList: string[];
+    if (shouldResetMemory) {
+      newVoiceLineList = [selectedEntry.url];
     } else {
-      // Select a random new line
-      const selectedLine =
-        availableLines[Math.floor(Math.random() * availableLines.length)];
-      updateMemory(factionId, type, selectedLine);
-      playLine(
-        selectedLine,
-        shouldStartBattle,
-        isFromQueue,
-        shouldPlayTransmission,
-        factionId,
-        transmissionIndex,
-      );
+      newVoiceLineList = [...existingLinesForType, selectedEntry.url];
     }
-  };
 
-  const updateMemory = (factionId: FactionId, type: string, line: string) => {
     setVoiceLineMemory((prev) => ({
       ...prev,
-      [factionId]: {
-        ...prev[factionId],
-        [type]: [...(prev[factionId]?.[type] || []), line],
+      [factionIdKey]: {
+        ...prev[factionIdKey],
+        [type]: newVoiceLineList,
       },
     }));
+
+    setCurrentAudio(selectedEntry);
+    playLine(
+      selectedEntry.url,
+      shouldStartBattle,
+      isFromQueue,
+      shouldPlayTransmission,
+      factionIdKey,
+      transmissionIndex,
+    );
   };
 
   const playLine = (
@@ -329,6 +394,21 @@ export function useAudioPlayer({
     factionId?: FactionId,
     transmissionIndexParam?: number,
   ) => {
+    console.log(
+      "playLine",
+      src,
+      shouldStartBattle,
+      isFromQueue,
+      shouldPlayTransmission,
+      factionId,
+      transmissionIndexParam,
+    );
+    // CRITICAL: Always cleanup any existing transmission first to prevent stacking
+    if (transmissionRef.current) {
+      transmissionRef.current.stop();
+      transmissionRef.current = null;
+    }
+
     // Only play transmission if explicitly told to do so
     if (shouldPlayTransmission && transmissionsEnabled && factionId) {
       // Use the provided transmission index, or default to 0
@@ -336,12 +416,6 @@ export function useAudioPlayer({
       // Ensure the index is within bounds (1-8 transmission files available)
       const safeTransmissionIndex = (transmissionIndex % 8) + 1;
       const transmissionSrc = `${CDN_BASE_URL}/voices/transmissions/transmission${safeTransmissionIndex}.mp3`;
-
-      // Clean up previous transmission if it exists
-      if (transmissionRef.current) {
-        transmissionRef.current.unload();
-        transmissionRef.current = null;
-      }
 
       // Create and load the transmission sound on-demand
       const transmissionSound = new Howl({
@@ -387,6 +461,7 @@ export function useAudioPlayer({
         preload: true,
         onend: () => {
           setLoadingAudio(null);
+          setCurrentAudio(null);
           setAudioProgress(0);
           if (progressIntervalRef.current) {
             window.clearInterval(progressIntervalRef.current);
@@ -405,6 +480,7 @@ export function useAudioPlayer({
         },
         onloaderror: () => {
           setLoadingAudio(null);
+          setCurrentAudio(null);
           console.error("Error loading audio");
 
           // Get the most current queue state from the ref
@@ -438,6 +514,7 @@ export function useAudioPlayer({
     stopAudio,
     endWar,
     loadingAudio,
+    currentAudio,
     isWarMode,
     voiceLineRef,
     currentPlayback,
@@ -455,5 +532,7 @@ export function useAudioPlayer({
     clearQueue,
     voiceLineQueue,
     isPlayingQueue: voiceLineQueue.length > 0,
+    // Voice line memory for tracking played lines
+    voiceLineMemory,
   };
 }

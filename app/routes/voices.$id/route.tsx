@@ -156,6 +156,19 @@ export default function SoundboardProxy() {
           size="xl"
           width="100%"
         />
+        {factionAudios[faction]?.special2 && (
+          <VoiceLineButton
+            faction={faction}
+            label={factionAudios[faction]?.special2?.title ?? ""}
+            type="special2"
+            loadingAudio={loadingAudio}
+            onPlay={() => handlePlayAudio(faction, "special2")}
+            onStop={handleStopAudio}
+            size="xl"
+            width="100%"
+          />
+        )}
+
         <VoiceLineButton
           faction={faction}
           label="Joke"
@@ -166,6 +179,100 @@ export default function SoundboardProxy() {
           size="xl"
           width="100%"
         />
+
+        {/* Roleplay buttons for specific factions */}
+        {(faction === "nomad" ||
+          faction === "vulraith" ||
+          faction === "hacan") &&
+          factionAudios[faction]?.roleplayYes && (
+            <Stack gap="md">
+              <Text size="lg" fw={500} c="dimmed" mt="md">
+                Roleplay Lines
+              </Text>
+              <Stack gap="xs">
+                <VoiceLineButton
+                  faction={faction}
+                  label="Yes"
+                  type="roleplayYes"
+                  loadingAudio={loadingAudio}
+                  onPlay={() => handlePlayAudio(faction, "roleplayYes")}
+                  onStop={handleStopAudio}
+                  size="lg"
+                  width="100%"
+                />
+                <VoiceLineButton
+                  faction={faction}
+                  label="No"
+                  type="roleplayNo"
+                  loadingAudio={loadingAudio}
+                  onPlay={() => handlePlayAudio(faction, "roleplayNo")}
+                  onStop={handleStopAudio}
+                  size="lg"
+                  width="100%"
+                />
+                <VoiceLineButton
+                  faction={faction}
+                  label="I Refuse"
+                  type="roleplayIRefuse"
+                  loadingAudio={loadingAudio}
+                  onPlay={() => handlePlayAudio(faction, "roleplayIRefuse")}
+                  onStop={handleStopAudio}
+                  size="lg"
+                  width="100%"
+                />
+                <VoiceLineButton
+                  faction={faction}
+                  label="Deal With It"
+                  type="roleplayDealWithIt"
+                  loadingAudio={loadingAudio}
+                  onPlay={() => handlePlayAudio(faction, "roleplayDealWithIt")}
+                  onStop={handleStopAudio}
+                  size="lg"
+                  width="100%"
+                />
+                <VoiceLineButton
+                  faction={faction}
+                  label="Not Enough"
+                  type="roleplayNotEnough"
+                  loadingAudio={loadingAudio}
+                  onPlay={() => handlePlayAudio(faction, "roleplayNotEnough")}
+                  onStop={handleStopAudio}
+                  size="lg"
+                  width="100%"
+                />
+                <VoiceLineButton
+                  faction={faction}
+                  label="Too Much"
+                  type="roleplayTooMuch"
+                  loadingAudio={loadingAudio}
+                  onPlay={() => handlePlayAudio(faction, "roleplayTooMuch")}
+                  onStop={handleStopAudio}
+                  size="lg"
+                  width="100%"
+                />
+                <VoiceLineButton
+                  faction={faction}
+                  label="Sabotage"
+                  type="roleplaySabotage"
+                  loadingAudio={loadingAudio}
+                  onPlay={() => handlePlayAudio(faction, "roleplaySabotage")}
+                  onStop={handleStopAudio}
+                  size="lg"
+                  width="100%"
+                />
+                <VoiceLineButton
+                  faction={faction}
+                  label="Fire!"
+                  type="roleplayFire"
+                  loadingAudio={loadingAudio}
+                  onPlay={() => handlePlayAudio(faction, "roleplayFire")}
+                  onStop={handleStopAudio}
+                  size="lg"
+                  width="100%"
+                />
+              </Stack>
+            </Stack>
+          )}
       </Stack>
     </Container>
   );
