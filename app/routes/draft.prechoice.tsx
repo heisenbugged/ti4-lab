@@ -107,6 +107,14 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     titles: ["Speaker", "2nd", "3rd", "4th"],
     playerCount: 4,
   },
+  miltyeq4p: {
+    title: "Milty EQ 4p",
+    description:
+      "Like milty, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board. Slices are biased towards having one red, but some have two. Equidistants are fully randomized.",
+    map: hydrateDemoMap(draftConfig.miltyeq4p),
+    titles: ["Speaker", "2nd", "3rd", "4th"],
+    playerCount: 4,
+  },
   std4p: {
     title: "4P Small",
     description:
@@ -136,6 +144,14 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     description:
       "The original draft format. Slices include the left equidistant system, and no preset tiles are on the board. Every slice is guaranteed two red tiles and three blue tiles. Legendaries and wormholes are distributed evenly across slices.",
     map: hydrateDemoMap(draftConfig.milty7p),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th"],
+    playerCount: 7,
+  },
+  miltyeq7p: {
+    title: "Milty EQ (7P)",
+    description:
+      "Like milty, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board. Slices are biased towards having one red, but some have two. Equidistants are fully randomized.",
+    map: hydrateDemoMap(draftConfig.miltyeq7p),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th"],
     playerCount: 7,
   },
@@ -1190,7 +1206,10 @@ export default function DraftPrechoice() {
           </Group>
 
           <Stack>
-            {mapType === "miltyeq" && (
+            {(mapType === "miltyeq" ||
+              mapType === "miltyeq5p" ||
+              mapType === "miltyeq7p" ||
+              mapType === "miltyeq4p") && (
               <Switch
                 label="Minor Factions"
                 description="Enable minor factions variant"

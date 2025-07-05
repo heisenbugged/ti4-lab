@@ -25,6 +25,8 @@ export type DraftType =
   | "heisen8p"
   | "miltyeq"
   | "miltyeq5p"
+  | "miltyeq4p"
+  | "miltyeq7p"
   | "miltyeqless"
   | "miltyeq7plarge"
   | "wekker"
@@ -45,6 +47,11 @@ export type SliceGenerationConfig = {
 
 export type DraftConfig = {
   numPlayers: number;
+
+  /**
+   * The index locations of tiles on the map that are occupied by minor factions in the equidistant variant.
+   */
+  minorFactionsEqPositions?: number[];
 
   /**
    * The type of draft this configuration is for.

@@ -1,9 +1,9 @@
 import { DraftConfig } from "../types";
 import { generateMap, generateSlices } from "./sliceGenerator";
 
-export const MILTY_EQ_EQUIDISTANT_POSITIONS = [8, 10, 12, 14, 16, 18];
 export const miltyeq: DraftConfig = {
   numPlayers: 6,
+  minorFactionsEqPositions: [8, 10, 12, 14, 16, 18],
   type: "miltyeq",
   numSystemsInSlice: 4,
   sliceHeight: 3,

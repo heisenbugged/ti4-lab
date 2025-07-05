@@ -89,9 +89,12 @@ export const generateMap = (
       );
       if (!factionSystem) throw new Error(`Faction ${faction} not found`);
 
-      map[MILTY_EQ_EQUIDISTANT_POSITIONS[idx]] = {
-        idx: MILTY_EQ_EQUIDISTANT_POSITIONS[idx],
-        position: mapStringOrder[MILTY_EQ_EQUIDISTANT_POSITIONS[idx]],
+      const minorFactionsEqPositions = config.minorFactionsEqPositions;
+      if (!minorFactionsEqPositions) return;
+
+      map[minorFactionsEqPositions[idx]] = {
+        idx: minorFactionsEqPositions[idx],
+        position: mapStringOrder[minorFactionsEqPositions[idx]],
         type: "SYSTEM",
         systemId: factionSystem.id,
       };

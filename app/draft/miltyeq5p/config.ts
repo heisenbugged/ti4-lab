@@ -4,6 +4,7 @@ import { generateSlices, generateMap } from "../miltyeq/sliceGenerator";
 export const miltyeq5p: DraftConfig = {
   numPlayers: 5,
   type: "miltyeq5p",
+  minorFactionsEqPositions: [8, 10, 13, 16, 18],
   numSystemsInSlice: 4,
   sliceHeight: 3,
   sliceConcentricCircles: 1,
