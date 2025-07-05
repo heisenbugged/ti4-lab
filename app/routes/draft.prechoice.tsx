@@ -716,11 +716,17 @@ export default function DraftPrechoice() {
         numAlphas: miltySettings.minAlphaWormholes,
         numBetas: miltySettings.minBetaWormholes,
         numLegendaries: miltySettings.minLegendaries,
+        hasMinorFactions: !!factionState.minorFactionsMode,
       };
     }
 
     // Add MiltyEq-specific settings if the selected map type is 'miltyeq'
-    if (selectedMapType === "miltyeq") {
+    if (
+      selectedMapType === "miltyeq" ||
+      selectedMapType === "miltyeq4p" ||
+      selectedMapType === "miltyeq5p" ||
+      selectedMapType === "miltyeq7p"
+    ) {
       draftSettings.sliceGenerationConfig = {
         minOptimal: miltyEqSettings.minOptimal,
         maxOptimal: miltyEqSettings.maxOptimal,
