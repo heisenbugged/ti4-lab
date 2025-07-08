@@ -19,7 +19,6 @@ import {
 import { DEFAULT_MILTYEQ_SETTINGS } from "~/components/MiltyEqSettingsModal";
 import { draftConfig } from "../draftConfig";
 import { getFactionPool } from "~/utils/factions";
-import { MILTY_EQ_EQUIDISTANT_POSITIONS } from "./config";
 import { mapStringOrder } from "~/data/mapStringOrder";
 
 const SLICE_CHOICES: SliceChoice[] = [

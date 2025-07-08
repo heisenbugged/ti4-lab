@@ -145,7 +145,8 @@ export function hydrateMap(
       selection.minorFaction !== undefined &&
       selection.seatIdx !== undefined
     ) {
-      const idx = miltyEqLeftEquidistants[selection.seatIdx];
+      if (!config.minorFactionsEqPositions) return;
+      const idx = config.minorFactionsEqPositions[selection.seatIdx];
       const factionSystem = factionSystems[selection.minorFaction];
       // council keleres has no system, so we skip it.
       if (factionSystem) {

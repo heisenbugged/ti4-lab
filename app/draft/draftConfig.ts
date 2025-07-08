@@ -14,6 +14,7 @@ import { miltyeq4p } from "./miltyeq4p";
 import { miltyeq5p } from "./miltyeq5p";
 import { miltyeq7p } from "./miltyeq7p";
 import { miltyeq7plarge } from "./miltyeq7plarge";
+import { miltyeq8p } from "./miltyeq8p";
 import { miltyeqless } from "./miltyeqless";
 import { std4p } from "./std4p";
 import { DraftConfig, DraftType } from "./types";
@@ -38,4 +39,5 @@ export const draftConfig: Record<DraftType, DraftConfig> = {
   milty5p,
   milty4p,
   std4p,
+  miltyeq8p,
 };

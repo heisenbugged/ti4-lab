@@ -21,6 +21,7 @@ export type DraftType =
   | "milty"
   | "milty7p"
   | "milty8p"
+  | "miltyeq8p"
   | "heisen"
   | "heisen8p"
   | "miltyeq"

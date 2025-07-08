@@ -203,6 +203,14 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     playerCount: 6,
   },
+  miltyeq8p: {
+    title: "Milty EQ (8P)",
+    description:
+      "Like milty, but, with a twist. Equidistants are not considered part of one's slice, and are instead preset on the board. Slices are biased towards having one red, but some have two. Equidistants are fully randomized.",
+    map: hydrateDemoMap(draftConfig.miltyeq8p),
+    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"],
+    playerCount: 8,
+  },
 };
 
 type FactionCountState = {
@@ -725,7 +733,8 @@ export default function DraftPrechoice() {
       selectedMapType === "miltyeq" ||
       selectedMapType === "miltyeq4p" ||
       selectedMapType === "miltyeq5p" ||
-      selectedMapType === "miltyeq7p"
+      selectedMapType === "miltyeq7p" ||
+      selectedMapType === "miltyeq8p"
     ) {
       draftSettings.sliceGenerationConfig = {
         minOptimal: miltyEqSettings.minOptimal,
@@ -1215,7 +1224,8 @@ export default function DraftPrechoice() {
             {(mapType === "miltyeq" ||
               mapType === "miltyeq5p" ||
               mapType === "miltyeq7p" ||
-              mapType === "miltyeq4p") && (
+              mapType === "miltyeq4p" ||
+              mapType === "miltyeq8p") && (
               <Switch
                 label="Minor Factions"
                 description="Enable minor factions variant"
