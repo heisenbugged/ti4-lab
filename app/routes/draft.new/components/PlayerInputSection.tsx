@@ -32,6 +32,9 @@ export function PlayerInputSection({
   onChangeName,
 }: Props) {
   const { colors } = useMantineTheme();
+  console.log("colors", colors);
+  console.log("playerColors", playerColors);
+  console.log("playerColors[5]", playerColors[5]);
   return (
     <Section>
       <SectionTitle title="Players">
@@ -74,7 +77,11 @@ export function PlayerInputSection({
                 {discordPlayer?.type === "identified" && (
                   <>
                     <IconBrandDiscordFilled
-                      color={colors[playerColors[player.id]][5]}
+                      color={
+                        colors[playerColors[player.id]]?.[5] ||
+                        colors.blue?.[5] ||
+                        "#228be6"
+                      }
                     />
                     <Text py="8.5">
                       {discordPlayer.nickname ?? discordPlayer.username}

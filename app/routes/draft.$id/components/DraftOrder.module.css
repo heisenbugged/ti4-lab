@@ -88,12 +88,12 @@
     }
 }
 
-.grey {
+.gray {
     color: var(--mantine-color-gray-8);
     @mixin dark { color: var(--mantine-color-gray-4); }
 }
 
-.grey.active {
+.gray.active {
     border: 4px solid var(--mantine-color-gray-8);
     background-color: var(--mantine-color-gray-5);
     @mixin dark {

@@ -41,7 +41,7 @@
 .red .slice-text,
 .green .slice-text,
 .violet .slice-text,
-.grey .slice-text,
+.gray .slice-text,
 .cyan .slice-text {
     @mixin light { color: var(--mantine-color-gray-8) }
     @mixin dark { color: var(--mantine-color-dark-3) }
@@ -108,11 +108,11 @@
     border: 1px solid var(--mantine-color-green-filled);
 }
 
-.grey .header, .grey .features {
+.gray .header, .gray .features {
     background-color: color-mix(in srgb, var(--mantine-color-gray-4) 10%, transparent);
 }
 
-.grey {
+.gray {
     border-radius: 8px;
     border: 1px solid var(--mantine-color-gray-4);
 }

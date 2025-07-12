@@ -19,6 +19,16 @@
     }
 }
 
+.banner.gray {
+    background-color: var(--mantine-color-gray-3);
+    border-color: var(--mantine-color-gray-5);
+
+    @mixin dark {
+        background-color: var(--mantine-color-gray-9);
+        border-color: var(--mantine-color-gray-9);
+    }
+}
+
 .banner.red {
     background-color: var(--mantine-color-red-5);
     border-color: var(--mantine-color-red-5);

@@ -109,7 +109,7 @@
   }
 }
 
-.grey {
+.gray {
   @mixin light {
     fill: var(--mantine-color-gray-3);
   }
