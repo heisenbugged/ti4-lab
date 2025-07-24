@@ -490,14 +490,15 @@ export const draftStore = createStore<DraftV2State>()(
             settings.factionStratification,
           );
 
+          const minorFactionPool = getDraftableFactions(
+            state.factionPool,
+            draft.availableFactions,
+          );
+
           const numMinorFactions = settings.numMinorFactions;
           if (numMinorFactions) {
-            const otherFactions = getAvailableFactions(
-              state.factionPool,
-              draft.availableFactions,
-            );
             draft.availableMinorFactions = shuffle(
-              otherFactions,
+              minorFactionPool,
               numMinorFactions,
             );
           }
@@ -507,6 +508,7 @@ export const draftStore = createStore<DraftV2State>()(
             config,
             settings,
             state.systemPool,
+            minorFactionPool,
           );
           if (generated) {
             draft.presetMap = generated.presetMap;
@@ -712,12 +714,18 @@ export const draftStore = createStore<DraftV2State>()(
 
       // randomization
       randomizeAll: () =>
-        set(({ draft, systemPool }) => {
+        set(({ draft, systemPool, factionPool }) => {
           const config = draftConfig[draft.settings.type];
+          const minorFactionPool = getDraftableFactions(
+            factionPool,
+            draft.availableFactions,
+          );
+
           const generated = generateMapAndSlices(
             config,
             draft.settings,
             systemPool,
+            minorFactionPool,
           );
           if (generated) {
             draft.presetMap = generated.presetMap;
@@ -753,10 +761,15 @@ export const draftStore = createStore<DraftV2State>()(
         }),
 
       randomizeSlice: (sliceIdx: number) =>
-        set(({ draft, systemPool }) => {
+        set(({ draft, systemPool, factionPool }) => {
           // Convert slices to raw system ID arrays for coreRerollSlice
           const slicesAsSystemIds = draft.slices.map((slice) =>
             systemIdsInSlice(slice),
+          );
+
+          const minorFactionPool = getDraftableFactions(
+            factionPool,
+            draft.availableFactions,
           );
 
           // Call coreRerollSlice to generate a new slice
@@ -765,6 +778,7 @@ export const draftStore = createStore<DraftV2State>()(
             draft.presetMap,
             slicesAsSystemIds,
             sliceIdx,
+            minorFactionPool,
           );
 
           // Handle the result
@@ -793,15 +807,23 @@ export const draftStore = createStore<DraftV2State>()(
         }),
 
       randomizeSlices: () =>
-        set(({ draft, systemPool }) => {
+        set(({ draft, systemPool, factionPool }) => {
           const config = draftConfig[draft.settings.type];
           const usedIds = getUsedSystemIdsInMap(draft.presetMap);
           const availableSystems = getAvailableSystems(systemPool, usedIds);
 
+          const minorFactionPool = getDraftableFactions(
+            factionPool,
+            draft.availableFactions,
+          );
+
           const rawSlices = config.generateSlices(
             draft.settings.numSlices,
             availableSystems,
-            draft.settings.sliceGenerationConfig,
+            {
+              ...draft.settings.sliceGenerationConfig,
+              minorFactionPool,
+            },
           );
 
           if (rawSlices) {
@@ -973,10 +995,12 @@ function generateMapAndSlices(
   config: DraftConfig,
   settings: DraftSettings,
   systemPool: SystemId[],
+  minorFactionPool?: FactionId[],
 ) {
   if (config.generateMap === undefined) return null;
-  const generated = config.generateMap(settings, systemPool);
+  const generated = config.generateMap(settings, systemPool, minorFactionPool);
   if (!generated) return null;
+
   return {
     presetMap: generated.map,
     slices: systemIdsToSlices(config, generated.slices),

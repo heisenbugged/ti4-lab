@@ -8,12 +8,13 @@ import {
   isBeta,
   isLegendary,
 } from "../helpers/sliceGeneration";
-import { systemData } from "~/data/systemData";
+import { factionSystems, systemData } from "~/data/systemData";
 import { optimalStatsForSystems } from "~/utils/map";
 import {
   coreGenerateSlices,
   postProcessSlices,
 } from "../common/sliceGenerator";
+import { shuffle } from "../helpers/randomization";
 
 export function generateSlices(
   sliceCount: number,
@@ -24,6 +25,7 @@ export function generateSlices(
     numLegendaries: 1,
     maxOptimal: undefined,
     minOptimal: undefined,
+    minorFactionPool: undefined,
   },
   sliceShape: string[] = SLICE_SHAPES.milty,
 ) {
@@ -67,17 +69,44 @@ export function generateSlices(
     return true;
   };
 
-  return coreGenerateSlices({
+  const slices = coreGenerateSlices({
     mecatolPath: [1, 4],
     sliceCount,
     availableSystems,
     config,
     sliceShape,
     systemTiers: miltySystemTiers,
-    // milty always returns the same structure: [high, med, low, red, red]
     getSliceTiers: () => ["high", "med", "low", "red", "red"],
     validateSystems,
     validateSlice,
     postProcessSlices,
   });
+
+  if (config.hasMinorFactions && config.minorFactionPool && slices) {
+    const chosenMinorFactions = shuffle(
+      config.minorFactionPool.filter((faction) => faction !== "keleres"),
+    ).slice(0, sliceCount);
+
+    // from each slice, get one (at random) of the blue tiles, and replace it with the minor faction
+    slices.forEach((slice) => {
+      const blueTile = slice.find(
+        (systemId) => systemData[systemId].type === "BLUE",
+      );
+      if (!blueTile) return;
+
+      const minorFaction = chosenMinorFactions.pop()!;
+      const minorFactionSystem = factionSystems[minorFaction]!;
+      const blueTileIndex = slice.indexOf(blueTile);
+
+      try {
+        // Make sure minor faction is at the equidistant position
+        slice[blueTileIndex] = slice[3];
+        slice[3] = minorFactionSystem.id;
+      } catch (e) {
+        debugger;
+      }
+    });
+  }
+
+  return slices;
 }

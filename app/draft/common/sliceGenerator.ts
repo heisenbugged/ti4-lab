@@ -1,4 +1,4 @@
-import { DraftSettings, Map, SystemId, SystemIds } from "~/types";
+import { DraftSettings, FactionId, Map, SystemId, SystemIds } from "~/types";
 import {
   groupSystemsByTier,
   separateAnomalies,
@@ -54,6 +54,7 @@ export function coreRerollSlice(
   map: Map,
   slices: SystemIds[],
   sliceToRerollIdx: number,
+  minorFactionPool?: FactionId[],
 ): { slice: SystemIds; valid: boolean } | undefined {
   const config = draftConfig[settings.type];
 
@@ -83,6 +84,7 @@ export function coreRerollSlice(
       numAlphas: 0,
       numBetas: 0,
       numLegendaries: 0,
+      minorFactionPool,
     });
     if (!newSlices || newSlices.length === 0) return undefined;
 
@@ -121,16 +123,18 @@ export function coreGenerateMap(
     sliceCount: number,
     availableSystems: SystemId[],
     config?: SliceGenerationConfig,
+    sliceShape?: string[],
+    minorFactionPool?: FactionId[],
   ) => SystemIds[] | undefined,
+  minorFactionPool?: FactionId[],
 ) {
   const config = draftConfig[settings.type];
   const map = generateEmptyMap(config);
   const numMapTiles = config.modifiableMapTiles.length;
-  const slices = generateSlices(
-    settings.numSlices,
-    systemPool,
-    settings.sliceGenerationConfig,
-  );
+  const slices = generateSlices(settings.numSlices, systemPool, {
+    ...settings.sliceGenerationConfig,
+    minorFactionPool,
+  });
 
   if (!slices) return undefined;
   const usedSystemIds = slices.flat(1);

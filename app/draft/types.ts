@@ -1,4 +1,11 @@
-import { SystemIds, SystemId, TilePosition, DraftSettings, Map } from "~/types";
+import {
+  SystemIds,
+  SystemId,
+  TilePosition,
+  DraftSettings,
+  Map,
+  FactionId,
+} from "~/types";
 
 export type Tier = "low" | "med" | "high" | "red" | "resolved";
 export type ChoosableTier = "low" | "med" | "high" | "red";
@@ -44,6 +51,7 @@ export type SliceGenerationConfig = {
   safePathToMecatol?: number;
   highQualityAdjacent?: number;
   hasMinorFactions?: boolean;
+  minorFactionPool?: FactionId[];
 };
 
 export type DraftConfig = {
@@ -119,6 +127,7 @@ export type DraftConfig = {
   generateMap?: (
     settings: DraftSettings,
     systemPool: SystemId[],
+    minorFactionPool?: FactionId[],
   ) =>
     | {
         map: Map;

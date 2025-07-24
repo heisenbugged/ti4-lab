@@ -1,3 +1,4 @@
+import { coreGenerateMap } from "../common/sliceGenerator";
 import { generateSlices } from "../milty/sliceGenerator";
 import { DraftConfig } from "../types";
 
@@ -78,5 +79,7 @@ export const milty7p: DraftConfig = {
       [2, 0],
     ],
   } as Record<number, [number, number][]>,
+  generateMap: (settings, systemPool, minorFactionPool) =>
+    coreGenerateMap(settings, systemPool, 0, generateSlices, minorFactionPool),
   generateSlices,
 };

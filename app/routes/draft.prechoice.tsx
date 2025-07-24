@@ -714,6 +714,7 @@ export default function DraftPrechoice() {
       factionStratification: stratifiedConfig,
     };
 
+    const hasMinorFactions = !!factionState.minorFactionsMode;
     // Add Milty-specific settings if the selected map type is 'milty'
     if (selectedMapType === "milty") {
       draftSettings.sliceGenerationConfig = {
@@ -724,18 +725,27 @@ export default function DraftPrechoice() {
         numAlphas: miltySettings.minAlphaWormholes,
         numBetas: miltySettings.minBetaWormholes,
         numLegendaries: miltySettings.minLegendaries,
-        hasMinorFactions: !!factionState.minorFactionsMode,
+        hasMinorFactions,
+      };
+    }
+
+    // Alternate milty does not support settings yet
+    // but does support minor factions
+    if (
+      selectedMapType === "milty4p" ||
+      selectedMapType === "milty5p" ||
+      selectedMapType === "milty7p" ||
+      selectedMapType === "milty8p"
+    ) {
+      draftSettings.sliceGenerationConfig = {
+        minOptimal: miltySettings.minOptimal,
+        maxOptimal: miltySettings.maxOptimal,
+        hasMinorFactions,
       };
     }
 
     // Add MiltyEq-specific settings if the selected map type is 'miltyeq'
-    if (
-      selectedMapType === "miltyeq" ||
-      selectedMapType === "miltyeq4p" ||
-      selectedMapType === "miltyeq5p" ||
-      selectedMapType === "miltyeq7p" ||
-      selectedMapType === "miltyeq8p"
-    ) {
+    if (isMiltyEqVariant(selectedMapType)) {
       draftSettings.sliceGenerationConfig = {
         minOptimal: miltyEqSettings.minOptimal,
         maxOptimal: miltyEqSettings.maxOptimal,
@@ -1221,11 +1231,7 @@ export default function DraftPrechoice() {
           </Group>
 
           <Stack>
-            {(mapType === "miltyeq" ||
-              mapType === "miltyeq5p" ||
-              mapType === "miltyeq7p" ||
-              mapType === "miltyeq4p" ||
-              mapType === "miltyeq8p") && (
+            {(isMiltyVariant(mapType) || isMiltyEqVariant(mapType)) && (
               <Switch
                 label="Minor Factions"
                 description="Enable minor factions variant"
@@ -1235,7 +1241,7 @@ export default function DraftPrechoice() {
                 }
               />
             )}
-            {factionState.minorFactionsMode && (
+            {factionState.minorFactionsMode && isMiltyEqVariant(mapType) && (
               <>
                 <Text size="sm" c="dimmed" mt="xs">
                   Choose minor factions mode:
@@ -1524,3 +1530,17 @@ const getFactionGameSetsFromFlags = ({
   if (withDrahn) factionGameSets.push("drahn");
   return factionGameSets;
 };
+
+const isMiltyVariant = (mapType: ChoosableDraftType) =>
+  mapType === "milty" ||
+  mapType === "milty4p" ||
+  mapType === "milty5p" ||
+  mapType === "milty7p" ||
+  mapType === "milty8p";
+
+const isMiltyEqVariant = (mapType: ChoosableDraftType) =>
+  mapType === "miltyeq" ||
+  mapType === "miltyeq4p" ||
+  mapType === "miltyeq5p" ||
+  mapType === "miltyeq7p" ||
+  mapType === "miltyeq8p";

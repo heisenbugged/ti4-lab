@@ -1,6 +1,7 @@
 import { DraftConfig } from "../types";
 import { generateSlices } from "../milty/sliceGenerator";
 import { rotateSlice } from "~/utils/hexagonal";
+import { coreGenerateMap } from "../common/sliceGenerator";
 
 const slice: [number, number][] = [
   [1, 0],
@@ -50,5 +51,7 @@ export const milty5p: DraftConfig = {
     3: rotateSlice(slice, 4),
     4: rotateSlice(slice, 5),
   } as Record<number, [number, number][]>,
+  generateMap: (settings, systemPool, minorFactionPool) =>
+    coreGenerateMap(settings, systemPool, 0, generateSlices, minorFactionPool),
   generateSlices,
 };

@@ -32,9 +32,6 @@ export function PlayerInputSection({
   onChangeName,
 }: Props) {
   const { colors } = useMantineTheme();
-  console.log("colors", colors);
-  console.log("playerColors", playerColors);
-  console.log("playerColors[5]", playerColors[5]);
   return (
     <Section>
       <SectionTitle title="Players">
