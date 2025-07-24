@@ -15,7 +15,7 @@ export interface MiltyDraftSettings {
 }
 
 export const DEFAULT_MILTY_SETTINGS: MiltyDraftSettings = {
-  minOptimalInfluence: 2,
+  minOptimalInfluence: 4,
   minOptimal: 9,
   maxOptimal: 13,
   safePathToMecatol: 0,

@@ -1,5 +1,5 @@
 import { ChoosableTier } from "~/draft";
-import { SystemId } from "~/types";
+import { FactionId, SystemId } from "~/types";
 
 const miltyTiers: Record<ChoosableTier, number[]> = {
   high: [
@@ -27,3 +27,31 @@ export const miltySystemTiers = Object.entries(miltyTiers).reduce(
   },
   {} as Record<SystemId, ChoosableTier>,
 );
+
+export const minorFactionTiers: Record<ChoosableTier, FactionId[]> = {
+  high: [
+    "mahact",
+    "nomad",
+    "winnu",
+    "barony",
+    "sardakk",
+    "argent",
+    "jolnar",
+    "muaat",
+    "nekro",
+    "titans",
+  ],
+  med: ["yin", "naazrokha", "xxcha", "empyrean", "vulraith"],
+  low: [
+    "hacan",
+    "yssaril",
+    "sol",
+    "l1z1x",
+    "naalu",
+    "saar",
+    "creuss",
+    "arborec",
+    "mentak",
+  ],
+  red: [],
+};

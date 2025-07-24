@@ -1,7 +1,7 @@
 import { SystemId, SystemIds } from "~/types";
 import { SLICE_SHAPES } from "../sliceShapes";
-import { miltySystemTiers } from "~/data/miltyTileTiers";
-import { SliceGenerationConfig, TieredSystems } from "../types";
+import { miltySystemTiers, minorFactionTiers } from "~/data/miltyTileTiers";
+import { ChoosableTier, SliceGenerationConfig, TieredSystems } from "../types";
 import {
   filterTieredSystems,
   isAlpha,
@@ -66,19 +66,15 @@ export function generateSlices(
     // check optimal values.
     const optimal = optimalStatsForSystems(systems);
     const totalOptimal = optimal.resources + optimal.influence + optimal.flex;
-    if (
-      config.minOptimalInfluence &&
-      optimal.influence < config.minOptimalInfluence
-    )
+    const infOptimal = optimal.influence + optimal.flex;
+    const resOptimal = optimal.resources + optimal.flex;
+
+    if (config.minOptimalInfluence && infOptimal < config.minOptimalInfluence)
       return false;
-    if (
-      config.minOptimalResources &&
-      optimal.resources < config.minOptimalResources
-    )
+    if (config.minOptimalResources && resOptimal < config.minOptimalResources)
       return false;
     if (config.maxOptimal && totalOptimal > config.maxOptimal) return false;
     if (config.minOptimal && totalOptimal < config.minOptimal) return false;
-
     return true;
   };
 
@@ -100,14 +96,28 @@ export function generateSlices(
       config.minorFactionPool.filter((faction) => faction !== "keleres"),
     ).slice(0, sliceCount);
 
-    // from each slice, get one (at random) of the blue tiles, and replace it with the minor faction
+    // from each slice, get a blue tile of the equivalent tier as the minor faction, and replace it with the minor faction
     slices.forEach((slice) => {
-      const blueTile = slice.find(
-        (systemId) => systemData[systemId].type === "BLUE",
-      );
-      if (!blueTile) return;
-
       const minorFaction = chosenMinorFactions.pop()!;
+      const minorFactionTier =
+        Object.entries(minorFactionTiers).find(([tier, factions]) =>
+          factions.includes(minorFaction),
+        )?.[0] ?? ("med" as ChoosableTier);
+
+      // First try to find a blue tile of the equivalent tier
+      let blueTile = slice.find(
+        (systemId) =>
+          systemData[systemId].type === "BLUE" &&
+          miltySystemTiers[systemId] === minorFactionTier,
+      );
+
+      // Fallback to any blue tile if no matching tier found
+      if (!blueTile) {
+        blueTile = slice.find(
+          (systemId) => systemData[systemId].type === "BLUE",
+        )!;
+      }
+
       const minorFactionSystem = factionSystems[minorFaction]!;
       const blueTileIndex = slice.indexOf(blueTile);
 
