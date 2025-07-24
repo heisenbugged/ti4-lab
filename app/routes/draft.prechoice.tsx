@@ -715,6 +715,7 @@ export default function DraftPrechoice() {
     };
 
     const hasMinorFactions = !!factionState.minorFactionsMode;
+
     // boosted optimals
     const minOptimal =
       hasMinorFactions && miltySettings.minOptimal
@@ -731,8 +732,7 @@ export default function DraftPrechoice() {
       draftSettings.sliceGenerationConfig = {
         minOptimal,
         maxOptimal,
-        // home systems are resource biased so force a minimum optimal influence
-        minOptimalInfluence: 4,
+        minOptimalInfluence: miltySettings.minOptimalInfluence,
         safePathToMecatol: miltySettings.safePathToMecatol,
         highQualityAdjacent: miltySettings.highQualityAdjacent,
         numAlphas: miltySettings.minAlphaWormholes,
@@ -753,6 +753,7 @@ export default function DraftPrechoice() {
       draftSettings.sliceGenerationConfig = {
         minOptimal,
         maxOptimal,
+        minOptimalInfluence: miltySettings.minOptimalInfluence,
         hasMinorFactions,
       };
     }

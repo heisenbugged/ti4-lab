@@ -505,15 +505,17 @@ export const draftStore = createStore<DraftV2State>()(
           }
 
           // Generate map and slices using the utility function
-          const generated = generateMapAndSlices(
-            config,
-            settings,
-            state.systemPool,
-            minorFactionPool,
-          );
-          if (generated) {
-            draft.presetMap = generated.presetMap;
-            draft.slices = generated.slices;
+          if (!!config.generateMap) {
+            const generated = generateMapAndSlices(
+              config,
+              settings,
+              state.systemPool,
+              minorFactionPool,
+            );
+            if (generated) {
+              draft.presetMap = generated.presetMap;
+              draft.slices = generated.slices;
+            }
           } else {
             const slices = initializeSlices(settings, state.systemPool);
             if (slices) draft.slices = slices;
@@ -744,6 +746,7 @@ export const draftStore = createStore<DraftV2State>()(
             systemPool,
             minorFactionPool,
           );
+
           if (generated) {
             draft.presetMap = generated.presetMap;
             draft.slices = generated.slices;

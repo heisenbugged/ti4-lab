@@ -31,8 +31,6 @@ export function AvailableFactionsSection() {
     availableFactions: state.draft.availableFactions,
   }));
 
-  console.log("availableFactions", availableFactions);
-
   if (hasBanPhase) {
     return (
       <Section>

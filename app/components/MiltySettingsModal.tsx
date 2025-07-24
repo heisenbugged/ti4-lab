@@ -5,6 +5,7 @@ import { SettingStepper } from "~/components/SettingStepper";
 export interface MiltyDraftSettings {
   minOptimal?: number;
   maxOptimal?: number;
+  minOptimalInfluence?: number;
 
   safePathToMecatol: number;
   highQualityAdjacent: number;
@@ -14,6 +15,7 @@ export interface MiltyDraftSettings {
 }
 
 export const DEFAULT_MILTY_SETTINGS: MiltyDraftSettings = {
+  minOptimalInfluence: 2,
   minOptimal: 9,
   maxOptimal: 13,
   safePathToMecatol: 0,
@@ -59,6 +61,15 @@ export function MiltySettingsModal({
       <Stack p="md">
         <Group align="flex-start">
           <Stack style={{ flex: 1 }}>
+            <SettingStepper
+              label="Minimum Optimal Influence"
+              property="minOptimalInfluence"
+              value={localSettings.minOptimalInfluence}
+              onChange={handleSettingChange}
+              allowUndefined={true}
+              defaultValue={DEFAULT_MILTY_SETTINGS.minOptimalInfluence}
+            />
+
             <SettingStepper
               label="Minimum Optimal Total"
               property="minOptimal"

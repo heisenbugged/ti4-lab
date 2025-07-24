@@ -18,7 +18,7 @@ export function PlanetStats({
 
   const accessibleShadow = accessibleColors
     ? {
-        ["-webkit-text-stroke"]: "2px rgba(255, 255, 255, 0.5)",
+        WebkitTextStroke: "2px rgba(255, 255, 255, 0.5)",
         paintOrder: "stroke fill",
       }
     : undefined;
