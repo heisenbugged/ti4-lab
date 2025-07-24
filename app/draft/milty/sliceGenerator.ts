@@ -66,6 +66,16 @@ export function generateSlices(
     // check optimal values.
     const optimal = optimalStatsForSystems(systems);
     const totalOptimal = optimal.resources + optimal.influence + optimal.flex;
+    if (
+      config.minOptimalInfluence &&
+      optimal.influence < config.minOptimalInfluence
+    )
+      return false;
+    if (
+      config.minOptimalResources &&
+      optimal.resources < config.minOptimalResources
+    )
+      return false;
     if (config.maxOptimal && totalOptimal > config.maxOptimal) return false;
     if (config.minOptimal && totalOptimal < config.minOptimal) return false;
 

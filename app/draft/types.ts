@@ -48,6 +48,9 @@ export type SliceGenerationConfig = {
   numLegendaries?: number;
   maxOptimal?: number;
   minOptimal?: number;
+  minOptimalInfluence?: number;
+  minOptimalResources?: number;
+
   safePathToMecatol?: number;
   highQualityAdjacent?: number;
   hasMinorFactions?: boolean;

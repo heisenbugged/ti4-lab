@@ -718,7 +718,7 @@ export default function DraftPrechoice() {
     // boosted optimals
     const minOptimal =
       hasMinorFactions && miltySettings.minOptimal
-        ? miltySettings.minOptimal + 2
+        ? miltySettings.minOptimal - 2
         : miltySettings.minOptimal;
 
     const maxOptimal =
@@ -731,6 +731,8 @@ export default function DraftPrechoice() {
       draftSettings.sliceGenerationConfig = {
         minOptimal,
         maxOptimal,
+        // home systems are resource biased so force a minimum optimal influence
+        minOptimalInfluence: 4,
         safePathToMecatol: miltySettings.safePathToMecatol,
         highQualityAdjacent: miltySettings.highQualityAdjacent,
         numAlphas: miltySettings.minAlphaWormholes,
