@@ -715,11 +715,22 @@ export default function DraftPrechoice() {
     };
 
     const hasMinorFactions = !!factionState.minorFactionsMode;
+    // boosted optimals
+    const minOptimal =
+      hasMinorFactions && miltySettings.minOptimal
+        ? miltySettings.minOptimal + 2
+        : miltySettings.minOptimal;
+
+    const maxOptimal =
+      hasMinorFactions && miltySettings.maxOptimal
+        ? miltySettings.maxOptimal + 2
+        : miltySettings.maxOptimal;
+
     // Add Milty-specific settings if the selected map type is 'milty'
     if (selectedMapType === "milty") {
       draftSettings.sliceGenerationConfig = {
-        minOptimal: miltySettings.minOptimal,
-        maxOptimal: miltySettings.maxOptimal,
+        minOptimal,
+        maxOptimal,
         safePathToMecatol: miltySettings.safePathToMecatol,
         highQualityAdjacent: miltySettings.highQualityAdjacent,
         numAlphas: miltySettings.minAlphaWormholes,
@@ -738,8 +749,8 @@ export default function DraftPrechoice() {
       selectedMapType === "milty8p"
     ) {
       draftSettings.sliceGenerationConfig = {
-        minOptimal: miltySettings.minOptimal,
-        maxOptimal: miltySettings.maxOptimal,
+        minOptimal,
+        maxOptimal,
         hasMinorFactions,
       };
     }

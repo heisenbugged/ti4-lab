@@ -31,6 +31,8 @@ export function AvailableFactionsSection() {
     availableFactions: state.draft.availableFactions,
   }));
 
+  console.log("availableFactions", availableFactions);
+
   if (hasBanPhase) {
     return (
       <Section>
@@ -94,9 +96,9 @@ export function AvailableFactionsSection() {
         cols={{ base: 1, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }}
         spacing="xs"
       >
-        {availableFactions.map((factionId) => (
+        {availableFactions.map((factionId, idx) => (
           <NewDraftFaction
-            key={factionId}
+            key={`${factionId}-${idx}`}
             faction={factions[factionId]}
             onRemove={
               numPreassignedFactions === undefined

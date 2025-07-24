@@ -5,7 +5,6 @@ import { DraftableFaction } from "../components/DraftableFaction";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
-
 import classes from "~/components/Surface.module.css";
 import { FactionId, PlayerId } from "~/types";
 

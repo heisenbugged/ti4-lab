@@ -38,6 +38,7 @@ import { shuffle } from "./draft/helpers/randomization";
 import { factions } from "./data/factionData";
 import { notifications } from "@mantine/notifications";
 import { coreRerollSlice, coreRerollMap } from "./draft/common/sliceGenerator";
+import { systemData } from "./data/systemData";
 
 // Define SelectionType type based on the selection types used in the code
 type SelectionType =
@@ -597,11 +598,19 @@ export const draftStore = createStore<DraftV2State>()(
       // faction actions
       randomizeFactions: () =>
         set(({ draft, factionPool }) => {
+          const takenFactions = getTakenNonPrimaryFactions(draft);
+
+          const draftableFactions = getDraftableFactions(
+            factionPool,
+            takenFactions,
+            draft.settings.allowedFactions,
+          );
+
           draft.availableFactions = randomizeFactions(
             draft.settings.numFactions,
             getDraftableFactions(
               factionPool,
-              draft.availableMinorFactions,
+              takenFactions,
               draft.settings.allowedFactions,
             ),
             draft.settings.requiredFactions,
@@ -621,9 +630,17 @@ export const draftStore = createStore<DraftV2State>()(
           const pool = state.draft.settings.allowedFactions ?? factionPool;
           const availableFactions = getAvailableFactions(
             pool,
-            draft.availableFactions,
+            [...getTakenNonPrimaryFactions(draft), ...draft.availableFactions],
             draft.availableMinorFactions,
           );
+          if (availableFactions.length === 0) {
+            notifications.show({
+              message: "No available factions",
+              color: "red",
+            });
+            return;
+          }
+
           const idx = Math.floor(Math.random() * availableFactions.length);
           draft.availableFactions.push(availableFactions[idx]);
           draft.settings.numFactions += 1;
@@ -1016,4 +1033,31 @@ function setSliceNames(slices: Slice[]) {
   });
 
   return slices;
+}
+
+function getTakenNonPrimaryFactions(draft: Draft): FactionId[] {
+  const factionsOnMap = draft.presetMap
+    .map((tile) => {
+      if (tile.type !== "SYSTEM") return;
+      return systemData[tile.systemId].faction;
+    })
+    .filter((faction) => faction !== undefined);
+
+  const factionsInSlices = draft.slices
+    .map((slice) =>
+      slice.tiles.map((tile) => {
+        if (tile.type !== "SYSTEM") return;
+        return systemData[tile.systemId].faction;
+      }),
+    )
+    .flat()
+    .filter((faction) => faction !== undefined);
+
+  const takenFactions = [
+    ...factionsOnMap,
+    ...factionsInSlices,
+    ...(draft.availableMinorFactions ?? []),
+  ];
+
+  return takenFactions;
 }

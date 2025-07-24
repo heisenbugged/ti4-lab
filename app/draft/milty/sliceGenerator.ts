@@ -28,7 +28,10 @@ export function generateSlices(
     minorFactionPool: undefined,
   },
   sliceShape: string[] = SLICE_SHAPES.milty,
+  attempts: number = 0,
 ) {
+  if (attempts > 1000) return undefined;
+
   // Validation function for systems
   const validateSystems = (
     systems: TieredSystems,
@@ -98,14 +101,23 @@ export function generateSlices(
       const minorFactionSystem = factionSystems[minorFaction]!;
       const blueTileIndex = slice.indexOf(blueTile);
 
-      try {
-        // Make sure minor faction is at the equidistant position
-        slice[blueTileIndex] = slice[3];
-        slice[3] = minorFactionSystem.id;
-      } catch (e) {
-        debugger;
-      }
+      // Make sure minor faction is at the equidistant position
+      slice[blueTileIndex] = slice[3];
+      slice[3] = minorFactionSystem.id;
     });
+
+    for (let i = 0; i < slices.length; i++) {
+      const slice = slices[i];
+      if (!validateSlice(slice, config)) {
+        return generateSlices(
+          sliceCount,
+          availableSystems,
+          config,
+          sliceShape,
+          attempts + 1,
+        );
+      }
+    }
   }
 
   return slices;
