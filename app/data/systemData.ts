@@ -82,14 +82,23 @@ export const factionSystems: Record<FactionId, System> = Object.values(
   {} as Record<FactionId, System>,
 );
 
-export const draftableSystemIds = Object.values(systemData)
+export const baseDraftableSystemIds = Object.values(systemData)
   .filter(
     (system) =>
       (system.type === "BLUE" || system.type === "RED") &&
-      Number(system.id) < 92 &&
-      system.id !== "18" && // cannot draft mecatol
-      system.id !== "82" && // cannot draft mallice
-      system.id !== "81", // cannot draft muaat hero supernova
+      Number(system.id) < 50 &&
+      system.id !== "18", // cannot draft mecatol
+  )
+  .map((system) => system.id);
+
+export const pokDraftableSystemIds = Object.values(systemData)
+  .filter(
+    (system) =>
+      (system.type === "BLUE" || system.type === "RED") &&
+      Number(system.id) >= 50 &&
+      Number(system.id) <= 82 &&
+      system.id !== "81" && // cannot draft muaat hero supernova
+      system.id !== "82", // cannot draft mallice
   )
   .map((system) => system.id);
 
@@ -108,11 +117,6 @@ export const unchartedStarsSystemIds = Object.values(systemData)
       Number(system.id) >= 150,
   )
   .map((system) => system.id);
-
-export const allDraftableSystemIds = [
-  ...draftableSystemIds,
-  ...unchartedStarsSystemIds,
-];
 
 const searchableTech: Record<TechSpecialty, string> = {
   BIOTIC: "green tech",
