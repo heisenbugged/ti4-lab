@@ -4,6 +4,7 @@ import {
   SimpleGrid,
   Stack,
   Table,
+  Text,
   Textarea,
   Title,
   Badge,
@@ -29,6 +30,7 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { DraftLogSection } from "./DraftLogSection";
 import styles from "./FinalizedDraft.module.css";
 import { trackButtonClick } from "~/lib/analytics.client";
+import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 
 export function FinalizedDraft() {
   const navigate = useNavigate();
@@ -165,6 +167,10 @@ export function FinalizedDraft() {
               <Button loading={exportingImage}>Download image</Button>
             </Link>
           </Section>
+          <Section>
+            <SectionTitle title="Tiles" />
+            <Text>{mapString.split(' ').sort((a, b) => Number(a) - Number(b)).join(', ')}</Text>
+          </Section>
 
           {adminMode && (
             <Box>
@@ -181,6 +187,7 @@ export function FinalizedDraft() {
           )}
         </Stack>
         <Stack flex={1} gap="xl">
+          <OriginalArtToggle />
           <MapSection />
         </Stack>
       </SimpleGrid>
