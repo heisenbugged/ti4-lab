@@ -1,9 +1,11 @@
 import {
-  draftableSystemIds,
+  baseDraftableSystemIds,
   systemData,
   unchartedStarsSystemIds,
+  pokDraftableSystemIds,
 } from "~/data/systemData";
 import { GameSet, System, SystemId, SystemStats } from "~/types";
+import { optimalStatsForSystems } from "~/utils/map";
 
 const techSpecialtyMap = {
   BIOTIC: "G",
@@ -52,7 +54,11 @@ export function systemStats(system: System): SystemStats {
 }
 
 export function getSystemPool(sets: GameSet[]) {
-  const systemPool = [...draftableSystemIds];
+  const systemPool = [...baseDraftableSystemIds];
+
+  if (sets.includes("pok")) {
+    systemPool.push(...pokDraftableSystemIds);
+  }
   if (sets.includes("unchartedstars")) {
     systemPool.push(...unchartedStarsSystemIds);
   }
@@ -61,3 +67,75 @@ export function getSystemPool(sets: GameSet[]) {
 
 export const systemsFromIds = (ids: SystemId[]): System[] =>
   ids.map((id) => systemData[id]);
+
+// Calculate optimal constraints based on available systems
+export function calculateOptimalConstraints(availableSystems: System[]) {
+  const optimalValues = availableSystems.map((system) => {
+    const optimal = optimalStatsForSystems([system]);
+    return optimal.resources + optimal.influence + optimal.flex;
+  });
+
+  optimalValues.sort((a, b) => a - b);
+
+  const miltySystemsPerSlice = 5;
+  const miltyEqSystemsPerSlice = 4;
+
+  // Calculate theoretical min/max for slices
+  const miltyMinOptimal = optimalValues
+    .slice(0, miltySystemsPerSlice)
+    .reduce((sum, val) => sum + val, 0);
+  const miltyMaxOptimal = optimalValues
+    .slice(-miltySystemsPerSlice)
+    .reduce((sum, val) => sum + val, 0);
+  const miltyEqMinOptimal = optimalValues
+    .slice(0, miltyEqSystemsPerSlice)
+    .reduce((sum, val) => sum + val, 0);
+  const miltyEqMaxOptimal = optimalValues
+    .slice(-miltyEqSystemsPerSlice)
+    .reduce((sum, val) => sum + val, 0);
+
+  // Add some buffer for more realistic ranges
+  const buffer = Math.max(
+    1,
+    Math.floor((miltyMaxOptimal - miltyMinOptimal) * 0.1),
+  );
+
+  return {
+    miltyOptimalRange: {
+      minOptimal: Math.max(0, miltyMinOptimal - buffer),
+      maxOptimal: miltyMaxOptimal + buffer,
+    },
+    miltyEqOptimalRange: {
+      minOptimal: Math.max(0, miltyEqMinOptimal - buffer),
+      maxOptimal: miltyEqMaxOptimal + buffer,
+    },
+  };
+}
+
+// Calculate possible constraints for milty settings based on available game sets
+export function calculateMiltyConstraints(gameSets: GameSet[]) {
+  const systemPool = getSystemPool(gameSets);
+  const availableSystems = systemPool.map((id) => systemData[id]);
+
+  const alphaCount = availableSystems.filter((system) =>
+    system.wormholes.includes("ALPHA"),
+  ).length;
+
+  const betaCount = availableSystems.filter((system) =>
+    system.wormholes.includes("BETA"),
+  ).length;
+
+  const legendaryCount = availableSystems.filter((system) =>
+    system.planets.some((planet) => planet.legendary),
+  ).length;
+
+  const optimalConstraints = calculateOptimalConstraints(availableSystems);
+
+  return {
+    maxAlphaWormholes: alphaCount,
+    maxBetaWormholes: betaCount,
+    maxLegendaries: legendaryCount,
+    totalSystems: availableSystems.length,
+    ...optimalConstraints,
+  };
+}
