@@ -15,7 +15,7 @@ import { factions } from "~/data/factionData";
 import { FactionId, FactionStratification, GameSet } from "~/types";
 import { NumberStepper } from "./NumberStepper";
 
-const gameSetLabel: Record<GameSet, string> = {
+export const gameSetLabel: Record<GameSet, string> = {
   base: "Base",
   pok: "Prophecy of Kings",
   discordant: "Discordant Stars",
@@ -76,7 +76,7 @@ export function FactionSettingsModal({
     setAllowedFactions(savedAllowedFactions ?? factionPool);
     setRequiredFactions(savedRequiredFactions ?? []);
     setStratifiedConfig(savedStratifiedConfig);
-  }, [opened]);
+  }, [opened, factionPool, savedAllowedFactions, savedRequiredFactions, savedStratifiedConfig]);
 
   const handleSave = () => {
     // Remove any keys that have a value of 0

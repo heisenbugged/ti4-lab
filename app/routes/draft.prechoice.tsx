@@ -20,7 +20,6 @@ import {
   Switch,
   Text,
   Textarea,
-  Radio,
   SimpleGrid,
 } from "@mantine/core";
 import {
@@ -65,9 +64,13 @@ import { DiscordBanner } from "~/components/DiscordBanner";
 import { useDisclosure } from "@mantine/hooks";
 import { hydrateDemoMap } from "~/utils/map";
 import { std4p } from "~/draft/std4p";
-import { FactionSettingsModal } from "~/components/FactionSettingsModal";
+import {
+  FactionSettingsModal,
+  gameSetLabel,
+} from "~/components/FactionSettingsModal";
 import { getFactionPool } from "~/utils/factions";
 import { notifications } from "@mantine/notifications";
+import { calculateMiltyConstraints } from "~/utils/system";
 import {
   MiltySettingsModal,
   DEFAULT_MILTY_SETTINGS,
@@ -364,6 +367,8 @@ export default function DraftPrechoice() {
   const [contentFlags, setContentFlags] = useState<ContentFlags>({
     excludeBaseFactions: false,
     excludePokFactions: false,
+    excludePokTiles: false,
+    withPOK: true,
     withDiscordant: false,
     withDiscordantExp: false,
     withUnchartedStars: false,
@@ -372,6 +377,8 @@ export default function DraftPrechoice() {
   const {
     excludeBaseFactions,
     excludePokFactions,
+    excludePokTiles,
+    withPOK,
     withDiscordant,
     withDiscordantExp,
     withUnchartedStars,
@@ -401,12 +408,28 @@ export default function DraftPrechoice() {
   const factionGameSets = getFactionGameSetsFromFlags(contentFlags);
   const maxFactionCount = calculateMaxFactionCount(factionGameSets);
 
+  const miltyConstraints = calculateMiltyConstraints(tileGameSets);
+
   // Calculate derived constraints for UI
   const factionConstraints = calculateFactionConstraints(
     playerCount,
     maxFactionCount,
     factionState,
   );
+
+  useEffect(() => {
+    if (players.length > 5 && excludePokTiles && selectedMapType === "milty") {
+      setSelectedMapType("miltyeq");
+      notifications.show({
+        message:
+          "Milty EQ selected: If you don't include PoK you can only organise Milty drafts up to 5 players (because you can only generate 5 valid slices with the base-game tiles)",
+        color: "blue",
+      });
+    }
+  }, [players.length, excludePokTiles, selectedMapType]);
+
+    // If you don't include PoK you can only organise Milty drafts up to 5 players (because you can only generate 5 valid slices with the base-game tiles)
+  const isMiltySettingsDisabled = players.length > 5 && excludePokTiles;
 
   // Centralized faction state update function
   const updateFactionState = (action: FactionStateAction) => {
@@ -641,6 +664,72 @@ export default function DraftPrechoice() {
     }
 
     setContentFlags(newContentFlags);
+  };
+
+  const handleTogglePOK = () => {
+    const newWithPOKValue = !withPOK;
+    const newContentFlags = {
+      ...contentFlags,
+      withPOK: newWithPOKValue,
+      excludePokFactions: !newWithPOKValue,
+      excludePokTiles: !newWithPOKValue,
+    };
+
+    if (!newWithPOKValue) {
+      newContentFlags.excludePokFactions = true;
+      newContentFlags.excludePokTiles = true;
+    }
+
+    setContentFlags(newContentFlags);
+
+    
+    if (!newWithPOKValue) {
+      const baseGameConstraints = calculateMiltyConstraints(["base"]);
+      
+      setMiltySettings((prev) => {
+        const newSettings = {
+          ...prev,
+          minOptimal: baseGameConstraints.miltyOptimalRange.minOptimal,
+          maxOptimal: baseGameConstraints.miltyOptimalRange.maxOptimal,
+          minAlphaWormholes: Math.min(
+            prev.minAlphaWormholes,
+            baseGameConstraints.maxAlphaWormholes,
+          ),
+          minBetaWormholes: Math.min(
+            prev.minBetaWormholes,
+            baseGameConstraints.maxBetaWormholes,
+          ),
+          minLegendaries: Math.min(
+            prev.minLegendaries,
+            baseGameConstraints.maxLegendaries,
+          ),
+        };
+        
+        return newSettings;
+      });
+
+      setMiltyEqSettings((prev) => {
+        const newSettings = {
+          ...prev,
+          minOptimal: baseGameConstraints.miltyEqOptimalRange.minOptimal,
+          maxOptimal: baseGameConstraints.miltyEqOptimalRange.maxOptimal,
+          minAlphaWormholes: Math.min(
+            prev.minAlphaWormholes,
+            baseGameConstraints.maxAlphaWormholes,
+          ),
+          minBetaWormholes: Math.min(
+            prev.minBetaWormholes,
+            baseGameConstraints.maxBetaWormholes,
+          ),
+          minLegendaries: Math.min(
+            prev.minLegendaries,
+            baseGameConstraints.maxLegendaries,
+          ),
+        };
+        
+        return newSettings;
+      });
+    }
   };
 
   // reset allowed and required factions when content flags change
@@ -898,6 +987,7 @@ export default function DraftPrechoice() {
         settings={miltySettings}
         onClose={closeMiltySettings}
         onSave={(newSettings) => setMiltySettings(newSettings)}
+        constraints={miltyConstraints}
       />
 
       <MiltyEqSettingsModal
@@ -905,6 +995,7 @@ export default function DraftPrechoice() {
         settings={miltyEqSettings}
         onClose={closeMiltyEqSettings}
         onSave={(newSettings) => setMiltyEqSettings(newSettings)}
+        constraints={miltyConstraints}
       />
 
       <Modal
@@ -966,7 +1057,7 @@ export default function DraftPrechoice() {
           <Text c="dimmed" size="sm">
             NOTE: Any players that you <Code>@mention</Code> during{" "}
             <Code>/labdraft</Code> will be mentioned in the notification when
-            it's their turn.
+            it&apos;s their turn.
           </Text>
         </Stack>
 
@@ -1016,8 +1107,8 @@ export default function DraftPrechoice() {
             title="Invalid Draft Parameters"
             icon={<IconInfoCircle />}
           >
-            Could not generate a draft with the given parameters. Please try
-            different minimal/total optimal values.
+            {location.state.errorReason ||
+              "Could not generate a draft with the given parameters. Please try different minimal/total optimal values."}
           </Alert>
         </Grid.Col>
       )}
@@ -1076,6 +1167,9 @@ export default function DraftPrechoice() {
                             variant="outline"
                             color="blue"
                             size="md"
+                            disabled={
+                              type === "milty" && isMiltySettingsDisabled
+                            }
                             onClick={() => {
                               setSelectedMapType(type as ChoosableDraftType);
                               openSettings();
@@ -1336,7 +1430,12 @@ export default function DraftPrechoice() {
 
           <Stack>
             <Checkbox
-              label="Discordant Stars"
+              label={gameSetLabel["pok"]}
+              checked={withPOK}
+              onChange={handleTogglePOK}
+            />
+            <Checkbox
+              label={gameSetLabel["discordant"]}
               checked={withDiscordant}
               onChange={handleToggleDiscordantStars}
             />
@@ -1451,7 +1550,7 @@ export default function DraftPrechoice() {
                 onChange={() => setAllowHomePlanetSearch((v) => !v)}
               />
               <Checkbox
-                label="Drahn"
+                label={gameSetLabel["drahn"]}
                 checked={withDrahn}
                 onChange={() => {
                   setWithDrahn(!withDrahn);
@@ -1510,6 +1609,8 @@ export const loader = async (args: LoaderFunctionArgs) => {
 type ContentFlags = {
   excludeBaseFactions: boolean;
   excludePokFactions: boolean;
+  excludePokTiles: boolean;
+  withPOK: boolean;
   withDiscordant: boolean;
   withDiscordantExp: boolean;
   withDrahn: boolean;
@@ -1520,8 +1621,10 @@ const getTileSetsFromFlags = ({
   withDiscordant,
   withDiscordantExp,
   withUnchartedStars,
+  excludePokTiles,
 }: ContentFlags) => {
-  const tileGameSets: GameSet[] = ["base", "pok"];
+  const tileGameSets: GameSet[] = ["base"];
+  if (!excludePokTiles) tileGameSets.push("pok");
   if (withDiscordant) tileGameSets.push("discordant");
   if (withDiscordantExp) tileGameSets.push("discordantexp");
   if (withUnchartedStars) tileGameSets.push("unchartedstars");

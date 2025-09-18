@@ -16,7 +16,7 @@ import {
   coreGenerateSlices,
   postProcessSlices,
 } from "../common/sliceGenerator";
-import { DEFAULT_MILTYEQ_SETTINGS } from "~/components/MiltyEqSettingsModal";
+import { getMiltyEqSettings } from "~/components/MiltyEqSettingsModal";
 import { draftConfig } from "../draftConfig";
 import { getFactionPool } from "~/utils/factions";
 import { mapStringOrder } from "~/data/mapStringOrder";
@@ -42,7 +42,13 @@ const MINOR_FACTION_SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "red", "med", "med"] }, // 4
 ];
 
-const DEFAULT_CONFIG = DEFAULT_MILTYEQ_SETTINGS;
+const getDefaultConfig = (availableSystems: SystemId[]) => {
+  const hasPOKsystems = availableSystems.some((id) => {
+    return parseInt(id) > 50;
+  });
+
+  return getMiltyEqSettings(hasPOKsystems);
+};
 
 export const generateMap = (
   settings: DraftSettings,
@@ -113,12 +119,15 @@ export const generateSlices = (
   sliceCount: number,
   availableSystems: SystemId[],
   config?: SliceGenerationConfig,
-) =>
-  coreGenerateSlices({
+) => {
+  const defaultConfig = getDefaultConfig(availableSystems);
+  const finalConfig = { ...defaultConfig, ...config };
+
+  return coreGenerateSlices({
     mecatolPath: [1, 3],
     sliceCount,
     availableSystems,
-    config: config ?? DEFAULT_CONFIG,
+    config: finalConfig,
     sliceShape: SLICE_SHAPES.milty_eq,
     systemTiers: miltySystemTiers,
     getSliceTiers: () => {
@@ -127,25 +136,18 @@ export const generateSlices = (
 
       return shuffle(weightedChoice(SLICE_CHOICES));
     },
-    validateSystems: (
-      systems: TieredSystems,
-      config: SliceGenerationConfig,
-    ) => {
+    validateSystems: (systems: TieredSystems) => {
       const alphas = filterTieredSystems(systems, isAlpha).length;
       const betas = filterTieredSystems(systems, isBeta).length;
       const legendaries = filterTieredSystems(systems, isLegendary).length;
 
-      const minAlphas = config.numAlphas ?? DEFAULT_CONFIG.minAlphaWormholes;
-      const minBetas = config.numBetas ?? DEFAULT_CONFIG.minBetaWormholes;
-      const minLegendaries =
-        config.numLegendaries ?? DEFAULT_CONFIG.minLegendaries;
       return (
-        alphas >= minAlphas &&
-        betas >= minBetas &&
-        legendaries >= minLegendaries
+        alphas >= finalConfig.minAlphaWormholes &&
+        betas >= finalConfig.minBetaWormholes &&
+        legendaries >= finalConfig.minLegendaries
       );
     },
-    validateSlice: (slice: SystemIds, config: SliceGenerationConfig) => {
+    validateSlice: (slice: SystemIds) => {
       const systems = slice.map((systemId: SystemId) => systemData[systemId]);
       // can't have two alphas, two betas, or two legendaries
       const validSpecialTiles =
@@ -157,13 +159,19 @@ export const generateSlices = (
       const optimal = optimalStatsForSystems(systems);
       const totalOptimal = optimal.resources + optimal.influence + optimal.flex;
 
-      const minOptimal = config.minOptimal ?? DEFAULT_CONFIG.minOptimal;
-      const maxOptimal = config.maxOptimal ?? DEFAULT_CONFIG.maxOptimal;
-
-      if (maxOptimal !== undefined && totalOptimal > maxOptimal) return false;
-      if (minOptimal !== undefined && totalOptimal < minOptimal) return false;
+      if (
+        finalConfig.maxOptimal !== undefined &&
+        totalOptimal > finalConfig.maxOptimal
+      )
+        return false;
+      if (
+        finalConfig.minOptimal !== undefined &&
+        totalOptimal < finalConfig.minOptimal
+      )
+        return false;
 
       return true;
     },
     postProcessSlices,
   });
+};

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Group, Modal, Stack } from "@mantine/core";
 import { SettingStepper } from "~/components/SettingStepper";
 
@@ -23,11 +23,31 @@ export const DEFAULT_MILTYEQ_SETTINGS: MiltyEqDraftSettings = {
   minLegendaries: 1,
 };
 
+export const getMiltyEqSettings = (hasPok: boolean): MiltyEqDraftSettings => {
+  if (hasPok) {
+    return DEFAULT_MILTYEQ_SETTINGS;
+  }
+  
+  return {
+    ...DEFAULT_MILTYEQ_SETTINGS,
+    minOptimal: 0,
+    maxOptimal: 24,
+    minAlphaWormholes: 2,
+    minBetaWormholes: 2, 
+    minLegendaries: 0,
+  };
+};
+
 type Props = {
   opened: boolean;
   settings: MiltyEqDraftSettings;
   onClose: () => void;
   onSave: (newSettings: MiltyEqDraftSettings) => void;
+  constraints?: {
+    maxAlphaWormholes: number;
+    maxBetaWormholes: number;
+    maxLegendaries: number;
+  };
 };
 
 export function MiltyEqSettingsModal({
@@ -35,9 +55,21 @@ export function MiltyEqSettingsModal({
   onClose,
   settings,
   onSave,
+  constraints,
 }: Props) {
   const [localSettings, setLocalSettings] =
     useState<MiltyEqDraftSettings>(settings);
+
+  useEffect(() => {
+    if (constraints) {
+      setLocalSettings(prev => ({
+        ...prev,
+        minAlphaWormholes: Math.min(prev.minAlphaWormholes, constraints.maxAlphaWormholes),
+        minBetaWormholes: Math.min(prev.minBetaWormholes, constraints.maxBetaWormholes),
+        minLegendaries: Math.min(prev.minLegendaries, constraints.maxLegendaries),
+      }));
+    }
+  }, [constraints]);
 
   const handleSettingChange = (
     property: keyof MiltyEqDraftSettings,
@@ -97,26 +129,29 @@ export function MiltyEqSettingsModal({
           <Stack style={{ flex: 1 }}>
             <SettingStepper
               label="Minimum Alpha Wormholes"
-              description="Minimum number of alpha wormholes required across all slices"
+              description={`Minimum number of alpha wormholes required across all slices${constraints ? ` (max available: ${constraints.maxAlphaWormholes})` : ''}`}
               property="minAlphaWormholes"
               value={localSettings.minAlphaWormholes}
               onChange={handleSettingChange}
+              max={constraints?.maxAlphaWormholes}
             />
 
             <SettingStepper
               label="Minimum Beta Wormholes"
-              description="Minimum number of beta wormholes required across all slices"
+              description={`Minimum number of beta wormholes required across all slices${constraints ? ` (max available: ${constraints.maxBetaWormholes})` : ''}`}
               property="minBetaWormholes"
               value={localSettings.minBetaWormholes}
               onChange={handleSettingChange}
+              max={constraints?.maxBetaWormholes}
             />
 
             <SettingStepper
               label="Minimum Legendary Planets"
-              description="Minimum number of legendary planets required across all slices"
+              description={`Minimum number of legendary planets required across all slices${constraints ? ` (max available: ${constraints.maxLegendaries})` : ''}`}
               property="minLegendaries"
               value={localSettings.minLegendaries}
               onChange={handleSettingChange}
+              max={constraints?.maxLegendaries}
             />
           </Stack>
         </Group>

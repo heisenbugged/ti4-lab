@@ -9,6 +9,7 @@ export interface SettingStepperProps<T extends string> {
   onChange: (property: T, value: number | undefined) => void;
   defaultValue?: number;
   allowUndefined?: boolean;
+  max?: number;
 }
 
 export function SettingStepper<T extends string>({
@@ -19,6 +20,7 @@ export function SettingStepper<T extends string>({
   onChange,
   defaultValue,
   allowUndefined = false,
+  max,
 }: SettingStepperProps<T>) {
   const handleDecrease = () => {
     if (value === undefined) return;
@@ -40,7 +42,7 @@ export function SettingStepper<T extends string>({
 
   const decreaseDisabled =
     value === undefined || (!allowUndefined && value <= 0);
-  const increaseDisabled = false;
+  const increaseDisabled = max !== undefined && value !== undefined && value >= max;
 
   return (
     <Group>
