@@ -5,8 +5,11 @@ import { SettingStepper } from "~/components/SettingStepper";
 export interface MiltyEqDraftSettings {
   minOptimal?: number;
   maxOptimal?: number;
+  minOptimalInfluence?: number;
+  minOptimalResources?: number;
 
   safePathToMecatol: number;
+  centerTileNotEmpty: number;
   highQualityAdjacent: number;
   minAlphaWormholes: number;
   minBetaWormholes: number;
@@ -16,7 +19,10 @@ export interface MiltyEqDraftSettings {
 export const DEFAULT_MILTYEQ_SETTINGS: MiltyEqDraftSettings = {
   minOptimal: 6,
   maxOptimal: 10,
+  minOptimalInfluence: 3,
+  minOptimalResources: 2,
   safePathToMecatol: 0,
+  centerTileNotEmpty: 0,
   highQualityAdjacent: 0,
   minAlphaWormholes: 2,
   minBetaWormholes: 2,
@@ -60,6 +66,24 @@ export function MiltyEqSettingsModal({
         <Group align="flex-start">
           <Stack style={{ flex: 1 }}>
             <SettingStepper
+              label="Minimum Optimal Influence"
+              property="minOptimalInfluence"
+              value={localSettings.minOptimalInfluence}
+              onChange={handleSettingChange}
+              allowUndefined={true}
+              defaultValue={DEFAULT_MILTYEQ_SETTINGS.minOptimalInfluence}
+            />
+
+            <SettingStepper
+              label="Minimum Optimal Resources"
+              property="minOptimalResources"
+              value={localSettings.minOptimalResources}
+              onChange={handleSettingChange}
+              allowUndefined={true}
+              defaultValue={DEFAULT_MILTYEQ_SETTINGS.minOptimalResources}
+            />
+
+            <SettingStepper
               label="Minimum Optimal Total"
               property="minOptimal"
               value={localSettings.minOptimal}
@@ -90,6 +114,14 @@ export function MiltyEqSettingsModal({
               description="Number of slices that must have high-quality tiles adjacent to home"
               property="highQualityAdjacent"
               value={localSettings.highQualityAdjacent}
+              onChange={handleSettingChange}
+            />
+
+            <SettingStepper
+              label="Slices with safe center"
+              description="Number of slices with no empty and no anomaly center tile"
+              property="centerTileNotEmpty"
+              value={localSettings.centerTileNotEmpty}
               onChange={handleSettingChange}
             />
           </Stack>

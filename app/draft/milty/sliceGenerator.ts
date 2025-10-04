@@ -80,6 +80,7 @@ export function generateSlices(
 
   const slices = coreGenerateSlices({
     mecatolPath: [1, 4],
+    centerTile: 1,
     sliceCount,
     availableSystems,
     config,
