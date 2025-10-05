@@ -176,6 +176,42 @@ export const factions: Record<FactionId, Faction> = {
     set: "pok",
     wiki: "https://twilight-imperium.fandom.com/wiki/Council_Keleres",
   },
+  // Thunder's Edge
+  bastion: {
+    id: "bastion",
+    iconPath: "/factions/ti_bastion.png",
+    name: "Last Bastion",
+    wiki: "https://twilight-imperium.fandom.com/wiki/Last_Bastion",
+    set: "te",
+  },
+  dws: {
+    id: "dws",
+    iconPath: "/factions/ti_dws.png",
+    name: "The Deepwrought Scholarate",
+    wiki: "https://twilight-imperium.fandom.com/wiki/The_Deepwrought_Scholarate",
+    set: "te",
+  },
+  crimson: {
+    id: "crimson",
+    iconPath: "/factions/ti_crimson.png",
+    name: "The Crimson Rebellion",
+    wiki: "https://twilight-imperium.fandom.com/wiki/The_Crimson_Rebellion",
+    set: "te",
+  },
+  ralnel: {
+    id: "ralnel",
+    iconPath: "/factions/ti_ralnel.png",
+    name: "The Ral Nel Consortium",
+    wiki: "https://twilight-imperium.fandom.com/wiki/The_Ral_Nel_Consortium",
+    set: "te",
+  },
+  firmament: {
+    id: "firmament",
+    iconPath: "/factions/ti_firmament.png",
+    name: "The Firmament",
+    wiki: "https://twilight-imperium.fandom.com/wiki/The_Firmament_/_The_Obsidian",
+    set: "te",
+  },
   // Discordant Stars
   ilyxum: {
     id: "ilyxum",
@@ -431,6 +467,10 @@ export const baseFactionIds = Object.values(factions)
 
 export const pokFactionIds = Object.values(factions)
   .filter((faction) => faction.set === "pok")
+  .map((faction) => faction.id);
+
+export const teFactionIds = Object.values(factions)
+  .filter((faction) => faction.set === "te")
   .map((faction) => faction.id);
 
 export const factionDiscordantIds = Object.values(factions)

@@ -1,9 +1,8 @@
-import { Box, Group, Input, Modal, Stack, Text } from "@mantine/core";
+import { Box, Group, Input, Modal, Stack, Text, useMantineTheme } from "@mantine/core";
 import { Fragment, useEffect, useState } from "react";
 import { searchableSystemData, systemData } from "~/data/systemData";
-import { PlanetStatsPill } from "../../../../components/Slice/PlanetStatsPill";
-import { System } from "~/types";
-import { bgColor } from "../../../../components/Planet";
+import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
+import { PlanetTrait, System } from "~/types";
 import { useArrowFocus } from "~/hooks/useArrowFocus";
 import { TechIcon } from "~/components/icons/TechIcon";
 import { factions } from "~/data/factionData";
@@ -17,6 +16,7 @@ type Props = {
 };
 
 export function PlanetFinder({ onSystemSelected }: Props) {
+  const theme = useMantineTheme();
   const planetFinderModal = useDraft((state) => state.planetFinderModal);
   const availableSystemIds = useDraft((state) => state.systemPool);
   const factionPool = useDraft((state) => state.factionPool);
@@ -28,6 +28,12 @@ export function PlanetFinder({ onSystemSelected }: Props) {
   const { addSystemToMap, addSystemToSlice, closePlanetFinder } = useDraft(
     (state) => state.actions,
   );
+
+  const bgColor: Record<PlanetTrait, string> = {
+    CULTURAL: theme.colors.blue[4],
+    HAZARDOUS: theme.colors.red[5],
+    INDUSTRIAL: theme.colors.green[5],
+  };
 
   const handleSelectSystem = (system: System) => {
     if (!planetFinderModal) return;
@@ -154,20 +160,32 @@ export function PlanetFinder({ onSystemSelected }: Props) {
               {system.planets.map((planet, idx) => (
                 <Fragment key={planet.name}>
                   <Group gap="xs">
-                    <Box
-                      w="10"
-                      h="10"
-                      style={{ borderRadius: 10 }}
-                      bg={planet.trait ? bgColor[planet.trait] : "gray.5"}
-                    />
+                    {planet.trait ? (
+                      planet.trait.map((trait) => (
+                        <Box
+                          key={trait}
+                          w="10"
+                          h="10"
+                          style={{ borderRadius: 10 }}
+                          bg={bgColor[trait]}
+                        />
+                      ))
+                    ) : (
+                      <Box
+                        w="10"
+                        h="10"
+                        style={{ borderRadius: 10 }}
+                        bg="gray.5"
+                      />
+                    )}
                     <Text size="sm">{planet.name}</Text>
                     <PlanetStatsPill
                       resources={planet.resources}
                       influence={planet.influence}
                     />
-                    {planet.tech && (
-                      <TechIcon techSpecialty={planet.tech} size={16} />
-                    )}
+                    {planet.tech?.map((tech) => (
+                      <TechIcon key={tech} techSpecialty={tech} size={16} />
+                    ))}
                   </Group>
                   {idx < system.planets.length - 1 && <Divider />}
                 </Fragment>

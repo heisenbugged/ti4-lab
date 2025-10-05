@@ -18,6 +18,7 @@ import { NumberStepper } from "./NumberStepper";
 const gameSetLabel: Record<GameSet, string> = {
   base: "Base",
   pok: "Prophecy of Kings",
+  te: "Thunder's Edge",
   discordant: "Discordant Stars",
   discordantexp: "Discordant Expansion",
   drahn: "Drahn",
@@ -44,7 +45,7 @@ type Props = {
   onClose: () => void;
 };
 
-const BASE_KEY = "base|pok";
+const BASE_KEY = "base|pok|te";
 const DISCORDANT_KEY = "discordant|discordantexp";
 
 export function FactionSettingsModal({
@@ -150,7 +151,7 @@ export function FactionSettingsModal({
   }, [factionPool]);
 
   const showStratification =
-    (factionGameSets.includes("base") || factionGameSets.includes("pok")) &&
+    (factionGameSets.includes("base") || factionGameSets.includes("pok") || factionGameSets.includes("te")) &&
     factionGameSets.includes("discordant");
 
   return (
@@ -167,8 +168,8 @@ export function FactionSettingsModal({
       {showStratification && (
         <Group gap="md" ml="md" mb="md">
           <Input.Wrapper
-            label="# of Base/POK Factions"
-            description="Number of factions that are from Base + POK (0 to disable)"
+            label="# of Base/POK/TE Factions"
+            description="Number of factions that are from Base + POK + TE (if enable exp) (0 to disable)"
           >
             <Box mt="xs">
               <NumberStepper

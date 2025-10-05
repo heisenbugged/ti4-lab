@@ -294,14 +294,14 @@ function summarizeRaw(systems: SystemId[]) {
         optInf += i / 2;
       }
       if (planet.tech) {
-        // for (const planetTech of planet.raw.tech) {
-        tech.push(planet.tech.substring(0, 1).toUpperCase());
-        // }
+        for (const planetTech of planet.tech) {
+          tech.push(planetTech.substring(0, 1).toUpperCase());
+        }
       }
       if (planet.trait) {
-        // for (const planetTrait of planet.raw.trait) {
-        traits.push(planet.trait.substring(0, 1).toUpperCase());
-        // }
+        for (const planetTrait of planet.trait) {
+          traits.push(planetTrait.substring(0, 1).toUpperCase());
+        }
       }
       if (planet.legendary) {
         legendaries.push("L");

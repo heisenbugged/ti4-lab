@@ -6,6 +6,7 @@ const wormholeColor: Record<TWormhole, string> = {
   BETA: "var(--mantine-color-green-8)",
   DELTA: "var(--mantine-color-blue-8)",
   GAMMA: "var(--mantine-color-purple-8)",
+  EPSILON: "var(--mantine-color-red-8)",
 };
 
 type Props = {

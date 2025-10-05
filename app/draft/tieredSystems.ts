@@ -42,7 +42,10 @@ export function calculateTier(system: System) {
   }
 
   const planetCount = system.planets.length;
-  const techCount = system.planets.filter((planet) => !!planet.tech).length;
+  const techCount = system.planets.reduce(
+    (sum, planet) => (planet.tech ? sum + planet.tech.length : sum),
+    0,
+  );
   const hasLegendary =
     system.planets.filter((planet) => planet.legendary).length > 0;
 

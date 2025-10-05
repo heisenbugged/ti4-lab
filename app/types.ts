@@ -3,6 +3,7 @@ import { DraftType, SliceGenerationConfig } from "./draft";
 export type GameSet =
   | "base"
   | "pok"
+  | "te"
   | "discordant"
   | "discordantexp"
   | "unchartedstars"
@@ -35,18 +36,20 @@ export type TechSpecialty = "BIOTIC" | "WARFARE" | "PROPULSION" | "CYBERNETIC";
 export type PlanetTrait = "INDUSTRIAL" | "HAZARDOUS" | "CULTURAL";
 export type Planet = {
   name: string;
-  trait?: PlanetTrait;
-  tech?: TechSpecialty;
+  trait?: PlanetTrait[];
+  tech?: TechSpecialty[];
   resources: number;
   influence: number;
   legendary?: boolean;
+  tradeStation?: boolean;
 };
 export type Anomaly =
   | "NEBULA"
   | "GRAVITY_RIFT"
   | "ASTEROID_FIELD"
+  | "ENTROPIC_SCAR"
   | "SUPERNOVA";
-export type Wormhole = "ALPHA" | "BETA" | "DELTA" | "GAMMA";
+export type Wormhole = "ALPHA" | "BETA" | "DELTA" | "GAMMA" | "EPSILON";
 
 export type MapSpaceType = "SYSTEM" | "HOME" | "OPEN" | "CLOSED" | "WARP";
 
@@ -89,6 +92,11 @@ export type FactionId =
   | "titans"
   | "vulraith"
   | "keleres"
+  | "bastion"
+  | "crimson"
+  | "ralnel"
+  | "dws"
+  | "firmament"
   | "axis"
   | "bentor"
   | "celdauri"
@@ -162,7 +170,7 @@ export type PlayerId = number;
 
 /// V
 export type FactionStratification = {
-  ["base|pok"]?: number;
+  ["base|pok|te"]?: number;
   ["discordant|discordantexp"]?: number;
 };
 
