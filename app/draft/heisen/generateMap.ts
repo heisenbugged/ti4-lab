@@ -544,7 +544,7 @@ const rebalanceTraits = (
     .filter((id) => {
       // Must have at least one planet with the most common trait
       const hasMaxTrait = systemData[id].planets.some(
-        ({ trait }) => trait === maxTrait,
+        ({ trait }) => trait?.includes(maxTrait),
       );
       // If it's on the map and has wormholes, don't swap it to avoid breaking wormhole placement
       const isSafeToRemove = !(
@@ -555,8 +555,8 @@ const rebalanceTraits = (
     .sort(
       // Sort by how many planets have the max trait, most first
       (a, b) =>
-        systemData[b].planets.filter(({ trait }) => trait === maxTrait).length -
-        systemData[a].planets.filter(({ trait }) => trait === maxTrait).length,
+        systemData[b].planets.filter(({ trait }) => trait?.includes(maxTrait)).length -
+        systemData[a].planets.filter(({ trait }) => trait?.includes(maxTrait)).length,
     );
 
   // Try each candidate for removal
@@ -565,7 +565,7 @@ const rebalanceTraits = (
     const possibleAdditions = availableSystemsCopy.filter((id) => {
       // Must have at least one planet with the least common trait
       const hasMinTrait = systemData[id].planets.some(
-        ({ trait }) => trait === minTrait,
+        ({ trait }) => trait?.includes(minTrait),
       );
 
       // Planet count constraint is relaxed - allow +/-1 difference to increase swap opportunities
@@ -659,8 +659,12 @@ const countPlanetTraits = (used: SystemId[]) => {
   };
 
   used.forEach((id) => {
-    systemData[id].planets.forEach(({ trait }) => {
-      if (trait) planetTraits[trait] += 1;
+    systemData[id].planets.forEach(({ trait: traits }) => {
+      if (traits) {
+        for (const trait of traits) {
+          planetTraits[trait] += 1;
+        }
+      }
     });
   });
 

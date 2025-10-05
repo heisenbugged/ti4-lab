@@ -55,10 +55,18 @@ export const draftableSystemIds = Object.values(systemData)
   .filter(
     (system) =>
       (system.type === "BLUE" || system.type === "RED") &&
-      Number(system.id) < 100 &&
+      Number(system.id) < 92 &&
       system.id !== "18" && // cannot draft mecatol
       system.id !== "82" && // cannot draft mallice
       system.id !== "81", // cannot draft muaat hero supernova
+  )
+  .map((system) => system.id);
+
+export const thunderSystemIds = Object.values(systemData)
+  .filter(
+    (system) =>
+      (system.type === "BLUE" || system.type === "RED") &&
+      Number(system.id) >= 92 && Number(system.id) < 150,
   )
   .map((system) => system.id);
 
@@ -66,7 +74,7 @@ export const unchartedStarsSystemIds = Object.values(systemData)
   .filter(
     (system) =>
       (system.type === "BLUE" || system.type === "RED") &&
-      Number(system.id) >= 100,
+      Number(system.id) >= 150,
   )
   .map((system) => system.id);
 
@@ -115,12 +123,16 @@ export const searchableSystemData = Object.values(systemData).reduce(
     for (const planet of system.planets) {
       nameParts.push(planet.name.toLowerCase());
       if (planet.trait) {
-        nameParts.push(searchableTrait[planet.trait]);
-        nameParts.push(planet.trait.toLowerCase());
+        for (const trait of planet.trait) {
+          nameParts.push(searchableTrait[trait]);
+          nameParts.push(trait.toLowerCase());
+        }
       }
       if (planet.tech) {
-        nameParts.push(searchableTech[planet.tech]);
-        nameParts.push(planet.tech.toLowerCase());
+        for (const tech of planet.tech) {
+          nameParts.push(searchableTech[tech]);
+          nameParts.push(tech.toLowerCase());
+        }
       }
 
       nameParts.push(`${planet.resources} resources`);

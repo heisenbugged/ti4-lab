@@ -221,7 +221,7 @@ export const optimalStatsForSystems = (systems: System[]) =>
 export const techSpecialtiesForSystems = (systems: System[]) =>
   systems.reduce((acc, s) => {
     s.planets.forEach((p) => {
-      if (p.tech) acc.push(p.tech);
+      if (p.tech) acc.push(...p.tech);
     });
     return acc;
   }, [] as TechSpecialty[]);

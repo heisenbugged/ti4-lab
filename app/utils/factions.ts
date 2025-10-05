@@ -4,6 +4,7 @@ import {
   factionDiscordantIds,
   factions,
   pokFactionIds,
+  teFactionIds,
 } from "~/data/factionData";
 import { FactionId, GameSet } from "~/types";
 
@@ -14,6 +15,9 @@ export function getFactionPool(sets: GameSet[]) {
   }
   if (sets.includes("pok")) {
     factionPool.push(...pokFactionIds);
+  }
+  if (sets.includes("te")) {
+    factionPool.push(...teFactionIds);
   }
   if (sets.includes("discordant")) {
     factionPool.push(...factionDiscordantIds);

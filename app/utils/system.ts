@@ -1,6 +1,7 @@
 import {
   draftableSystemIds,
   systemData,
+  thunderSystemIds,
   unchartedStarsSystemIds,
 } from "~/data/systemData";
 import { GameSet, System, SystemId, SystemStats } from "~/types";
@@ -25,11 +26,15 @@ export function systemStats(system: System): SystemStats {
       stats.totalInfluence += p.influence;
 
       if (p.tech) {
-        stats.totalTech.push(techSpecialtyMap[p.tech]);
+        for (const tech of p.tech) {
+          stats.totalTech.push(techSpecialtyMap[tech]);
+        }
       }
 
       if (p.trait) {
-        stats[traitCount[p.trait]]++;
+        for (const trait of p.trait) {
+          stats[traitCount[trait]]++;
+        }
       }
 
       if (p.legendary) {
@@ -55,6 +60,9 @@ export function getSystemPool(sets: GameSet[]) {
   const systemPool = [...draftableSystemIds];
   if (sets.includes("unchartedstars")) {
     systemPool.push(...unchartedStarsSystemIds);
+  }
+  if (sets.includes("te")) {
+    systemPool.push(...thunderSystemIds);
   }
   return systemPool.flat(1);
 }

@@ -367,6 +367,7 @@ export default function DraftPrechoice() {
     withDiscordantExp: false,
     withUnchartedStars: false,
     withDrahn: false,
+    withTE: false,
   });
   const {
     excludeBaseFactions,
@@ -375,6 +376,7 @@ export default function DraftPrechoice() {
     withDiscordantExp,
     withUnchartedStars,
     withDrahn,
+    withTE,
   } = contentFlags;
 
   const setWithDiscordantExp = (v: boolean) =>
@@ -385,6 +387,9 @@ export default function DraftPrechoice() {
 
   const setWithDrahn = (v: boolean) =>
     setContentFlags((prev) => ({ ...prev, withDrahn: v }));
+
+  const setWithTE = (v: boolean) =>
+    setContentFlags((prev) => ({ ...prev, withTE: v }));
 
   const setExcludeBaseFactions = (v: boolean) =>
     setContentFlags((prev) => ({ ...prev, excludeBaseFactions: v }));
@@ -1372,6 +1377,16 @@ export default function DraftPrechoice() {
             )}
           </Stack>
 
+          <Stack>
+            <Checkbox
+              label="Thunder's Edge (only lab view and no info for new factions)"
+              checked={withTE}
+              onChange={() => {
+                setWithTE(!withTE);
+              }}
+            />
+          </Stack>
+
           <Box mt="md">
             <Button
               variant="outline"
@@ -1519,17 +1534,20 @@ type ContentFlags = {
   withDiscordantExp: boolean;
   withDrahn: boolean;
   withUnchartedStars: boolean;
+  withTE: boolean;
 };
 
 const getTileSetsFromFlags = ({
   withDiscordant,
   withDiscordantExp,
   withUnchartedStars,
+  withTE,
 }: ContentFlags) => {
   const tileGameSets: GameSet[] = ["base", "pok"];
   if (withDiscordant) tileGameSets.push("discordant");
   if (withDiscordantExp) tileGameSets.push("discordantexp");
   if (withUnchartedStars) tileGameSets.push("unchartedstars");
+  if (withTE) tileGameSets.push("te");
 
   return tileGameSets;
 };
@@ -1540,12 +1558,14 @@ const getFactionGameSetsFromFlags = ({
   withDiscordant,
   withDiscordantExp,
   withDrahn,
+  withTE,
 }: ContentFlags) => {
   const factionGameSets: GameSet[] = [];
   if (!excludeBaseFactions) factionGameSets.push("base");
   if (!excludePokFactions) factionGameSets.push("pok");
   if (withDiscordant) factionGameSets.push("discordant");
   if (withDiscordantExp) factionGameSets.push("discordantexp");
+  if (withTE) factionGameSets.push("te");
   if (withDrahn) factionGameSets.push("drahn");
   return factionGameSets;
 };
