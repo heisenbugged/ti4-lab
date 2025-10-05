@@ -116,6 +116,7 @@ export const generateSlices = (
 ) =>
   coreGenerateSlices({
     mecatolPath: [1, 3],
+    centerTile: 1,
     sliceCount,
     availableSystems,
     config: config ?? DEFAULT_CONFIG,
@@ -159,7 +160,13 @@ export const generateSlices = (
 
       const minOptimal = config.minOptimal ?? DEFAULT_CONFIG.minOptimal;
       const maxOptimal = config.maxOptimal ?? DEFAULT_CONFIG.maxOptimal;
+      const infOptimal = optimal.influence + optimal.flex;
+      const resOptimal = optimal.resources + optimal.flex;
 
+      if (config.minOptimalInfluence && infOptimal < config.minOptimalInfluence)
+        return false;
+      if (config.minOptimalResources && resOptimal < config.minOptimalResources)
+        return false;
       if (maxOptimal !== undefined && totalOptimal > maxOptimal) return false;
       if (minOptimal !== undefined && totalOptimal < minOptimal) return false;
 

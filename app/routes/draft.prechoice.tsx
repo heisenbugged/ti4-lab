@@ -20,7 +20,6 @@ import {
   Switch,
   Text,
   Textarea,
-  Radio,
   SimpleGrid,
 } from "@mantine/core";
 import {
@@ -733,7 +732,9 @@ export default function DraftPrechoice() {
         minOptimal,
         maxOptimal,
         minOptimalInfluence: miltySettings.minOptimalInfluence,
+        minOptimalResources: miltySettings.minOptimalResources,
         safePathToMecatol: miltySettings.safePathToMecatol,
+        centerTileNotEmpty: miltySettings.centerTileNotEmpty,
         highQualityAdjacent: miltySettings.highQualityAdjacent,
         numAlphas: miltySettings.minAlphaWormholes,
         numBetas: miltySettings.minBetaWormholes,
@@ -754,6 +755,7 @@ export default function DraftPrechoice() {
         minOptimal,
         maxOptimal,
         minOptimalInfluence: miltySettings.minOptimalInfluence,
+        minOptimalResources: miltySettings.minOptimalResources,
         hasMinorFactions,
       };
     }
@@ -763,7 +765,10 @@ export default function DraftPrechoice() {
       draftSettings.sliceGenerationConfig = {
         minOptimal: miltyEqSettings.minOptimal,
         maxOptimal: miltyEqSettings.maxOptimal,
+        minOptimalInfluence: miltyEqSettings.minOptimalInfluence,
+        minOptimalResources: miltyEqSettings.minOptimalResources,
         safePathToMecatol: miltyEqSettings.safePathToMecatol,
+        centerTileNotEmpty: miltyEqSettings.centerTileNotEmpty,
         highQualityAdjacent: miltyEqSettings.highQualityAdjacent,
         numAlphas: miltyEqSettings.minAlphaWormholes,
         numBetas: miltyEqSettings.minBetaWormholes,

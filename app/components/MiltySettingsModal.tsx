@@ -6,8 +6,10 @@ export interface MiltyDraftSettings {
   minOptimal?: number;
   maxOptimal?: number;
   minOptimalInfluence?: number;
+  minOptimalResources?: number;
 
   safePathToMecatol: number;
+  centerTileNotEmpty: number;
   highQualityAdjacent: number;
   minAlphaWormholes: number;
   minBetaWormholes: number;
@@ -16,9 +18,11 @@ export interface MiltyDraftSettings {
 
 export const DEFAULT_MILTY_SETTINGS: MiltyDraftSettings = {
   minOptimalInfluence: 4,
+  minOptimalResources: 3,
   minOptimal: 9,
   maxOptimal: 13,
   safePathToMecatol: 0,
+  centerTileNotEmpty: 0,
   highQualityAdjacent: 0,
   minAlphaWormholes: 2,
   minBetaWormholes: 2,
@@ -71,6 +75,15 @@ export function MiltySettingsModal({
             />
 
             <SettingStepper
+              label="Minimum Optimal Resources"
+              property="minOptimalResources"
+              value={localSettings.minOptimalResources}
+              onChange={handleSettingChange}
+              allowUndefined={true}
+              defaultValue={DEFAULT_MILTY_SETTINGS.minOptimalResources}
+            />
+
+            <SettingStepper
               label="Minimum Optimal Total"
               property="minOptimal"
               value={localSettings.minOptimal}
@@ -101,6 +114,14 @@ export function MiltySettingsModal({
               description="Number of slices that must have high-quality tiles adjacent to home"
               property="highQualityAdjacent"
               value={localSettings.highQualityAdjacent}
+              onChange={handleSettingChange}
+            />
+
+            <SettingStepper
+              label="Slices with safe center"
+              description="Number of slices with no empty and no anomaly center tile"
+              property="centerTileNotEmpty"
+              value={localSettings.centerTileNotEmpty}
               onChange={handleSettingChange}
             />
           </Stack>

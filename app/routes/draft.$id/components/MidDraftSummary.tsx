@@ -13,6 +13,7 @@ import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { systemsInSlice } from "~/utils/slice";
 
 import classes from "./MidDraftSummary.module.css";
+import { FactionHelpInfo } from "~/routes/draft.$id/components/FactionHelpInfo";
 
 export function MidDraftSummary() {
   const config = useDraftConfig();
@@ -142,9 +143,19 @@ export function SummaryCard({
             <Text size="sm">Faction not chosen</Text>
           )}
         </Group>
-
-        {slice !== undefined && <SliceFeatures slice={slice} />}
       </Group>
+
+      {faction && (
+        <Group mt="xs">
+          <FactionHelpInfo faction={faction} />
+        </Group>
+      )}
+
+      {slice !== undefined && (
+        <Group mt="lg">
+          <SliceFeatures slice={slice} />
+        </Group>
+      )}
 
       {minorFaction && (
         <Group justify="space-between" mt="lg">

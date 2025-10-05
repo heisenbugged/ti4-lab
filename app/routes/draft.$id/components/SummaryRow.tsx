@@ -6,6 +6,7 @@ import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
 import { Slice, HydratedPlayer } from "~/types";
 import { PlayerChip } from "./PlayerChip";
+import { FactionHelpInfo } from "~/routes/draft.$id/components/FactionHelpInfo";
 
 type Props = {
   player: HydratedPlayer;
@@ -21,16 +22,19 @@ export function SummaryRow({
   showPlayerColor = false,
 }: Props) {
   const faction = factions[player.faction!];
-  const { total, optimal, specialties } = useSlice(slice);
+  const { total, optimal } = useSlice(slice);
   return (
     <Table.Tr>
       <Table.Td>
         <PlayerChip player={player} />
       </Table.Td>
       <Table.Td>
-        <Group>
+        <Group wrap="nowrap">
           <FactionIcon faction={player.faction!} style={{ height: 36 }} />
           <Text>{faction.name}</Text>
+        </Group>
+        <Group>
+          <FactionHelpInfo faction={faction} />
         </Group>
       </Table.Td>
       <Table.Td>{player.speakerOrder! + 1}</Table.Td>

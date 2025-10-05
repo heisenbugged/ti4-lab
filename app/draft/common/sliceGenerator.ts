@@ -32,6 +32,7 @@ export type CoreGenerateSlicesArgs = {
   availableSystems: SystemId[];
   config: SliceGenerationConfig;
   mecatolPath: number[] | undefined;
+  centerTile: number;
 
   // Strategy functions
   getSliceTiers: () => TieredSlice;
@@ -45,7 +46,8 @@ export type CoreGenerateSlicesArgs = {
   postProcessSlices?: (
     slices: SystemIds[],
     config: SliceGenerationConfig,
-    mecatolPath: number[] | undefined,
+    mecatolPath?: number[],
+    centerTile?: number,
   ) => void;
 };
 
@@ -205,6 +207,7 @@ const validateMap = (
  */
 export function coreGenerateSlices({
   mecatolPath,
+  centerTile,
   availableSystems,
   systemTiers,
   sliceShape,
@@ -216,73 +219,104 @@ export function coreGenerateSlices({
   postProcessSlices,
 }: CoreGenerateSlicesArgs): SystemIds[] | undefined {
   const allTieredSystems = groupSystemsByTier(availableSystems, systemTiers);
+  const sliceTiers: TieredSlice[] = Array.from(
+    { length: sliceCount },
+    getSliceTiers,
+  );
+  const tierCounts = sliceTiers.flat().reduce(
+    (counts, tier) => {
+      // NOTE: "resolved" branch should never be triggered,
+      // but is currently required for the type checker
+      // as the types are a bit messy.
+      if (tier === "resolved") return counts;
+      counts[tier] = (counts[tier] || 0) + 1;
+      return counts;
+    },
+    { high: 0, med: 0, low: 0, red: 0 } as Record<ChoosableTier, number>,
+  );
 
-  const gatherSlices = (attempts: number = 0): SystemIds[] | undefined => {
-    if (attempts > 1000) return undefined;
+  const gatherSlices = (): SystemIds[] | undefined => {
+    let slices: SystemIds[] | undefined = undefined;
+    for (let i = 0; i < 100; i++) {
+      const tieredSystems = gatherSystems();
 
-    const { tieredSystems, sliceTiers } = gatherSystems() ?? {
-      tieredSystems: undefined,
-      sliceTiers: undefined,
-    };
-    if (!tieredSystems) return undefined;
+      if (!tieredSystems) {
+        continue;
+      }
 
-    const slices: SystemIds[] = [];
-    for (let i = 0; i < sliceCount; i++) {
-      const tierValues = sliceTiers[i];
-      const slice: SystemId[] = tierValues.map(
-        (tier) => tieredSystems[tier as ChoosableTier].shift()!,
-      );
-      if (!validateSlice(slice, config)) return gatherSlices(attempts + 1);
-      slices.push(shuffle(slice));
+      const t_slices = gatherSlicesFromSystems(tieredSystems);
+
+      if (t_slices) {
+        slices = t_slices;
+        break;
+      }
     }
 
     return slices;
   };
 
-  const gatherSystems = (attempts: number = 0) => {
-    if (attempts > 1000) return undefined;
+  const gatherSystems = () => {
+    let tieredSystems: TieredSystems | undefined = undefined;
+    for (let i = 0; i < 1000; i++) {
+      const shuffledTieredSystems = shuffleTieredSystems(allTieredSystems);
+      const t_tieredSystems = {
+        high: shuffledTieredSystems.high.slice(0, tierCounts.high),
+        med: shuffledTieredSystems.med.slice(0, tierCounts.med),
+        low: shuffledTieredSystems.low.slice(0, tierCounts.low),
+        red: shuffledTieredSystems.red.slice(0, tierCounts.red),
+      };
 
-    const sliceTiers: TieredSlice[] = Array.from(
-      { length: sliceCount },
-      getSliceTiers,
-    );
-    const tierCounts = sliceTiers.flat().reduce(
-      (counts, tier) => {
-        // NOTE: "resolved" branch should never be triggered,
-        // but is currently required for the type checker
-        // as the types are a bit messy.
-        if (tier === "resolved") return counts;
-        counts[tier] = (counts[tier] || 0) + 1;
-        return counts;
-      },
-      { high: 0, med: 0, low: 0, red: 0 } as Record<ChoosableTier, number>,
-    );
+      // Make sure we have enough systems in each tier
+      // as sometimes the weighted picks grab more tiles in a tier
+      // than we have available.
+      if (
+        t_tieredSystems.high.length < tierCounts.high ||
+        t_tieredSystems.med.length < tierCounts.med ||
+        t_tieredSystems.low.length < tierCounts.low ||
+        t_tieredSystems.red.length < tierCounts.red
+      ) {
+        continue;
+      }
 
-    const shuffledTieredSystems = shuffleTieredSystems(allTieredSystems);
-    const tieredSystems = {
-      high: shuffledTieredSystems.high.slice(0, tierCounts.high),
-      med: shuffledTieredSystems.med.slice(0, tierCounts.med),
-      low: shuffledTieredSystems.low.slice(0, tierCounts.low),
-      red: shuffledTieredSystems.red.slice(0, tierCounts.red),
-    };
-
-    // Make sure we have enough systems in each tier
-    // as sometimes the weighted picks grab more tiles in a tier
-    // than we have available.
-    if (
-      tieredSystems.high.length < tierCounts.high ||
-      tieredSystems.med.length < tierCounts.med ||
-      tieredSystems.low.length < tierCounts.low ||
-      tieredSystems.red.length < tierCounts.red
-    ) {
-      return gatherSystems(attempts + 1);
+      if (validateSystems(t_tieredSystems, config)) {
+        tieredSystems = t_tieredSystems;
+        break;
+      }
     }
 
-    if (!validateSystems(tieredSystems, config)) {
-      return gatherSystems(attempts + 1);
+    return tieredSystems;
+  };
+
+  const gatherSlicesFromSystems = (
+    tieredSystems: TieredSystems,
+  ): SystemIds[] | undefined => {
+    let slices: SystemIds[] = [];
+    for (let i = 0; i < 1000; i++) {
+      const t_tieredSystems: TieredSystems = JSON.parse(
+        JSON.stringify(tieredSystems),
+      );
+      t_tieredSystems.high = shuffle(t_tieredSystems.high);
+      t_tieredSystems.low = shuffle(t_tieredSystems.low);
+      t_tieredSystems.med = shuffle(t_tieredSystems.med);
+      t_tieredSystems.red = shuffle(t_tieredSystems.red);
+      for (let i = 0; i < sliceCount; i++) {
+        const tierValues = sliceTiers[i];
+        const slice: SystemId[] = tierValues.map(
+          (tier) => t_tieredSystems[tier as ChoosableTier].shift()!,
+        );
+        if (!validateSlice(slice, config)) {
+          break;
+        }
+        slices.push(shuffle(slice));
+      }
+      if (slices.length !== sliceCount) {
+        slices = [];
+      } else {
+        break;
+      }
     }
 
-    return { sliceTiers, tieredSystems };
+    return slices.length ? slices : undefined;
   };
 
   const slices: SystemIds[] | undefined = gatherSlices();
@@ -297,10 +331,29 @@ export function coreGenerateSlices({
 
   // Run any post-processing if provided
   if (postProcessSlices) {
-    postProcessSlices(slices, config, mecatolPath);
+    postProcessSlices(slices, config, mecatolPath, centerTile);
   }
 
   return slices;
+}
+
+// Function to check if center tile no empty and no anomaly
+export function checkFirstTileToMecatolIsSafe(
+  slice: SystemIds,
+  centerTile?: number,
+): boolean {
+  // If no centerTile is specified in the config, always return true
+  if (!centerTile) return true;
+
+  // Skip if index out of bounds
+  if (centerTile >= slice.length) {
+    return true;
+  }
+
+  // Check if center tile in the path is an anomaly or without planets
+  const systemId = slice[centerTile];
+  const system = systemData[systemId];
+  return !(system.anomalies.length > 0 || system.planets.length === 0);
 }
 
 // Function to check if a slice has a safe path to Mecatol
@@ -340,6 +393,67 @@ export function hasHighQualityAdjacent(
   }
 
   return false;
+}
+
+// Ensure a center tile no anomaly and with planets
+export function ensureCenterTileIsSafe(
+  slices: SystemIds[],
+  minCenterSafeCount: number,
+  centerTile?: number,
+): void {
+  if (!centerTile) return;
+
+  const centerSafeSlices = slices.filter((slice) =>
+    checkFirstTileToMecatolIsSafe(slice, centerTile),
+  );
+  if (centerSafeSlices.length >= minCenterSafeCount) return;
+
+  // Get indices of slices without safe center
+  const unsafeSliceIndices = slices
+    .map((slice, index) => ({ slice, index }))
+    .filter(({ slice }) => !checkFirstTileToMecatolIsSafe(slice, centerTile))
+    .map(({ index }) => index);
+
+  const slicesToFix = Math.min(
+    minCenterSafeCount - centerSafeSlices.length,
+    unsafeSliceIndices.length,
+  );
+
+  unsafeSliceIndices.slice(0, slicesToFix).forEach((sliceIndex) => {
+    const slice = [...slices[sliceIndex]];
+
+    const centerEmptyOrAnomaly =
+      centerTile < slice.length &&
+      (systemData[slice[centerTile]]?.anomalies.length > 0 ||
+        systemData[slice[centerTile]]?.planets.length === 0);
+
+    const nonPathNonAnomalyOrEmptyIndices = Array.from({ length: slice.length })
+      .map((_, index) => index)
+      .filter((index) => centerTile !== index)
+      .filter((index) => {
+        const system = systemData[slice[index]];
+        return system.anomalies.length === 0 && system.planets.length > 0;
+      });
+
+    const swapsNeeded = Math.min(
+      centerEmptyOrAnomaly ? 1 : 0,
+      nonPathNonAnomalyOrEmptyIndices.length,
+    );
+
+    for (let i = 0; i < swapsNeeded; i++) {
+      const nonPathIndex = nonPathNonAnomalyOrEmptyIndices[i];
+
+      // Swap the tiles
+      [slice[centerTile], slice[nonPathIndex]] = [
+        slice[nonPathIndex],
+        slice[centerTile],
+      ];
+    }
+
+    // Update the slice if we've fixed it
+    if (checkFirstTileToMecatolIsSafe(slice, centerTile))
+      slices[sliceIndex] = slice;
+  });
 }
 
 // Ensure a minimum number of slices have a safe path to Mecatol
@@ -569,12 +683,18 @@ export function getAdjacentPositions(position: number): number[] {
   return adjacentPositions;
 }
 
-// Post-processing function for Mecatol path and high-quality adjacent requirements
+// Post-processing function for Mecatol path, safe center tile and high-quality adjacent requirements
 export const postProcessSlices = (
   slices: SystemIds[],
   config: SliceGenerationConfig,
-  mecatolPath: number[] | undefined,
+  mecatolPath?: number[],
+  centerTile?: number,
 ) => {
+  // Check for safe center tile
+  if (config.centerTileNotEmpty && config.centerTileNotEmpty > 0) {
+    ensureCenterTileIsSafe(slices, config.centerTileNotEmpty, centerTile);
+  }
+
   // Check for safe path to Mecatol requirement
   if (config.safePathToMecatol && config.safePathToMecatol > 0) {
     ensureSafePathToMecatol(slices, config.safePathToMecatol, mecatolPath);

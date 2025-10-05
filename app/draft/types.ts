@@ -52,6 +52,7 @@ export type SliceGenerationConfig = {
   minOptimalResources?: number;
 
   safePathToMecatol?: number;
+  centerTileNotEmpty?: number;
   highQualityAdjacent?: number;
   hasMinorFactions?: boolean;
   minorFactionPool?: FactionId[];

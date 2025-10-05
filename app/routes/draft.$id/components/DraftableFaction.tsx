@@ -1,12 +1,11 @@
-import { Box, Button, Flex, Group, Modal, Stack, Text } from "@mantine/core";
+import { Box, Flex, Group, Stack, Text } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction, HydratedPlayer } from "~/types";
 import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
-import { IconEye, IconLink } from "@tabler/icons-react";
-import { useDisclosure } from "@mantine/hooks";
 
 import classes from "~/components/Surface.module.css";
 import { playerColors } from "~/data/factionData";
+import { FactionHelpInfo } from "~/routes/draft.$id/components/FactionHelpInfo";
 
 type Props = {
   faction: Faction;
@@ -25,7 +24,6 @@ export function DraftableFaction({
   onSelect,
   onSelectMinor,
 }: Props) {
-  const [opened, { open, close }] = useDisclosure();
   const playerColor =
     player?.id !== undefined ? playerColors[player.id] : undefined;
 
@@ -47,26 +45,8 @@ export function DraftableFaction({
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
         }}
-        onClick={hasRegularSelectOnly && !opened ? onSelect : undefined}
+        onClick={hasRegularSelectOnly ? onSelect : undefined}
       >
-        <Modal
-          opened={opened}
-          onClose={close}
-          size="100%"
-          title={faction.name}
-          centered
-        >
-          <img
-            src={`/factioncards/${faction.id}.png`}
-            style={{
-              objectFit: "contain",
-              maxHeight: 500,
-              maxWidth: "100%",
-              margin: "auto",
-              display: "block",
-            }}
-          />
-        </Modal>
         <Group
           align="center"
           flex={1}
@@ -111,32 +91,7 @@ export function DraftableFaction({
         }}
         className={`${classes.surface} ${classes.withBorder}`}
       >
-        <Button.Group>
-          <Button
-            size="xs"
-            variant="subtle"
-            flex={1}
-            style={{ borderTopLeftRadius: 0 }}
-            leftSection={<IconEye size={16} />}
-            color="blue"
-            onMouseDown={open}
-          >
-            Info
-          </Button>
-          <Button
-            size="xs"
-            variant="subtle"
-            flex={1}
-            style={{ borderTopRightRadius: 0 }}
-            leftSection={<IconLink size={16} />}
-            color="pink"
-            onClick={() => {
-              window.open(faction.wiki, "_blank");
-            }}
-          >
-            Wiki
-          </Button>
-        </Button.Group>
+        <FactionHelpInfo faction={faction} />
       </Box>
     </Stack>
   );
