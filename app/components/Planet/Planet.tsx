@@ -6,6 +6,8 @@ import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { TradeStationIcon } from "~/components/icons/TradeStationIcon";
+import { TradeStation } from "../features/TradeStation";
+import { LegendaryPopover } from "./LegendaryPopover";
 
 export type PlanetFormat =
   | "STREAMLINED"
@@ -70,16 +72,29 @@ export function Planet({
   const size = 50 + (planet.legendary ? 20 : 0);
   const planetColor = trait ? getBgColor(bgColors, trait) : "gray.6";
 
-  return (
+  const showBg = !hasLegendaryImage && !planet.tradeStation;
+
+  const content = (
     <Flex
-      bg={!hasLegendaryImage ? planetColor : undefined}
+      bg={showBg ? planetColor : undefined}
       style={{ borderRadius: size, width: size, height: size }}
       align="center"
       justify="center"
       pos="relative"
     >
+      {planet.tradeStation && (
+        <Box
+          pos="absolute"
+          bottom="4px"
+          style={{
+            transform: "rotate(-20deg)",
+          }}
+        >
+          <TradeStation />
+        </Box>
+      )}
       <PlanetStats
-        legendary={planet.legendary}
+        legendary={planet.legendary || planet.tradeStation}
         resources={planet.resources}
         influence={planet.influence}
         fontSize={fontSize}
@@ -99,16 +114,25 @@ export function Planet({
           <LegendaryIcon />
         </Box>
       )}
-      {planet.tradeStation && (
-        <Box pos="absolute" bottom={-4} left={-14}>
-          <TradeStationIcon />
-        </Box>
-      )}
+
       {techSpecialty?.map((tech, index) => (
         <Box key={index} pos="absolute" top={-6} right={-2 + 20 * index}>
           <TechIcon techSpecialty={tech} />
         </Box>
       ))}
     </Flex>
+  );
+
+  return planet.legendary ||
+    planet.legendaryTitle ||
+    planet.legendaryDescription ? (
+    <LegendaryPopover
+      title={planet.legendaryTitle}
+      description={planet.legendaryDescription}
+    >
+      {content}
+    </LegendaryPopover>
+  ) : (
+    content
   );
 }

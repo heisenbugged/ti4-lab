@@ -41,6 +41,8 @@ export type Planet = {
   resources: number;
   influence: number;
   legendary?: boolean;
+  legendaryTitle?: string;
+  legendaryDescription?: string;
   tradeStation?: boolean;
 };
 export type Anomaly =

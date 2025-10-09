@@ -24,7 +24,7 @@ export function PlanetStats({
     : undefined;
   if (legendary) {
     return (
-      <Group gap={3}>
+      <Group gap={3} style={{ zIndex: 1 }}>
         <Box bg="yellow" style={{ borderRadius: 8 }} px={2} py={2}>
           <Text size={fontSize} fw="bolder" c="white">
             {resources}
@@ -39,7 +39,7 @@ export function PlanetStats({
     );
   }
   return (
-    <Group gap={3}>
+    <Group gap={3} style={{ zIndex: 1 }}>
       <Text
         size={fontSize}
         fw="bolder"

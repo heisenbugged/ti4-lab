@@ -805,6 +805,9 @@ export const rawSystems: Record<string, RawSystem> = {
         resources: 2,
         influence: 1,
         legendary: true,
+        legendaryTitle: "The Atrament",
+        legendaryDescription:
+          "You may exhaust this card at the end of your turn to place up to 2 infantry from your reinforcements on any planet you control",
         trait: ["CULTURAL"],
       },
     ],
@@ -820,6 +823,9 @@ export const rawSystems: Record<string, RawSystem> = {
         resources: 3,
         influence: 0,
         legendary: true,
+        legendaryTitle: "Imperial Arms Vault",
+        legendaryDescription:
+          "You may exhaust this card at the end of your turn to place 1 mech from your reinforcements on any planet you control, or draw 1 action card",
         trait: ["HAZARDOUS"],
       },
     ],
@@ -1372,6 +1378,9 @@ export const rawSystems: Record<string, RawSystem> = {
         trait: ["INDUSTRIAL"],
         tech: ["BIOTIC"],
         legendary: true,
+        legendaryTitle: "Maxis Central Control",
+        legendaryDescription:
+          "You may exhaust this card when you pass to gain control of a non-home, non-legendary planet that contains no units and has no attachments.",
       },
     ],
     type: "BLUE",
@@ -1387,6 +1396,9 @@ export const rawSystems: Record<string, RawSystem> = {
         influence: 1,
         trait: ["HAZARDOUS"],
         legendary: true,
+        legendaryTitle: "Dok 'N Pic's Salvage Yard",
+        legendaryDescription:
+          "You may exhaust this card when you pass to place 1 action card from the discard pile faceup on this card; you can purge cards on this card to play them as if they were in your hand.",
       },
     ],
     type: "BLUE",
@@ -1402,6 +1414,9 @@ export const rawSystems: Record<string, RawSystem> = {
         influence: 2,
         trait: ["CULTURAL"],
         legendary: true,
+        legendaryTitle: "The Acropolis",
+        legendaryDescription:
+          "You may exhaust this card at the end of your turn to ready another component that isn't a strategy card.",
       },
     ],
     type: "BLUE",
@@ -1418,6 +1433,9 @@ export const rawSystems: Record<string, RawSystem> = {
         trait: ["HAZARDOUS"],
         tech: ["PROPULSION"],
         legendary: true,
+        legendaryTitle: "Ionian Fuel Refinery",
+        legendaryDescription:
+          "You may exhaust this card after you activate a system to apply +1 to the move value of 1 of your ships during this tactical action.",
       },
     ],
     type: "BLUE",
@@ -1447,7 +1465,7 @@ export const rawSystems: Record<string, RawSystem> = {
         resources: 1,
         influence: 1,
         trait: ["INDUSTRIAL"],
-        tech: ["PROPULSION"]
+        tech: ["PROPULSION"],
       },
     ],
     type: "BLUE",
@@ -1653,6 +1671,9 @@ export const rawSystems: Record<string, RawSystem> = {
         resources: 2,
         influence: 0,
         legendary: true,
+        legendaryTitle: "Aeurex Mechanica",
+        legendaryDescription:
+          "You may exhaust this card when you pass to place 1 ship that matches a unit upgrade technology you own form your reinforcements into a system that contains your ships.",
         trait: ["INDUSTRIAL"],
         tech: ["WARFARE"],
       },
