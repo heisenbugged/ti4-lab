@@ -18,7 +18,7 @@ export function useSpotifyLogin() {
   const refreshSpotifyToken = useCallback(() => {
     refreshFetcher.submit(null, {
       method: "get",
-      action: "/soundboard/refresh",
+      action: "/voices/refresh",
     });
   }, [refreshFetcher]);
 

@@ -33,7 +33,6 @@ export type LineType =
 export type AudioEntry = {
   url: string;
   caption?: string;
-  noTransmission?: boolean;
 };
 
 type FactionAudio = {
@@ -644,56 +643,48 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       {
         url: `${CDN_BASE_URL}/voices/vuilraith/yes.mp3`,
         caption: "Yes.",
-        noTransmission: true,
       },
     ],
     roleplayNo: [
       {
         url: `${CDN_BASE_URL}/voices/vuilraith/no.mp3`,
         caption: "No.",
-        noTransmission: true,
       },
     ],
     roleplayIRefuse: [
       {
         url: `${CDN_BASE_URL}/voices/vuilraith/irefuse.mp3`,
         caption: "I refuse.",
-        noTransmission: true,
       },
     ],
     roleplayDealWithIt: [
       {
         url: `${CDN_BASE_URL}/voices/vuilraith/dealwithit.mp3`,
         caption: "Deal with it.",
-        noTransmission: true,
       },
     ],
     roleplayNotEnough: [
       {
         url: `${CDN_BASE_URL}/voices/vuilraith/thatsnotenough.mp3`,
         caption: "That's not enough.",
-        noTransmission: true,
       },
     ],
     roleplayTooMuch: [
       {
         url: `${CDN_BASE_URL}/voices/vuilraith/thatstoomuch.mp3`,
         caption: "That's too much.",
-        noTransmission: true,
       },
     ],
     roleplaySabotage: [
       {
         url: `${CDN_BASE_URL}/voices/vuilraith/sabotage.mp3`,
         caption: "Sabotage.",
-        noTransmission: true,
       },
     ],
     roleplayFire: [
       {
         url: `${CDN_BASE_URL}/voices/vuilraith/fire.mp3`,
         caption: "Fire!",
-        noTransmission: true,
       },
     ],
     special: {
@@ -2346,56 +2337,48 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       {
         url: `${CDN_BASE_URL}/voices/hacan/yes.mp3`,
         caption: "Yes.",
-        noTransmission: true,
       },
     ],
     roleplayNo: [
       {
         url: `${CDN_BASE_URL}/voices/hacan/no.mp3`,
         caption: "No.",
-        noTransmission: true,
       },
     ],
     roleplayIRefuse: [
       {
         url: `${CDN_BASE_URL}/voices/hacan/irefuse.mp3`,
         caption: "I refuse.",
-        noTransmission: true,
       },
     ],
     roleplayDealWithIt: [
       {
         url: `${CDN_BASE_URL}/voices/hacan/dealwithit.mp3`,
         caption: "Deal with it.",
-        noTransmission: true,
       },
     ],
     roleplayNotEnough: [
       {
         url: `${CDN_BASE_URL}/voices/hacan/thatsnotenough.mp3`,
         caption: "That's not enough.",
-        noTransmission: true,
       },
     ],
     roleplayTooMuch: [
       {
         url: `${CDN_BASE_URL}/voices/hacan/thatstoomuch.mp3`,
         caption: "That's too much.",
-        noTransmission: true,
       },
     ],
     roleplaySabotage: [
       {
         url: `${CDN_BASE_URL}/voices/hacan/sabotage.mp3`,
         caption: "Sabotage.",
-        noTransmission: true,
       },
     ],
     roleplayFire: [
       {
         url: `${CDN_BASE_URL}/voices/hacan/fire.mp3`,
         caption: "Fire!",
-        noTransmission: true,
       },
     ],
     special: {
@@ -2516,56 +2499,48 @@ export const factionAudios: Record<FactionId, FactionAudio> = {
       {
         url: `${CDN_BASE_URL}/voices/nomad/yes.mp3`,
         caption: "Yes.",
-        noTransmission: true,
       },
     ],
     roleplayNo: [
       {
         url: `${CDN_BASE_URL}/voices/nomad/no.mp3`,
         caption: "No.",
-        noTransmission: true,
       },
     ],
     roleplayIRefuse: [
       {
         url: `${CDN_BASE_URL}/voices/nomad/irefuse.mp3`,
         caption: "I refuse.",
-        noTransmission: true,
       },
     ],
     roleplayDealWithIt: [
       {
         url: `${CDN_BASE_URL}/voices/nomad/dealwithit.mp3`,
         caption: "Deal with it.",
-        noTransmission: true,
       },
     ],
     roleplayNotEnough: [
       {
         url: `${CDN_BASE_URL}/voices/nomad/thatsnotenough.mp3`,
         caption: "That's not enough.",
-        noTransmission: true,
       },
     ],
     roleplayTooMuch: [
       {
         url: `${CDN_BASE_URL}/voices/nomad/thatstoomuch.mp3`,
         caption: "That's too much.",
-        noTransmission: true,
       },
     ],
     roleplaySabotage: [
       {
         url: `${CDN_BASE_URL}/voices/nomad/sabotage.mp3`,
         caption: "Sabotage.",
-        noTransmission: true,
       },
     ],
     roleplayFire: [
       {
         url: `${CDN_BASE_URL}/voices/nomad/fire.mp3`,
         caption: "Fire!",
-        noTransmission: true,
       },
     ],
     special: {
@@ -2786,64 +2761,54 @@ export const announcerAudios = {
     {
       url: `${CDN_BASE_URL}/voices/announcer/warsundown.mp3`,
       caption: "War Sun down!",
-      noTransmission: true,
     },
   ],
   announcerBreak: [
     {
       url: `${CDN_BASE_URL}/voices/announcer/break1.mp3`,
       caption: "Break time - Round 1",
-      noTransmission: true,
     },
     {
       url: `${CDN_BASE_URL}/voices/announcer/break2.mp3`,
       caption: "Break time - Round 2",
-      noTransmission: true,
     },
     {
       url: `${CDN_BASE_URL}/voices/announcer/break3.mp3`,
       caption: "Break time - Round 3",
-      noTransmission: true,
     },
   ],
   announcerInvasionstopped: [
     {
       url: `${CDN_BASE_URL}/voices/announcer/invasionstopped.mp3`,
       caption: "Invasion stopped!",
-      noTransmission: true,
     },
   ],
   announcerAnnihilation: [
     {
       url: `${CDN_BASE_URL}/voices/announcer/annihilation.mp3`,
       caption: "Total annihilation!",
-      noTransmission: true,
     },
   ],
   announcerDreaddown: [
     {
       url: `${CDN_BASE_URL}/voices/announcer/dreaddown.mp3`,
       caption: "Dreadnought down!",
-      noTransmission: true,
     },
   ],
   announcerCriticalhit: [
     {
       url: `${CDN_BASE_URL}/voices/announcer/criticalhit.mp3`,
       caption: "Critical hit!",
-      noTransmission: true,
     },
   ],
   announcerAgenda: [
     {
       url: `${CDN_BASE_URL}/voices/announcer/agenda2.mp3`,
       caption: "Agenda Phase - Part 2",
-      noTransmission: true,
     },
     {
       url: `${CDN_BASE_URL}/voices/announcer/agenda1.mp3`,
       caption: "Agenda Phase - Part 1",
-      noTransmission: true,
     },
   ],
 };
@@ -2927,3 +2892,26 @@ export const getAllSrcs = (factionId: FactionId, type: LineType) => {
     (factionAudio[type as keyof FactionAudio] as AudioEntry[]) ?? [];
   return entries.map((e) => e.url);
 };
+
+export type BattleAnthemPoolEntry = {
+  factionId: FactionId;
+  uri: string;
+  delay: number;
+};
+
+// Pool of battle anthems eligible for randomization (excludes hard-rock styles)
+export const battleAnthemPool: BattleAnthemPoolEntry[] = Object.entries(
+  factionAudios,
+)
+  .filter(
+    ([id, data]) =>
+      id !== "saar" &&
+      id !== "naazrokha" &&
+      typeof data.battleAnthem === "string" &&
+      data.battleAnthem.trim().length > 0,
+  )
+  .map(([id, data]) => ({
+    factionId: id as FactionId,
+    uri: data.battleAnthem,
+    delay: data.battleAnthemDelay ?? 0,
+  }));

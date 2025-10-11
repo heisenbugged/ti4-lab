@@ -32,6 +32,11 @@ import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useAudioPlayer } from "./useAudioPlayer";
 import { SpotifyLoginButton } from "./components/SpotifyLoginButton";
 import { useSpotifyLogin } from "./useSpotifyLogin";
+import {
+  SpotifyDeviceSelector,
+  SpotifyDeviceType,
+} from "./components/SpotifyDeviceSelector";
+import { SpotifyPlaylistUI } from "./components/SpotifyPlaylistUI";
 import { createSession } from "~/drizzle/soundboardSession.server";
 import { useSocketConnection } from "~/useSocketConnection";
 import QRCode from "react-qr-code";
@@ -65,6 +70,21 @@ const LINE_TYPE_DISPLAY_NAMES: Record<LineType, string> = {
   jokes: "Joke",
   special: "Special",
   special2: "Special 2",
+  roleplayYes: "Yes",
+  roleplayNo: "No",
+  roleplayIRefuse: "I Refuse",
+  roleplayDealWithIt: "Deal With It",
+  roleplayNotEnough: "Not Enough",
+  roleplayTooMuch: "Too Much",
+  roleplaySabotage: "Sabotage",
+  roleplayFire: "Fire!",
+  announcerWarsundown: "War Sun Down",
+  announcerBreak: "Break Time",
+  announcerInvasionstopped: "Invasion Stopped",
+  announcerAnnihilation: "Annihilation",
+  announcerDreaddown: "Dreadnought Down",
+  announcerCriticalhit: "Critical Hit",
+  announcerAgenda: "Agenda Phase",
 };
 
 const factionData = Object.entries(factions)
@@ -75,123 +95,10 @@ const factionData = Object.entries(factions)
     label: data.name,
   }));
 
-// New component: Spotify Device Selector
-interface SpotifyDeviceType {
-  id: string;
-  is_active: boolean;
-  name: string;
-  type: string;
-}
-
-interface SpotifyDeviceSelectorProps {
-  isOpen: boolean;
-  onClose: () => void;
-  devices: SpotifyDeviceType[];
-  isLoading: boolean;
-  onSelectDevice: (deviceId: string) => void;
-}
-
-const SpotifyDeviceSelector = ({
-  isOpen,
-  onClose,
-  devices,
-  isLoading,
-  onSelectDevice,
-}: SpotifyDeviceSelectorProps) => {
-  const getDeviceIcon = (type: string) => {
-    switch (type?.toLowerCase()) {
-      case "computer":
-        return <IconDeviceDesktop size={20} />;
-      case "smartphone":
-        return <IconDeviceMobile size={20} />;
-      case "speaker":
-        return <IconDeviceSpeaker size={20} />;
-      default:
-        return <IconDeviceUnknown size={20} />;
-    }
-  };
-
-  return (
-    <Modal
-      opened={isOpen}
-      onClose={onClose}
-      title="No Active Spotify Device"
-      centered
-      size="md"
-    >
-      <Alert color="blue" title="Playback requires an active device" mb="md">
-        Spotify requires an active device to play music. Please select one of
-        your available devices below or open the Spotify app on a device.
-      </Alert>
-
-      {isLoading ? (
-        <Text>Loading available devices...</Text>
-      ) : devices.length === 0 ? (
-        <Stack>
-          <Text>
-            No Spotify devices found. Please open Spotify on any device.
-          </Text>
-          <Button
-            onClick={() => window.open("https://open.spotify.com", "_blank")}
-            fullWidth
-          >
-            Open Spotify Web Player
-          </Button>
-          <Group grow mt="md">
-            <Button
-              onClick={() => onSelectDevice("refresh")}
-              variant="filled"
-              leftSection={<IconRefresh size={16} />}
-            >
-              Refresh Devices
-            </Button>
-            <Button onClick={onClose} variant="outline">
-              Cancel
-            </Button>
-          </Group>
-        </Stack>
-      ) : (
-        <Stack>
-          <Group justify="space-between" mb="xs">
-            <Text fw={500} size="sm">
-              Select a device:
-            </Text>
-            <Button
-              variant="subtle"
-              size="xs"
-              onClick={() => onSelectDevice("refresh")}
-              leftSection={<IconRefresh size={14} />}
-              disabled={isLoading}
-            >
-              Refresh
-            </Button>
-          </Group>
-          <List spacing="xs">
-            {devices.map((device: SpotifyDeviceType) => (
-              <List.Item key={device.id} icon={getDeviceIcon(device.type)}>
-                <Button
-                  variant={device.is_active ? "filled" : "outline"}
-                  onClick={() => onSelectDevice(device.id)}
-                  fullWidth
-                >
-                  {device.name} {device.is_active && "(active)"}
-                </Button>
-              </List.Item>
-            ))}
-          </List>
-          <Button onClick={onClose} variant="outline" mt="md">
-            Cancel
-          </Button>
-        </Stack>
-      )}
-    </Modal>
-  );
-};
-
 // Voice Line Queue Display
 interface VoiceLineQueueProps {
   queue: Array<{
-    factionId: FactionId;
+    factionId: FactionId | "announcer";
     type: LineType;
     id: string;
   }>;
@@ -251,16 +158,39 @@ const VoiceLineQueue = ({ queue, onRemove, onClear }: VoiceLineQueueProps) => {
                       <Text size="sm" fw={700} c="dimmed">
                         {index + 1}.
                       </Text>
-                      <FactionIcon
-                        faction={item.factionId}
-                        style={{ width: 20, height: 20 }}
-                      />
+                      {item.factionId === "announcer" ? (
+                        <Box
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: "50%",
+                            backgroundColor: "orange",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "10px",
+                            fontWeight: "bold",
+                            color: "white",
+                          }}
+                        >
+                          A
+                        </Box>
+                      ) : (
+                        <FactionIcon
+                          faction={item.factionId as FactionId}
+                          style={{ width: 20, height: 20 }}
+                        />
+                      )}
                       <Text size="sm" truncate style={{ flex: 1 }}>
-                        {item.type === "special"
-                          ? factionAudios[item.factionId]?.special?.title
-                          : item.type === "special2"
-                            ? factionAudios[item.factionId]?.special2?.title
-                            : LINE_TYPE_DISPLAY_NAMES[item.type]}
+                        {item.factionId === "announcer"
+                          ? LINE_TYPE_DISPLAY_NAMES[item.type]
+                          : item.type === "special"
+                            ? factionAudios[item.factionId as FactionId]
+                                ?.special?.title
+                            : item.type === "special2"
+                              ? factionAudios[item.factionId as FactionId]
+                                  ?.special2?.title
+                              : LINE_TYPE_DISPLAY_NAMES[item.type]}
                       </Text>
                     </Group>
                     <ActionIcon
@@ -302,7 +232,7 @@ const SpotifyPlaybackUI = ({ currentPlayback }: SpotifyPlaybackUIProps) => {
           color="red"
           size="xs"
           component="a"
-          href="/soundboard/logout"
+          href="/voices/logout"
         >
           Logout
         </Button>
@@ -368,46 +298,6 @@ const SpotifyPlaybackUI = ({ currentPlayback }: SpotifyPlaybackUIProps) => {
   );
 };
 
-// New component for Spotify playlist UI
-interface SpotifyPlaylistUIProps {
-  playlistId: string | undefined;
-  setPlaylistId: (id: string) => void;
-  isWarMode: boolean;
-  endWar: () => void;
-}
-
-const SpotifyPlaylistUI = ({
-  playlistId,
-  setPlaylistId,
-  isWarMode,
-  endWar,
-}: SpotifyPlaylistUIProps) => {
-  return (
-    <Group align="end" style={{ flex: 1 }}>
-      <TextInput
-        size="xl"
-        label="Playlist ID"
-        placeholder="Enter Spotify playlist ID"
-        description="Copy-paste the playlist ID from spotify that will be resumed when the war ends"
-        value={playlistId || ""}
-        onChange={(e) =>
-          setPlaylistId(extractPlaylistId(e.currentTarget.value))
-        }
-        style={{ flex: 1 }}
-      />
-      <Button
-        size="xl"
-        color="red"
-        variant="filled"
-        onClick={endWar}
-        disabled={!isWarMode}
-      >
-        End War
-      </Button>
-    </Group>
-  );
-};
-
 const DEFAULT_FACTION_SLOTS: FactionId[] = [
   "arborec",
   "argent",
@@ -467,7 +357,7 @@ export default function SoundboardMaster() {
     if (!socket || !sessionId) return;
     socket.emit("joinSoundboardSession", sessionId);
     socket.on("requestSessionData", () =>
-      socket.emit("sendSessionData", sessionId, factionIds),
+      socket.emit("sendSessionData", sessionId, factionSlots),
     );
     socket.on("playLine", (factionId, lineType) =>
       playAudio(factionId, lineType),
@@ -627,11 +517,11 @@ export default function SoundboardMaster() {
           <Group gap="lg">
             <Stack>
               <Text fw={500}>Session Code: {sessionId}</Text>
-              <Text>https://tidraft.com/soundboard/{sessionId}</Text>
+              <Text>https://tidraft.com/voices/{sessionId}</Text>
             </Stack>
             <Stack align="center" gap={4}>
               <QRCode
-                value={`https://tidraft.com/soundboard/${sessionId}`}
+                value={`https://tidraft.com/voices/${sessionId}`}
                 size={200}
               />
 
@@ -1050,24 +940,22 @@ export default function SoundboardMaster() {
 
 export const loader = async () => {
   const clientId = process.env.SPOTIFY_OAUTH_CLIENT_ID;
-  const callbackUrl = process.env.SPOTIFY_OAUTH_REDIRECT_URI;
+  const envRedirect = process.env.SPOTIFY_OAUTH_REDIRECT_URI;
 
-  if (!clientId || !callbackUrl) {
+  if (!clientId || !envRedirect) {
     throw new Error("Missing Spotify credentials in environment variables");
   }
 
+  const u = new URL(envRedirect);
+  u.pathname = "/voices/callback";
+
   return json({
     spotifyClientId: clientId,
-    spotifyCallbackUrl: callbackUrl,
+    spotifyCallbackUrl: u.toString(),
   });
 };
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await createSession();
-  return redirect(`/soundboard?session=${session.id}`);
-}
-
-export function extractPlaylistId(input: string) {
-  const match = input.match(/playlist[/:]([a-zA-Z0-9]{22})/);
-  return match ? match[1] : input;
+  return redirect(`/voices?session=${session.id}`);
 }

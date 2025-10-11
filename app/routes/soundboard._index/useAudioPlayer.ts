@@ -2,16 +2,15 @@ import { Howl } from "howler";
 import { useEffect, useRef, useState } from "react";
 import {
   announcerAudios,
-  CDN_BASE_URL,
   factionAudios,
   getAllSrcs,
   getRandomAudioEntry,
   LineType,
   type AudioEntry,
+  battleAnthemPool,
 } from "~/data/factionAudios";
 import { FactionId } from "~/types";
-import { useSpotifyLogin } from "./useSpotifyLogin";
-import { useSpotifyPlayer, SpotifyDevice } from "./useSpotifyPlayer";
+import { useSpotifyPlayer } from "./useSpotifyPlayer";
 
 type VoiceLineMemory = {
   [K in FactionId | "announcer"]?: {
@@ -24,14 +23,11 @@ type QueuedVoiceLine = {
   factionId: FactionId | "announcer";
   type: LineType;
   id: string; // Unique identifier for the queue item
-  shouldPlayTransmission: boolean; // Whether this item should play transmission
-  transmissionIndex?: number; // Which transmission to use
 };
 
 type Props = {
   accessToken: string | null;
   playlistId: string | null;
-  transmissionsEnabled?: boolean;
   lineFinished: () => void;
 };
 
@@ -41,7 +37,6 @@ const AUTO_QUEUE_TIMEFRAME = 2000;
 export function useAudioPlayer({
   accessToken,
   playlistId,
-  transmissionsEnabled,
   lineFinished,
 }: Props) {
   const {
@@ -63,7 +58,6 @@ export function useAudioPlayer({
   const [currentAudio, setCurrentAudio] = useState<AudioEntry | null>(null);
   const [volume, setVolume] = useState(1);
   const voiceLineRef = useRef<Howl | null>(null);
-  const transmissionRef = useRef<Howl | null>(null);
   const [isWarMode, setIsWarMode] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const progressIntervalRef = useRef<number | null>(null);
@@ -86,16 +80,6 @@ export function useAudioPlayer({
     isWarModeRef.current = isWarMode;
   }, [isWarMode]);
 
-  // Cleanup function for transmission audio
-  useEffect(() => {
-    return () => {
-      if (transmissionRef.current) {
-        transmissionRef.current.unload();
-        transmissionRef.current = null;
-      }
-    };
-  }, []);
-
   useEffect(() => {
     return () => {
       if (progressIntervalRef.current) {
@@ -108,12 +92,6 @@ export function useAudioPlayer({
 
   const stopAudio = () => {
     voiceLineRef.current?.stop();
-
-    // Properly cleanup transmission
-    if (transmissionRef.current) {
-      transmissionRef.current.stop();
-      transmissionRef.current = null;
-    }
 
     setLoadingAudio(null);
     setCurrentAudio(null);
@@ -132,12 +110,29 @@ export function useAudioPlayer({
         // Save current position first
         await saveCurrentPosition();
 
-        // Get battle anthem details
-        const delay = factionAudios[factionId].battleAnthemDelay ?? 0;
-        const battleAnthemUri = factionAudios[factionId].battleAnthem;
+        // Get battle anthem details (fallback to curated random if missing)
+        const configuredAnthem = factionAudios[factionId].battleAnthem;
+        const hasConfigured = Boolean(
+          configuredAnthem && configuredAnthem.trim().length > 0,
+        );
+
+        let selectedUri: string;
+        let selectedDelay: number;
+
+        if (hasConfigured) {
+          selectedUri = configuredAnthem as string;
+          selectedDelay = factionAudios[factionId].battleAnthemDelay ?? 0;
+        } else {
+          // Choose from curated pool (excludes Saar and Naaz-Rokha) and respect per-anthem delay
+          const pool = battleAnthemPool;
+          if (!pool.length) return; // No available anthem
+          const randomEntry = pool[Math.floor(Math.random() * pool.length)];
+          selectedUri = randomEntry.uri;
+          selectedDelay = randomEntry.delay ?? 0;
+        }
 
         // This will check for active devices and show the device selector if needed
-        await startBattleAnthem(battleAnthemUri, delay);
+        await startBattleAnthem(selectedUri, selectedDelay);
 
         // Only set war mode if we successfully started the battle anthem
         setIsWarMode(true);
@@ -168,28 +163,16 @@ export function useAudioPlayer({
     voiceLineQueueRef.current = newQueue;
     setVoiceLineQueue(newQueue);
 
-    // Play the next item with its transmission flag and index
-    playAudio(
-      nextItem.factionId,
-      nextItem.type,
-      true,
-      !nextItem.shouldPlayTransmission,
-      nextItem.transmissionIndex,
-    );
+    // Play the next item
+    playAudio(nextItem.factionId, nextItem.type, true);
   };
 
   // Function to add a voice line to the queue
-  const addToQueue = (
-    factionId: FactionId | "announcer",
-    type: LineType,
-    transmissionIndex?: number,
-  ) => {
+  const addToQueue = (factionId: FactionId | "announcer", type: LineType) => {
     const queueItem: QueuedVoiceLine = {
       factionId,
       type,
       id: `${factionId}-${type}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      shouldPlayTransmission: false,
-      transmissionIndex,
     };
 
     // Update both the state and the ref
@@ -226,15 +209,7 @@ export function useAudioPlayer({
     factionId: FactionId | "announcer",
     type: LineType,
     isFromQueue = false,
-    skipTransmission = false,
-    transmissionIndex?: number,
   ) => {
-    // CRITICAL: Stop any existing transmission IMMEDIATELY to prevent stacking
-    if (transmissionRef.current) {
-      transmissionRef.current.stop();
-      transmissionRef.current = null;
-    }
-
     const now = Date.now();
     const timeSinceLastTrigger = now - lastVoiceLineTriggerTime.current;
 
@@ -245,7 +220,7 @@ export function useAudioPlayer({
       loadingAudio &&
       timeSinceLastTrigger < AUTO_QUEUE_TIMEFRAME
     ) {
-      addToQueue(factionId, type, transmissionIndex);
+      addToQueue(factionId, type);
       return;
     }
 
@@ -313,9 +288,6 @@ export function useAudioPlayer({
         selectedEntry.url,
         false, // announcer never starts battle
         isFromQueue,
-        false, // announcer never plays transmission
-        undefined,
-        undefined,
       );
       return;
     }
@@ -354,10 +326,6 @@ export function useAudioPlayer({
       : getRandomAudioEntry(factionIdKey, type, availableLines);
     if (!selectedEntry) return;
 
-    // Check if this specific audio entry has noTransmission flag
-    const shouldPlayTransmission =
-      !skipTransmission && !selectedEntry.noTransmission;
-
     // Determine what the new voice line list should be
     const existingLinesForType = voiceLineMemory[factionIdKey]?.[type] || [];
     let newVoiceLineList: string[];
@@ -376,76 +344,19 @@ export function useAudioPlayer({
     }));
 
     setCurrentAudio(selectedEntry);
-    playLine(
-      selectedEntry.url,
-      shouldStartBattle,
-      isFromQueue,
-      shouldPlayTransmission,
-      factionIdKey,
-      transmissionIndex,
-    );
+    playLine(selectedEntry.url, shouldStartBattle, isFromQueue);
   };
 
   const playLine = (
     src: string,
     shouldStartBattle: boolean,
     isFromQueue: boolean = false,
-    shouldPlayTransmission: boolean = false,
-    factionId?: FactionId,
-    transmissionIndexParam?: number,
   ) => {
-    console.log(
-      "playLine",
-      src,
-      shouldStartBattle,
-      isFromQueue,
-      shouldPlayTransmission,
-      factionId,
-      transmissionIndexParam,
-    );
-    // CRITICAL: Always cleanup any existing transmission first to prevent stacking
-    if (transmissionRef.current) {
-      transmissionRef.current.stop();
-      transmissionRef.current = null;
-    }
+    console.log("playLine", src, shouldStartBattle, isFromQueue);
 
-    // Only play transmission if explicitly told to do so
-    if (shouldPlayTransmission && transmissionsEnabled && factionId) {
-      // Use the provided transmission index, or default to 0
-      const transmissionIndex = transmissionIndexParam ?? 0;
-      // Ensure the index is within bounds (1-8 transmission files available)
-      const safeTransmissionIndex = (transmissionIndex % 8) + 1;
-      const transmissionSrc = `${CDN_BASE_URL}/voices/transmissions/transmission${safeTransmissionIndex}.mp3`;
-
-      // Create and load the transmission sound on-demand
-      const transmissionSound = new Howl({
-        src: [transmissionSrc],
-        html5: true,
-        volume: volume,
-        preload: true,
-        onend: () => {
-          // After transmission ends, immediately play the main voice line
-          playMainVoiceLine();
-        },
-        onloaderror: () => {
-          console.error(
-            `Error loading transmission${safeTransmissionIndex} audio, playing voice line directly`,
-          );
-          // If transmission fails to load, play voice line directly
-          playMainVoiceLine();
-        },
-      });
-
-      transmissionRef.current = transmissionSound;
-
-      // Start the transmission
-      const timeout = shouldStartBattle ? 500 : 0;
-      setTimeout(() => transmissionSound.play(), timeout);
-    } else {
-      // No transmission, play voice line directly
-      const timeout = shouldStartBattle ? 500 : 0;
-      setTimeout(() => playMainVoiceLine(), timeout);
-    }
+    // Play voice line directly
+    const timeout = shouldStartBattle ? 500 : 0;
+    setTimeout(() => playMainVoiceLine(), timeout);
 
     function playMainVoiceLine() {
       // Clean up previous voice line if it exists
