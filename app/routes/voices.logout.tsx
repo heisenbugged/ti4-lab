@@ -1,9 +1,8 @@
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const response = redirect("/soundboard");
+  const response = redirect("/voices");
 
-  // Clear cookies by setting them to empty values with immediate expiration
   response.headers.append(
     "Set-Cookie",
     "spotifyAccessToken=; Path=/; Max-Age=0; SameSite=Lax",

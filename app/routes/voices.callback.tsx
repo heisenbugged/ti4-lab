@@ -6,20 +6,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const code = url.searchParams.get("code");
 
   if (!code) {
-    return redirect("/soundboard");
+    return redirect("/voices");
   }
 
+  const redirectUrl = new URL(process.env.SPOTIFY_OAUTH_REDIRECT_URI!);
   const { accessToken, refreshToken, expiresIn } =
     await spotifyApi.exchangeCodeForToken(
       code,
-      process.env.SPOTIFY_OAUTH_REDIRECT_URI!,
+      redirectUrl.toString(),
       process.env.SPOTIFY_OAUTH_CLIENT_ID!,
       process.env.SPOTIFY_OAUTH_CLIENT_SECRET!,
     );
 
-  const response = redirect("/soundboard");
+  const response = redirect("/voices");
 
-  // Set cookies with tokens
   response.headers.append(
     "Set-Cookie",
     `spotifyAccessToken=${accessToken}; Path=/; Max-Age=${expiresIn}; SameSite=Lax`,

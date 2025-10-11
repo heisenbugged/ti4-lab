@@ -47,11 +47,6 @@ import {
   IconRefresh,
   IconInfoCircle,
   IconQrcode,
-  IconMusic,
-  IconDeviceDesktop,
-  IconDeviceMobile,
-  IconDeviceSpeaker,
-  IconDeviceUnknown,
 } from "@tabler/icons-react";
 import { SectionTitle } from "~/components/Section";
 import {
@@ -66,6 +61,11 @@ import styles from "./ClosedCaptions.module.css";
 import { SpotifyLoginButton } from "../soundboard._index/components/SpotifyLoginButton";
 import { useSpotifyLogin } from "../soundboard._index/useSpotifyLogin";
 import { SpotifyPlaybackState } from "~/vendors/spotifyApi";
+import {
+  SpotifyDeviceSelector,
+  type SpotifyDeviceType,
+} from "../soundboard._index/components/SpotifyDeviceSelector";
+import { SpotifyPlaylistUI } from "../soundboard._index/components/SpotifyPlaylistUI";
 import { announcerAudios } from "~/data/factionAudios";
 
 // Line type display names dictionary
@@ -244,6 +244,90 @@ const VoiceLineQueue = ({ queue, onRemove, onClear }: VoiceLineQueueProps) => {
         </Stack>
       </Popover.Dropdown>
     </Popover>
+  );
+};
+
+interface SpotifyPlaybackUIProps {
+  currentPlayback: SpotifyPlaybackState | null;
+}
+
+const SpotifyPlaybackUI = ({ currentPlayback }: SpotifyPlaybackUIProps) => {
+  if (!currentPlayback) return <></>;
+
+  return (
+    <>
+      <Group justify="space-between" align="center">
+        <Image
+          src="/spotifylogo.svg"
+          alt="Spotify Logo"
+          style={{ width: 90, height: 24 }}
+        />
+        <Button
+          variant="outline"
+          color="red"
+          size="xs"
+          component="a"
+          href="/voices/logout"
+        >
+          Logout
+        </Button>
+      </Group>
+      <Paper radius="md" p="xs" withBorder>
+        <Group gap="md" wrap="nowrap">
+          <Image
+            src={currentPlayback.albumImage.url}
+            alt="Album Art"
+            width={currentPlayback.albumImage.width}
+            height={currentPlayback.albumImage.height}
+            radius="sm"
+          />
+          <Stack gap={2} style={{ overflow: "hidden" }}>
+            <Tooltip label={currentPlayback.track.name} openDelay={500}>
+              <Text
+                fw={500}
+                size="sm"
+                component="a"
+                href={currentPlayback.track.external_urls.spotify}
+                target="_blank"
+                truncate
+                style={{ maxWidth: "100%" }}
+              >
+                {currentPlayback.track.name}
+              </Text>
+            </Tooltip>
+            <Group gap={0}>
+              {currentPlayback.artists.map(
+                (
+                  artist: { id: string; name: string; uri: string },
+                  index: number,
+                ) => (
+                  <Fragment key={artist.id}>
+                    {index > 0 && (
+                      <Text c="dimmed" size="sm">
+                        {" "}
+                        ,{" "}
+                      </Text>
+                    )}
+                    <Tooltip label={artist.name} openDelay={500}>
+                      <Text
+                        component="a"
+                        href={artist.uri}
+                        target="_blank"
+                        c="dimmed"
+                        size="sm"
+                        truncate
+                      >
+                        {artist.name}
+                      </Text>
+                    </Tooltip>
+                  </Fragment>
+                ),
+              )}
+            </Group>
+          </Stack>
+        </Group>
+      </Paper>
+    </>
   );
 };
 
@@ -485,6 +569,8 @@ const AnnouncerVoiceLineButton = ({
 };
 
 export default function VoicesMaster() {
+  const { spotifyClientId, spotifyCallbackUrl } =
+    useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const factionsParam = searchParams.get("factions");
   const sessionId = searchParams.get("session");
@@ -496,16 +582,17 @@ export default function VoicesMaster() {
   });
   const [isVoiceLinePlaying, setIsVoiceLinePlaying] = useState(false);
   const [volume, setVolume] = useState(1);
+  const { accessToken } = useSpotifyLogin();
+  const [playlistId, setPlaylistId] = useState<string | undefined>(undefined);
   const timeOnPageTracker = useRef<(() => void) | null>(null);
   const [qrModalOpened, setQrModalOpened] = useState(false);
-  const [transmissionsEnabled, setTransmissionsEnabled] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("transmissionsEnabled");
-      return saved === "true";
+  useEffect(() => {
+    if (!playlistId) {
+      const stored = localStorage.getItem("spotifyPlaylistId");
+      setPlaylistId(stored || "6O6izIEToh3JI4sAtHQn6J");
     }
-    return false;
-  });
-  const transmissionsEnabledRef = useRef(transmissionsEnabled);
+    if (playlistId) localStorage.setItem("spotifyPlaylistId", playlistId);
+  }, [playlistId]);
 
   const [closedCaptionsEnabled, setClosedCaptionsEnabled] = useState(() => {
     if (typeof window !== "undefined") {
@@ -515,12 +602,6 @@ export default function VoicesMaster() {
     return false;
   });
 
-  const changeTransmissionsEnabled = (enabled: boolean) => {
-    localStorage.setItem("transmissionsEnabled", enabled.toString());
-    transmissionsEnabledRef.current = enabled;
-    setTransmissionsEnabled(enabled);
-  };
-
   const changeClosedCaptionsEnabled = (enabled: boolean) => {
     localStorage.setItem("closedCaptionsEnabled", enabled.toString());
     setClosedCaptionsEnabled(enabled);
@@ -529,18 +610,28 @@ export default function VoicesMaster() {
   const {
     playAudio,
     stopAudio,
+    endWar,
     loadingAudio,
     currentAudio,
+    isWarMode,
     voiceLineRef,
+    currentPlayback,
+    startBattle,
     audioProgress,
+    getDevices,
+    availableDevices,
+    isLoadingDevices,
+    noActiveDeviceError,
+    setNoActiveDeviceError,
+    transferToDevice,
+    playbackRestrictions,
     voiceLineQueue,
     removeFromQueue,
     clearQueue,
     voiceLineMemory,
   } = useAudioPlayer({
-    accessToken: null,
-    playlistId: null,
-    transmissionsEnabled: true,
+    accessToken,
+    playlistId: playlistId || "6O6izIEToh3JI4sAtHQn6J",
     lineFinished: () => {
       if (!socket) return;
       socket.emit("lineFinished", sessionId);
@@ -609,13 +700,7 @@ export default function VoicesMaster() {
       socket.emit("sendSessionData", sessionId, factionSlots);
 
     const handlePlayLine = (factionId: FactionId, lineType: LineType) => {
-      playAudio(
-        factionId,
-        lineType,
-        true,
-        !transmissionsEnabledRef.current,
-        factionSlots.indexOf(factionId),
-      );
+      playAudio(factionId, lineType, true);
     };
 
     const handleStopLine = () => stopAudio();
@@ -655,11 +740,25 @@ export default function VoicesMaster() {
   const handlePlayAudio = async (factionId: FactionId, type: LineType) => {
     if (!socket) return;
 
-    // Calculate transmission index based on faction's position in slots
-    const factionSlotIndex = factionSlots.findIndex(
-      (slot) => slot === factionId,
-    );
-    const transmissionIndex = factionSlotIndex >= 0 ? factionSlotIndex : 0;
+    // For battle-related lines, check if there's an active Spotify device first
+    const shouldStartBattle = [
+      "battleLines",
+      "homeInvasion",
+      "homeDefense",
+      "defenseOutnumbered",
+      "offenseSuperior",
+    ].includes(type);
+
+    if (shouldStartBattle && accessToken) {
+      const devices = await getDevices();
+      const hasActiveDevice = devices?.some(
+        (d: SpotifyDeviceType) => d.is_active,
+      );
+      if (!hasActiveDevice) {
+        setNoActiveDeviceError(true);
+        return;
+      }
+    }
 
     // Analytics: Track voice line click
     trackVoiceLineClick({
@@ -669,7 +768,7 @@ export default function VoicesMaster() {
       isQueued: isVoiceLineQueued(factionId, type),
     });
 
-    playAudio(factionId, type, false, !transmissionsEnabled, transmissionIndex);
+    playAudio(factionId, type, false);
     setIsVoiceLinePlaying(true);
   };
 
@@ -684,8 +783,7 @@ export default function VoicesMaster() {
       isQueued: isAnnouncerLineQueued(type),
     });
 
-    // Use "announcer" as factionId and always skip transmissions for announcer
-    playAudio("announcer" as FactionId, type, false, true, 0);
+    playAudio("announcer" as FactionId, type, false);
     setIsVoiceLinePlaying(true);
   };
 
@@ -781,44 +879,70 @@ export default function VoicesMaster() {
       )}
 
       <Stack mb="xl" gap="md" mt="lg">
-        <Group justify="space-between" align="center" wrap="wrap" gap="md">
+        <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
           {/* Left component - changes based on session state */}
-          {sessionId ? (
-            <Group gap="md" align="center" wrap="wrap">
-              <Stack gap="xs">
-                <Text fw={500}>Session Code: {sessionId}</Text>
-                <Text size="sm" c="dimmed">
-                  https://tidraft.com/voices/{sessionId}
-                </Text>
-              </Stack>
-              <Button
-                variant="filled"
-                color="blue"
-                leftSection={<IconQrcode size={16} />}
-                onClick={handleShowQrCode}
-              >
-                Show QR Code
-              </Button>
-              <Button
-                variant="filled"
-                color="red"
-                onClick={() => {
-                  handleEndSession();
-                  window.location.href = window.location.pathname;
-                }}
-              >
-                End Session
-              </Button>
-            </Group>
-          ) : (
-            <Form method="post" onSubmit={handleCreateSession}>
-              <Button type="submit" size="xl">
-                Create Session
-              </Button>
-            </Form>
-          )}
+          <Stack gap="md" style={{ flex: "1 1 300px" }}>
+            {sessionId ? (
+              <Group gap="md" align="center" wrap="wrap">
+                <Stack gap="xs">
+                  <Text fw={500}>Session Code: {sessionId}</Text>
+                  <Text size="sm" c="dimmed">
+                    https://tidraft.com/voices/{sessionId}
+                  </Text>
+                </Stack>
+                <Button
+                  variant="filled"
+                  color="blue"
+                  leftSection={<IconQrcode size={16} />}
+                  onClick={handleShowQrCode}
+                >
+                  Show QR Code
+                </Button>
+                <Button
+                  variant="filled"
+                  color="red"
+                  onClick={() => {
+                    handleEndSession();
+                    window.location.href = window.location.pathname;
+                  }}
+                >
+                  End Session
+                </Button>
+              </Group>
+            ) : (
+              <Form method="post" onSubmit={handleCreateSession}>
+                <Button type="submit" size="xl">
+                  Create Session
+                </Button>
+              </Form>
+            )}
 
-          {/* Right component - always the same alert */}
+            {/* Spotify Login Prompt - moved here from absolute positioning */}
+            {!accessToken && (
+              <Paper radius="md" p="md" withBorder maw={400}>
+                <Stack>
+                  <Group align="center" gap="md" justify="space-between">
+                    <div style={{ flex: 0.5, height: 38 }}>
+                      <img src="/spotifylogo.svg" alt="Spotify Logo" />
+                    </div>
+                    <SpotifyLoginButton
+                      accessToken={accessToken}
+                      spotifyCallbackUrl={spotifyCallbackUrl}
+                      spotifyClientId={spotifyClientId}
+                    />
+                  </Group>
+                  <Text size="sm" c="dimmed">
+                    Log in with Spotify to control background music during peace
+                    and war times. When war breaks out, the music will
+                    automatically switch to more intense tracks, and return to
+                    the peaceful playlist when war ends.
+                  </Text>
+                </Stack>
+              </Paper>
+            )}
+          </Stack>
+
+          {/* Right component - info alert */}
           <Alert
             variant="light"
             color="blue"
@@ -834,7 +958,7 @@ export default function VoicesMaster() {
         </Group>
       </Stack>
 
-      {/* Transmissions and CC Toggles - positioned top right above table */}
+      {/* Closed Captions Toggle - positioned top right above table */}
       <Group justify="flex-end" gap="md">
         <ClientOnly>
           {() => (
@@ -845,24 +969,39 @@ export default function VoicesMaster() {
             />
           )}
         </ClientOnly>
-        <ClientOnly>
-          {() => (
-            <TransmissionsToggle
-              sessionId={sessionId}
-              checked={transmissionsEnabled}
-              onChange={(enabled) => {
-                changeTransmissionsEnabled(enabled);
+      </Group>
 
-                // Analytics: Track transmission toggle
-                trackButtonClick({
-                  buttonType: "transmission_toggle",
-                  context: enabled ? "transmission_on" : "transmission_off",
-                  sessionId: sessionId || undefined,
-                });
-              }}
-            />
-          )}
-        </ClientOnly>
+      {/* Spotify Controls */}
+      <Group grow align="end" justify="flex-end">
+        {accessToken && playbackRestrictions === false ? (
+          <SpotifyPlaylistUI
+            playlistId={playlistId}
+            setPlaylistId={setPlaylistId}
+            isWarMode={isWarMode}
+            endWar={endWar}
+          />
+        ) : null}
+
+        {accessToken && (
+          <Stack mt={12} w={300} style={{ overflow: "hidden" }}>
+            {playbackRestrictions === null ? null : playbackRestrictions ? (
+              <Alert color="blue" title="Spotify Premium Required">
+                Spotify Premium lets you play any track, podcast episode or
+                audiobook, ad-free and with better audio quality. Go to{" "}
+                <Anchor
+                  href="https://spotify.com/premium"
+                  target="_blank"
+                  c="blue"
+                >
+                  spotify.com/premium
+                </Anchor>{" "}
+                to try it for free.
+              </Alert>
+            ) : (
+              <SpotifyPlaybackUI currentPlayback={currentPlayback} />
+            )}
+          </Stack>
+        )}
       </Group>
 
       {/* Announcer Section */}
@@ -1522,6 +1661,22 @@ export default function VoicesMaster() {
         </Stack>
       </Box>
 
+      {/* Device selector for Spotify when no active device */}
+      <SpotifyDeviceSelector
+        isOpen={noActiveDeviceError}
+        onClose={() => setNoActiveDeviceError(false)}
+        devices={availableDevices}
+        isLoading={isLoadingDevices}
+        onSelectDevice={async (deviceId: string) => {
+          if (deviceId === "refresh") {
+            await getDevices();
+            return;
+          }
+          const success = await transferToDevice(deviceId);
+          if (success) setNoActiveDeviceError(false);
+        }}
+      />
+
       {/* Spacing div to prevent content from being hidden behind fixed player */}
       <div style={{ height: 100 }} />
 
@@ -1805,11 +1960,14 @@ export default function VoicesMaster() {
 
 export const loader = async () => {
   const clientId = process.env.SPOTIFY_OAUTH_CLIENT_ID;
-  const callbackUrl = process.env.SPOTIFY_OAUTH_REDIRECT_URI;
+  const redirectUrl = process.env.SPOTIFY_OAUTH_REDIRECT_URI;
+  if (!clientId || !redirectUrl) {
+    throw new Error("Missing Spotify credentials in environment variables");
+  }
 
   return json({
-    spotifyClientId: clientId || null,
-    spotifyCallbackUrl: callbackUrl || null,
+    spotifyClientId: clientId,
+    spotifyCallbackUrl: redirectUrl.toString(),
   });
 };
 

@@ -9,7 +9,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ?.split("=")[1];
 
   if (!refreshToken) {
-    return redirect("/soundboard");
+    return redirect("/voices");
   }
 
   try {
