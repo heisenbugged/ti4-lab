@@ -106,7 +106,7 @@ export function MapSection() {
           <Map
             id="fullmap"
             map={map}
-            config={config}
+            modifiableMapTiles={config.modifiableMapTiles}
             editable
             onSelectSystemTile={(t) => openPlanetFinderForMap(t.idx)}
             onDeleteSystemTile={(t) => removeSystemFromMap(t.idx)}

@@ -29,6 +29,7 @@ export function MainAppShell({ children, headerRightSection }: Props) {
   const isPresetsActive = location.pathname === "/draft/presets";
   const isAboutActive = location.pathname === "/about";
   const isSoundboardActive = location.pathname === "/voices";
+  const isMapGeneratorActive = location.pathname === "/map-generator";
 
   const handleSoundboardClick = () => {
     // Track button click with PostHog
@@ -42,6 +43,11 @@ export function MainAppShell({ children, headerRightSection }: Props) {
   };
 
   const menuItems = [
+    {
+      to: "/map-generator",
+      label: "Map Generator",
+      isActive: isMapGeneratorActive,
+    },
     { to: "/draft/presets", label: "Presets", isActive: isPresetsActive },
     { to: "/about", label: "About", isActive: isAboutActive },
   ];

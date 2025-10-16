@@ -39,7 +39,7 @@ export function MapSection() {
         mt="md"
       >
         <Map
-          config={config}
+          modifiableMapTiles={config.modifiableMapTiles}
           id="full-map"
           map={hydratedMap}
           onSelectHomeTile={

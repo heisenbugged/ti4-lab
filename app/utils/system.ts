@@ -57,14 +57,29 @@ export function systemStats(system: System): SystemStats {
 }
 
 export function getSystemPool(sets: GameSet[]) {
-  const systemPool = [...draftableSystemIds];
+  const systemPool: SystemId[] = [];
+
+  // Base game: IDs 19-50
+  if (sets.includes("base")) {
+    systemPool.push(...draftableSystemIds.filter(id => Number(id) >= 19 && Number(id) <= 50));
+  }
+
+  // PoK: IDs 51-91 (excluding special tiles 81, 82)
+  if (sets.includes("pok")) {
+    systemPool.push(...draftableSystemIds.filter(id => Number(id) >= 51 && Number(id) <= 91));
+  }
+
+  // Uncharted Stars: IDs 150+
   if (sets.includes("unchartedstars")) {
     systemPool.push(...unchartedStarsSystemIds);
   }
+
+  // Thunder's Edge: IDs 92-149
   if (sets.includes("te")) {
     systemPool.push(...thunderSystemIds);
   }
-  return systemPool.flat(1);
+
+  return systemPool;
 }
 
 export const systemsFromIds = (ids: SystemId[]): System[] =>

@@ -14,6 +14,13 @@ import { OriginalArtTile } from "./tiles/OriginalArtTile";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
+type SliceStats = {
+  resources: number;
+  influence: number;
+  techs: string;
+  traits: string;
+};
+
 type Props = {
   mapId: string;
   tile: Tile;
@@ -21,6 +28,9 @@ type Props = {
   homeSelectable?: boolean;
   onSelect?: () => void;
   onDelete?: () => void;
+  showHomeStats?: boolean;
+  sliceValue?: number;
+  sliceStats?: SliceStats;
 };
 const MECATOL_REX_ID = "18";
 
@@ -48,6 +58,9 @@ function OriginalArtMapTile(props: Props) {
           tile={tile}
           selectable={!!props.homeSelectable}
           onSelect={props.onSelect}
+          showStats={props.showHomeStats}
+          sliceValue={props.sliceValue}
+          sliceStats={props.sliceStats}
         />
       );
       break;
@@ -102,7 +115,7 @@ function AbstractArtMapTile(props: Props) {
   const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({
     id: `${props.mapId}-${tile.idx}-droppable`,
     data: { tile },
-    disabled: tile.type !== "SYSTEM" || isTouchDevice(),
+    disabled: !modifiable || isTouchDevice(),
   });
 
   useEffect(() => {
@@ -142,6 +155,9 @@ function AbstractArtMapTile(props: Props) {
           tile={tile}
           selectable={!!props.homeSelectable}
           onSelect={props.onSelect}
+          showStats={props.showHomeStats}
+          sliceValue={props.sliceValue}
+          sliceStats={props.sliceStats}
         />
       );
       break;
@@ -162,10 +178,12 @@ function AbstractArtMapTile(props: Props) {
 
   // maybe an easier way of making this condition
   const showOverlay =
-    modifiable && (hovered || tile.type === "OPEN") && tile.type !== "HOME";
+    modifiable && (hovered || tile.type === "OPEN" || isOver) && tile.type !== "HOME";
 
   const overlayColor = hovered
     ? alpha("var(--mantine-primary-color-filled)", 0.7)
+    : isOver
+    ? alpha("var(--mantine-primary-color-filled)", 0.3)
     : "rgba(0, 0, 0, 0)";
 
   return (

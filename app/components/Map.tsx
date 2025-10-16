@@ -6,30 +6,41 @@ import {
 import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
-import { isTileModifiable } from "~/utils/map";
 import { MapContext } from "~/contexts/MapContext";
-import { DraftConfig } from "~/draft";
+
+type SliceStats = {
+  resources: number;
+  influence: number;
+  techs: string;
+  traits: string;
+};
 
 type Props = {
   id: string;
-  config: DraftConfig;
+  modifiableMapTiles: number[];
   map: Map;
   editable: boolean;
   disabled?: boolean;
   onSelectSystemTile?: (tile: Tile) => void;
   onDeleteSystemTile?: (tile: Tile) => void;
   onSelectHomeTile?: (tile: HomeTile) => void;
+  showHomeStats?: boolean;
+  sliceValues?: Record<number, number>;
+  sliceStats?: Record<number, SliceStats>;
 };
 
 export function Map({
   id,
-  config,
+  modifiableMapTiles,
   map,
   editable = false,
   disabled = false,
   onSelectSystemTile,
   onDeleteSystemTile,
   onSelectHomeTile,
+  showHomeStats = false,
+  sliceValues = {},
+  sliceStats = {},
 }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = calculateConcentricCircles(map.length);
@@ -64,8 +75,11 @@ export function Map({
               onDelete={() => {
                 if (tile.type === "SYSTEM") onDeleteSystemTile?.(tile);
               }}
-              modifiable={editable && isTileModifiable(config, idx)}
+              modifiable={editable && modifiableMapTiles.includes(idx)}
               homeSelectable={!!onSelectHomeTile}
+              showHomeStats={showHomeStats}
+              sliceValue={sliceValues[tile.idx]}
+              sliceStats={sliceStats[tile.idx]}
             />
           ))}
       </Box>

@@ -195,9 +195,9 @@ const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     playerCount: 6,
   },
   wekker: {
-    title: "Wekker",
+    title: "Spiral",
     description:
-      "Also known as 'spiral draft'. Slices contained tiles that are close to other players. Slice generation follows 'milty draft' rules (2 red tiles, 3 blue tiles). Fun for players who want to have a more chaotic draft result.",
+      "Slices contained tiles that are close to other players. Slice generation follows 'milty draft' rules (2 red tiles, 3 blue tiles). Fun for players who want to have a more chaotic draft result.",
     map: hydrateDemoMap(draftConfig.wekker),
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     playerCount: 6,

@@ -14,10 +14,14 @@ import { systemData } from "~/data/systemData";
 
 import classes from "./Tiles.module.css";
 
-type Props = { mapId: string; tile: SystemTile; hideValues?: boolean };
+type RawProps = {
+  mapId: string;
+  tile: SystemTile;
+  hideValues?: boolean;
+  radius: number;
+};
 
-export function SystemTile({ mapId, tile, hideValues = false }: Props) {
-  const { radius } = useContext(MapContext);
+export function RawSystemTile({ mapId, tile, hideValues = false, radius }: RawProps) {
   const scale = calcScale(radius);
   const system = systemData[tile.systemId];
 
@@ -81,4 +85,11 @@ export function SystemTile({ mapId, tile, hideValues = false }: Props) {
       </Hex>
     </div>
   );
+}
+
+type Props = { mapId: string; tile: SystemTile; hideValues?: boolean };
+
+export function SystemTile({ mapId, tile, hideValues = false }: Props) {
+  const { radius } = useContext(MapContext);
+  return <RawSystemTile mapId={mapId} tile={tile} hideValues={hideValues} radius={radius} />;
 }

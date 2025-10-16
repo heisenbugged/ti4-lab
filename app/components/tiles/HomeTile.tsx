@@ -14,16 +14,34 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { OriginalArtTile } from "./OriginalArtTile";
 import classes from "./Tiles.module.css";
 
+type SliceStats = {
+  resources: number;
+  influence: number;
+  techs: string;
+  traits: string;
+};
+
 type Props = {
   mapId: string;
   tile: HomeTile;
   selectable?: boolean;
   onSelect?: () => void;
+  showStats?: boolean;
+  sliceValue?: number;
+  sliceStats?: SliceStats;
 };
 
 const seatLabel = ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
-export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
+export function HomeTile({
+  mapId,
+  tile,
+  onSelect,
+  selectable = false,
+  showStats = false,
+  sliceValue,
+  sliceStats,
+}: Props) {
   const { originalArt } = useSafeOutletContext();
   const { radius, disabled } = useContext(MapContext);
   const hydrated = useDraft((state) => state.hydrated);
@@ -35,6 +53,7 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
       : undefined;
   const scale = calcScale(radius);
   const systemIdSize = radius >= 53 ? "10px" : "8px";
+  const fontSize = radius >= 60 ? "xs" : "10px";
 
   if (originalArt && player?.faction && factionSystems[player.faction]) {
     return (
@@ -64,7 +83,7 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
           scale={scale}
         />
       )}
-      {!player && (
+      {!player && !showStats && (
         <Stack align="center" gap={2}>
           {!draftSpeaker && hydrated && tile.seat !== undefined && (
             <Text size="xl" fw="bold" className={classes.seatLabel}>
@@ -82,6 +101,25 @@ export function HomeTile({ mapId, tile, onSelect, selectable = false }: Props) {
             >
               Select Seat
             </Button>
+          )}
+        </Stack>
+      )}
+      {!player && showStats && (
+        <Stack align="center" gap={1} style={{ fontSize }}>
+          {tile.seat !== undefined && (
+            <Text fz={{ base: "xs", xs: "md" }} c="white">
+              {seatLabel[tile.seat]}
+            </Text>
+          )}
+          {sliceValue !== undefined && (
+            <Text fz={{ base: "sm", xs: "lg" }} fw="bold" c="yellow.5">
+              {sliceValue.toFixed(1)}
+            </Text>
+          )}
+          {sliceStats && (
+            <Text fz={{ base: "xs", xs: "md" }} fw="bolder" c="white" ta="center" lh={1.2}>
+              {sliceStats.resources}/{sliceStats.influence} {sliceStats.techs}
+            </Text>
           )}
         </Stack>
       )}
