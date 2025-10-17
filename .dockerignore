@@ -1,6 +1,35 @@
 node_modules
 /.cache
 .env
+.env.*
 sqlite.db
 /assets
 .voice-sync-cache.json
+
+# Git history (305MB)
+.git
+.gitignore
+
+# Build artifacts (Docker will rebuild)
+build
+
+# Generated code (regenerated during build)
+generated
+
+# Logs
+*.log
+
+# Editor configs
+.vscode
+.idea
+.DS_Store
+
+# Documentation
+*.md
+README.md
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
