@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { systemData } from "../../app/data/systemData";
-import { useMapBuilder } from "../../app/mapBuilderStore";
-import { Map, SystemStats } from "../../app/types";
-import { systemStats } from "../../app/utils/system";
+import { systemData } from "~/data/systemData";
+import { useMapBuilder } from "~/mapBuilderStore";
+import { Map, SystemStats } from "~/types";
+import { systemStats } from "~/utils/system";
 
 export function calculateMapStats(map: Map) {
   const stats: SystemStats[] = [];

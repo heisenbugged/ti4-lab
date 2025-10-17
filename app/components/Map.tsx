@@ -21,6 +21,7 @@ type Props = {
   map: Map;
   editable: boolean;
   disabled?: boolean;
+  droppable?: boolean; // Enable drop zones without click/hover UI
   onSelectSystemTile?: (tile: Tile) => void;
   onDeleteSystemTile?: (tile: Tile) => void;
   onSelectHomeTile?: (tile: HomeTile) => void;
@@ -35,6 +36,7 @@ export function Map({
   map,
   editable = false,
   disabled = false,
+  droppable = false,
   onSelectSystemTile,
   onDeleteSystemTile,
   onSelectHomeTile,
@@ -76,6 +78,7 @@ export function Map({
                 if (tile.type === "SYSTEM") onDeleteSystemTile?.(tile);
               }}
               modifiable={editable && modifiableMapTiles.includes(idx)}
+              droppable={droppable && modifiableMapTiles.includes(idx)}
               homeSelectable={!!onSelectHomeTile}
               showHomeStats={showHomeStats}
               sliceValue={sliceValues[tile.idx]}

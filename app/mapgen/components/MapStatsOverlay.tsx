@@ -1,6 +1,6 @@
 import { Box, Group, Stack, Text } from "@mantine/core";
-import { TechIcon } from "../../app/components/icons/TechIcon";
-import { LegendaryIcon } from "../../app/components/icons/LegendaryIcon";
+import { TechIcon } from "~/components/icons/TechIcon";
+import { LegendaryIcon } from "~/components/icons/LegendaryIcon";
 
 type MapStats = {
   blueTiles: number;

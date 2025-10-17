@@ -1,4 +1,4 @@
-import { hexVertices } from "../../app/components/Hex/hexUtils";
+import { hexVertices } from "~/components/Hex/hexUtils";
 
 type Props = {
   color: string;

@@ -1,7 +1,7 @@
-import { Map, SystemTile } from "../../app/types";
+import { Map, SystemTile } from "~/types";
 import { calculateSliceValue, getAllSliceValues, calculateBalanceGap } from "./sliceScoring";
-import { systemData } from "../../app/data/systemData";
-import { mapStringOrder } from "../../app/data/mapStringOrder";
+import { systemData } from "~/data/systemData";
+import { mapStringOrder } from "~/data/mapStringOrder";
 
 const MILTY_6P_HOME_POSITIONS = [19, 22, 25, 28, 31, 34];
 

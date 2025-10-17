@@ -31,6 +31,7 @@ export function DraftOrder({ pickOrder, currentPick, players }: Props) {
             ].join(" ")}
             p="xs"
             gap="xs"
+            data-active={active ? "true" : undefined}
           >
             {player.hasDiscord && <IconBrandDiscordFilled size={14} />}
             <Text ff="heading" size="sm" fw={"bold"} lh={1}>

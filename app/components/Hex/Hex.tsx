@@ -18,6 +18,7 @@ interface Props {
   showBorder?: boolean;
   borderRadius?: number;
   borderColorClass?: string;
+  borderClass?: string;
   faction?: FactionId;
   hyperlanes?: number[][];
   style?: React.CSSProperties;
@@ -34,6 +35,7 @@ export function Hex({
   showBorder = false,
   borderRadius,
   borderColorClass,
+  borderClass,
   faction,
   hyperlanes,
   style = {},
@@ -71,7 +73,7 @@ export function Hex({
             <HexBorder
               radius={radius}
               borderRadius={borderRadius}
-              className={borderColorClass}
+              className={`${borderColorClass || ""} ${borderClass || ""}`}
             />
           )}
           {hyperlanes && (

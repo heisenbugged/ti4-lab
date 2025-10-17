@@ -12,6 +12,7 @@ import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useDraft } from "~/draftStore";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { OriginalArtTile } from "./OriginalArtTile";
+import { useRawDraftContext } from "~/contexts/RawDraftContext";
 import classes from "./Tiles.module.css";
 
 type SliceStats = {
@@ -47,9 +48,14 @@ export function HomeTile({
   const hydrated = useDraft((state) => state.hydrated);
   const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
   const { hydratedPlayers } = useHydratedDraft();
+  const rawDraftContext = useRawDraftContext();
+
+  // Use raw draft players if available, otherwise use regular draft players
+  const players = rawDraftContext?.players || hydratedPlayers;
+
   const player =
     tile.playerId !== undefined
-      ? hydratedPlayers.find((p) => p.id === tile.playerId)
+      ? players.find((p) => p.id === tile.playerId)
       : undefined;
   const scale = calcScale(radius);
   const systemIdSize = radius >= 53 ? "10px" : "8px";
@@ -138,14 +144,30 @@ export function HomeTile({
               style={{ maxWidth: radius * 0.6, maxHeight: radius * 0.6 }}
             />
           )}
-          <PlayerChip player={player} size="lg" visibleFrom="lg" />
-          <PlayerChip
-            player={player}
-            size="md"
-            visibleFrom="md"
-            hiddenFrom="lg"
-          />
-          <PlayerChip player={player} size="sm" hiddenFrom="md" />
+          {/* Use smaller sizes in raw draft mode, and also smaller in regular draft */}
+          {rawDraftContext ? (
+            <>
+              <PlayerChip player={player} size="sm" visibleFrom="lg" />
+              <PlayerChip
+                player={player}
+                size="sm"
+                visibleFrom="md"
+                hiddenFrom="lg"
+              />
+              <PlayerChip player={player} size="sm" hiddenFrom="md" />
+            </>
+          ) : (
+            <>
+              <PlayerChip player={player} size="md" visibleFrom="lg" />
+              <PlayerChip
+                player={player}
+                size="sm"
+                visibleFrom="md"
+                hiddenFrom="lg"
+              />
+              <PlayerChip player={player} size="sm" hiddenFrom="md" />
+            </>
+          )}
         </Stack>
       )}
     </Hex>

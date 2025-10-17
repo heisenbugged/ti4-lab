@@ -1,6 +1,6 @@
-import { Map, SystemId, Tile } from "../../app/types";
-import { systemData } from "../../app/data/systemData";
-import { mapStringOrder } from "../../app/data/mapStringOrder";
+import { Map, SystemId, Tile } from "~/types";
+import { systemData } from "~/data/systemData";
+import { mapStringOrder } from "~/data/mapStringOrder";
 
 const MAX_ATTEMPTS = 10000;
 

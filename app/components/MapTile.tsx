@@ -25,6 +25,7 @@ type Props = {
   mapId: string;
   tile: Tile;
   modifiable?: boolean;
+  droppable?: boolean;
   homeSelectable?: boolean;
   onSelect?: () => void;
   onDelete?: () => void;
@@ -94,6 +95,7 @@ function AbstractArtMapTile(props: Props) {
     tile,
     tile: { position },
     modifiable = false,
+    droppable = false,
     onSelect,
     onDelete,
   } = props;
@@ -115,7 +117,7 @@ function AbstractArtMapTile(props: Props) {
   const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({
     id: `${props.mapId}-${tile.idx}-droppable`,
     data: { tile },
-    disabled: !modifiable || isTouchDevice(),
+    disabled: !(modifiable || droppable) || isTouchDevice(),
   });
 
   useEffect(() => {
@@ -162,10 +164,10 @@ function AbstractArtMapTile(props: Props) {
       );
       break;
     case "SYSTEM":
-      Tile = <SystemTile {...props} tile={tile} />;
+      Tile = <SystemTile {...props} tile={tile} disablePopover={isDragging} />;
       break;
     case "OPEN":
-      Tile = <EmptyTile {...props} tile={tile} />;
+      Tile = <EmptyTile {...props} tile={tile} isOver={isOver} />;
       break;
     case "CLOSED":
       Tile = null;
@@ -173,7 +175,7 @@ function AbstractArtMapTile(props: Props) {
   }
 
   if (tile.type === "SYSTEM" && tile.systemId === MECATOL_REX_ID) {
-    Tile = <MecatolTile {...props} tile={tile} />;
+    Tile = <MecatolTile {...props} tile={tile} disablePopover={isDragging} />;
   }
 
   // maybe an easier way of making this condition

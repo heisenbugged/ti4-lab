@@ -1,11 +1,11 @@
 import { Box, ScrollArea, SegmentedControl, Stack, Text, MultiSelect } from "@mantine/core";
 import { useState } from "react";
-import { useMapBuilder } from "../../app/mapBuilderStore";
-import { systemsFromIds } from "../../app/utils/system";
+import { useMapBuilder } from "~/mapBuilderStore";
+import { systemsFromIds } from "~/utils/system";
 import { DraggableSidebarTile } from "./DraggableSidebarTile";
 import { MiniHex } from "./MiniHex";
 import { MiniWormhole } from "./MiniWormhole";
-import { GameSet } from "../../app/types";
+import { GameSet } from "~/types";
 
 type TileFilter = "all" | "blue" | "red" | "wormhole";
 

@@ -5,24 +5,37 @@ type Props = {
   children: ReactNode;
   title?: string;
   description?: string;
+  disabled?: boolean;
 };
 
-export function LegendaryPopover({ children, title, description }: Props) {
+export function LegendaryPopover({ children, title, description, disabled = false }: Props) {
   const [opened, setOpened] = useState(false);
+
+  const handleMouseEnter = () => {
+    if (!disabled) {
+      setOpened(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!disabled) {
+      setOpened(false);
+    }
+  };
 
   return (
     <Popover
-      opened={opened}
-      onChange={setOpened}
+      opened={disabled ? false : opened}
+      onChange={disabled ? undefined : setOpened}
       position="top"
       withArrow
       width={300}
     >
       <Popover.Target>
         <div
-          onMouseEnter={() => setOpened(true)}
-          onMouseLeave={() => setOpened(false)}
-          style={{ display: "inline-block" }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          style={{ display: "inline-block", pointerEvents: disabled ? "none" : "auto" }}
         >
           {children}
         </div>

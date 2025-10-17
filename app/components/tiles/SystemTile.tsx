@@ -19,9 +19,10 @@ type RawProps = {
   tile: SystemTile;
   hideValues?: boolean;
   radius: number;
+  disablePopover?: boolean;
 };
 
-export function RawSystemTile({ mapId, tile, hideValues = false, radius }: RawProps) {
+export function RawSystemTile({ mapId, tile, hideValues = false, radius, disablePopover = false }: RawProps) {
   const scale = calcScale(radius);
   const system = systemData[tile.systemId];
 
@@ -75,6 +76,7 @@ export function RawSystemTile({ mapId, tile, hideValues = false, radius }: RawPr
               largeFonts={radius < 53}
               key={planet.name}
               hasLegendaryImage={hasLegendaryImage(system.id)}
+              disablePopover={disablePopover}
             />
           ))}
           {system.anomalies.includes("GRAVITY_RIFT") && <GravityRift />}
@@ -87,9 +89,9 @@ export function RawSystemTile({ mapId, tile, hideValues = false, radius }: RawPr
   );
 }
 
-type Props = { mapId: string; tile: SystemTile; hideValues?: boolean };
+type Props = { mapId: string; tile: SystemTile; hideValues?: boolean; disablePopover?: boolean };
 
-export function SystemTile({ mapId, tile, hideValues = false }: Props) {
+export function SystemTile({ mapId, tile, hideValues = false, disablePopover = false }: Props) {
   const { radius } = useContext(MapContext);
-  return <RawSystemTile mapId={mapId} tile={tile} hideValues={hideValues} radius={radius} />;
+  return <RawSystemTile mapId={mapId} tile={tile} hideValues={hideValues} radius={radius} disablePopover={disablePopover} />;
 }

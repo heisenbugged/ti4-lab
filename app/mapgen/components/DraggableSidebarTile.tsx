@@ -1,6 +1,7 @@
-import { Box, Card } from "@mantine/core";
+import { Box, Card, alpha } from "@mantine/core";
 import { useDraggable } from "@dnd-kit/core";
-import { RawSystemTile } from "../../app/components/tiles/SystemTile";
+import { RawSystemTile } from "~/components/tiles/SystemTile";
+import { systemData } from "~/data/systemData";
 
 type Props = {
   systemId: string;
@@ -16,6 +17,9 @@ export function DraggableSidebarTile({ systemId }: Props) {
     data: { systemId },
   });
 
+  const system = systemData[systemId];
+  const isRedSystem = system?.type === "RED";
+
   return (
     <Card
       shadow="sm"
@@ -24,6 +28,8 @@ export function DraggableSidebarTile({ systemId }: Props) {
       withBorder
       style={{
         opacity: isDragging ? 0.5 : 1,
+        backgroundColor: isRedSystem ? alpha("var(--mantine-color-red-8)", 0.15) : undefined,
+        borderColor: isRedSystem ? alpha("var(--mantine-color-red-8)", 0.3) : undefined,
       }}
     >
       <Box
@@ -50,6 +56,7 @@ export function DraggableSidebarTile({ systemId }: Props) {
             position: { x: 0, y: 0 },
           }}
           radius={tileRadius}
+          disablePopover={true}
         />
       </Box>
     </Card>

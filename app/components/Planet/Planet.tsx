@@ -20,6 +20,7 @@ type Props = {
   showName?: boolean;
   largeFonts?: boolean;
   hasLegendaryImage?: boolean;
+  disablePopover?: boolean;
 };
 
 const getBgColor = (
@@ -49,6 +50,7 @@ export function Planet({
   hasLegendaryImage = false,
   showName = true,
   largeFonts = false,
+  disablePopover = false,
 }: Props) {
   const { accessibleColors } = useSafeOutletContext();
   const theme = useMantineTheme();
@@ -129,6 +131,7 @@ export function Planet({
     <LegendaryPopover
       title={planet.legendaryTitle}
       description={planet.legendaryDescription}
+      disabled={disablePopover}
     >
       {content}
     </LegendaryPopover>

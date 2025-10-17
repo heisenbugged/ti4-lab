@@ -1,1 +1,1 @@
-export { default } from "../../mapgen/components/MapGenerator";
+export { default } from "~/mapgen/components/MapGenerator";

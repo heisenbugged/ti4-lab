@@ -2,11 +2,11 @@ import { AppShell, Box, Button, Group, Text, ActionIcon } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { ClientOnly } from "remix-utils/client-only";
-import { Map } from "../../app/components/Map";
-import { MainAppShell } from "../../app/components/MainAppShell";
-import { RawSystemTile } from "../../app/components/tiles/SystemTile";
+import { Map } from "~/components/Map";
+import { MainAppShell } from "~/components/MainAppShell";
+import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { useState, useMemo, useEffect } from "react";
-import { Tile, SystemId, GameSet } from "../../app/types";
+import { Tile, SystemId, GameSet } from "~/types";
 import {
   DndContext,
   DragEndEvent,
@@ -16,8 +16,8 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useMapBuilder } from "../../app/mapBuilderStore";
-import { MapBuilderPlanetFinder } from "../../app/components/MapBuilderPlanetFinder";
+import { useMapBuilder } from "~/mapBuilderStore";
+import { MapBuilderPlanetFinder } from "~/components/MapBuilderPlanetFinder";
 import {
   IconRefresh,
   IconTrash,
@@ -36,7 +36,7 @@ import { improveBalance } from "../utils/improveBalance";
 import { TileSidebar } from "./TileSidebar";
 import { SliceScoringInfoModal } from "./SliceScoringInfoModal";
 import { MapStatsOverlay } from "./MapStatsOverlay";
-import { systemData } from "../../app/data/systemData";
+import { systemData } from "~/data/systemData";
 import { ShareMapModal } from "./ShareMapModal";
 
 // Infer which game sets are used based on tile IDs

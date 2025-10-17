@@ -137,12 +137,33 @@
 }
 
 .tileWrapper {
-  transition: transform 0.1s ease-in-out;
   position: relative;
-
 }
 
 .tileWrapper.hovered {
   transform: scale(2);
   z-index: 1000;
+}
+
+.droppable {
+  @mixin dark {
+    fill: var(--mantine-color-blue-9) !important;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+  }
+}
+
+.droppableHover {
+  @mixin dark {
+    fill: var(--mantine-color-blue-7) !important;
+    opacity: 0.9 !important;
+  }
+}
+
+.droppableBorder {
+  @mixin dark {
+    stroke: var(--mantine-color-blue-6) !important;
+    stroke-width: 3 !important;
+    transition: stroke 0.2s ease;
+  }
 }

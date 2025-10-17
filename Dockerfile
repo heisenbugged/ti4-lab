@@ -26,7 +26,7 @@ FROM base as build
 RUN apt-get update -qq && \
     apt-get install -y build-essential pkg-config python-is-python3
 
-# Install node modules (cached layer if package.json/yarn.lock unchanged)
+# Install node modules
 COPY --link package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production=false --network-timeout=120000
 
@@ -36,28 +36,14 @@ COPY --link . .
 # Build application
 RUN yarn run build
 
-# Production dependencies stage (cached separately from build)
-FROM base as deps
-
-# Install packages needed to build node modules
-RUN apt-get update -qq && \
-    apt-get install -y build-essential pkg-config python-is-python3
-
-# Install only production dependencies (cached layer)
-COPY --link package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production=true --network-timeout=120000
+# Remove development dependencies
+RUN yarn install
 
 # Final stage for app image
 FROM base
 
-# Copy production dependencies
-COPY --from=deps /app/node_modules /app/node_modules
-
-# Copy built application (only build artifacts, not node_modules)
-COPY --from=build /app/build /app/build
-COPY --from=build /app/public /app/public
-COPY --from=build /app/package.json /app/package.json
-COPY --from=build /app/yarn.lock /app/yarn.lock
+# Copy built application
+COPY --from=build /app /app
 
 # Setup sqlite3 on a separate volume
 RUN mkdir -p /data
