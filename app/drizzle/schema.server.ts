@@ -15,6 +15,8 @@ export const drafts = sqliteTable(
     id: text("id").primaryKey(),
     urlName: text("urlName"),
     data: blob("data").notNull(),
+    type: text("type"),
+    isComplete: integer("isComplete", { mode: "boolean" }),
     createdAt: text("createdAt")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
@@ -24,6 +26,8 @@ export const drafts = sqliteTable(
   },
   (table) => ({
     urlNameIdx: index("urlName_index").on(table.urlName),
+    typeIdx: index("type_index").on(table.type),
+    isCompleteIdx: index("isComplete_index").on(table.isComplete),
   }),
 );
 
