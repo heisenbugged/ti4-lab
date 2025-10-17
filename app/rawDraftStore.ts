@@ -194,7 +194,8 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
             const adjacentPositions = getAdjacentPositions(mapIdx);
             const hasAdjacentAnomaly = adjacentPositions.some(adjIdx => {
               const adjTile = currentMap[adjIdx];
-              return adjTile.type === "SYSTEM" && systemData[adjTile.systemId]?.anomalies.length > 0;
+              // Only check tiles that exist and are SYSTEM tiles (not CLOSED, HOME, or OPEN)
+              return adjTile && adjTile.type === "SYSTEM" && systemData[adjTile.systemId]?.anomalies.length > 0;
             });
             if (hasAdjacentAnomaly) {
               console.error("Cannot place anomaly adjacent to another anomaly (you have non-anomaly tiles available)");
@@ -215,7 +216,8 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
             const adjacentPositions = getAdjacentPositions(mapIdx);
             const hasAdjacentSameWormhole = adjacentPositions.some(adjIdx => {
               const adjTile = currentMap[adjIdx];
-              return adjTile.type === "SYSTEM" && systemData[adjTile.systemId]?.wormholes.includes(wormholeType);
+              // Only check tiles that exist and are SYSTEM tiles (not CLOSED, HOME, or OPEN)
+              return adjTile && adjTile.type === "SYSTEM" && systemData[adjTile.systemId]?.wormholes.includes(wormholeType);
             });
             if (hasAdjacentSameWormhole) {
               console.error(`Cannot place ${wormholeType} wormhole adjacent to another ${wormholeType} wormhole (you have tiles without ${wormholeType} available)`);
@@ -393,18 +395,22 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
 
         // If dragging an anomaly and player has non-anomaly options, enforce adjacency rule
         if (isAnomalyBeingDragged && hasNonAnomalyOption) {
-          const hasAdjacentAnomaly = adjacentPositions.some(adjIdx =>
-            anomalyPositions.includes(adjIdx)
-          );
+          const hasAdjacentAnomaly = adjacentPositions.some(adjIdx => {
+            // Only check valid adjacent positions (filter out -1 and out of bounds)
+            if (adjIdx < 0 || adjIdx >= map.length) return false;
+            return anomalyPositions.includes(adjIdx);
+          });
           if (hasAdjacentAnomaly) return false;
         }
 
         // If dragging a wormhole and player has alternatives, enforce adjacency rule
         for (const wormholeType of draggedWormholes) {
           if (hasAlternativeForWormholes[wormholeType]) {
-            const hasAdjacentSameWormhole = adjacentPositions.some(adjIdx =>
-              wormholePositionsByType[wormholeType].includes(adjIdx)
-            );
+            const hasAdjacentSameWormhole = adjacentPositions.some(adjIdx => {
+              // Only check valid adjacent positions (filter out -1 and out of bounds)
+              if (adjIdx < 0 || adjIdx >= map.length) return false;
+              return wormholePositionsByType[wormholeType].includes(adjIdx);
+            });
             if (hasAdjacentSameWormhole) return false;
           }
         }
