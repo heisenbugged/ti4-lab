@@ -224,7 +224,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // only notify if a selection was made
   if (existingDraftData.selections.length != draft.selections.length) {
-    await notifyPick(id, existingDraft.urlName!, draft);
+    const notifyResult = await notifyPick(id, existingDraft.urlName!, draft);
+    if (!notifyResult.success) {
+      return json({
+        success: true,
+        discordError: notifyResult.error,
+        discordMessage: notifyResult.message,
+      });
+    }
   }
 
   return { success: true };

@@ -634,6 +634,7 @@ export default function DraftPrechoice() {
     const newContentFlags = {
       ...contentFlags,
       withDiscordant: newWithDiscordantValue,
+      // Always include discordantexp when discordant is enabled
       withDiscordantExp: newWithDiscordantValue,
       withUnchartedStars: newWithDiscordantValue,
     };
@@ -1362,12 +1363,6 @@ export default function DraftPrechoice() {
                   checked={!excludePokFactions}
                   onChange={() => setExcludePokFactions(!excludePokFactions)}
                 />
-                <Checkbox
-                  label="(+10 factions)"
-                  checked={withDiscordantExp}
-                  onChange={() => setWithDiscordantExp(!withDiscordantExp)}
-                />
-
                 <Checkbox
                   label="Uncharted Stars"
                   checked={withUnchartedStars}
