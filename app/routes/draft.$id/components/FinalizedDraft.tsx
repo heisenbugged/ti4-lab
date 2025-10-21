@@ -80,27 +80,36 @@ export function FinalizedDraft() {
       <PlanetFinder onSystemSelected={syncDraft} />
       <Group justify="space-between">
         <Title>Draft complete!</Title>
-        <Box pos="relative">
-          <Badge
-            size="lg"
-            variant="filled"
-            color="orange"
-            pos="absolute"
-            top={-10}
-            right={-10}
-            style={{ zIndex: 1 }}
-          >
-            NEW
-          </Badge>
+        <Group gap="md">
           <Button
-            size="xl"
-            variant="outline"
-            onClick={handleSoundboardClick}
-            className={styles.soundboardButton}
+            size="lg"
+            variant="light"
+            onClick={() => navigate(`/draft/${draftUrl}/replay`)}
           >
-            Load Soundboard
+            Replay Draft
           </Button>
-        </Box>
+          <Box pos="relative">
+            <Badge
+              size="lg"
+              variant="filled"
+              color="orange"
+              pos="absolute"
+              top={-10}
+              right={-10}
+              style={{ zIndex: 1 }}
+            >
+              NEW
+            </Badge>
+            <Button
+              size="xl"
+              variant="outline"
+              onClick={handleSoundboardClick}
+              className={styles.soundboardButton}
+            >
+              Load Soundboard
+            </Button>
+          </Box>
+        </Group>
       </Group>
       <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
         <Stack flex={1} gap="xl">

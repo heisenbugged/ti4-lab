@@ -74,6 +74,12 @@ type DraftV2State = {
         sliceIdx: number;
         tileIdx: number;
       };
+
+  // Replay mode state
+  replayMode: boolean;
+  replayIndex?: number;
+  replaySelections?: DraftSelection[];
+
   draftActions: {
     hydrate: (draftId: string, draftUrl: string, draft: Draft) => void;
     update: (draftId: string, draft: Draft) => void;
@@ -86,6 +92,15 @@ type DraftV2State = {
     selectSeat: (playerId: number, seatIdx: number) => void;
     banFaction: (playerId: PlayerId, factionId: FactionId) => void;
     undoLastSelection: () => void;
+  };
+  replayActions: {
+    enableReplayMode: () => void;
+    disableReplayMode: () => void;
+    stepForward: () => void;
+    stepBackward: () => void;
+    jumpToStart: () => void;
+    jumpToEnd: () => void;
+    setReplayIndex: (index: number) => void;
   };
   actions: {
     initializeDraft: (
@@ -183,6 +198,9 @@ const initialState = {
   factionSettingsModal: false,
   selectedPlayer: undefined,
   draft: emptyDraft(),
+  replayMode: false,
+  replayIndex: undefined,
+  replaySelections: undefined,
 };
 
 // Helper functions for refactoring
@@ -403,6 +421,70 @@ export const draftStore = createStore<DraftV2State>()(
               state.draft.settings.factionStratification,
             );
           }
+        }),
+    },
+    replayActions: {
+      enableReplayMode: () =>
+        set((state) => {
+          // Save original selections
+          state.replaySelections = [...state.draft.selections];
+          state.replayMode = true;
+          state.replayIndex = 0;
+          // Clear current selections to start from beginning
+          state.draft.selections = [];
+        }),
+
+      disableReplayMode: () =>
+        set((state) => {
+          state.replayMode = false;
+          state.replayIndex = undefined;
+          state.replaySelections = undefined;
+        }),
+
+      stepForward: () =>
+        set((state) => {
+          if (!state.replayMode || !state.replaySelections) return;
+          const nextIndex = (state.replayIndex ?? 0) + 1;
+          if (nextIndex <= state.replaySelections.length) {
+            state.replayIndex = nextIndex;
+            state.draft.selections = state.replaySelections.slice(0, nextIndex);
+          }
+        }),
+
+      stepBackward: () =>
+        set((state) => {
+          if (!state.replayMode || !state.replaySelections) return;
+          const prevIndex = Math.max(0, (state.replayIndex ?? 0) - 1);
+          state.replayIndex = prevIndex;
+          state.draft.selections = state.replaySelections.slice(0, prevIndex);
+        }),
+
+      jumpToStart: () =>
+        set((state) => {
+          if (!state.replayMode || !state.replaySelections) return;
+          state.replayIndex = 0;
+          state.draft.selections = [];
+        }),
+
+      jumpToEnd: () =>
+        set((state) => {
+          if (!state.replayMode || !state.replaySelections) return;
+          state.replayIndex = state.replaySelections.length;
+          state.draft.selections = [...state.replaySelections];
+        }),
+
+      setReplayIndex: (index: number) =>
+        set((state) => {
+          if (!state.replayMode || !state.replaySelections) return;
+          const clampedIndex = Math.max(
+            0,
+            Math.min(index, state.replaySelections.length),
+          );
+          state.replayIndex = clampedIndex;
+          state.draft.selections = state.replaySelections.slice(
+            0,
+            clampedIndex,
+          );
         }),
     },
     actions: {
