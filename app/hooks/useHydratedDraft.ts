@@ -79,6 +79,13 @@ export function hydratePlayers(
         };
       }
 
+      if (selection.type === "SELECT_REFERENCE_CARD") {
+        acc[playerIdx] = {
+          ...acc[playerIdx],
+          referenceFaction: selection.referenceFactionId,
+        };
+      }
+
       if (selection.type === "SELECT_SEAT") {
         const updated = {
           ...acc[playerIdx],

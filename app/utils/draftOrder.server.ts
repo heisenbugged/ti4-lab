@@ -11,6 +11,29 @@ export function createDraftOrder(
     players.length,
   );
   const reversedPlayerIds = [...playerIds].reverse();
+
+  // Twilight's Fall: slice → reference card → faction (no seat, no speaker)
+  if (settings.isTwilightsFall) {
+    const pickOrder = [
+      ...playerIds,           // Round 1: Select slice
+      ...reversedPlayerIds,   // Round 1 reverse
+      ...playerIds,           // Round 2: Select reference card
+      ...reversedPlayerIds,   // Round 2 reverse
+      ...playerIds,           // Round 3: Select faction
+    ];
+
+    return {
+      players: players.map((p) => ({
+        ...p,
+        name: p.name.length > 0 ? p.name : `Player ${placeholderName[p.id]}`,
+      })),
+      pickOrder,
+      playerFactionPool: undefined,
+      selections: [],
+    };
+  }
+
+  // Normal draft flow
   let pickOrder = [...playerIds, ...reversedPlayerIds, ...playerIds];
 
   if (settings.modifiers?.banFactions) {

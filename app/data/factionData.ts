@@ -7,6 +7,8 @@ export const factions: Record<FactionId, Faction> = {
     name: "Sardakk N'orr",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Sardakk_N%27orr",
+    priorityOrder: 42, // TODO: Replace with actual Twilight's Fall data
+    fleetComposition: null, // TODO: Replace with actual starting units
   },
   arborec: {
     id: "arborec",

@@ -34,6 +34,7 @@ import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraftSettings } from "~/hooks/useDraftSettings";
 import { notifyPick } from "~/discord/bot.server";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
+import { AvailableReferenceCardPacksSection } from "./sections/AvailableReferenceCardPacksSection";
 import { ConnectedFactionSettingsModal } from "./components/ConnectedFactionSettingsModal";
 import { createDraftOrder } from "~/utils/draftOrder.server";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
@@ -146,6 +147,7 @@ export default function DraftNew() {
       </Box>
 
       <Stack>
+        {settings.isTwilightsFall && <AvailableReferenceCardPacksSection />}
         <AvailableFactionsSection />
         <AvailableMinorFactionsSection />
       </Stack>

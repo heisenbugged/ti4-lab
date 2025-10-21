@@ -46,6 +46,7 @@ type SelectionType =
   | "SELECT_SPEAKER_ORDER"
   | "SELECT_FACTION"
   | "SELECT_MINOR_FACTION"
+  | "SELECT_REFERENCE_CARD"
   | "SELECT_PLAYER_COLOR"
   | "SELECT_SEAT"
   | "BAN_FACTION";
@@ -88,6 +89,7 @@ type DraftV2State = {
     selectSlice: (playerId: number, sliceIdx: number) => void;
     selectFaction: (playerId: number, factionId: FactionId) => void;
     selectMinorFaction: (playerId: number, minorFactionId: FactionId) => void;
+    selectReferenceCard: (playerId: number, referenceFactionId: FactionId) => void;
     selectPlayerColor: (playerId: number, color: InGameColor) => void;
     selectSeat: (playerId: number, seatIdx: number) => void;
     banFaction: (playerId: PlayerId, factionId: FactionId) => void;
@@ -382,6 +384,13 @@ export const draftStore = createStore<DraftV2State>()(
           });
         }),
 
+      selectReferenceCard: (playerId: number, referenceFactionId: FactionId) =>
+        set((state) => {
+          makeSelection(state, "SELECT_REFERENCE_CARD", playerId, {
+            referenceFactionId,
+          });
+        }),
+
       selectPlayerColor: (playerId: number, color: InGameColor) =>
         set((state) => {
           makeSelection(state, "SELECT_PLAYER_COLOR", playerId, { color });
@@ -562,16 +571,49 @@ export const draftStore = createStore<DraftV2State>()(
           // initialize pools based on game sets
           initializePools(state, settings);
 
-          draft.availableFactions = randomizeFactions(
-            settings.numFactions,
-            getDraftableFactions(
+          // Twilight's Fall: Generate reference card packs
+          if (settings.isTwilightsFall) {
+            const allFactions = getDraftableFactions(
               state.factionPool,
               null,
               settings.allowedFactions,
-            ),
-            settings.requiredFactions,
-            settings.factionStratification,
-          );
+            );
+
+            // Shuffle all factions and group into packs of 3
+            const shuffledFactions = shuffle(allFactions, allFactions.length);
+            const referenceCardPacks: FactionId[][] = [];
+            for (let i = 0; i < shuffledFactions.length; i += 3) {
+              const pack = shuffledFactions.slice(i, i + 3);
+              if (pack.length === 3) {
+                referenceCardPacks.push(pack);
+              }
+            }
+            draft.availableReferenceCardPacks = referenceCardPacks;
+
+            // Also generate regular faction pool for actual faction selection
+            draft.availableFactions = randomizeFactions(
+              settings.numFactions,
+              getDraftableFactions(
+                state.factionPool,
+                null,
+                settings.allowedFactions,
+              ),
+              settings.requiredFactions,
+              settings.factionStratification,
+            );
+          } else {
+            // Normal draft: just generate faction pool
+            draft.availableFactions = randomizeFactions(
+              settings.numFactions,
+              getDraftableFactions(
+                state.factionPool,
+                null,
+                settings.allowedFactions,
+              ),
+              settings.requiredFactions,
+              settings.factionStratification,
+            );
+          }
 
           const minorFactionPool = getDraftableFactions(
             state.factionPool,

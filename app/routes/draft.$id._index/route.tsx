@@ -44,6 +44,7 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { BanPhase } from "../draft.$id/sections/BanPhase";
 import { IconRefresh, IconShare } from "@tabler/icons-react";
 import { useSocketConnection } from "~/useSocketConnection";
+import { DraftableReferenceCardPacksSection } from "../draft.$id/sections/DraftableReferenceCardPacksSection";
 
 export default function RunningDraft() {
   const { adminMode } = useSafeOutletContext();
@@ -176,6 +177,11 @@ export default function RunningDraft() {
         >
           <DraftOrderSection />
         </Grid.Col>
+        {settings.isTwilightsFall && (
+          <Grid.Col span={12} order={{ base: 5, sm: 5, lg: 5 }}>
+            <DraftableReferenceCardPacksSection />
+          </Grid.Col>
+        )}
         <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 4, sm: 4, lg: 3 }}>
           <Stack gap="lg">
             <DraftableFactionsSection />

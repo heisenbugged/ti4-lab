@@ -142,6 +142,8 @@ export type Faction = {
   name: string;
   wiki?: string;
   set: GameSet;
+  priorityOrder?: number; // For Twilight's Fall - determines speaker order
+  fleetComposition?: any; // For Twilight's Fall - starting units (stubbed for now)
 };
 
 export type SystemStats = {
@@ -181,6 +183,8 @@ export type MinorFactionsMode =
   | { mode: "sharedPool" }
   | { mode: "separatePool"; numMinorFactions: number };
 
+export type FactionReferenceCardPack = FactionId[]; // Array of 3 faction IDs
+
 export type DraftSettings = {
   type: DraftType;
   factionGameSets: GameSet[];
@@ -218,6 +222,9 @@ export type DraftSettings = {
 
   /** Minor factions variant. */
   minorFactionsMode?: MinorFactionsMode;
+
+  /** Twilight's Fall game mode */
+  isTwilightsFall?: boolean;
 
   // Legacy settings
   allowEmptyTiles: boolean;
@@ -318,6 +325,11 @@ export type DraftSelection =
       minorFactionId: FactionId;
     }
   | {
+      type: "SELECT_REFERENCE_CARD";
+      playerId: PlayerId;
+      referenceFactionId: FactionId;
+    }
+  | {
       type: "SELECT_SEAT";
       playerId: PlayerId;
       seatIdx: number;
@@ -336,6 +348,7 @@ export type Draft = {
   presetMap: Map;
   availableFactions: FactionId[];
   availableMinorFactions?: FactionId[];
+  availableReferenceCardPacks?: FactionReferenceCardPack[]; // For Twilight's Fall
   pickOrder: PlayerId[];
   selections: DraftSelection[];
   playerFactionPool?: Record<PlayerId, FactionId[]>;
@@ -348,6 +361,7 @@ export type HydratedPlayer = {
   hasDiscord?: boolean;
   faction?: FactionId;
   minorFaction?: FactionId;
+  referenceFaction?: FactionId; // For Twilight's Fall - starting units/home/priority
   seatIdx?: number;
   sliceIdx?: number;
   speakerOrder?: number;

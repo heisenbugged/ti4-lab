@@ -399,6 +399,7 @@ export default function DraftPrechoice() {
 
   const [draftSpeaker, setDraftSpeaker] = useState<boolean>(false);
   const [banFactions, setBanFactions] = useState<boolean>(false);
+  const [twilightsFall, setTwilightsFall] = useState<boolean>(false);
 
   // Get faction game sets based on content flags
   const tileGameSets = getTileSetsFromFlags(contentFlags);
@@ -717,6 +718,7 @@ export default function DraftPrechoice() {
       allowedFactions: allowedFactions,
       requiredFactions: requiredFactions,
       factionStratification: stratifiedConfig,
+      isTwilightsFall: twilightsFall,
     };
 
     const hasMinorFactions = !!factionState.minorFactionsMode;
@@ -1264,6 +1266,7 @@ export default function DraftPrechoice() {
                 onChange={() =>
                   updateFactionState({ type: "TOGGLE_MINOR_FACTIONS" })
                 }
+                disabled={twilightsFall}
               />
             )}
             {factionState.minorFactionsMode && isMiltyEqVariant(mapType) && (
@@ -1404,6 +1407,7 @@ export default function DraftPrechoice() {
                 onChange={() => setDraftSpeaker((v) => !v)}
                 label="Draft speaker order separately"
                 description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
+                disabled={twilightsFall}
               />
 
               <Switch
@@ -1411,7 +1415,7 @@ export default function DraftPrechoice() {
                 description="When draft starts, players will ban one faction each. The tool then rolls the remaining factions."
                 checked={banFactions}
                 onChange={() => setBanFactions((v) => !v)}
-                disabled={factionState.minorFactionsMode?.mode === "sharedPool"}
+                disabled={factionState.minorFactionsMode?.mode === "sharedPool" || twilightsFall}
               />
 
               <Group>
@@ -1423,7 +1427,7 @@ export default function DraftPrechoice() {
                     updateFactionState({ type: "TOGGLE_PREASSIGNED_FACTIONS" })
                   }
                   disabled={
-                    factionState.minorFactionsMode?.mode === "sharedPool"
+                    factionState.minorFactionsMode?.mode === "sharedPool" || twilightsFall
                   }
                 />
 
@@ -1457,6 +1461,7 @@ export default function DraftPrechoice() {
                 description="Allows players to choose their in-game color via final round of draft."
                 checked={draftPlayerColors}
                 onChange={() => setDraftPlayerColors((v) => !v)}
+                disabled={twilightsFall}
               />
 
               <Switch
@@ -1464,7 +1469,34 @@ export default function DraftPrechoice() {
                 description="Will allow you to put home planets on the board with no/minimal restrictions"
                 checked={allowHomePlanetSearch}
                 onChange={() => setAllowHomePlanetSearch((v) => !v)}
+                disabled={twilightsFall}
               />
+
+              <Switch
+                label="Twilight's Fall"
+                description="Enables Twilight's Fall game mode. Players draft reference cards for starting units and priority order, then select their faction separately. Incompatible with faction bags, minor factions, speaker draft, player colors, and home planets on map."
+                checked={twilightsFall}
+                onChange={() => {
+                  const newValue = !twilightsFall;
+                  setTwilightsFall(newValue);
+
+                  if (newValue) {
+                    // Auto-disable incompatible settings
+                    setDraftSpeaker(false);
+                    setBanFactions(false);
+                    updateFactionState({ type: "TOGGLE_PREASSIGNED_FACTIONS" }); // Turn off if on
+                    if (factionState.preassignedFactions !== undefined) {
+                      updateFactionState({ type: "TOGGLE_PREASSIGNED_FACTIONS" });
+                    }
+                    setDraftPlayerColors(false);
+                    if (factionState.minorFactionsMode) {
+                      updateFactionState({ type: "TOGGLE_MINOR_FACTIONS" });
+                    }
+                    setAllowHomePlanetSearch(false);
+                  }
+                }}
+              />
+
               <Checkbox
                 label="Drahn"
                 checked={withDrahn}
