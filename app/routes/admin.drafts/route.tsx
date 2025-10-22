@@ -54,7 +54,7 @@ export default function AdminDraftsIndex() {
         id: d.id,
         urlName: d.urlName,
         type: d.type,
-        isComplete: d.isComplete === 1,
+        isComplete: !!d.isComplete,
         currentPick: d.data.selections?.length || 0,
         players: d.data.players?.map((p) => p.name).join(", ") || "",
         createdAt: d.createdAt,
