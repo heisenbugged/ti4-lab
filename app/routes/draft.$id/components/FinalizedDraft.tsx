@@ -9,7 +9,9 @@ import {
   Title,
   Badge,
   Group,
+  Anchor,
 } from "@mantine/core";
+import { IconShare } from "@tabler/icons-react";
 import { useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
 import { SummaryRow } from "./SummaryRow";
@@ -53,7 +55,6 @@ export function FinalizedDraft() {
   const { hydratedPlayers } = useHydratedDraft();
   const { syncDraft } = useSyncDraft();
 
-  const [exportingImage, setExportingImage] = useState(false);
   const sortedPlayers = useMemo(
     () => hydratedPlayers.sort((a, b) => a.speakerOrder! - b.speakerOrder!),
     [hydratedPlayers],
@@ -88,6 +89,15 @@ export function FinalizedDraft() {
           >
             Replay Draft
           </Button>
+          <Anchor href={`/draft/${draftUrl}.png`} target="_blank">
+            <Button
+              size="lg"
+              color="green"
+              leftSection={<IconShare size={20} />}
+            >
+              Share
+            </Button>
+          </Anchor>
           <Box pos="relative">
             <Badge
               size="lg"
@@ -160,21 +170,6 @@ export function FinalizedDraft() {
           <Section>
             <SectionTitle title="Map String" />
             <Textarea>{mapString}</Textarea>
-          </Section>
-          <Section>
-            <SectionTitle title="Export image" />
-            <Link
-              to={`/map-image/draft/${draftUrl}/generate`}
-              reloadDocument
-              onClick={() => {
-                setExportingImage(true);
-                // cannot actually know when the image finishes downloading
-                // so it's just an approximation
-                setTimeout(() => setExportingImage(false), 5000);
-              }}
-            >
-              <Button loading={exportingImage}>Download image</Button>
-            </Link>
           </Section>
           <Section>
             <SectionTitle title="Tiles" />

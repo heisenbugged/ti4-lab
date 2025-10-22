@@ -1,5 +1,5 @@
 import { Button, Grid, Stack, Text } from "@mantine/core";
-import { ActionFunctionArgs, json, redirect } from "@remix-run/node";
+import { ActionFunctionArgs, json, redirect, MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
@@ -238,6 +238,49 @@ export async function action({ request }: ActionFunctionArgs) {
   return { success: true };
 }
 
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data) return [];
+
+  const draft = data.data;
+  const draftId = data.urlName;
+
+  // Format draft type display name
+  const draftType = draft.settings?.type || "Unknown";
+  const playerCount = draft.players?.length || 0;
+  const draftTypeDisplay = formatDraftType(draftType, playerCount);
+
+  const imageUrl = data.imageUrl || `https://tidraft.com/draft/${draftId}.png`;
+  const title = `${draftId} - TI4 Lab`;
+  const description = `${draftTypeDisplay} on TI4 Lab`;
+
+  return [
+    { title },
+    { name: "description", content: description },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:image", content: imageUrl },
+    { property: "og:url", content: `https://tidraft.com/draft/${draftId}` },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: "TI4 Lab" },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: imageUrl },
+  ];
+};
+
+function formatDraftType(type: string, playerCount: number): string {
+  const typeMap: Record<string, string> = {
+    milty: "Milty Draft",
+    miltyeq: "Milty Equidistant Draft",
+    prechoice: "Pre-Choice Draft",
+    raw: "Raw Draft",
+  };
+
+  const baseName = typeMap[type.replace(/\d+p$/, "")] || type;
+  return `${baseName} (${playerCount} players)`;
+}
+
 export const loader = async ({ params }: { params: { id: string } }) => {
   const draftId = params.id;
 
@@ -263,6 +306,10 @@ export const loader = async ({ params }: { params: { id: string } }) => {
   }
 
   const result = await draftByPrettyUrl(draftId);
+  if (!result) {
+    throw new Response("Draft not found", { status: 404 });
+  }
+
   return json({
     ...result,
     data: JSON.parse(result.data as string) as Draft,

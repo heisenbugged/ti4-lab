@@ -21,6 +21,7 @@ type SavedDraft = {
   urlName: string | null;
   type: string | null;
   isComplete: number | null;
+  imageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };

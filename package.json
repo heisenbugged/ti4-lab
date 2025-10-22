@@ -16,6 +16,7 @@
     "sync-voices": "node sync-voices-wrangler.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.914.0",
     "@dnd-kit/core": "^6.1.0",
     "@mantine/core": "^7.10.1",
     "@mantine/hooks": "^7.10.1",
@@ -38,7 +39,6 @@
     "jotai-zustand": "^0.4.0",
     "music-metadata-browser": "^2.5.11",
     "posthog-js": "^1.249.0",
-    "puppeteer": "^22.10.0",
     "querystring": "^0.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -46,6 +46,7 @@
     "react-qr-code": "^2.0.15",
     "react-transition-group": "^4.4.5",
     "remix-utils": "^7.6.0",
+    "skia-canvas": "^3.0.8",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "tsx": "^4.12.0",
