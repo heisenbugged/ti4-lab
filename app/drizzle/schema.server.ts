@@ -18,6 +18,7 @@ export const drafts = sqliteTable(
     type: text("type"),
     isComplete: integer("isComplete", { mode: "boolean" }),
     imageUrl: text("imageUrl"),
+    incompleteImageUrl: text("incompleteImageUrl"),
     createdAt: text("createdAt")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),

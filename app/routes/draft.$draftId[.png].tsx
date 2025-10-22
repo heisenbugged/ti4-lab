@@ -2,6 +2,7 @@ import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 import { generateDraftImageBuffer } from "~/skiaRendering/imageGenerator.server";
+import { generateDraftSlicesImage } from "~/skiaRendering/slicesImageGenerator.server";
 import { syncImageToR2 } from "~/utils/syncImageToR2.server";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
@@ -26,14 +27,10 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const draft = JSON.parse(result.data as string) as Draft;
   const isComplete = draft.selections?.length === draft.pickOrder?.length;
 
-  // Redirect to draft page if not complete
-  if (!isComplete) {
-    return redirect(`/draft/${draftId}`, { status: 302 });
-  }
-
   // Production mode: if image already exists in CDN, redirect to it
-  if (!devMode && result.imageUrl) {
-    return redirect(result.imageUrl, {
+  const existingImageUrl = isComplete ? result.imageUrl : result.incompleteImageUrl;
+  if (!devMode && existingImageUrl) {
+    return redirect(existingImageUrl, {
       status: 302,
       headers: {
         "Cache-Control": "public, max-age=31536000, immutable",
@@ -41,8 +38,10 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     });
   }
 
-  // Generate image
-  const imageBuffer = await generateDraftImageBuffer(draft, draftId);
+  // Generate appropriate image based on completion status
+  const imageBuffer = isComplete
+    ? await generateDraftImageBuffer(draft, draftId)
+    : await generateDraftSlicesImage(draft, draftId);
 
   // Dev mode: return image directly
   if (devMode) {
@@ -55,12 +54,17 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
 
   // Upload to R2
-  const cdnUrl = await syncImageToR2(draftId, imageBuffer);
+  const status = isComplete ? "complete" : "incomplete";
+  const cdnUrl = await syncImageToR2(draftId, imageBuffer, status);
 
   // Save CDN URL to database
+  const updateData = isComplete
+    ? { imageUrl: cdnUrl }
+    : { incompleteImageUrl: cdnUrl };
+
   await db
     .update(drafts)
-    .set({ imageUrl: cdnUrl })
+    .set(updateData)
     .where(eq(drafts.urlName, draftId))
     .run();
 

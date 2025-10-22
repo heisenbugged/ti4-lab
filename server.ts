@@ -80,3 +80,25 @@ httpServer.listen(3000, () => {
 });
 
 startDiscordBot();
+
+// Graceful shutdown handling
+const shutdown = async (signal: string) => {
+  console.log(`${signal} received, shutting down gracefully...`);
+
+  const { shutdownQueue } = await import("~/utils/imageJobQueue.server.js");
+  await shutdownQueue();
+
+  httpServer.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
+
+  // Force exit after 35 seconds
+  setTimeout(() => {
+    console.error("Forced shutdown after timeout");
+    process.exit(1);
+  }, 35000);
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

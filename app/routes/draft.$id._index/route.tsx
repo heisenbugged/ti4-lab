@@ -1,5 +1,10 @@
-import { Button, Grid, Stack, Text } from "@mantine/core";
-import { ActionFunctionArgs, json, redirect, MetaFunction } from "@remix-run/node";
+import { Anchor, Button, Grid, Group, Stack, Text } from "@mantine/core";
+import {
+  ActionFunctionArgs,
+  json,
+  redirect,
+  MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
@@ -37,7 +42,7 @@ import { DraftableMinorFactionsSection } from "../draft.$id/sections/DraftableMi
 import { DraftablePlayerColorsSection } from "../draft.$id/sections/DraftablePlayerColorsSection";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { BanPhase } from "../draft.$id/sections/BanPhase";
-import { IconRefresh } from "@tabler/icons-react";
+import { IconRefresh, IconShare } from "@tabler/icons-react";
 import { useSocketConnection } from "~/useSocketConnection";
 
 export default function RunningDraft() {
@@ -249,7 +254,11 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const playerCount = draft.players?.length || 0;
   const draftTypeDisplay = formatDraftType(draftType, playerCount);
 
-  const imageUrl = data.imageUrl || `https://tidraft.com/draft/${draftId}.png`;
+  // Use appropriate image URL based on completion status
+  const isComplete = draft.selections?.length === draft.pickOrder?.length;
+  const existingImageUrl = isComplete ? data.imageUrl : data.incompleteImageUrl;
+  const imageUrl =
+    existingImageUrl || `https://tidraft.com/draft/${draftId}.png`;
   const title = `${draftId} - TI4 Lab`;
   const description = `${draftTypeDisplay} on TI4 Lab`;
 

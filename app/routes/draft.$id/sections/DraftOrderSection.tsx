@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Switch } from "@mantine/core";
+import { Anchor, Button, Group, Stack, Switch } from "@mantine/core";
 import { SectionTitle } from "~/components/Section";
 import { DraftOrder } from "../components/DraftOrder";
 import { useDraft } from "~/draftStore";
@@ -11,7 +11,7 @@ import { useState } from "react";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
 import { notifications } from "@mantine/notifications";
 import { Link } from "@remix-run/react";
-import { IconPlayerPlay } from "@tabler/icons-react";
+import { IconPlayerPlay, IconShare } from "@tabler/icons-react";
 
 export function DraftOrderSection() {
   const { adminMode, pickForAnyone, setAdminMode, setPickForAnyone } =
@@ -132,6 +132,15 @@ export function DraftOrderSection() {
 
       <SectionTitle title="Draft Order">
         <Group visibleFrom="sm" align="center">
+          <Anchor href={`/draft/${draftUrl}.png`} target="_blank">
+            <Button
+              size="xs"
+              color="green"
+              leftSection={<IconShare size={18} />}
+            >
+              Share
+            </Button>
+          </Anchor>
           <OriginalArtToggle />
           {!replayMode && (
             <>

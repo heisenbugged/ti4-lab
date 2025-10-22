@@ -4,6 +4,7 @@ import { db } from "./config.server";
 import { drafts } from "./schema.server";
 import { generatePrettyUrlName } from "~/data/urlWords.server";
 import { Draft } from "~/types";
+import { enqueueImageJob } from "~/utils/imageJobQueue.server";
 
 export async function draftById(id: string) {
   const results = await db
@@ -22,6 +23,7 @@ type SavedDraft = {
   type: string | null;
   isComplete: number | null;
   imageUrl: string | null;
+  incompleteImageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -224,6 +226,9 @@ export async function createDraft(draft: Draft, presetUrl?: string) {
     })
     .run();
 
+  // Enqueue incomplete image generation
+  enqueueImageJob(id, prettyUrl, false);
+
   return { id, prettyUrl };
 }
 
@@ -247,15 +252,24 @@ export async function updateDraftUrl(id: string, urlName: string) {
 
 export async function updateDraft(id: string, draftData: Draft) {
   const type = draftData.settings?.type || null;
-  const isComplete =
+  const newIsComplete =
     draftData.selections?.length === draftData.pickOrder?.length ? 1 : 0;
+
+  // Get old completion status
+  const existingDraft = await draftById(id);
+  const oldIsComplete = existingDraft.isComplete;
 
   db.update(drafts)
     .set({
       data: JSON.stringify(draftData),
       type,
-      isComplete,
+      isComplete: newIsComplete,
     })
     .where(eq(drafts.id, id))
     .run();
+
+  // If draft just became complete, enqueue complete image generation
+  if (oldIsComplete === 0 && newIsComplete === 1 && existingDraft.urlName) {
+    enqueueImageJob(id, existingDraft.urlName, true);
+  }
 }

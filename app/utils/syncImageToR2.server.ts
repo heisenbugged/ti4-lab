@@ -24,8 +24,10 @@ const s3Client = new S3Client({
 export async function syncImageToR2(
   draftId: string,
   imageBuffer: Buffer,
+  status: "complete" | "incomplete" = "complete",
 ): Promise<string> {
-  const key = `drafts/${draftId}.png`;
+  const suffix = status === "incomplete" ? "-incomplete" : "";
+  const key = `drafts/${draftId}${suffix}.png`;
 
   await s3Client.send(
     new PutObjectCommand({
