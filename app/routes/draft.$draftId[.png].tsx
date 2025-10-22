@@ -22,6 +22,15 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     throw new Response("Draft not found", { status: 404 });
   }
 
+  // Check if draft is complete
+  const draft = JSON.parse(result.data as string) as Draft;
+  const isComplete = draft.selections?.length === draft.pickOrder?.length;
+
+  // Redirect to draft page if not complete
+  if (!isComplete) {
+    return redirect(`/draft/${draftId}`, { status: 302 });
+  }
+
   // Production mode: if image already exists in CDN, redirect to it
   if (!devMode && result.imageUrl) {
     return redirect(result.imageUrl, {
@@ -33,7 +42,6 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
 
   // Generate image
-  const draft = JSON.parse(result.data as string) as Draft;
   const imageBuffer = await generateDraftImageBuffer(draft, draftId);
 
   // Dev mode: return image directly
