@@ -6,7 +6,7 @@ import { NewDraftReferenceCard } from "../components/NewDraftReferenceCard";
 
 export function AvailableReferenceCardPacksSection() {
   const referenceCardPacks = useDraft(
-    (state) => state.draft.availableReferenceCardPacks
+    (state) => state.draft.availableReferenceCardPacks,
   );
 
   if (!referenceCardPacks || referenceCardPacks.length === 0) {
@@ -20,7 +20,7 @@ export function AvailableReferenceCardPacksSection() {
         Reference cards determine starting units, home systems, and priority
         order. Players will draft these before selecting their actual faction.
       </Text>
-      <Stack gap="xl">
+      <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="xl">
         {referenceCardPacks.map((pack, packIdx) => (
           <Stack key={packIdx} gap="xs">
             <Text size="sm" fw="bold" c="dimmed">
@@ -36,7 +36,7 @@ export function AvailableReferenceCardPacksSection() {
             </SimpleGrid>
           </Stack>
         ))}
-      </Stack>
+      </SimpleGrid>
     </Section>
   );
 }

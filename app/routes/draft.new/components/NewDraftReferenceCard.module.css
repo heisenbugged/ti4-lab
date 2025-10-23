@@ -1,0 +1,111 @@
+.planetRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.planetName {
+  flex: 1;
+  min-width: 0;
+}
+
+.stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fleetRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fleetGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+
+
+.label {
+  text-align: right;
+}
+
+.labelIcon {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.content {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-start;
+}
+
+.cardHeader {
+  position: relative;
+}
+
+.factionBadge {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mantine-color-dark-6);
+  border: 1px solid var(--mantine-color-dark-5);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.priorityPill {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 2;
+}
+
+
+.card {
+  min-height: 140px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+}
+
+.planets {
+  gap: 4px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--mantine-color-gray-4);
+  opacity: 0.6;
+  margin: 2px 0;
+}
+
+.vDivider {
+  width: 1px;
+  height: 14px;
+  background: var(--mantine-color-gray-4);
+  opacity: 0.6;
+}
+
+.hDivider {
+  height: 1px;
+  background: var(--mantine-color-gray-5);
+  opacity: 0.65;
+  margin: 6px 0;
+}
+
+
