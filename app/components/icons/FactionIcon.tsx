@@ -7,6 +7,7 @@ type Props = {
   style?: React.CSSProperties;
   visibleFrom?: MantineSize;
   hiddenFrom?: MantineSize;
+  className?: string;
 };
 
 export function FactionIcon({
@@ -14,6 +15,7 @@ export function FactionIcon({
   style,
   visibleFrom,
   hiddenFrom,
+  className,
 }: Props) {
   // Box can mess with layout for reasons not totally understood,
   // so avoid its use, if possible
@@ -24,6 +26,7 @@ export function FactionIcon({
         style={{
           objectFit: "contain",
           ...style,
+          ...(className && { className }),
         }}
         alt={factions[faction].name}
       />
@@ -31,7 +34,12 @@ export function FactionIcon({
   }
 
   return (
-    <Box visibleFrom={visibleFrom} hiddenFrom={hiddenFrom} style={style}>
+    <Box
+      visibleFrom={visibleFrom}
+      hiddenFrom={hiddenFrom}
+      style={style}
+      className={className}
+    >
       <img
         src={factions[faction].iconPath}
         style={{

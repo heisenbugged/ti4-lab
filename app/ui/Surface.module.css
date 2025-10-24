@@ -66,3 +66,9 @@
 .surface.withBorder.onlyBg {
     border-width: 0px;
 }
+
+.bordered {
+    border: 1px solid;
+    @mixin light { border-color: rgba(0, 0, 0, 0.1); }
+    @mixin dark { border-color: var(--mantine-color-dark-5); }
+}

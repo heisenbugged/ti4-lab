@@ -142,8 +142,21 @@ export type Faction = {
   name: string;
   wiki?: string;
   set: GameSet;
-  priorityOrder?: number; // For Twilight's Fall - determines speaker order
-  fleetComposition?: any; // For Twilight's Fall - starting units (stubbed for now)
+  priorityOrder?: number;
+  fleetComposition?: FleetComposition;
+};
+
+export type FleetComposition = {
+  carrier?: number;
+  cruiser?: number;
+  dreadnought?: number;
+  destroyer?: number;
+  fighter?: number;
+  infantry?: number;
+  spacedock?: number;
+  pds?: number;
+  warsun?: number;
+  flagship?: number;
 };
 
 export type SystemStats = {

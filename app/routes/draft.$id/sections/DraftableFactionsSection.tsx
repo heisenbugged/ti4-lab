@@ -5,8 +5,8 @@ import { DraftableFaction } from "../components/DraftableFaction";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
-import classes from "~/components/Surface.module.css";
 import { FactionId, PlayerId } from "~/types";
+import { Surface, PlayerColor } from "~/ui";
 
 export function DraftableFactionsSection() {
   const playerFactionPool = useDraft((state) => state.draft.playerFactionPool);
@@ -101,7 +101,7 @@ function GroupedFactionSelection({
 
   return Object.entries(playerFactionPools).map(([playerId, factions]) => {
     const player = hydratedPlayers.find((p) => p.id === Number(playerId))!;
-    const color = playerColors[player.id];
+    const color = playerColors[player.id] as PlayerColor;
     return (
       <Stack key={playerId} gap="xs" style={{ position: "relative" }}>
         {!player.faction && (
@@ -114,17 +114,11 @@ function GroupedFactionSelection({
           </Badge>
         )}
 
-        <Group
-          p="md"
-          style={{
-            borderRadius: "var(--mantine-radius-md)",
-          }}
-          className={
-            !player.faction
-              ? `${classes.surface} ${classes.withBorder} ${classes.onlyBg} ${classes[color]}`
-              : undefined
-          }
+        <Surface
+          variant={!player.faction ? "badge" : "flat"}
+          color={!player.faction ? color : undefined}
         >
+          <Group p="md">
           {factions.map((factionId) => {
             return (
               <Box miw="250px" key={factionId}>
@@ -151,7 +145,8 @@ function GroupedFactionSelection({
               </Box>
             );
           })}
-        </Group>
+          </Group>
+        </Surface>
       </Stack>
     );
   });

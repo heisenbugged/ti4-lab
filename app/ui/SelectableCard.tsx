@@ -18,6 +18,7 @@ export function SelectableCard({
   selected,
   selectedColor,
   hoverable,
+  disabled,
   onSelect,
   header,
   body,
@@ -34,7 +35,7 @@ export function SelectableCard({
         onClick={onSelect}
         style={{
           cursor: onSelect ? "pointer" : "default",
-          opacity: selected ? 0.5 : 1,
+          opacity: disabled ? 0.5 : selected ? 0.5 : 1,
           position: "relative",
         }}
       >

@@ -21,6 +21,7 @@ import {
   Text,
   Textarea,
   SimpleGrid,
+  Tabs,
 } from "@mantine/core";
 import {
   DiscordData,
@@ -400,6 +401,36 @@ export default function DraftPrechoice() {
   const [draftSpeaker, setDraftSpeaker] = useState<boolean>(false);
   const [banFactions, setBanFactions] = useState<boolean>(false);
   const [twilightsFall, setTwilightsFall] = useState<boolean>(false);
+  const [gameMode, setGameMode] = useState<"base" | "twilightsFall">("base");
+
+  // Handler for game mode changes
+  const handleGameModeChange = (value: string | null) => {
+    if (value === "twilightsFall" || value === "base") {
+      setGameMode(value);
+
+      if (value === "twilightsFall") {
+        // Enable Twilight's Fall mode
+        setTwilightsFall(true);
+        // Auto-enable Thunder's Edge content
+        setWithTE(true);
+        // Disable incompatible settings
+        setDraftSpeaker(false);
+        setBanFactions(false);
+        if (factionState.preassignedFactions !== undefined) {
+          updateFactionState({ type: "TOGGLE_PREASSIGNED_FACTIONS" });
+        }
+        setDraftPlayerColors(false);
+        if (factionState.minorFactionsMode) {
+          updateFactionState({ type: "TOGGLE_MINOR_FACTIONS" });
+        }
+        setAllowHomePlanetSearch(false);
+      } else {
+        // Disable Twilight's Fall mode
+        setTwilightsFall(false);
+        // Don't automatically disable Thunder's Edge - let user control it
+      }
+    }
+  };
 
   // Get faction game sets based on content flags
   const tileGameSets = getTileSetsFromFlags(contentFlags);
@@ -1182,330 +1213,339 @@ export default function DraftPrechoice() {
           <Stack>
             <SectionTitle title="Configuration" />
 
-            <Input.Wrapper
-              label="# of Factions"
-              description="The number factions available for the draft. Recommended is player count + 3. Can be changed during draft building."
-            >
-              <Box mt="xs">
-                <NumberStepper
-                  value={factionState.numFactions}
-                  decrease={() =>
-                    updateFactionState({ type: "DECREMENT_NUM_FACTIONS" })
-                  }
-                  increase={() =>
-                    updateFactionState({ type: "INCREMENT_NUM_FACTIONS" })
-                  }
-                  decreaseDisabled={
-                    !!factionState.preassignedFactions ||
-                    factionState.numFactions <=
-                      factionConstraints.minNumFactions
-                  }
-                  increaseDisabled={
-                    !!factionState.preassignedFactions ||
-                    factionState.numFactions >=
-                      factionConstraints.maxNumFactions
-                  }
-                />
-              </Box>
-            </Input.Wrapper>
+            <Tabs value={gameMode} onChange={handleGameModeChange}>
+              <Tabs.List>
+                <Tabs.Tab value="base">Base Game</Tabs.Tab>
+                <Tabs.Tab value="twilightsFall">Twilight's Fall</Tabs.Tab>
+              </Tabs.List>
 
-            <Button
-              variant="outline"
-              color="orange"
-              w="fit-content"
-              rightSection={<IconAlienFilled />}
-              onMouseDown={openFactionSettings}
-            >
-              Configure faction pool
-            </Button>
-
-            <Input.Wrapper
-              label="# of Slices"
-              description="The number of slices that will be available for the draft. Can be changed during draft building."
-            >
-              <Box mt="xs">
-                <NumberStepper
-                  value={numSlices}
-                  decrease={() => setNumSlices((v) => v - 1)}
-                  increase={() => setNumSlices((v) => v + 1)}
-                  decreaseDisabled={numSlices <= playerCount}
-                  increaseDisabled={numSlices >= 9}
-                />
-              </Box>
-            </Input.Wrapper>
-          </Stack>
-
-          <Group>
-            <Switch
-              label="Multidraft"
-              description="Will create multiple drafts with the same settings, with a link to view them all on one page."
-              checked={isMultidraft}
-              onChange={(event) => setIsMultidraft(event.currentTarget.checked)}
-            />
-            {isMultidraft && (
-              <Input.Wrapper label="Number of drafts">
-                <Box mt="xs">
-                  <NumberStepper
-                    value={numDrafts}
-                    decrease={() => setNumDrafts((v) => Math.max(1, v - 1))}
-                    increase={() => setNumDrafts((v) => v + 1)}
-                    increaseDisabled={numDrafts >= 9}
-                    decreaseDisabled={numDrafts <= 2}
-                  />
-                </Box>
-              </Input.Wrapper>
-            )}
-          </Group>
-
-          <Stack>
-            {(isMiltyVariant(mapType) || isMiltyEqVariant(mapType)) && (
-              <Switch
-                label="Minor Factions"
-                description="Enable minor factions variant"
-                checked={!!factionState.minorFactionsMode}
-                onChange={() =>
-                  updateFactionState({ type: "TOGGLE_MINOR_FACTIONS" })
-                }
-                disabled={twilightsFall}
-              />
-            )}
-            {factionState.minorFactionsMode && isMiltyEqVariant(mapType) && (
-              <>
-                <Text size="sm" c="dimmed" mt="xs">
-                  Choose minor factions mode:
-                </Text>
-                <SimpleGrid cols={3} spacing="md">
-                  <HoverRadioCard
-                    title="Random"
-                    icon={<IconDice size={24} />}
-                    description="Randomly preplaces home systems"
-                    checked={factionState.minorFactionsMode.mode === "random"}
-                    onMouseDown={() =>
-                      updateFactionState({
-                        type: "SET_MINOR_FACTIONS_MODE",
-                        mode: "random",
-                      })
-                    }
-                  />
-
-                  <HoverRadioCard
-                    title="Shared Pool"
-                    icon={<IconUsersGroup size={24} />}
-                    description="Draft minor factions from the same pool as regular factions"
-                    checked={
-                      factionState.minorFactionsMode.mode === "sharedPool"
-                    }
-                    onMouseDown={() =>
-                      updateFactionState({
-                        type: "SET_MINOR_FACTIONS_MODE",
-                        mode: "shared",
-                      })
-                    }
-                  />
-
-                  <HoverRadioCard
-                    title="Separate Pool"
-                    icon={<IconUser size={24} />}
-                    description="Draft minor factions from a separate pool"
-                    checked={
-                      factionState.minorFactionsMode.mode === "separatePool"
-                    }
-                    onMouseDown={() =>
-                      updateFactionState({
-                        type: "SET_MINOR_FACTIONS_MODE",
-                        mode: "separate",
-                      })
-                    }
+              <Tabs.Panel value="base" pt="md">
+                <Stack>
+                  <Input.Wrapper
+                    label="# of Factions"
+                    description="The number factions available for the draft. Recommended is player count + 3. Can be changed during draft building."
                   >
-                    {factionState.minorFactionsMode.mode === "separatePool" && (
+                    <Box mt="xs">
                       <NumberStepper
-                        value={factionState.minorFactionsMode.numMinorFactions}
-                        decrease={(e) => {
-                          e.stopPropagation();
-                          updateFactionState({
-                            type: "DECREMENT_MINOR_FACTIONS",
-                          });
-                        }}
-                        increase={(e) => {
-                          e.stopPropagation();
-                          updateFactionState({
-                            type: "INCREMENT_MINOR_FACTIONS",
-                          });
-                        }}
+                        value={factionState.numFactions}
+                        decrease={() =>
+                          updateFactionState({ type: "DECREMENT_NUM_FACTIONS" })
+                        }
+                        increase={() =>
+                          updateFactionState({ type: "INCREMENT_NUM_FACTIONS" })
+                        }
                         decreaseDisabled={
-                          factionState.minorFactionsMode.numMinorFactions <=
-                          factionConstraints.minMinorFactions
+                          !!factionState.preassignedFactions ||
+                          factionState.numFactions <=
+                            factionConstraints.minNumFactions
                         }
                         increaseDisabled={
-                          factionState.minorFactionsMode.numMinorFactions >=
-                          factionConstraints.maxMinorFactions
+                          !!factionState.preassignedFactions ||
+                          factionState.numFactions >=
+                            factionConstraints.maxNumFactions
                         }
                       />
-                    )}
-                  </HoverRadioCard>
-                </SimpleGrid>
-              </>
-            )}
+                    </Box>
+                  </Input.Wrapper>
+
+                  <Button
+                    variant="outline"
+                    color="orange"
+                    w="fit-content"
+                    rightSection={<IconAlienFilled />}
+                    onMouseDown={openFactionSettings}
+                  >
+                    Configure faction pool
+                  </Button>
+
+                  <Input.Wrapper
+                    label="# of Slices"
+                    description="The number of slices that will be available for the draft. Can be changed during draft building."
+                  >
+                    <Box mt="xs">
+                      <NumberStepper
+                        value={numSlices}
+                        decrease={() => setNumSlices((v) => v - 1)}
+                        increase={() => setNumSlices((v) => v + 1)}
+                        decreaseDisabled={numSlices <= playerCount}
+                        increaseDisabled={numSlices >= 9}
+                      />
+                    </Box>
+                  </Input.Wrapper>
+                </Stack>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="twilightsFall" pt="md">
+                <Stack>
+                  <Input.Wrapper
+                    label="# of Slices"
+                    description="The number of slices that will be available for the draft. Can be changed during draft building."
+                  >
+                    <Box mt="xs">
+                      <NumberStepper
+                        value={numSlices}
+                        decrease={() => setNumSlices((v) => v - 1)}
+                        increase={() => setNumSlices((v) => v + 1)}
+                        decreaseDisabled={numSlices <= playerCount}
+                        increaseDisabled={numSlices >= 9}
+                      />
+                    </Box>
+                  </Input.Wrapper>
+                </Stack>
+              </Tabs.Panel>
+            </Tabs>
           </Stack>
 
-          <Stack>
-            <Checkbox
-              label="Discordant Stars"
-              checked={withDiscordant}
-              onChange={handleToggleDiscordantStars}
-            />
-            {withDiscordant && (
-              <Group mx="lg">
-                <Checkbox
-                  label="Base factions"
-                  checked={!excludeBaseFactions}
-                  onChange={() => setExcludeBaseFactions(!excludeBaseFactions)}
-                />
-                <Checkbox
-                  label="POK factions"
-                  checked={!excludePokFactions}
-                  onChange={() => setExcludePokFactions(!excludePokFactions)}
-                />
-                <Checkbox
-                  label="Uncharted Stars"
-                  checked={withUnchartedStars}
-                  onChange={() => setWithUnchartedStars(!withUnchartedStars)}
-                />
-              </Group>
-            )}
-          </Stack>
-
-          <Stack>
-            <Checkbox
-              label="Thunder's Edge (only lab view and no info for new factions)"
-              checked={withTE}
-              onChange={() => {
-                setWithTE(!withTE);
-              }}
-            />
-          </Stack>
-
-          <Box mt="md">
-            <Button
-              variant="outline"
-              color="blue"
-              w="auto"
-              rightSection={
-                showAdvancedSettings ? <IconChevronDown /> : <IconChevronUp />
-              }
-              onMouseDown={() => setShowAdvancedSettings((v) => !v)}
-            >
-              Show advanced settings
-            </Button>
-          </Box>
-          <Collapse in={showAdvancedSettings}>
-            <Stack>
-              <SectionTitle title="Advanced Options" />
-
-              <Switch
-                checked={draftSpeaker}
-                onChange={() => setDraftSpeaker((v) => !v)}
-                label="Draft speaker order separately"
-                description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
-                disabled={twilightsFall}
-              />
-
-              <Switch
-                label="Faction ban phase"
-                description="When draft starts, players will ban one faction each. The tool then rolls the remaining factions."
-                checked={banFactions}
-                onChange={() => setBanFactions((v) => !v)}
-                disabled={factionState.minorFactionsMode?.mode === "sharedPool" || twilightsFall}
-              />
-
+          {gameMode === "base" && (
+            <>
               <Group>
                 <Switch
-                  label="Faction bags"
-                  description="If turned on, will pre-assign a 'bag' of # factions to each player. A player then chooses a faction only from their assigned 'bag' during the draft."
-                  checked={Number(factionState.preassignedFactions) > 0}
-                  onChange={() =>
-                    updateFactionState({ type: "TOGGLE_PREASSIGNED_FACTIONS" })
-                  }
-                  disabled={
-                    factionState.minorFactionsMode?.mode === "sharedPool" || twilightsFall
-                  }
+                  label="Multidraft"
+                  description="Will create multiple drafts with the same settings, with a link to view them all on one page."
+                  checked={isMultidraft}
+                  onChange={(event) => setIsMultidraft(event.currentTarget.checked)}
                 />
-
-                {factionState.preassignedFactions !== undefined && (
-                  <NumberStepper
-                    value={factionState.preassignedFactions}
-                    decrease={() =>
-                      updateFactionState({
-                        type: "DECREMENT_PREASSIGNED_FACTIONS",
-                      })
-                    }
-                    increase={() =>
-                      updateFactionState({
-                        type: "INCREMENT_PREASSIGNED_FACTIONS",
-                      })
-                    }
-                    decreaseDisabled={
-                      factionState.preassignedFactions <=
-                      factionConstraints.minPreassignedFactions
-                    }
-                    increaseDisabled={
-                      factionState.preassignedFactions >=
-                      factionConstraints.maxPreassignedFactions
-                    }
-                  />
+                {isMultidraft && (
+                  <Input.Wrapper label="Number of drafts">
+                    <Box mt="xs">
+                      <NumberStepper
+                        value={numDrafts}
+                        decrease={() => setNumDrafts((v) => Math.max(1, v - 1))}
+                        increase={() => setNumDrafts((v) => v + 1)}
+                        increaseDisabled={numDrafts >= 9}
+                        decreaseDisabled={numDrafts <= 2}
+                      />
+                    </Box>
+                  </Input.Wrapper>
                 )}
               </Group>
 
-              <Switch
-                label="Draft player colors"
-                description="Allows players to choose their in-game color via final round of draft."
-                checked={draftPlayerColors}
-                onChange={() => setDraftPlayerColors((v) => !v)}
-                disabled={twilightsFall}
-              />
-
-              <Switch
-                label="Allow home planets on map"
-                description="Will allow you to put home planets on the board with no/minimal restrictions"
-                checked={allowHomePlanetSearch}
-                onChange={() => setAllowHomePlanetSearch((v) => !v)}
-                disabled={twilightsFall}
-              />
-
-              <Switch
-                label="Twilight's Fall"
-                description="Enables Twilight's Fall game mode. Players draft reference cards for starting units and priority order, then select their faction separately. Incompatible with faction bags, minor factions, speaker draft, player colors, and home planets on map."
-                checked={twilightsFall}
-                onChange={() => {
-                  const newValue = !twilightsFall;
-                  setTwilightsFall(newValue);
-
-                  if (newValue) {
-                    // Auto-disable incompatible settings
-                    setDraftSpeaker(false);
-                    setBanFactions(false);
-                    updateFactionState({ type: "TOGGLE_PREASSIGNED_FACTIONS" }); // Turn off if on
-                    if (factionState.preassignedFactions !== undefined) {
-                      updateFactionState({ type: "TOGGLE_PREASSIGNED_FACTIONS" });
+              <Stack>
+                {(isMiltyVariant(mapType) || isMiltyEqVariant(mapType)) && (
+                  <Switch
+                    label="Minor Factions"
+                    description="Enable minor factions variant"
+                    checked={!!factionState.minorFactionsMode}
+                    onChange={() =>
+                      updateFactionState({ type: "TOGGLE_MINOR_FACTIONS" })
                     }
-                    setDraftPlayerColors(false);
-                    if (factionState.minorFactionsMode) {
-                      updateFactionState({ type: "TOGGLE_MINOR_FACTIONS" });
-                    }
-                    setAllowHomePlanetSearch(false);
+                    disabled={twilightsFall}
+                  />
+                )}
+                {factionState.minorFactionsMode && isMiltyEqVariant(mapType) && (
+                  <>
+                    <Text size="sm" c="dimmed" mt="xs">
+                      Choose minor factions mode:
+                    </Text>
+                    <SimpleGrid cols={3} spacing="md">
+                      <HoverRadioCard
+                        title="Random"
+                        icon={<IconDice size={24} />}
+                        description="Randomly preplaces home systems"
+                        checked={factionState.minorFactionsMode.mode === "random"}
+                        onMouseDown={() =>
+                          updateFactionState({
+                            type: "SET_MINOR_FACTIONS_MODE",
+                            mode: "random",
+                          })
+                        }
+                      />
+
+                      <HoverRadioCard
+                        title="Shared Pool"
+                        icon={<IconUsersGroup size={24} />}
+                        description="Draft minor factions from the same pool as regular factions"
+                        checked={
+                          factionState.minorFactionsMode.mode === "sharedPool"
+                        }
+                        onMouseDown={() =>
+                          updateFactionState({
+                            type: "SET_MINOR_FACTIONS_MODE",
+                            mode: "shared",
+                          })
+                        }
+                      />
+
+                      <HoverRadioCard
+                        title="Separate Pool"
+                        icon={<IconUser size={24} />}
+                        description="Draft minor factions from a separate pool"
+                        checked={
+                          factionState.minorFactionsMode.mode === "separatePool"
+                        }
+                        onMouseDown={() =>
+                          updateFactionState({
+                            type: "SET_MINOR_FACTIONS_MODE",
+                            mode: "separate",
+                          })
+                        }
+                      >
+                        {factionState.minorFactionsMode.mode === "separatePool" && (
+                          <NumberStepper
+                            value={factionState.minorFactionsMode.numMinorFactions}
+                            decrease={(e) => {
+                              e.stopPropagation();
+                              updateFactionState({
+                                type: "DECREMENT_MINOR_FACTIONS",
+                              });
+                            }}
+                            increase={(e) => {
+                              e.stopPropagation();
+                              updateFactionState({
+                                type: "INCREMENT_MINOR_FACTIONS",
+                              });
+                            }}
+                            decreaseDisabled={
+                              factionState.minorFactionsMode.numMinorFactions <=
+                              factionConstraints.minMinorFactions
+                            }
+                            increaseDisabled={
+                              factionState.minorFactionsMode.numMinorFactions >=
+                              factionConstraints.maxMinorFactions
+                            }
+                          />
+                        )}
+                      </HoverRadioCard>
+                    </SimpleGrid>
+                  </>
+                )}
+              </Stack>
+
+              <Stack>
+                <Checkbox
+                  label="Discordant Stars"
+                  checked={withDiscordant}
+                  onChange={handleToggleDiscordantStars}
+                />
+                {withDiscordant && (
+                  <Group mx="lg">
+                    <Checkbox
+                      label="Base factions"
+                      checked={!excludeBaseFactions}
+                      onChange={() => setExcludeBaseFactions(!excludeBaseFactions)}
+                    />
+                    <Checkbox
+                      label="POK factions"
+                      checked={!excludePokFactions}
+                      onChange={() => setExcludePokFactions(!excludePokFactions)}
+                    />
+                    <Checkbox
+                      label="Uncharted Stars"
+                      checked={withUnchartedStars}
+                      onChange={() => setWithUnchartedStars(!withUnchartedStars)}
+                    />
+                  </Group>
+                )}
+              </Stack>
+
+              <Stack>
+                <Checkbox
+                  label="Thunder's Edge (only lab view and no info for new factions)"
+                  checked={withTE}
+                  onChange={() => {
+                    setWithTE(!withTE);
+                  }}
+                />
+              </Stack>
+
+              <Box mt="md">
+                <Button
+                  variant="outline"
+                  color="blue"
+                  w="auto"
+                  rightSection={
+                    showAdvancedSettings ? <IconChevronDown /> : <IconChevronUp />
                   }
-                }}
-              />
+                  onMouseDown={() => setShowAdvancedSettings((v) => !v)}
+                >
+                  Show advanced settings
+                </Button>
+              </Box>
+              <Collapse in={showAdvancedSettings}>
+                <Stack>
+                  <SectionTitle title="Advanced Options" />
 
-              <Checkbox
-                label="Drahn"
-                checked={withDrahn}
-                onChange={() => {
-                  setWithDrahn(!withDrahn);
-                }}
-              />
-            </Stack>
-          </Collapse>
+                  <Switch
+                    checked={draftSpeaker}
+                    onChange={() => setDraftSpeaker((v) => !v)}
+                    label="Draft speaker order separately"
+                    description="If true, the draft will be a 4-part snake draft, where seat selection and speaker order are separate draft stages. Otherwise, speaker order is locked to the north position and proceeds clockwise."
+                    disabled={twilightsFall}
+                  />
+
+                  <Switch
+                    label="Faction ban phase"
+                    description="When draft starts, players will ban one faction each. The tool then rolls the remaining factions."
+                    checked={banFactions}
+                    onChange={() => setBanFactions((v) => !v)}
+                    disabled={factionState.minorFactionsMode?.mode === "sharedPool" || twilightsFall}
+                  />
+
+                  <Group>
+                    <Switch
+                      label="Faction bags"
+                      description="If turned on, will pre-assign a 'bag' of # factions to each player. A player then chooses a faction only from their assigned 'bag' during the draft."
+                      checked={Number(factionState.preassignedFactions) > 0}
+                      onChange={() =>
+                        updateFactionState({ type: "TOGGLE_PREASSIGNED_FACTIONS" })
+                      }
+                      disabled={
+                        factionState.minorFactionsMode?.mode === "sharedPool" || twilightsFall
+                      }
+                    />
+
+                    {factionState.preassignedFactions !== undefined && (
+                      <NumberStepper
+                        value={factionState.preassignedFactions}
+                        decrease={() =>
+                          updateFactionState({
+                            type: "DECREMENT_PREASSIGNED_FACTIONS",
+                          })
+                        }
+                        increase={() =>
+                          updateFactionState({
+                            type: "INCREMENT_PREASSIGNED_FACTIONS",
+                          })
+                        }
+                        decreaseDisabled={
+                          factionState.preassignedFactions <=
+                          factionConstraints.minPreassignedFactions
+                        }
+                        increaseDisabled={
+                          factionState.preassignedFactions >=
+                          factionConstraints.maxPreassignedFactions
+                        }
+                      />
+                    )}
+                  </Group>
+
+                  <Switch
+                    label="Draft player colors"
+                    description="Allows players to choose their in-game color via final round of draft."
+                    checked={draftPlayerColors}
+                    onChange={() => setDraftPlayerColors((v) => !v)}
+                    disabled={twilightsFall}
+                  />
+
+                  <Switch
+                    label="Allow home planets on map"
+                    description="Will allow you to put home planets on the board with no/minimal restrictions"
+                    checked={allowHomePlanetSearch}
+                    onChange={() => setAllowHomePlanetSearch((v) => !v)}
+                    disabled={twilightsFall}
+                  />
+
+                  <Checkbox
+                    label="Drahn"
+                    checked={withDrahn}
+                    onChange={() => {
+                      setWithDrahn(!withDrahn);
+                    }}
+                  />
+                </Stack>
+              </Collapse>
+            </>
+          )}
 
           <Button
             size="lg"

@@ -1,11 +1,11 @@
-import { Box, SimpleGrid, Stack, Text } from "@mantine/core";
+import { SimpleGrid } from "@mantine/core";
 import { factions as allFactions } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
 import { CompactReferenceCard } from "../components/CompactReferenceCard";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
-import classes from "~/components/Surface.module.css";
+import { Surface } from "~/ui";
 
 export function DraftableReferenceCardPacksSection() {
   const isTwilightsFall = useDraft((state) => state.draft.settings.isTwilightsFall);
@@ -29,15 +29,8 @@ export function DraftableReferenceCardPacksSection() {
       <SectionTitle title="Faction Reference Cards" />
       <SimpleGrid cols={{ base: 1, sm: 2, xxl: 3 }} spacing="xl">
         {referenceCardPacks.map((pack, packIdx) => (
-          <Box
-            key={packIdx}
-            p="md"
-            className={`${classes.surface} ${classes.withBorder}`}
-            style={{
-              borderRadius: "var(--mantine-radius-md)",
-            }}
-          >
-            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
+          <Surface key={packIdx} variant="card">
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm" p="md">
               {pack.map((factionId) => {
                 const player = hydratedPlayers.find(
                   (p) => p.referenceFaction === factionId
@@ -67,7 +60,7 @@ export function DraftableReferenceCardPacksSection() {
                 );
               })}
             </SimpleGrid>
-          </Box>
+          </Surface>
         ))}
       </SimpleGrid>
     </Section>

@@ -2,8 +2,8 @@ import { Button, Stack, Text } from "@mantine/core";
 import { Player } from "~/types";
 import { PlayerChip } from "./PlayerChip";
 
-import classes from "~/components/Surface.module.css";
 import { playerColors } from "~/data/factionData";
+import { Surface, PlayerColor } from "~/ui";
 
 type Props = {
   speakerOrder: string;
@@ -20,35 +20,36 @@ export function DraftableSpeakerOrder({
   disabled = false,
   onSelect,
 }: Props) {
-  const playerColor = player ? playerColors[player.id] : undefined;
+  const playerColor = player ? (playerColors[player.id] as PlayerColor) : undefined;
   return (
-    <Stack
-      key={speakerOrder}
-      align="center"
-      p="sm"
-      style={{
-        borderRadius: "var(--mantine-radius-md)",
-        opacity: player ? 0.5 : 1,
-      }}
-      className={`${classes.surface} ${classes.withBorder} ${playerColor ? classes[playerColor] : ""}`}
-      pos="relative"
-      gap={6}
-      justify="stretch"
+    <Surface
+      variant="card"
+      color={playerColor}
+      style={{ opacity: player ? 0.5 : 1 }}
     >
-      <Text ff="heading" fw="bold">
-        {speakerOrder}
-      </Text>
-      {!player && canSelectSpeakerOrder && (
-        <Button
-          size="compact-sm"
-          px="lg"
-          onMouseDown={onSelect}
-          disabled={disabled}
-        >
-          Select
-        </Button>
-      )}
-      {player && <PlayerChip player={player} />}
-    </Stack>
+      <Stack
+        key={speakerOrder}
+        align="center"
+        p="sm"
+        pos="relative"
+        gap={6}
+        justify="stretch"
+      >
+        <Text ff="heading" fw="bold">
+          {speakerOrder}
+        </Text>
+        {!player && canSelectSpeakerOrder && (
+          <Button
+            size="compact-sm"
+            px="lg"
+            onMouseDown={onSelect}
+            disabled={disabled}
+          >
+            Select
+          </Button>
+        )}
+        {player && <PlayerChip player={player} />}
+      </Stack>
+    </Surface>
   );
 }

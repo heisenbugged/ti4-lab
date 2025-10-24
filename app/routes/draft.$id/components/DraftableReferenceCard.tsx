@@ -1,12 +1,12 @@
-import { Badge, Box, Flex, Group, Stack, Text, Table } from "@mantine/core";
+import { Badge, Box, Flex, Group, Text, Table } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction, HydratedPlayer } from "~/types";
 import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
 import { factionSystems } from "~/data/systemData";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
 
-import classes from "~/components/Surface.module.css";
 import { playerColors } from "~/data/factionData";
+import { SelectableCard, PlayerColor } from "~/ui";
 
 type Props = {
   faction: Faction;
@@ -22,76 +22,63 @@ export function DraftableReferenceCard({
   onSelect,
 }: Props) {
   const playerColor =
-    player?.id !== undefined ? playerColors[player.id] : undefined;
+    player?.id !== undefined ? (playerColors[player.id] as PlayerColor) : undefined;
 
   const homeSystem = factionSystems[faction.id];
   const priorityOrder = faction.priorityOrder ?? Math.floor(Math.random() * 100);
 
   return (
-    <Stack gap={0}>
-      <Stack
-        gap={4}
-        px="sm"
-        py={8}
-        pb={4}
-        className={`${classes.surface} ${classes.withBorder} ${onSelect ? classes.hoverable : ""} ${playerColor ? classes[playerColor] : ""}`}
-        style={{
-          borderRadius: "var(--mantine-radius-md)",
-          cursor: onSelect ? "pointer" : "default",
-          position: "relative",
-          opacity: disabled ? 0.5 : 1,
-          borderBottomLeftRadius: 0,
-          borderBottomRightRadius: 0,
-        }}
-        onClick={onSelect && !disabled ? onSelect : undefined}
-      >
-        <Group
-          align="center"
-          flex={1}
-          style={{
-            overflow: "hidden",
-            flexWrap: "nowrap",
-          }}
-          pt={5}
-          pb={10}
-        >
-          <Flex align="center" w="25px" h="25px">
-            <FactionIcon
-              faction={faction.id}
-              style={{ width: 25, height: 25 }}
-            />
-          </Flex>
-          <Text flex={1} size="14px" ff="heading" fw="bold">
-            {faction.name}
-          </Text>
-          <Badge size="sm" color="blue" variant="filled">
-            Priority: {priorityOrder}
-          </Badge>
-        </Group>
+    <SelectableCard
+      selected={!!player}
+      selectedColor={playerColor}
+      hoverable={!!onSelect}
+      disabled={disabled}
+      onSelect={onSelect && !disabled ? onSelect : undefined}
+      header={
+        <>
+          <Group
+            align="center"
+            flex={1}
+            style={{
+              overflow: "hidden",
+              flexWrap: "nowrap",
+            }}
+            pt={5}
+            pb={10}
+            px="sm"
+          >
+            <Flex align="center" w="25px" h="25px">
+              <FactionIcon
+                faction={faction.id}
+                style={{ width: 25, height: 25 }}
+              />
+            </Flex>
+            <Text flex={1} size="14px" ff="heading" fw="bold">
+              {faction.name}
+            </Text>
+            <Badge size="sm" color="blue" variant="filled">
+              Priority: {priorityOrder}
+            </Badge>
+          </Group>
 
-        <PlayerChipOrSelect
-          player={player}
-          selectTitle="Select"
-          onSelect={
-            onSelect
-              ? (e) => {
-                  e.preventDefault();
-                  onSelect();
-                }
-              : undefined
-          }
-          disabled={disabled}
-          isMinor={false}
-        />
-      </Stack>
-      <Box
-        style={{
-          borderRadius: "0 0 var(--mantine-radius-md) var(--mantine-radius-md)",
-          borderTop: 0,
-        }}
-        className={`${classes.surface} ${classes.withBorder}`}
-        p="xs"
-      >
+          <PlayerChipOrSelect
+            player={player}
+            selectTitle="Select"
+            onSelect={
+              onSelect
+                ? (e) => {
+                    e.preventDefault();
+                    onSelect();
+                  }
+                : undefined
+            }
+            disabled={disabled}
+            isMinor={false}
+          />
+        </>
+      }
+      body={
+        <Box p="xs">
         <Group align="flex-start" gap="xs" wrap="nowrap">
           {homeSystem && (
             <Box>
@@ -135,7 +122,8 @@ export function DraftableReferenceCard({
             </Table.Tbody>
           </Table>
         </Group>
-      </Box>
-    </Stack>
+        </Box>
+      }
+    />
   );
 }

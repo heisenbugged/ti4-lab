@@ -1,11 +1,11 @@
-import { Group, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Group, SimpleGrid, Text } from "@mantine/core";
 import { playerColors } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
-import classes from "~/components/Surface.module.css";
 import { PlayerChipOrSelect } from "../components/PlayerChipOrSelect";
+import { SelectableCard, PlayerColor } from "~/ui";
 
 const colors = [
   "Green",
@@ -41,54 +41,49 @@ export function DraftablePlayerColorsSection() {
         {colors.map((color) => {
           const player = hydratedPlayers.find((p) => p.factionColor === color);
           const playerColor =
-            player?.id !== undefined ? playerColors[player.id] : undefined;
+            player?.id !== undefined ? (playerColors[player.id] as PlayerColor) : undefined;
           const disabled =
             !!player?.factionColor && player.factionColor !== color;
 
           return (
-            <Stack
+            <SelectableCard
               key={color}
-              gap={4}
-              px="sm"
-              py={8}
-              pb={4}
-              className={`${classes.surface} ${classes.withBorder} ${playerColor ? classes[playerColor] : ""}`}
-              style={{
-                borderRadius: "var(--mantine-radius-md)",
-                cursor: "pointer",
-                position: "relative",
-                opacity: disabled ? 0.5 : 1,
-              }}
-            >
-              <Group
-                align="center"
-                flex={1}
-                style={{
-                  overflow: "hidden",
-                  flexWrap: "nowrap",
-                }}
-                py={5}
-              >
-                <Text flex={1} size="14px" ff="heading" fw="bold">
-                  {color}
-                </Text>
-              </Group>
-
-              <PlayerChipOrSelect
-                player={player}
-                onSelect={
-                  canSelect
-                    ? () => {
-                        if (confirm(`Selecting color ${color}`)) {
-                          selectPlayerColor(activePlayer.id, color);
-                          syncDraft();
+              selected={!!player}
+              selectedColor={playerColor}
+              disabled={disabled}
+              header={
+                <Group
+                  align="center"
+                  flex={1}
+                  style={{
+                    overflow: "hidden",
+                    flexWrap: "nowrap",
+                  }}
+                  py={5}
+                  px="sm"
+                >
+                  <Text flex={1} size="14px" ff="heading" fw="bold">
+                    {color}
+                  </Text>
+                </Group>
+              }
+              body={
+                <PlayerChipOrSelect
+                  player={player}
+                  onSelect={
+                    canSelect
+                      ? () => {
+                          if (confirm(`Selecting color ${color}`)) {
+                            selectPlayerColor(activePlayer.id, color);
+                            syncDraft();
+                          }
                         }
-                      }
-                    : undefined
-                }
-                disabled={disabled}
-              />
-            </Stack>
+                      : undefined
+                  }
+                  disabled={disabled}
+                />
+              }
+            />
           );
         })}
       </SimpleGrid>

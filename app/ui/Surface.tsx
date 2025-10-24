@@ -3,7 +3,7 @@ import { PlayerColor } from "./types";
 import classes from "./Surface.module.css";
 
 export interface SurfaceProps extends ComponentPropsWithoutRef<"div"> {
-  variant?: "card" | "interactive" | "badge" | "flat";
+  variant?: "card" | "interactive" | "badge" | "flat" | "bordered";
   color?: PlayerColor;
 }
 
@@ -14,14 +14,18 @@ export const Surface = forwardRef<HTMLDivElement, SurfaceProps>(
       interactive: `${classes.withBorder} ${classes.hoverable}`,
       badge: `${classes.withBorder} ${classes.onlyBg}`,
       flat: "",
+      bordered: classes.bordered,
     }[variant];
 
     const colorClass = color ? classes[color] : "";
 
+    // Only apply .surface background for non-bordered variants
+    const surfaceClass = variant !== "bordered" ? classes.surface : "";
+
     return (
       <div
         ref={ref}
-        className={`${classes.surface} ${variantClass} ${colorClass} ${className || ""}`.trim()}
+        className={`${surfaceClass} ${variantClass} ${colorClass} ${className || ""}`.trim()}
         {...props}
       >
         {children}
