@@ -15,9 +15,9 @@ import { IconShare } from "@tabler/icons-react";
 import { useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
 import { SummaryRow } from "./SummaryRow";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { SummaryCard } from "./MidDraftSummary";
-import { Link, useNavigate } from "@remix-run/react";
+import { useNavigate } from "@remix-run/react";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import {
   hydratedMapStringAtom,
@@ -29,7 +29,6 @@ import { useAtom } from "jotai";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { PlanetFinder } from "./PlanetFinder";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
-import { DraftLogSection } from "./DraftLogSection";
 import styles from "./FinalizedDraft.module.css";
 import { trackButtonClick } from "~/lib/analytics.client";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
@@ -121,7 +120,7 @@ export function FinalizedDraft() {
           </Box>
         </Group>
       </Group>
-      <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }}>
+      <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }} mb={20}>
         <Stack flex={1} gap="xl">
           <Section>
             <SectionTitle title="Draft Summary" />
@@ -166,14 +165,12 @@ export function FinalizedDraft() {
               </Table.Tbody>
             </Table>
           </Section>
-          <DraftLogSection />
-          <Section>
-            <SectionTitle title="Map String" />
-            <Textarea>{mapString}</Textarea>
-          </Section>
           <Section>
             <SectionTitle title="Tiles" />
             <Text>{mapString.split(' ').sort((a, b) => Number(a) - Number(b)).join(', ')}</Text>
+            <div>
+              <Button onClick={() => navigator.clipboard.writeText(mapString)}>Copy TTS String</Button>
+            </div>
           </Section>
 
           {adminMode && (
