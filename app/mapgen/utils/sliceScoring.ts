@@ -75,9 +75,9 @@ function getSystemValue(systemId: SystemId): number {
 
   let value = 0;
 
-  // Sum planet resources and influence
+  // Use max of planet resources or influence (optimal resource type)
   system.planets.forEach((planet) => {
-    value += planet.resources + planet.influence;
+    value += Math.max(planet.resources, planet.influence);
 
     // Add bonus for tech specialties
     if (planet.tech && planet.tech.length > 0) {
