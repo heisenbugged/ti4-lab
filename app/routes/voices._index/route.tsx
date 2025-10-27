@@ -9,7 +9,6 @@ import {
   Stack,
   Select,
   Paper,
-  List,
   Badge,
   Popover,
   ScrollArea,
@@ -20,14 +19,13 @@ import {
   Anchor,
   Modal,
   Switch,
-  TextInput,
   Image,
   Loader,
 } from "@mantine/core";
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { factionAudios, LineType } from "~/data/factionAudios";
+import { factionAudios, LineType, announcerAudios } from "~/data/factionAudios";
 import { VoiceLineButton } from "../soundboard._index/components/VoiceLineButton";
 import { ActionFunctionArgs, json, redirect } from "@remix-run/server-runtime";
 import { Form, useSearchParams, useLoaderData } from "@remix-run/react";
@@ -66,7 +64,6 @@ import {
   type SpotifyDeviceType,
 } from "../soundboard._index/components/SpotifyDeviceSelector";
 import { SpotifyPlaylistUI } from "../soundboard._index/components/SpotifyPlaylistUI";
-import { announcerAudios } from "~/data/factionAudios";
 
 // Line type display names dictionary
 const LINE_TYPE_DISPLAY_NAMES: Record<LineType, string> = {
@@ -425,40 +422,6 @@ const ClosedCaptionsToggle = ({
   );
 };
 
-// Client-only component for transmissions toggle
-const TransmissionsToggle = ({
-  sessionId,
-  checked,
-  onChange,
-}: {
-  sessionId: string | null;
-  checked: boolean;
-  onChange: (enabled: boolean) => void;
-}) => {
-  const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.currentTarget.checked;
-
-    // Notify parent component
-    onChange(newValue);
-
-    // Analytics: Track transmission toggle
-    trackButtonClick({
-      buttonType: "transmission_toggle",
-      context: newValue ? "transmission_on" : "transmission_off",
-      sessionId: sessionId || undefined,
-    });
-  };
-
-  return (
-    <Switch
-      label="Transmissions"
-      size="md"
-      checked={checked}
-      onChange={handleToggle}
-    />
-  );
-};
-
 // Helper function to calculate the remaining line count for a specific faction and line type
 const getRemainingLineCount = (
   factionId: FactionId,
@@ -616,7 +579,6 @@ export default function VoicesMaster() {
     isWarMode,
     voiceLineRef,
     currentPlayback,
-    startBattle,
     audioProgress,
     getDevices,
     availableDevices,
@@ -1492,7 +1454,7 @@ export default function VoicesMaster() {
                 Mcstevo
               </Text>
               <Text size="sm" c="dimmed" flex={1}>
-                "Chief Critic" (allegedly)
+                &quot;Chief Critic&quot; (allegedly)
               </Text>
             </Group>
             <Group gap="xl" justify="space-between">
@@ -1529,9 +1491,10 @@ export default function VoicesMaster() {
                 Martin Pazos
               </Anchor>
               <Text size="sm" c="dimmed" flex={1}>
-                Ghosts of Creuss, Sardakk N'orr, Arborec, Argent Flight, Naalu
-                Collective, Naaz-Rhoka Alliance, Nekro Virus, Vuil'Raith Cabal,
-                Barony of Letnev, Clan of Saar, Universities of Jol-Nar,
+                Ghosts of Creuss, Sardakk N&apos;orr, Arborec, Argent Flight,
+                Naalu Collective, Naaz-Rhoka Alliance, Nekro Virus,
+                Vuil&apos;Raith Cabal, Barony of Letnev, Clan of Saar,
+                Universities of Jol-Nar,
               </Text>
             </Group>
             <Group gap="xl" justify="space-between">
@@ -1592,8 +1555,8 @@ export default function VoicesMaster() {
                 Daniel Pierce
               </Anchor>
               <Text size="sm" c="dimmed" flex={1}>
-                Arborec, Vuil'Raith Cabal, Emirates of Hacan, Nomad, Sardakk
-                N'orr
+                Arborec, Vuil&apos;Raith Cabal, Emirates of Hacan, Nomad,
+                Sardakk N&apos;orr
               </Text>
             </Group>
             <Group gap="xl" justify="space-between">

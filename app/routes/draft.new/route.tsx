@@ -1,14 +1,12 @@
 import {
   Box,
   Button,
-  Divider,
   Flex,
   Grid,
   Group,
   List,
   Popover,
   Stack,
-  Switch,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs } from "@remix-run/node";
@@ -18,7 +16,6 @@ import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { draftStore, useDraft } from "~/draftStore";
 import { Draft } from "~/types";
 import { DraftInput, useCreateDraft } from "./useCreateDraft";
-
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
@@ -31,7 +28,6 @@ import {
 } from "./sections";
 import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
-import { useDraftSettings } from "~/hooks/useDraftSettings";
 import { notifyPick } from "~/discord/bot.server";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
 import { ConnectedFactionSettingsModal } from "./components/ConnectedFactionSettingsModal";
@@ -43,7 +39,7 @@ export default function DraftNew() {
   const navigate = useNavigate();
   const { draft, actions, initialized } = useDraft();
   const config = useDraftConfig();
-  const settings = useDraftSettings();
+
   const createDraft = useCreateDraft();
 
   const validationErrors = useDraftValidationErrors();
@@ -81,9 +77,6 @@ export default function DraftNew() {
     return () => actions?.reset();
   }, []);
 
-  const [mapExportOpened, { open: openMapExport, close: closeMapExport }] =
-    useDisclosure(false);
-
   const handleCreate = () => createDraft(draft);
 
   if (!initialized) return <LoadingOverlay />;
@@ -117,15 +110,6 @@ export default function DraftNew() {
             </List>
           </Popover.Dropdown>
         </Popover>
-
-        {/* <Button
-          onClick={openMapExport}
-          variant="outline"
-          size="xl"
-          color="blue"
-        >
-          Export Map
-        </Button> */}
       </Group>
     </Stack>
   );

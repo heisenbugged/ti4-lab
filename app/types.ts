@@ -170,9 +170,9 @@ export type SystemIds = SystemId[];
 export type SystemId = string;
 export type PlayerId = number;
 
-/// V
 export type FactionStratification = {
-  ["base|pok|te"]?: number;
+  ["base|pok"]?: number;
+  ["te"]?: number;
   ["discordant|discordantexp"]?: number;
 };
 

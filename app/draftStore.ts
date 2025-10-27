@@ -12,6 +12,7 @@ import {
   SystemId,
   InGameColor,
   FactionStratification,
+  DraftSelection,
 } from "./types";
 import { generateEmptyMap } from "./utils/map";
 import { draftConfig } from "./draft/draftConfig";

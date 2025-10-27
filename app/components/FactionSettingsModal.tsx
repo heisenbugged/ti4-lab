@@ -45,9 +45,6 @@ type Props = {
   onClose: () => void;
 };
 
-const BASE_KEY = "base|pok|te";
-const DISCORDANT_KEY = "discordant|discordantexp";
-
 export function FactionSettingsModal({
   opened,
   buttonText,
@@ -60,6 +57,24 @@ export function FactionSettingsModal({
   onSave,
   onClose,
 }: Props) {
+  const BASE_POK_KEY = useMemo((): keyof FactionStratification => {
+    const baseSets: GameSet[] = [];
+    if (factionGameSets.includes("base")) baseSets.push("base");
+    if (factionGameSets.includes("pok")) baseSets.push("pok");
+    return baseSets.join("|") as keyof FactionStratification;
+  }, [factionGameSets]);
+
+  const TE_KEY: keyof FactionStratification = "te";
+
+  const DISCORDANT_KEY = useMemo((): keyof FactionStratification => {
+    const discordantSets: GameSet[] = [];
+    if (factionGameSets.includes("discordant"))
+      discordantSets.push("discordant");
+    if (factionGameSets.includes("discordantexp"))
+      discordantSets.push("discordantexp");
+    return discordantSets.join("|") as keyof FactionStratification;
+  }, [factionGameSets]);
+
   const [stratifiedConfig, setStratifiedConfig] = useState<
     FactionStratification | undefined
   >(savedStratifiedConfig);
@@ -77,6 +92,7 @@ export function FactionSettingsModal({
     setAllowedFactions(savedAllowedFactions ?? factionPool);
     setRequiredFactions(savedRequiredFactions ?? []);
     setStratifiedConfig(savedStratifiedConfig);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened]);
 
   const handleSave = () => {
@@ -150,9 +166,14 @@ export function FactionSettingsModal({
     }));
   }, [factionPool]);
 
-  const showStratification =
-    (factionGameSets.includes("base") || factionGameSets.includes("pok") || factionGameSets.includes("te")) &&
-    factionGameSets.includes("discordant");
+  const hasBasePok =
+    factionGameSets.includes("base") || factionGameSets.includes("pok");
+  const hasTE = factionGameSets.includes("te");
+  const hasDiscordant =
+    factionGameSets.includes("discordant") ||
+    factionGameSets.includes("discordantexp");
+
+  const showStratification = hasBasePok && (hasTE || hasDiscordant);
 
   return (
     <Modal
@@ -167,37 +188,60 @@ export function FactionSettingsModal({
     >
       {showStratification && (
         <Group gap="md" ml="md" mb="md">
-          <Input.Wrapper
-            label="# of Base/POK/TE Factions"
-            description="Number of factions that are from Base + POK + TE (if enable exp) (0 to disable)"
-          >
-            <Box mt="xs">
-              <NumberStepper
-                value={stratifiedConfig?.[BASE_KEY] ?? 0}
-                decrease={() => handleStratifiedDecrease(BASE_KEY)}
-                increase={() => handleStratifiedIncrease(BASE_KEY, 25)}
-                decreaseDisabled={stratifiedConfig?.[BASE_KEY] === undefined}
-                increaseDisabled={stratifiedConfig?.[BASE_KEY] === 25}
-              />
-            </Box>
-          </Input.Wrapper>
+          {hasBasePok && (
+            <Input.Wrapper
+              label="# of Base/POK Factions"
+              description="Number of factions from Base + POK (0 to disable)"
+            >
+              <Box mt="xs">
+                <NumberStepper
+                  value={stratifiedConfig?.[BASE_POK_KEY] ?? 0}
+                  decrease={() => handleStratifiedDecrease(BASE_POK_KEY)}
+                  increase={() => handleStratifiedIncrease(BASE_POK_KEY, 25)}
+                  decreaseDisabled={
+                    stratifiedConfig?.[BASE_POK_KEY] === undefined
+                  }
+                  increaseDisabled={stratifiedConfig?.[BASE_POK_KEY] === 25}
+                />
+              </Box>
+            </Input.Wrapper>
+          )}
 
-          <Input.Wrapper
-            label="# of Discordant Stars Factions"
-            description="Number of factions that are from Discordant Stars (0 to disable)"
-          >
-            <Box mt="xs">
-              <NumberStepper
-                value={stratifiedConfig?.[DISCORDANT_KEY] ?? 0}
-                decrease={() => handleStratifiedDecrease(DISCORDANT_KEY)}
-                increase={() => handleStratifiedIncrease(DISCORDANT_KEY, 35)}
-                decreaseDisabled={
-                  stratifiedConfig?.[DISCORDANT_KEY] === undefined
-                }
-                increaseDisabled={stratifiedConfig?.[DISCORDANT_KEY] === 35}
-              />
-            </Box>
-          </Input.Wrapper>
+          {hasTE && (
+            <Input.Wrapper
+              label="# of TE Factions"
+              description="Number of factions from Thunder's Edge (0 to disable)"
+            >
+              <Box mt="xs">
+                <NumberStepper
+                  value={stratifiedConfig?.[TE_KEY] ?? 0}
+                  decrease={() => handleStratifiedDecrease(TE_KEY)}
+                  increase={() => handleStratifiedIncrease(TE_KEY, 10)}
+                  decreaseDisabled={stratifiedConfig?.[TE_KEY] === undefined}
+                  increaseDisabled={stratifiedConfig?.[TE_KEY] === 10}
+                />
+              </Box>
+            </Input.Wrapper>
+          )}
+
+          {hasDiscordant && (
+            <Input.Wrapper
+              label="# of Discordant Stars Factions"
+              description="Number of factions from Discordant Stars (0 to disable)"
+            >
+              <Box mt="xs">
+                <NumberStepper
+                  value={stratifiedConfig?.[DISCORDANT_KEY] ?? 0}
+                  decrease={() => handleStratifiedDecrease(DISCORDANT_KEY)}
+                  increase={() => handleStratifiedIncrease(DISCORDANT_KEY, 35)}
+                  decreaseDisabled={
+                    stratifiedConfig?.[DISCORDANT_KEY] === undefined
+                  }
+                  increaseDisabled={stratifiedConfig?.[DISCORDANT_KEY] === 35}
+                />
+              </Box>
+            </Input.Wrapper>
+          )}
         </Group>
       )}
 
