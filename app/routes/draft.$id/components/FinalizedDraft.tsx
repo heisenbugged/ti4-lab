@@ -41,6 +41,8 @@ export function FinalizedDraft() {
   const draftUrl = useDraft((state) => state.draftUrl);
   const draft = useDraft((state) => state.draft);
   const { updatePlayerName } = useDraft((state) => state.actions);
+  const { undoLastSelection } = useDraft((state) => state.draftActions);
+  const selections = useDraft((state) => state.draft.selections);
   const {
     slices,
     players,
@@ -81,6 +83,17 @@ export function FinalizedDraft() {
       <Group justify="space-between">
         <Title>Draft complete!</Title>
         <Group gap="md">
+          <Button
+            onClick={() => {
+              if (confirm("Are you sure you want to undo the last selection?")) {
+                undoLastSelection();
+                syncDraft();
+              }
+            }}
+            disabled={selections.length === 0}
+          >
+            Undo Last Selection
+          </Button>
           <Button
             size="lg"
             variant="light"
