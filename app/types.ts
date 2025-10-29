@@ -1,5 +1,7 @@
 import { DraftType, SliceGenerationConfig } from "./draft";
 
+export type { DraftType };
+
 export type GameSet =
   | "base"
   | "pok"
@@ -7,7 +9,8 @@ export type GameSet =
   | "discordant"
   | "discordantexp"
   | "unchartedstars"
-  | "drahn";
+  | "drahn"
+  | "twilightsFall";
 
 // green = home
 // blue = planet tile
@@ -134,7 +137,15 @@ export type FactionId =
   | "vaylerian"
   | "veldyr"
   | "zelian"
-  | "drahn";
+  | "drahn"
+  | "redKing"
+  | "yellowKing"
+  | "blueKing"
+  | "orangeKing"
+  | "purpleKing"
+  | "pinkKing"
+  | "blackKing"
+  | "greenKing";
 
 export type Faction = {
   id: FactionId;
@@ -142,6 +153,21 @@ export type Faction = {
   name: string;
   wiki?: string;
   set: GameSet;
+  priorityOrder?: number;
+  fleetComposition?: FleetComposition;
+};
+
+export type FleetComposition = {
+  carrier?: number;
+  cruiser?: number;
+  dreadnought?: number;
+  destroyer?: number;
+  fighter?: number;
+  infantry?: number;
+  spacedock?: number;
+  pds?: number;
+  warsun?: number;
+  flagship?: number;
 };
 
 export type SystemStats = {
@@ -170,6 +196,9 @@ export type SystemIds = SystemId[];
 export type SystemId = string;
 export type PlayerId = number;
 
+export const PRIORITY_PHASE = -1;
+export const HOME_PHASE = -2;
+
 export type FactionStratification = {
   ["base|pok"]?: number;
   ["te"]?: number;
@@ -180,6 +209,8 @@ export type MinorFactionsMode =
   | { mode: "random" }
   | { mode: "sharedPool" }
   | { mode: "separatePool"; numMinorFactions: number };
+
+export type FactionReferenceCardPack = FactionId[]; // Array of 3 faction IDs
 
 export type DraftSettings = {
   type: DraftType;
@@ -218,6 +249,8 @@ export type DraftSettings = {
 
   /** Minor factions variant. */
   minorFactionsMode?: MinorFactionsMode;
+
+  draftGameMode?: "twilightsFall";
 
   // Legacy settings
   allowEmptyTiles: boolean;
@@ -291,6 +324,16 @@ export type Tile = SystemTile | HomeTile | OpenTile | ClosedTile;
 
 export type Map = Tile[];
 
+export type HomeSystemSelection = {
+  playerId: PlayerId;
+  homeSystemFactionId: FactionId;
+};
+
+export type PriorityValueSelection = {
+  playerId: PlayerId;
+  priorityValueFactionId: FactionId;
+};
+
 export type DraftSelection =
   | {
       type: "BAN_FACTION";
@@ -318,6 +361,19 @@ export type DraftSelection =
       minorFactionId: FactionId;
     }
   | {
+      type: "SELECT_REFERENCE_CARD_PACK";
+      playerId: PlayerId;
+      packIdx: number;
+    }
+  | {
+      type: "COMMIT_PRIORITY_VALUES";
+      selections: PriorityValueSelection[];
+    }
+  | {
+      type: "COMMIT_HOME_SYSTEMS";
+      selections: HomeSystemSelection[];
+    }
+  | {
       type: "SELECT_SEAT";
       playerId: PlayerId;
       seatIdx: number;
@@ -336,10 +392,14 @@ export type Draft = {
   presetMap: Map;
   availableFactions: FactionId[];
   availableMinorFactions?: FactionId[];
+  availableReferenceCardPacks?: FactionReferenceCardPack[]; // For Twilight's Fall
   pickOrder: PlayerId[];
   selections: DraftSelection[];
   playerFactionPool?: Record<PlayerId, FactionId[]>;
   bannedFactions?: Record<PlayerId, FactionId[]>;
+
+  stagingPriorityValues?: Record<PlayerId, FactionId>;
+  stagingHomeSystemValues?: Record<PlayerId, FactionId>;
 };
 
 export type HydratedPlayer = {
@@ -353,6 +413,12 @@ export type HydratedPlayer = {
   speakerOrder?: number;
   factionColor?: string;
   bannedFactions?: FactionId[];
+
+  // Twilight's Fall
+  referenceCardPackIdx?: number;
+  priorityValueFactionId?: FactionId;
+  homeSystemFactionId?: FactionId;
+  startingUnitsFactionId?: FactionId;
 };
 
 export type PlayerSelection = {

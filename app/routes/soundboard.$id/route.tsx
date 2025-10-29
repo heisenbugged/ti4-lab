@@ -45,7 +45,7 @@ export default function SoundboardProxy() {
 
   const handleStopAudio = () => {
     if (!socket) return;
-    console.log("stopping audio");
+
     setLoadingAudio(null);
     socket.emit("stopLine", sessionId);
   };

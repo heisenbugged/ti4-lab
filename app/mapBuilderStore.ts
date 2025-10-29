@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { FactionId, GameSet, Map, SystemId, Tile } from "~/types";
+import { FactionId, GameSet, Map, SystemId } from "~/types";
 import { generateStandard6pMap } from "~/utils/mapGenerator";
 import { systemData } from "~/data/systemData";
 import { getSystemPool } from "~/utils/system";
@@ -77,9 +77,10 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
 
           // Remove any existing instance of this system from the map
           for (let i = 0; i < newMap.length; i++) {
-            if (newMap[i].type === "SYSTEM" && newMap[i].systemId === systemId) {
+            const tile = newMap[i];
+            if (tile.type === "SYSTEM" && tile.systemId === systemId) {
               newMap[i] = {
-                ...newMap[i],
+                ...tile,
                 type: "OPEN",
               };
             }

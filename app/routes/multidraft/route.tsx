@@ -42,7 +42,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const availableFactions = randomizeFactions(
       settings.numFactions,
       factionPool,
-      null,
+      undefined,
     );
 
     const numMinorFactions = settings.numMinorFactions;

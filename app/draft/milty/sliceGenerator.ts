@@ -1,4 +1,4 @@
-import { SystemId, SystemIds } from "~/types";
+import { SystemId, SystemIds, FactionId } from "~/types";
 import { SLICE_SHAPES } from "../sliceShapes";
 import { miltySystemTiers, minorFactionTiers } from "~/data/miltyTileTiers";
 import { ChoosableTier, SliceGenerationConfig, TieredSystems } from "../types";
@@ -28,6 +28,7 @@ export function generateSlices(
     minorFactionPool: undefined,
   },
   sliceShape: string[] = SLICE_SHAPES.milty,
+  minorFactionPool?: FactionId[],
   attempts: number = 0,
 ) {
   if (attempts > 1000) return undefined;
@@ -135,6 +136,7 @@ export function generateSlices(
           availableSystems,
           config,
           sliceShape,
+          minorFactionPool,
           attempts + 1,
         );
       }

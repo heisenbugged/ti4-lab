@@ -1,6 +1,6 @@
 import { Group, Text } from "@mantine/core";
 import { playerColors } from "~/data/factionData";
-import { HydratedPlayer } from "~/types";
+import { HydratedPlayer, PRIORITY_PHASE, HOME_PHASE } from "~/types";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
 
 import classes from "~/components/Surface.module.css";
@@ -16,6 +16,10 @@ export function DraftOrder({ pickOrder, currentPick, players }: Props) {
   return (
     <Group gap={1}>
       {pickOrder.map((playerId, idx) => {
+        if (playerId === PRIORITY_PHASE || playerId === HOME_PHASE) {
+          return null;
+        }
+
         const player = players.find(({ id }) => id === playerId);
         if (!player) return null;
 

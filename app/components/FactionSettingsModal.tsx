@@ -23,6 +23,7 @@ const gameSetLabel: Record<GameSet, string> = {
   discordantexp: "Discordant Expansion",
   drahn: "Drahn",
   unchartedstars: "Uncharted Stars",
+  twilightsFall: "Twilight's Fall",
 };
 
 type Props = {
@@ -88,7 +89,7 @@ export function FactionSettingsModal({
 
   useEffect(() => {
     if (!opened) return;
-    console.log("saved allowed factions are", savedAllowedFactions);
+
     setAllowedFactions(savedAllowedFactions ?? factionPool);
     setRequiredFactions(savedRequiredFactions ?? []);
     setStratifiedConfig(savedStratifiedConfig);

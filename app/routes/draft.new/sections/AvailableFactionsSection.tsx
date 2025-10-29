@@ -5,6 +5,7 @@ import { NumberStepper } from "~/components/NumberStepper";
 import { IconDice6Filled, IconSettings } from "@tabler/icons-react";
 import { NewDraftFaction } from "../components/NewDraftFaction";
 import { useDraft, useHasBanPhase } from "~/draftStore";
+import type { FactionId } from "~/types";
 
 export function AvailableFactionsSection() {
   const {
@@ -21,8 +22,8 @@ export function AvailableFactionsSection() {
     (state) => state.draft.settings.numPreassignedFactions,
   );
   const factionPool = useDraft((state) =>
-    (state.allowedFactions ?? state.factionPool).filter(
-      (f) => !state.draft.availableMinorFactions?.includes(f),
+    (state.draft.availableFactions ?? state.factionPool).filter(
+      (f: FactionId) => !state.draft.availableMinorFactions?.includes(f),
     ),
   );
 
@@ -30,6 +31,13 @@ export function AvailableFactionsSection() {
     numFactions: state.draft.settings.numFactions,
     availableFactions: state.draft.availableFactions,
   }));
+
+  const draftGameMode = useDraft(
+    (state) => state.draft.settings.draftGameMode,
+  );
+
+  // Hide faction section entirely for Twilight's Fall mode
+  if (draftGameMode === "twilightsFall") return null;
 
   if (hasBanPhase) {
     return (

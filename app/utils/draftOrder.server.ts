@@ -1,5 +1,12 @@
 import { shuffle } from "~/draft/helpers/randomization";
-import { DraftSettings, FactionId, Player, PlayerId } from "~/types";
+import {
+  DraftSettings,
+  FactionId,
+  Player,
+  PlayerId,
+  PRIORITY_PHASE,
+  HOME_PHASE,
+} from "~/types";
 
 export function createDraftOrder(
   players: Player[],
@@ -11,6 +18,28 @@ export function createDraftOrder(
     players.length,
   );
   const reversedPlayerIds = [...playerIds].reverse();
+
+  if (settings.draftGameMode === "twilightsFall") {
+    const pickOrder = [
+      ...playerIds,
+      ...reversedPlayerIds,
+      ...playerIds,
+      PRIORITY_PHASE,
+      HOME_PHASE,
+    ];
+
+    return {
+      players: players.map((p) => ({
+        ...p,
+        name: p.name.length > 0 ? p.name : `Player ${placeholderName[p.id]}`,
+      })),
+      pickOrder,
+      playerFactionPool: undefined,
+      selections: [],
+    };
+  }
+
+  // Normal draft flow
   let pickOrder = [...playerIds, ...reversedPlayerIds, ...playerIds];
 
   if (settings.modifiers?.banFactions) {

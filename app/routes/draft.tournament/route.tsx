@@ -90,7 +90,7 @@ export default function DraftTournament() {
       availableFactions: randomizeFactions(
         adjustedFactions,
         getFactionPool(["base", "pok"]),
-        null,
+        undefined,
       ),
       selections: [],
       presetUrl: `${urlPrefix}-${tableName}`,

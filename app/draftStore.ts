@@ -28,10 +28,7 @@ import {
 import { getSystemPool } from "./utils/system";
 import { getFactionPool } from "./utils/factions";
 import { mapStringOrder } from "./data/mapStringOrder";
-import {
-  getUsedSystemIds,
-  getUsedSystemIdsInMap,
-} from "./hooks/useUsedSystemIds";
+import { getUsedSystemIdsInMap } from "./hooks/useUsedSystemIds";
 import { atomWithStore } from "jotai-zustand";
 import { createStore } from "zustand/vanilla";
 import { getRandomSliceNames } from "./data/sliceWords";
@@ -47,6 +44,8 @@ type SelectionType =
   | "SELECT_SPEAKER_ORDER"
   | "SELECT_FACTION"
   | "SELECT_MINOR_FACTION"
+  | "SELECT_REFERENCE_CARD"
+  | "SELECT_REFERENCE_CARD_PACK"
   | "SELECT_PLAYER_COLOR"
   | "SELECT_SEAT"
   | "BAN_FACTION";
@@ -89,6 +88,13 @@ type DraftV2State = {
     selectSlice: (playerId: number, sliceIdx: number) => void;
     selectFaction: (playerId: number, factionId: FactionId) => void;
     selectMinorFaction: (playerId: number, minorFactionId: FactionId) => void;
+    selectReferenceCard: (
+      playerId: number,
+      referenceFactionId: FactionId,
+    ) => void;
+    selectReferenceCardPack: (playerId: number, packIdx: number) => void;
+    stagePriorityValue: (playerId: number, factionId: FactionId) => void;
+    stageHomeSystem: (playerId: number, factionId: FactionId) => void;
     selectPlayerColor: (playerId: number, color: InGameColor) => void;
     selectSeat: (playerId: number, seatIdx: number) => void;
     banFaction: (playerId: PlayerId, factionId: FactionId) => void;
@@ -137,6 +143,8 @@ type DraftV2State = {
     addRandomMinorFaction: () => void;
     removeLastMinorFaction: () => void;
     removeMinorFaction: (id: FactionId) => void;
+
+    randomizeReferenceCardPacks: () => void;
 
     // planet finding actions
     openPlanetFinderForMap: (tileIdx: number) => void;
@@ -204,17 +212,17 @@ const initialState = {
   replaySelections: undefined,
 };
 
-// Helper functions for refactoring
-
-// 1. Refactoring selection actions
 const makeSelection = (
-  state: any,
+  state: DraftV2State,
   type: SelectionType,
   playerId: number,
-  payload: Record<string, any>,
+  payload: Omit<
+    Extract<DraftSelection, { type: SelectionType }>,
+    "type" | "playerId"
+  >,
 ) => {
   const alreadySelected = state.draft.selections.find(
-    (s: any) => s.playerId === playerId && s.type === type,
+    (s) => s.playerId === playerId && s.type === type,
   );
   if (alreadySelected) return;
 
@@ -222,10 +230,9 @@ const makeSelection = (
     type,
     playerId,
     ...payload,
-  });
+  } as DraftSelection);
 };
 
-// 2. Refactoring faction stratification notification
 const resetStratification = (state: any) => {
   if (state.draft.settings.factionStratification) {
     notifications.show({
@@ -279,9 +286,8 @@ const removeSystemFromSlice = (
   };
 };
 
-// 7. Refactoring modal management
 const setModalState = (
-  state: any,
+  state: DraftV2State,
   modalType: "factionSettings" | "planetFinder",
   isOpen: boolean,
   modalParams?: any,
@@ -297,7 +303,6 @@ const setModalState = (
   }
 };
 
-// 8. Refactoring filter logic
 const getAvailableFactions = (
   pool: FactionId[],
   currentFactions: FactionId[],
@@ -320,7 +325,6 @@ const getAvailableSystems = (
   );
 };
 
-// 6. Initialize pools - extracted common functionality for initialization
 const initializePools = (state: any, settings: DraftSettings) => {
   state.factionPool = getFactionPool(settings.factionGameSets);
   state.systemPool = getSystemPool(settings.tileGameSets);
@@ -381,6 +385,36 @@ export const draftStore = createStore<DraftV2State>()(
           makeSelection(state, "SELECT_MINOR_FACTION", playerId, {
             minorFactionId,
           });
+        }),
+
+      selectReferenceCard: (playerId: number, referenceFactionId: FactionId) =>
+        set((state) => {
+          makeSelection(state, "SELECT_REFERENCE_CARD", playerId, {
+            referenceFactionId,
+          });
+        }),
+
+      selectReferenceCardPack: (playerId: number, packIdx: number) =>
+        set((state) => {
+          makeSelection(state, "SELECT_REFERENCE_CARD_PACK", playerId, {
+            packIdx,
+          });
+        }),
+
+      stagePriorityValue: (playerId: number, factionId: FactionId) =>
+        set((state) => {
+          if (!state.draft.stagingPriorityValues) {
+            state.draft.stagingPriorityValues = {};
+          }
+          state.draft.stagingPriorityValues[playerId] = factionId;
+        }),
+
+      stageHomeSystem: (playerId: number, factionId: FactionId) =>
+        set((state) => {
+          if (!state.draft.stagingHomeSystemValues) {
+            state.draft.stagingHomeSystemValues = {};
+          }
+          state.draft.stagingHomeSystemValues[playerId] = factionId;
         }),
 
       selectPlayerColor: (playerId: number, color: InGameColor) =>
@@ -560,19 +594,25 @@ export const draftStore = createStore<DraftV2State>()(
           draft.players = players;
           draft.integrations = integrations;
 
-          // initialize pools based on game sets
           initializePools(state, settings);
 
-          draft.availableFactions = randomizeFactions(
-            settings.numFactions,
-            getDraftableFactions(
-              state.factionPool,
-              null,
-              settings.allowedFactions,
-            ),
-            settings.requiredFactions,
-            settings.factionStratification,
-          );
+          if (settings.draftGameMode === "twilightsFall") {
+            draft.availableFactions = state.factionPool;
+            draft.availableReferenceCardPacks = generateReferenceCardPacks(
+              players.length,
+            );
+          } else {
+            draft.availableFactions = randomizeFactions(
+              settings.numFactions,
+              getDraftableFactions(
+                state.factionPool,
+                null,
+                settings.allowedFactions,
+              ),
+              settings.requiredFactions,
+              settings.factionStratification,
+            );
+          }
 
           const minorFactionPool = getDraftableFactions(
             state.factionPool,
@@ -588,7 +628,7 @@ export const draftStore = createStore<DraftV2State>()(
           }
 
           // Generate map and slices using the utility function
-          if (!!config.generateMap) {
+          if (config.generateMap) {
             const generated = generateMapAndSlices(
               config,
               settings,
@@ -680,16 +720,18 @@ export const draftStore = createStore<DraftV2State>()(
           );
         }),
 
+      randomizeReferenceCardPacks: () =>
+        set(({ draft }) => {
+          if (draft.settings.draftGameMode !== "twilightsFall") return;
+          draft.availableReferenceCardPacks = generateReferenceCardPacks(
+            draft.players.length,
+          );
+        }),
+
       // faction actions
       randomizeFactions: () =>
         set(({ draft, factionPool }) => {
           const takenFactions = getTakenNonPrimaryFactions(draft);
-
-          const draftableFactions = getDraftableFactions(
-            factionPool,
-            takenFactions,
-            draft.settings.allowedFactions,
-          );
 
           draft.availableFactions = randomizeFactions(
             draft.settings.numFactions,
@@ -742,7 +784,6 @@ export const draftStore = createStore<DraftV2State>()(
 
       removeFaction: (id: FactionId) =>
         set(({ draft }) => {
-          let confirmation = true;
           resetStratification({ draft });
 
           draft.settings.numFactions = draft.availableFactions.length - 1;
@@ -864,7 +905,7 @@ export const draftStore = createStore<DraftV2State>()(
         }),
 
       randomizeSlice: (sliceIdx: number) =>
-        set(({ draft, systemPool, factionPool }) => {
+        set(({ draft, factionPool }) => {
           // Convert slices to raw system ID arrays for coreRerollSlice
           const slicesAsSystemIds = draft.slices.map((slice) =>
             systemIdsInSlice(slice),
@@ -1146,4 +1187,20 @@ function getTakenNonPrimaryFactions(draft: Draft): FactionId[] {
   ];
 
   return takenFactions;
+}
+
+function generateReferenceCardPacks(numPlayers: number): FactionId[][] {
+  const referenceCardFactionPool = getFactionPool(["base", "pok", "te"]).filter(
+    (f) => f !== "keleres",
+  );
+  const numPacks = numPlayers;
+  const shuffledFactions = shuffle(referenceCardFactionPool, numPacks * 3);
+  const referenceCardPacks: FactionId[][] = [];
+  for (let i = 0; i < numPacks; i++) {
+    const pack = shuffledFactions.slice(i * 3, i * 3 + 3);
+    if (pack.length === 3) {
+      referenceCardPacks.push(pack);
+    }
+  }
+  return referenceCardPacks;
 }

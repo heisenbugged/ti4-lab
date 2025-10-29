@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
 import { Button, Stack, Text } from "@mantine/core";
-import type { HomeTile, SystemTile } from "~/types";
+import type { HomeTile, SystemTile, FactionId, Player } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 import { FactionIcon } from "../icons/FactionIcon";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
@@ -14,6 +14,7 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { OriginalArtTile } from "./OriginalArtTile";
 import { useRawDraftContext } from "~/contexts/RawDraftContext";
 import classes from "./Tiles.module.css";
+import { SystemTile as SystemTileComponent } from "./SystemTile";
 
 type SliceStats = {
   resources: number;
@@ -57,11 +58,17 @@ export function HomeTile({
     tile.playerId !== undefined
       ? players.find((p) => p.id === tile.playerId)
       : undefined;
+
   const scale = calcScale(radius);
   const systemIdSize = radius >= 53 ? "10px" : "8px";
   const fontSize = radius >= 60 ? "xs" : "10px";
 
-  if (originalArt && player?.faction && factionSystems[player.faction]) {
+  if (
+    originalArt &&
+    player &&
+    hasFaction(player) &&
+    factionSystems[player.faction]
+  ) {
     return (
       <OriginalArtTile
         mapId={mapId}
@@ -79,9 +86,42 @@ export function HomeTile({
     );
   }
 
+  if (
+    player &&
+    hasHomeSystemFactionId(player) &&
+    factionSystems[player.homeSystemFactionId]
+  ) {
+    return (
+      <div style={{ position: "relative" }}>
+        <SystemTileComponent
+          mapId={mapId}
+          tile={
+            {
+              ...tile,
+              systemId: factionSystems[player.homeSystemFactionId].id,
+              type: "SYSTEM",
+            } as SystemTile
+          }
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            left: "50%",
+            transform: "translateX(-50%)",
+            pointerEvents: "none",
+          }}
+        >
+          <PlayerChip player={player} size="md" visibleFrom="lg" />
+          <PlayerChip player={player} size="sm" hiddenFrom="lg" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Hex id={`${mapId}-home`} radius={radius} colorClass={classes.home}>
-      {player?.faction && factionSystems[player.faction] && (
+      {player && hasFaction(player) && factionSystems[player.faction] && (
         <SystemId
           id={factionSystems[player.faction].id}
           radius={radius}
@@ -123,7 +163,13 @@ export function HomeTile({
             </Text>
           )}
           {sliceStats && (
-            <Text fz={{ base: "xs", xs: "md" }} fw="bolder" c="white" ta="center" lh={1.2}>
+            <Text
+              fz={{ base: "xs", xs: "md" }}
+              fw="bolder"
+              c="white"
+              ta="center"
+              lh={1.2}
+            >
               {sliceStats.resources}/{sliceStats.influence} {sliceStats.techs}
             </Text>
           )}
@@ -137,7 +183,7 @@ export function HomeTile({
           justify="center"
           style={{ zIndex: 1 }}
         >
-          {player.faction && (
+          {hasFaction(player) && (
             <FactionIcon
               // visibleFrom="xs"
               faction={player.faction}
@@ -173,3 +219,13 @@ export function HomeTile({
     </Hex>
   );
 }
+
+type PlayerWithFaction = { faction: FactionId } & Player;
+const hasFaction = (p: Player): p is PlayerWithFaction =>
+  p != null && "faction" in p && typeof p.faction === "string";
+
+type PlayerWithHomeSystem = { homeSystemFactionId: FactionId } & Player;
+const hasHomeSystemFactionId = (p: Player): p is PlayerWithHomeSystem =>
+  p != null &&
+  "homeSystemFactionId" in p &&
+  typeof p.homeSystemFactionId === "string";

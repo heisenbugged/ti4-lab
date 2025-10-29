@@ -5,6 +5,7 @@ import {
   factions,
   pokFactionIds,
   teFactionIds,
+  twilightsFallFactionIds,
 } from "~/data/factionData";
 import { FactionId, GameSet } from "~/types";
 
@@ -27,6 +28,9 @@ export function getFactionPool(sets: GameSet[]) {
   }
   if (sets.includes("drahn")) {
     factionPool.push(factions.drahn.id);
+  }
+  if (sets.includes("twilightsFall")) {
+    factionPool.push(...twilightsFallFactionIds);
   }
   return factionPool.flat(1);
 }

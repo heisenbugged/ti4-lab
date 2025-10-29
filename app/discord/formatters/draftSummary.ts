@@ -1,4 +1,4 @@
-import { Draft, Player } from "~/types";
+import { Draft, HydratedPlayer } from "~/types";
 import { hydratePlayers } from "~/hooks/useHydratedDraft";
 import {
   factionEmojis,
@@ -43,11 +43,11 @@ export function getDraftSummaryMessage(draft: Draft): string {
   return ["# **__Draft Picks So Far__**:", ...orderedLines].join("\n");
 }
 
-function getFactionEmoji(player: Player): string {
-  return player.faction ? factionEmojis[player.faction] : unpickedFactionEmoji;
+function getFactionEmoji(player: HydratedPlayer): string {
+  return player.faction ? (factionEmojis[player.faction] ?? unpickedFactionEmoji) : unpickedFactionEmoji;
 }
 
-function getSliceEmoji(player: Player, draft: Draft): string {
+function getSliceEmoji(player: HydratedPlayer, draft: Draft): string {
   if (player.sliceIdx === undefined) {
     return unpickedSliceEmoji;
   }
@@ -60,14 +60,14 @@ function getSliceEmoji(player: Player, draft: Draft): string {
   return sliceEmojis[slicePosition];
 }
 
-function getPositionEmoji(player: Player): string {
+function getPositionEmoji(player: HydratedPlayer): string {
   return player.seatIdx !== undefined
     ? positionEmojis[player.seatIdx]
     : unpickedPositionEmoji;
 }
 
 function formatPlayerName(
-  player: Player,
+  player: HydratedPlayer,
   activePlayerId: number,
   nextPlayerId: number,
 ): string {

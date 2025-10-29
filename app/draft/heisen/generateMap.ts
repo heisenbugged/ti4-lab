@@ -13,7 +13,7 @@ import {
   fillSlicesWithRemainingTiles,
   fillSlicesWithRequiredTiles,
 } from "../helpers/sliceGeneration";
-import { PlanetTrait, SystemIds, SystemId, DraftSettings } from "~/types";
+import { PlanetTrait, SystemIds, SystemId, DraftSettings, FactionId } from "~/types";
 import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
@@ -86,6 +86,7 @@ const MIN_RED_TILES = 11; // Minimum red tiles on the map
 export function generateMap(
   settings: DraftSettings,
   systemPool: SystemId[],
+  minorFactionPool?: FactionId[],
   attempts: number = 0,
 ) {
   const sliceCount = settings.numSlices;
@@ -366,7 +367,7 @@ export function generateMap(
       coreSliceBalance > 3 || // Core slices should be within 3 points of each other
       hasAdjacentAnomalies(chosenMapLocations) // Check for adjacent anomalies
     ) {
-      return generateMap(settings, systemPool, attempts + 1);
+      return generateMap(settings, systemPool, minorFactionPool, attempts + 1);
     }
   }
 

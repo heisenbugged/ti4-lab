@@ -111,7 +111,7 @@ export function useAudioPlayer({
         await saveCurrentPosition();
 
         // Get battle anthem details (fallback to curated random if missing)
-        const configuredAnthem = factionAudios[factionId].battleAnthem;
+        const configuredAnthem = factionAudios[factionId]?.battleAnthem;
         const hasConfigured = Boolean(
           configuredAnthem && configuredAnthem.trim().length > 0,
         );
@@ -121,7 +121,7 @@ export function useAudioPlayer({
 
         if (hasConfigured) {
           selectedUri = configuredAnthem as string;
-          selectedDelay = factionAudios[factionId].battleAnthemDelay ?? 0;
+          selectedDelay = factionAudios[factionId]?.battleAnthemDelay ?? 0;
         } else {
           // Choose from curated pool (excludes Saar and Naaz-Rokha) and respect per-anthem delay
           const pool = battleAnthemPool;
@@ -352,8 +352,6 @@ export function useAudioPlayer({
     shouldStartBattle: boolean,
     isFromQueue: boolean = false,
   ) => {
-    console.log("playLine", src, shouldStartBattle, isFromQueue);
-
     // Play voice line directly
     const timeout = shouldStartBattle ? 500 : 0;
     setTimeout(() => playMainVoiceLine(), timeout);

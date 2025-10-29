@@ -30,6 +30,7 @@ import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { notifyPick } from "~/discord/bot.server";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
+import { AvailableReferenceCardPacksSection } from "./sections/AvailableReferenceCardPacksSection";
 import { ConnectedFactionSettingsModal } from "./components/ConnectedFactionSettingsModal";
 import { createDraftOrder } from "~/utils/draftOrder.server";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
@@ -130,6 +131,7 @@ export default function DraftNew() {
       </Box>
 
       <Stack>
+        <AvailableReferenceCardPacksSection />
         <AvailableFactionsSection />
         <AvailableMinorFactionsSection />
       </Stack>

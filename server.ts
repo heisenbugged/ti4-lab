@@ -4,6 +4,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { startDiscordBot } from "~/discord/bot.server.js";
 import { initEnv } from "~/env.server.js";
+import { setSocketIO } from "~/websocket/broadcast.server.js";
 
 initEnv();
 
@@ -37,6 +38,10 @@ const io = new Server(httpServer, {
     skipMiddlewares: true,
   },
 });
+
+// Make socket.io instance available for server-side broadcasts
+setSocketIO(io);
+
 io.on("connection", (socket) => {
   socket.emit("confirmation", "connected!");
   socket.on("joinDraft", (draftId) => {

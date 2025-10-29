@@ -5,7 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
-import { Button, Stack, Text, alpha } from "@mantine/core";
+import { Button, Stack, alpha } from "@mantine/core";
 import { Hex } from "./Hex";
 
 import "./MapTile.css";
@@ -180,13 +180,15 @@ function AbstractArtMapTile(props: Props) {
 
   // maybe an easier way of making this condition
   const showOverlay =
-    modifiable && (hovered || tile.type === "OPEN" || isOver) && tile.type !== "HOME";
+    modifiable &&
+    (hovered || tile.type === "OPEN" || isOver) &&
+    tile.type !== "HOME";
 
   const overlayColor = hovered
     ? alpha("var(--mantine-primary-color-filled)", 0.7)
     : isOver
-    ? alpha("var(--mantine-primary-color-filled)", 0.3)
-    : "rgba(0, 0, 0, 0)";
+      ? alpha("var(--mantine-primary-color-filled)", 0.3)
+      : "rgba(0, 0, 0, 0)";
 
   return (
     <>
@@ -200,6 +202,8 @@ function AbstractArtMapTile(props: Props) {
         }}
         onMouseOver={() => setHovered(true)}
         onMouseOut={() => setHovered(false)}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
         {...listeners}
         {...attributes}
       >

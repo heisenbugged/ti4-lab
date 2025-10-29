@@ -5,7 +5,6 @@ import {
   Stack,
   Table,
   Text,
-  Textarea,
   Title,
   Badge,
   Group,
@@ -32,6 +31,9 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import styles from "./FinalizedDraft.module.css";
 import { trackButtonClick } from "~/lib/analytics.client";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
+import { StartingUnitsTable } from "~/components/StartingUnitsTable";
+import { FactionIcon } from "~/components/icons/FactionIcon";
+import { factions as allFactions } from "~/data/factionData";
 
 export function FinalizedDraft() {
   const navigate = useNavigate();
@@ -44,7 +46,7 @@ export function FinalizedDraft() {
   const {
     slices,
     players,
-    settings: { draftSpeaker, draftPlayerColors },
+    settings: { draftSpeaker, draftPlayerColors, draftGameMode },
   } = draft;
   const usingMinorFactions = useDraft(
     (state) =>
@@ -120,7 +122,11 @@ export function FinalizedDraft() {
           </Box>
         </Group>
       </Group>
-      <SimpleGrid cols={{ base: 1, sm: 1, md: 1, lg: 2 }} style={{ gap: 30 }} mb={20}>
+      <SimpleGrid
+        cols={{ base: 1, sm: 1, md: 1, lg: 2 }}
+        style={{ gap: 30 }}
+        mb={20}
+      >
         <Stack flex={1} gap="xl">
           <Section>
             <SectionTitle title="Draft Summary" />
@@ -165,11 +171,71 @@ export function FinalizedDraft() {
               </Table.Tbody>
             </Table>
           </Section>
+          {draftGameMode === "twilightsFall" && (
+            <Section>
+              <SectionTitle title="Starting Units" />
+              <Table striped highlightOnHover>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Player</Table.Th>
+                    <Table.Th>Faction</Table.Th>
+                    <Table.Th>Units</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {sortedPlayers.map((player) => {
+                    const startingUnitsFaction = player.startingUnitsFactionId
+                      ? allFactions[player.startingUnitsFactionId]
+                      : undefined;
+                    const fleetComposition =
+                      startingUnitsFaction?.fleetComposition;
+
+                    if (!fleetComposition) return null;
+
+                    return (
+                      <Table.Tr key={player.id}>
+                        <Table.Td>
+                          <Text fw="bold">{player.name}</Text>
+                        </Table.Td>
+                        <Table.Td>
+                          {player.startingUnitsFactionId &&
+                            startingUnitsFaction && (
+                              <Group gap="xs" align="center">
+                                <FactionIcon
+                                  faction={player.startingUnitsFactionId}
+                                  style={{ maxHeight: 22 }}
+                                />
+                                <Text size="sm">
+                                  {startingUnitsFaction.name}
+                                </Text>
+                              </Group>
+                            )}
+                        </Table.Td>
+                        <Table.Td>
+                          <StartingUnitsTable
+                            fleetComposition={fleetComposition}
+                            showTitle={false}
+                          />
+                        </Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            </Section>
+          )}
           <Section>
             <SectionTitle title="Tiles" />
-            <Text>{mapString.split(' ').sort((a, b) => Number(a) - Number(b)).join(', ')}</Text>
+            <Text>
+              {mapString
+                .split(" ")
+                .sort((a, b) => Number(a) - Number(b))
+                .join(", ")}
+            </Text>
             <div>
-              <Button onClick={() => navigator.clipboard.writeText(mapString)}>Copy TTS String</Button>
+              <Button onClick={() => navigator.clipboard.writeText(mapString)}>
+                Copy TTS String
+              </Button>
             </div>
           </Section>
 

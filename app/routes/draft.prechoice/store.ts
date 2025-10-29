@@ -40,7 +40,11 @@ const showFactionNotifications = (notifs: FactionNotification[]) => {
   });
 };
 
+export type DraftMode = "base" | "twilightFalls";
+
 type DraftSetupStore = {
+  draftMode: DraftMode;
+  setDraftMode: (mode: DraftMode) => void;
   validateSetup: () => void;
   player: {
     players: Player[];
@@ -162,6 +166,13 @@ export const useDraftSetup = create<DraftSetupStore>()(
     };
 
     return {
+      draftMode: "base" as DraftMode,
+
+      setDraftMode: (mode: DraftMode) =>
+        set((state) => {
+          state.draftMode = mode;
+        }),
+
       validateSetup: () => {
         set((state) => {
           const playerCount = state.player.players.length;

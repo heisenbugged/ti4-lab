@@ -7,6 +7,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "Sardakk N'orr",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Sardakk_N%27orr",
+    priorityOrder: 10,
+    fleetComposition: {
+      carrier: 2,
+      spacedock: 1,
+      cruiser: 1,
+      pds: 1,
+      infantry: 5,
+    },
   },
   arborec: {
     id: "arborec",
@@ -14,6 +22,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Arborec",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Arborec",
+    priorityOrder: 29,
+    fleetComposition: {
+      carrier: 1,
+      cruiser: 1,
+      fighter: 2,
+      infantry: 4,
+      spacedock: 1,
+      pds: 1,
+    },
   },
   barony: {
     id: "barony",
@@ -21,6 +38,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Barony of Letnev",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Barony_of_Letnev",
+    priorityOrder: 8,
+    fleetComposition: {
+      dreadnought: 1,
+      fighter: 1,
+      carrier: 1,
+      infantry: 3,
+      destroyer: 1,
+      spacedock: 1,
+    },
   },
   saar: {
     id: "saar",
@@ -28,6 +54,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "Clan of Saar",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Clan_of_Saar",
+    priorityOrder: 17,
+    fleetComposition: {
+      carrier: 2,
+      infantry: 4,
+      cruiser: 1,
+      spacedock: 1,
+      fighter: 2,
+    },
   },
   muaat: {
     id: "muaat",
@@ -35,6 +69,13 @@ export const factions: Record<FactionId, Faction> = {
     name: "Embers of Muaat",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Embers_of_Muaat",
+    priorityOrder: 14,
+    fleetComposition: {
+      warsun: 1,
+      infantry: 4,
+      fighter: 2,
+      spacedock: 1,
+    },
   },
   hacan: {
     id: "hacan",
@@ -42,6 +83,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "Emirates of Hacan",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Emirates_of_Hacan",
+    priorityOrder: 18,
+    fleetComposition: {
+      carrier: 2,
+      cruiser: 1,
+      fighter: 2,
+      infantry: 4,
+      spacedock: 1,
+    },
   },
   sol: {
     id: "sol",
@@ -49,6 +98,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "Federation of Sol",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Federation_of_Sol",
+    priorityOrder: 3,
+    fleetComposition: {
+      carrier: 2,
+      infantry: 5,
+      destroyer: 1,
+      spacedock: 1,
+      fighter: 3,
+    },
   },
   creuss: {
     id: "creuss",
@@ -56,6 +113,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "Ghosts of Creuss",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Ghosts_of_Creuss",
+    priorityOrder: 20,
+    fleetComposition: {
+      carrier: 1,
+      infantry: 4,
+      destroyer: 2,
+      spacedock: 1,
+      fighter: 2,
+    },
   },
   l1z1x: {
     id: "l1z1x",
@@ -63,6 +128,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "L1Z1X Mindnet",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/L1Z1X_Mindnet",
+    priorityOrder: 5,
+    fleetComposition: {
+      dreadnought: 1,
+      infantry: 5,
+      carrier: 1,
+      spacedock: 1,
+      fighter: 3,
+      pds: 1,
+    },
   },
   mentak: {
     id: "mentak",
@@ -70,6 +144,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Mentak Coalition",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Mentak_Coalition",
+    priorityOrder: 15,
+    fleetComposition: {
+      carrier: 1,
+      infantry: 4,
+      cruiser: 2,
+      spacedock: 1,
+      fighter: 3,
+      pds: 1,
+    },
   },
   naalu: {
     id: "naalu",
@@ -77,6 +160,16 @@ export const factions: Record<FactionId, Faction> = {
     name: "Naalu Collective",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Naalu_Collective",
+    priorityOrder: 28,
+    fleetComposition: {
+      carrier: 1,
+      fighter: 3,
+      pds: 1,
+      cruiser: 1,
+      infantry: 4,
+      destroyer: 1,
+      spacedock: 1,
+    },
   },
   nekro: {
     id: "nekro",
@@ -84,6 +177,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Nekro Virus",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Nekro_Virus",
+    priorityOrder: 22,
+    fleetComposition: {
+      dreadnought: 1,
+      fighter: 2,
+      carrier: 1,
+      infantry: 2,
+      cruiser: 1,
+      spacedock: 1,
+    },
   },
   jolnar: {
     id: "jolnar",
@@ -91,6 +193,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Universities of Jol-Nar",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Universities_of_Jol-Nar",
+    priorityOrder: 14,
+    fleetComposition: {
+      dreadnought: 1,
+      infantry: 2,
+      carrier: 2,
+      spacedock: 1,
+      fighter: 1,
+      pds: 1,
+    },
   },
   winnu: {
     id: "winnu",
@@ -98,6 +209,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Winnu",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Winnu",
+    priorityOrder: 27,
+    fleetComposition: {
+      carrier: 1,
+      infantry: 2,
+      cruiser: 1,
+      spacedock: 1,
+      fighter: 2,
+      pds: 1,
+    },
   },
   xxcha: {
     id: "xxcha",
@@ -105,6 +225,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Xxcha Kingdom",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Xxcha_Kingdom",
+    priorityOrder: 26,
+    fleetComposition: {
+      carrier: 1,
+      infantry: 4,
+      cruiser: 2,
+      spacedock: 1,
+      fighter: 3,
+      pds: 1,
+    },
   },
   yin: {
     id: "yin",
@@ -112,6 +241,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "Yin Brotherhood",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Yin_Brotherhood",
+    priorityOrder: 4,
+    fleetComposition: {
+      carrier: 2,
+      infantry: 4,
+      destroyer: 1,
+      spacedock: 1,
+      fighter: 4,
+    },
   },
   yssaril: {
     id: "yssaril",
@@ -119,6 +256,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Yssaril Tribes",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Yssaril_Tribes",
+    priorityOrder: 11,
+    fleetComposition: {
+      carrier: 2,
+      infantry: 5,
+      cruiser: 1,
+      spacedock: 1,
+      fighter: 2,
+      pds: 1,
+    },
   },
   argent: {
     id: "argent",
@@ -126,6 +272,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Argent Flight",
     set: "pok",
     wiki: "https://twilight-imperium.fandom.com/wiki/Argent_Flight",
+    priorityOrder: 25,
+    fleetComposition: {
+      carrier: 1,
+      infantry: 5,
+      destroyer: 2,
+      spacedock: 1,
+      fighter: 2,
+      pds: 1,
+    },
   },
   empyrean: {
     id: "empyrean",
@@ -133,6 +288,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "Empyrean",
     set: "pok",
     wiki: "https://twilight-imperium.fandom.com/wiki/Empyrean",
+    priorityOrder: 9,
+    fleetComposition: {
+      carrier: 2,
+      infantry: 4,
+      destroyer: 1,
+      spacedock: 1,
+      fighter: 2,
+    },
   },
   mahact: {
     id: "mahact",
@@ -140,6 +303,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Mahact Gene-Sorcerers",
     set: "pok",
     wiki: "https://twilight-imperium.fandom.com/wiki/Mahact_Gene-Sorcerers",
+    priorityOrder: 1,
+    fleetComposition: {
+      dreadnought: 1,
+      fighter: 2,
+      carrier: 1,
+      infantry: 3,
+      cruiser: 1,
+      spacedock: 1,
+    },
   },
   naazrokha: {
     id: "naazrokha",
@@ -147,6 +319,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "Naaz-Rokha Alliance",
     set: "pok",
     wiki: "https://twilight-imperium.fandom.com/wiki/Naaz-Rokha_Alliance",
+    priorityOrder: 19,
+    fleetComposition: {
+      carrier: 2,
+      destroyer: 1,
+      infantry: 3,
+      fighter: 2,
+      spacedock: 1,
+    },
   },
   nomad: {
     id: "nomad",
@@ -154,6 +334,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Nomad",
     set: "pok",
     wiki: "https://twilight-imperium.fandom.com/wiki/Nomad",
+    priorityOrder: 2,
+    fleetComposition: {
+      flagship: 1,
+      fighter: 3,
+      carrier: 1,
+      infantry: 4,
+      destroyer: 1,
+      spacedock: 1,
+    },
   },
   titans: {
     id: "titans",
@@ -161,6 +350,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "Titans of Ul",
     set: "pok",
     wiki: "https://twilight-imperium.fandom.com/wiki/Titans_of_Ul",
+    priorityOrder: 13,
+    fleetComposition: {
+      dreadnought: 1,
+      infantry: 3,
+      cruiser: 2,
+      spacedock: 1,
+      fighter: 2,
+    },
   },
   vulraith: {
     id: "vulraith",
@@ -168,6 +365,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Vuil'Raith Cabal",
     set: "pok",
     wiki: "https://twilight-imperium.fandom.com/wiki/Vuil%27Raith_Cabal",
+    priorityOrder: 6,
+    fleetComposition: {
+      dreadnought: 1,
+      fighter: 3,
+      carrier: 1,
+      infantry: 3,
+      cruiser: 1,
+      spacedock: 1,
+    },
   },
   keleres: {
     id: "keleres",
@@ -183,6 +389,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "Last Bastion",
     wiki: "https://twilight-imperium.fandom.com/wiki/Last_Bastion",
     set: "te",
+    priorityOrder: 21,
+    fleetComposition: {
+      dreadnought: 1,
+      fighter: 2,
+      carrier: 1,
+      infantry: 3,
+      cruiser: 1,
+      spacedock: 1,
+    },
   },
   dws: {
     id: "dws",
@@ -190,6 +405,14 @@ export const factions: Record<FactionId, Faction> = {
     name: "The Deepwrought Scholarate",
     wiki: "https://twilight-imperium.fandom.com/wiki/The_Deepwrought_Scholarate",
     set: "te",
+    priorityOrder: 7,
+    fleetComposition: {
+      dreadnought: 1,
+      infantry: 3,
+      carrier: 1,
+      spacedock: 1,
+      fighter: 4,
+    },
   },
   crimson: {
     id: "crimson",
@@ -197,6 +420,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "The Crimson Rebellion",
     wiki: "https://twilight-imperium.fandom.com/wiki/The_Crimson_Rebellion",
     set: "te",
+    priorityOrder: 16,
+    fleetComposition: {
+      carrier: 1,
+      infantry: 4,
+      destroyer: 2,
+      spacedock: 1,
+      fighter: 3,
+      pds: 1,
+    },
   },
   ralnel: {
     id: "ralnel",
@@ -204,6 +436,16 @@ export const factions: Record<FactionId, Faction> = {
     name: "The Ral Nel Consortium",
     wiki: "https://twilight-imperium.fandom.com/wiki/The_Ral_Nel_Consortium",
     set: "te",
+    priorityOrder: 12,
+    fleetComposition: {
+      dreadnought: 1,
+      fighter: 2,
+      pds: 2,
+      carrier: 1,
+      infantry: 4,
+      destroyer: 1,
+      spacedock: 1,
+    },
   },
   firmament: {
     id: "firmament",
@@ -211,6 +453,15 @@ export const factions: Record<FactionId, Faction> = {
     name: "The Firmament",
     wiki: "https://twilight-imperium.fandom.com/wiki/The_Firmament_/_The_Obsidian",
     set: "te",
+    priorityOrder: 30,
+    fleetComposition: {
+      carrier: 1,
+      fighter: 3,
+      cruiser: 1,
+      infantry: 3,
+      destroyer: 1,
+      spacedock: 1,
+    },
   },
   // Discordant Stars
   ilyxum: {
@@ -458,6 +709,62 @@ export const factions: Record<FactionId, Faction> = {
     wiki: "https://twilight-imperium.fandom.com/",
     set: "drahn",
   },
+  redKing: {
+    id: "redKing",
+    iconPath: "/factions/redtf.png",
+    name: "Ruby Monarch",
+    set: "twilightsFall",
+    wiki: "https://twilight-imperium.fandom.com/wiki/Twilight%27s_Fall#Factions_-_Mahact_Kings",
+  },
+  yellowKing: {
+    id: "yellowKing",
+    iconPath: "/factions/yellowtf.png",
+    name: "Avarice Rex",
+    set: "twilightsFall",
+    wiki: "https://twilight-imperium.fandom.com/wiki/Twilight%27s_Fall#Factions_-_Mahact_Kings",
+  },
+  blueKing: {
+    id: "blueKing",
+    iconPath: "/factions/bluetf.png",
+    name: "Saint of Swords",
+    set: "twilightsFall",
+    wiki: "https://twilight-imperium.fandom.com/wiki/Twilight%27s_Fall#Factions_-_Mahact_Kings",
+  },
+  orangeKing: {
+    id: "orangeKing",
+    iconPath: "/factions/orangetf.png",
+    name: "Radiant Aur",
+    set: "twilightsFall",
+    wiki: "https://twilight-imperium.fandom.com/wiki/Twilight%27s_Fall#Factions_-_Mahact_Kings",
+  },
+  purpleKing: {
+    id: "purpleKing",
+    iconPath: "/factions/purpletf.png",
+    name: "Il Na Viroset",
+    set: "twilightsFall",
+    wiki: "https://twilight-imperium.fandom.com/wiki/Twilight%27s_Fall#Factions_-_Mahact_Kings",
+  },
+  pinkKing: {
+    id: "pinkKing",
+    iconPath: "/factions/pinktf.png",
+    name: "El Nen Janovet",
+    set: "twilightsFall",
+    wiki: "https://twilight-imperium.fandom.com/wiki/Twilight%27s_Fall#Factions_-_Mahact_Kings",
+  },
+  blackKing: {
+    id: "blackKing",
+    iconPath: "/factions/blacktf.png",
+    name: "A Sickening Lurch",
+    set: "twilightsFall",
+    wiki: "https://twilight-imperium.fandom.com/wiki/Twilight%27s_Fall#Factions_-_Mahact_Kings",
+  },
+  greenKing: {
+    id: "greenKing",
+    iconPath: "/factions/greentf.png",
+    name: "Il Sai Lakoe",
+    set: "twilightsFall",
+    wiki: "https://twilight-imperium.fandom.com/wiki/Twilight%27s_Fall#Factions_-_Mahact_Kings",
+  },
 } as const;
 
 export const allFactionIds = Object.keys(factions) as FactionId[];
@@ -478,6 +785,10 @@ export const factionDiscordantIds = Object.values(factions)
   .map((faction) => faction.id);
 export const factionDiscordantExpIds = Object.values(factions)
   .filter((faction) => faction.set === "discordantexp")
+  .map((faction) => faction.id);
+
+export const twilightsFallFactionIds = Object.values(factions)
+  .filter((faction) => faction.set === "twilightsFall")
   .map((faction) => faction.id);
 
 export function getFactionCount(sets: string[]) {

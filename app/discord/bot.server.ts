@@ -22,6 +22,12 @@ import {
 
 const commands = [startDraft];
 
+declare module "discord.js" {
+  export interface Client {
+    commands: Collection<string, typeof startDraft>;
+  }
+}
+
 declare global {
   var discordClient: Client;
 }

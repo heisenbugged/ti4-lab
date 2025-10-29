@@ -83,7 +83,7 @@ async function execute(interaction: ChatInputCommandInteraction) {
       | string
       | undefined,
   ]
-    .filter((name) => !!name)
+    .filter((name): name is string => !!name)
     .map((name, idx) => {
       if (name.startsWith("<@")) {
         const memberId = name.substring(2, name.length - 1);

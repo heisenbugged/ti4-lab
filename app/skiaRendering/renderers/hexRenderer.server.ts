@@ -78,7 +78,7 @@ export function drawHexTile(
 
       // Draw hyperlanes
       const hasHyperlanes = system.hyperlanes && system.hyperlanes.length > 0;
-      if (hasHyperlanes) {
+      if (hasHyperlanes && system.hyperlanes) {
         drawHyperlanes(ctx, system.hyperlanes, vertices);
       }
 

@@ -1,5 +1,5 @@
 import { Button, ButtonProps, Loader, Badge, Group } from "@mantine/core";
-import { factionAudios, LineType } from "~/data/factionAudios";
+import { factionAudios, LineType, FactionAudio } from "~/data/factionAudios";
 import type { FactionId } from "~/types";
 
 interface VoiceLineControlProps {
@@ -15,14 +15,14 @@ interface VoiceLineControlProps {
   lineCount?: number; // Remaining count of voice lines
 }
 
-const voiceLineConfig: Record<
+const voiceLineConfig: Partial<Record<
   LineType,
   {
     color: ButtonProps["color"];
     size?: ButtonProps["size"];
     width?: string;
   }
-> = {
+>> = {
   battleLines: {
     color: "green",
     width: "120px",
@@ -104,13 +104,13 @@ export function VoiceLineButton({
 }: VoiceLineControlProps) {
   const config = voiceLineConfig[type];
   const isLoading = loadingAudio === `${faction}-${type}`;
-  const isDisabled = !factionAudios[faction]?.[type];
+  const isDisabled = !factionAudios[faction]?.[type as keyof FactionAudio];
 
   return (
     <Button
       variant={isQueued ? "outline" : "light"}
-      color={config.color}
-      size={size ?? config.size ?? "compact-md"}
+      color={config?.color}
+      size={size ?? config?.size ?? "compact-md"}
       disabled={isDisabled}
       onClick={() => {
         if (isLoading) {
@@ -119,11 +119,11 @@ export function VoiceLineButton({
         }
         onPlay();
       }}
-      w={width ?? config.width}
+      w={width ?? config?.width}
       style={{ position: "relative", overflow: "visible" }}
     >
       {isLoading ? (
-        <Loader size="xs" type="bars" color={config.color} />
+        <Loader size="xs" type="bars" color={config?.color} />
       ) : isQueued ? (
         "Queued"
       ) : (

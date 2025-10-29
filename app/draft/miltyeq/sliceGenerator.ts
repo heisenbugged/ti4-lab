@@ -1,4 +1,4 @@
-import { DraftSettings, SystemId, SystemIds } from "~/types";
+import { DraftSettings, SystemId, SystemIds, FactionId } from "~/types";
 import { SLICE_SHAPES } from "../sliceShapes";
 import { miltySystemTiers } from "~/data/miltyTileTiers";
 import { SliceChoice, SliceGenerationConfig, TieredSystems } from "../types";
@@ -47,6 +47,7 @@ const DEFAULT_CONFIG = DEFAULT_MILTYEQ_SETTINGS;
 export const generateMap = (
   settings: DraftSettings,
   systemPool: SystemId[],
+  minorFactionPool?: FactionId[],
   attempts: number = 0,
 ) => {
   const config = draftConfig[settings.type];

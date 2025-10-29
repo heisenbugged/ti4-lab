@@ -35,7 +35,7 @@ export type AudioEntry = {
   caption?: string;
 };
 
-type FactionAudio = {
+export type FactionAudio = {
   battleAnthem: string;
   battleAnthemDelay?: number;
   homeDefense: AudioEntry[];
@@ -63,7 +63,7 @@ type FactionAudio = {
   };
 };
 
-export const factionAudios: Record<FactionId, FactionAudio> = {
+export const factionAudios: Partial<Record<FactionId, FactionAudio>> = {
   creuss: {
     battleAnthem: "",
     homeDefense: [
@@ -2880,9 +2880,9 @@ export const getAllSrcs = (factionId: FactionId, type: LineType) => {
   }
 
   if (type === "special")
-    return factionAudios[factionId].special.entries.map((e) => e.url);
+    return factionAudios[factionId]?.special?.entries.map((e) => e.url) ?? [];
   if (type === "special2")
-    return factionAudios[factionId].special2?.entries.map((e) => e.url) ?? [];
+    return factionAudios[factionId]?.special2?.entries.map((e) => e.url) ?? [];
 
   // For other faction-specific types
   const factionAudio = factionAudios[factionId];

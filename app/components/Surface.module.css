@@ -3,6 +3,8 @@
     @mixin dark {background-color: var(--mantine-color-dark-6);}
 }
 
+.withBorder {}
+
 .surface.withBorder {
     border: 1px solid;
     @mixin light { border-color: rgba(0, 0, 0, 0.1); }

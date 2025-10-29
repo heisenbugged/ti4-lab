@@ -8,9 +8,10 @@ import {
   Group,
   Paper,
   Stack,
+  Tabs,
   Text,
 } from "@mantine/core";
-import { DiscordData, Draft } from "~/types";
+import { DiscordData, Draft, DraftSettings } from "~/types";
 import { useEffect, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
@@ -58,6 +59,9 @@ export default function DraftPrechoice() {
 
   const player = useDraftSetup((state) => state.player);
   const map = useDraftSetup((state) => state.map);
+  const slices = useDraftSetup((state) => state.slices);
+  const draftMode = useDraftSetup((state) => state.draftMode);
+  const setDraftMode = useDraftSetup((state) => state.setDraftMode);
 
   const [miltySettings, setMiltySettings] = useState<MiltyDraftSettings>(
     DEFAULT_MILTY_SETTINGS,
@@ -92,8 +96,36 @@ export default function DraftPrechoice() {
   };
 
   const handleContinue = () => {
-    const draftSettings = buildDraftSettings();
-    navigateToDraft(draftSettings);
+    if (draftMode === "twilightFalls") {
+      // For Twilight's Fall, use defaults and only respect # of slices
+      const twilightsFallSettings: DraftSettings = {
+        type: "milty",
+        numFactions: 8, // Always 8 Mahact Kings
+        factionGameSets: ["twilightsFall"], // Only Mahact Kings faction set
+        tileGameSets: ["base", "pok", "te"],
+        numSlices: Number(slices.numSlices), // Only customizable setting
+        randomizeMap: true,
+        randomizeSlices: true,
+        draftSpeaker: false,
+        allowHomePlanetSearch: false,
+        allowEmptyTiles: false,
+        draftPlayerColors: false,
+        minorFactionsMode: undefined,
+        draftGameMode: "twilightsFall",
+      };
+
+      navigate("/draft/new", {
+        state: {
+          draftSettings: twilightsFallSettings,
+          players: player.players,
+          discordData,
+        },
+      });
+    } else {
+      // Base draft mode - use normal settings
+      const draftSettings = buildDraftSettings();
+      navigateToDraft(draftSettings);
+    }
   };
 
   const [discordOpened, { open: openDiscord, close: closeDiscord }] =
@@ -269,13 +301,49 @@ export default function DraftPrechoice() {
           />
           <Stack>
             <SectionTitle title="Configuration" />
-            <FactionConfigurationSection />
-            <SlicesConfigurationSection />
+            <Tabs
+              value={draftMode}
+              onChange={(value) =>
+                setDraftMode(value as "base" | "twilightFalls")
+              }
+              variant="pills"
+            >
+              <Tabs.List mb="md">
+                <Tabs.Tab value="base">Base Draft</Tabs.Tab>
+                <Tabs.Tab value="twilightFalls">Twilight&apos;s Fall</Tabs.Tab>
+              </Tabs.List>
+
+              <Tabs.Panel value="base">
+                <Stack>
+                  <FactionConfigurationSection />
+                  <SlicesConfigurationSection />
+                </Stack>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="twilightFalls">
+                <Stack gap="md">
+                  <Alert color="blue" title="Simplified Configuration">
+                    To be compatible with milty drafting, instead of doing a
+                    whole sub-draft, players simply pick a &quot;reference card
+                    pack&quot; as part of the main snake draft. After all
+                    components are drafted, players will choose their home
+                    system, faction, and priority order from their reference
+                    card pack.
+                  </Alert>
+
+                  <SlicesConfigurationSection />
+                </Stack>
+              </Tabs.Panel>
+            </Tabs>
           </Stack>
-          <MultidraftSection />
-          <MinorFactionsSection />
-          <ContentPacksSection />
-          <AdvancedSettingsSection />
+          {draftMode === "base" && (
+            <>
+              <MultidraftSection />
+              <MinorFactionsSection />
+              <ContentPacksSection />
+              <AdvancedSettingsSection />
+            </>
+          )}
 
           <Button
             size="lg"

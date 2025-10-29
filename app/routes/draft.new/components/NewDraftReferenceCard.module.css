@@ -1,0 +1,167 @@
+.planetRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.planetName {
+  flex: 1;
+  min-width: 0;
+}
+
+.stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fleetRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fleetGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+
+
+.label {
+  text-align: right;
+}
+
+.labelIcon {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.content {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-start;
+}
+
+.cardHeader {
+  position: relative;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.factionBadge {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mantine-color-dark-6);
+  border: 1px solid var(--mantine-color-dark-5);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.priorityPill {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0px;
+  z-index: 2;
+  background: rgba(26, 26, 26, 0.9);
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 30px;
+  padding-right: 10px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 20px 100%);
+}
+
+
+.card {
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+.splitBadge {
+  position: relative;
+  overflow: hidden;
+  background: var(--mantine-color-blue-8);
+}
+
+.splitBadgeLeft {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 50%;
+  background: var(--mantine-color-yellow-8);
+  z-index: 0;
+}
+
+.splitBadgeText {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.planets {
+  gap: 4px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--mantine-color-gray-4);
+  opacity: 0.6;
+  margin: 2px 0;
+}
+
+.vDivider {
+  width: 1px;
+  height: 14px;
+  background: var(--mantine-color-gray-4);
+  opacity: 0.6;
+}
+
+.hDivider {
+  height: 1px;
+  background: var(--mantine-color-gray-5);
+  opacity: 0.65;
+  margin: 6px 0;
+}
+
+.cardBody {
+  border-radius: 0 0 var(--mantine-radius-md) var(--mantine-radius-md);
+  border-top: 0;
+  flex: 1;
+}
+
+.factionNameGroup {
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.homeSystemSection {
+  min-height: 80px;
+}
+
+.factionIconImg {
+  width: 20px;
+  height: 20px;
+}
+

@@ -1,0 +1,13 @@
+.header {
+    border-radius: var(--mantine-radius-md) var(--mantine-radius-md) 0 0;
+}
+
+.body {
+    border-radius: 0 0 var(--mantine-radius-md) var(--mantine-radius-md);
+    border-top: 0;
+}
+
+.body > * {
+    border-radius: 0 0 var(--mantine-radius-md) var(--mantine-radius-md);
+    border-top: 0;
+}

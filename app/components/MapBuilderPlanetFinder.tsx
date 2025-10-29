@@ -1,4 +1,12 @@
-import { Box, Group, Input, Modal, Stack, Text, useMantineTheme } from "@mantine/core";
+import {
+  Box,
+  Group,
+  Input,
+  Modal,
+  Stack,
+  Text,
+  useMantineTheme,
+} from "@mantine/core";
 import { Fragment, useEffect, useState } from "react";
 import { searchableSystemData, systemData } from "~/data/systemData";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
@@ -43,7 +51,7 @@ export function MapBuilderPlanetFinder({ onSystemSelected }: Props) {
     if (!planetFinderModal) return;
 
     if (planetFinderModal.mode === "map") {
-      addSystemToMap(planetFinderModal.tileIdx, system);
+      addSystemToMap(planetFinderModal.tileIdx, system.id);
     }
 
     onSystemSelected?.(system);

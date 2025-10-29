@@ -34,13 +34,13 @@ export function SlicesSection() {
     undefined,
   );
   const handleDragStart = (event: DragStartEvent) => {
-    const [, originSliceIdx, originTileIdx] = event.active!.id.split("-");
+    const [, originSliceIdx, originTileIdx] = String(event.active!.id).split("-");
     setDraggingSlice(parseInt(originSliceIdx));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const [, originSliceIdx, originTileIdx] = event.active!.id.split("-");
-    const [, destSliceIdx, destTileIdx] = event.over!.id.split("-");
+    const [, originSliceIdx, originTileIdx] = String(event.active!.id).split("-");
+    const [, destSliceIdx, destTileIdx] = String(event.over!.id).split("-");
 
     const destTile: Tile = event.over!.data.current!.tile;
     const originTile: Tile = event.active!.data.current!.tile;
@@ -52,10 +52,10 @@ export function SlicesSection() {
     const originSystem = systemData[originTile.systemId];
     const destinationSystem = systemData[destTile.systemId];
 
-    removeSystemFromSlice(originSliceIdx, originTileIdx);
-    removeSystemFromSlice(destSliceIdx, destTileIdx);
-    addSystemToSlice(destSliceIdx, destTileIdx, originSystem);
-    addSystemToSlice(originSliceIdx, originTileIdx, destinationSystem);
+    removeSystemFromSlice(parseInt(originSliceIdx), parseInt(originTileIdx));
+    removeSystemFromSlice(parseInt(destSliceIdx), parseInt(destTileIdx));
+    addSystemToSlice(parseInt(destSliceIdx), parseInt(destTileIdx), originSystem);
+    addSystemToSlice(parseInt(originSliceIdx), parseInt(originTileIdx), destinationSystem);
     setDraggingSlice(undefined);
   };
 

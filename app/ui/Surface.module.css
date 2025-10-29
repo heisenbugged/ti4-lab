@@ -1,0 +1,74 @@
+.surface {
+    @mixin light {background-color: var(--mantine-color-gray-1);}
+    @mixin dark {background-color: var(--mantine-color-dark-6);}
+}
+
+.withBorder {}
+
+.surface.withBorder {
+    border: 1px solid;
+    @mixin light { border-color: rgba(0, 0, 0, 0.1); }
+    @mixin dark { border-color: var(--mantine-color-dark-5); }
+}
+
+.surface.withBorder.hoverable:hover {
+    cursor: pointer;
+    @mixin light {
+        background-color: var(--mantine-color-gray-0);
+        border-color: var(--mantine-color-blue-5);
+    }
+    @mixin dark {
+        background-color: var(--mantine-color-dark-5);
+        border-color: var(--mantine-color-purple-5);
+    }
+}
+
+.surface.withBorder.blue {
+    background-color: color-mix(in srgb, var(--mantine-color-blue-filled) 10%, transparent);
+    border-color: var(--mantine-color-blue-filled);
+}
+
+.surface.withBorder.red {
+    background-color: color-mix(in srgb, var(--mantine-color-red-filled) 10%, transparent);
+    border-color: var(--mantine-color-red-filled);
+}
+
+.surface.withBorder.green {
+    background-color: color-mix(in srgb, var(--mantine-color-green-filled) 10%, transparent);
+    border-color: var(--mantine-color-green-filled);
+}
+
+.surface.withBorder.magenta {
+    background-color: color-mix(in srgb, var(--mantine-color-magenta-filled) 10%, transparent);
+    border-color: var(--mantine-color-magenta-filled);
+}
+
+.surface.withBorder.violet {
+    background-color: color-mix(in srgb, var(--mantine-color-violet-filled) 10%, transparent);
+    border-color: var(--mantine-color-violet-filled);
+}
+
+.surface.withBorder.orange {
+    background-color: color-mix(in srgb, var(--mantine-color-orange-filled) 10%, transparent);
+    border-color: var(--mantine-color-orange-filled);
+}
+
+.surface.withBorder.gray {
+    background-color: color-mix(in srgb, var(--mantine-color-gray-4) 10%, transparent);
+    border-color: var(--mantine-color-gray-4);
+}
+
+.surface.withBorder.cyan {
+    background-color: color-mix(in srgb, var(--mantine-color-cyan-filled) 10%, transparent);
+    border-color: var(--mantine-color-cyan-filled);
+}
+
+.surface.withBorder.onlyBg {
+    border-width: 0px;
+}
+
+.bordered {
+    border: 1px solid;
+    @mixin light { border-color: rgba(0, 0, 0, 0.1); }
+    @mixin dark { border-color: var(--mantine-color-dark-5); }
+}

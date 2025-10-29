@@ -53,7 +53,7 @@ export async function generateDraftImageBuffer(
   // Calculate canvas dimensions based on map size
   const dimensions = calculateCanvasDimensions(hydratedMap);
   const canvas = new Canvas(dimensions.width, dimensions.height);
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d") as any as CanvasRenderingContext2D;
 
   // Draw all layers
   drawBackground(ctx, dimensions.width, dimensions.height);

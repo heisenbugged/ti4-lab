@@ -42,7 +42,7 @@ export async function generateDraftSlicesImage(
     rows * (sliceWidth + sliceHeaderHeight) + (rows + 1) * gap + padding * 2;
 
   const canvas = new Canvas(canvasWidth, canvasHeight);
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d") as any as CanvasRenderingContext2D;
 
   // Draw background
   drawBackground(ctx, canvasWidth, canvasHeight);

@@ -21,7 +21,7 @@ type SavedDraft = {
   data: Draft;
   urlName: string | null;
   type: string | null;
-  isComplete: number | null;
+  isComplete: boolean | null;
   imageUrl: string | null;
   incompleteImageUrl: string | null;
   createdAt: string;
@@ -87,7 +87,7 @@ export async function findDrafts({
     conditions.push(eq(drafts.type, typeFilter));
   }
   if (isCompleteFilter !== undefined) {
-    conditions.push(eq(drafts.isComplete, isCompleteFilter ? 1 : 0));
+    conditions.push(eq(drafts.isComplete, isCompleteFilter));
   }
   if (createdAfter) {
     conditions.push(sql`${drafts.createdAt} >= ${createdAfter}`);
@@ -111,7 +111,7 @@ export async function findDrafts({
   // Build queries
   let query = db.select().from(drafts);
   if (conditions.length > 0) {
-    query = query.where(sql`${sql.join(conditions, sql` AND `)}`);
+    query = query.where(sql`${sql.join(conditions, sql` AND `)}`) as typeof query;
   }
 
   // Build WHERE clause for stats (without isCompleteFilter)
@@ -214,7 +214,7 @@ export async function createDraft(draft: Draft, presetUrl?: string) {
   const prettyUrl = await getPrettyUrl(presetUrl);
   const type = draft.settings?.type || null;
   const isComplete =
-    draft.selections?.length === draft.pickOrder?.length ? 1 : 0;
+    draft.selections?.length === draft.pickOrder?.length;
 
   db.insert(drafts)
     .values({
@@ -253,7 +253,7 @@ export async function updateDraftUrl(id: string, urlName: string) {
 export async function updateDraft(id: string, draftData: Draft) {
   const type = draftData.settings?.type || null;
   const newIsComplete =
-    draftData.selections?.length === draftData.pickOrder?.length ? 1 : 0;
+    draftData.selections?.length === draftData.pickOrder?.length;
 
   // Get old completion status
   const existingDraft = await draftById(id);
@@ -269,7 +269,66 @@ export async function updateDraft(id: string, draftData: Draft) {
     .run();
 
   // If draft just became complete, enqueue complete image generation
-  if (oldIsComplete === 0 && newIsComplete === 1 && existingDraft.urlName) {
+  if (!oldIsComplete && newIsComplete && existingDraft.urlName) {
     enqueueImageJob(id, existingDraft.urlName, true);
   }
+}
+
+export async function addStagingPick(
+  draftId: string,
+  stageType: "priority" | "home",
+  playerId: number,
+  factionId: string,
+) {
+  const jsonPath =
+    stageType === "priority"
+      ? `$.stagingPriorityValues.${playerId}`
+      : `$.stagingHomeSystemValues.${playerId}`;
+
+  await db
+    .update(drafts)
+    .set({
+      data: sql`json_set(${drafts.data}, ${jsonPath}, ${factionId})`,
+    })
+    .where(eq(drafts.id, draftId))
+    .run();
+}
+
+export async function getStagingState(
+  draftId: string,
+  stageType: "priority" | "home",
+): Promise<Record<number, string> | null> {
+  const jsonPath =
+    stageType === "priority"
+      ? "$.stagingPriorityValues"
+      : "$.stagingHomeSystemValues";
+
+  const result = await db
+    .select({
+      staging: sql<string>`json_extract(${drafts.data}, ${jsonPath})`,
+    })
+    .from(drafts)
+    .where(eq(drafts.id, draftId))
+    .limit(1);
+
+  if (!result[0]?.staging) return null;
+  return JSON.parse(result[0].staging);
+}
+
+export async function clearStaging(
+  draftId: string,
+  stageType: "priority" | "home",
+) {
+  const jsonPath =
+    stageType === "priority"
+      ? "$.stagingPriorityValues"
+      : "$.stagingHomeSystemValues";
+
+  await db
+    .update(drafts)
+    .set({
+      data: sql`json_remove(${drafts.data}, ${jsonPath})`,
+    })
+    .where(eq(drafts.id, draftId))
+    .run();
 }

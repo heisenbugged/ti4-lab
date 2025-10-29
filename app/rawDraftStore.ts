@@ -166,7 +166,9 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
         const placeableRing = getCurrentPlaceableRing(currentMap);
 
         // Check if the target index is in the current placeable ring
-        const isInPlaceableRing = RING_INDICES[placeableRing as 1 | 2 | 3]?.includes(mapIdx);
+        const ringKey = placeableRing as keyof typeof RING_INDICES;
+        const ringIndices = RING_INDICES[ringKey] as readonly number[] | undefined;
+        const isInPlaceableRing = ringIndices?.includes(mapIdx);
         if (!isInPlaceableRing) {
           console.error(`Can only place tiles in ring ${placeableRing} right now`);
           return;
@@ -330,7 +332,8 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
     getPlaceableTileIndices: (draggedSystemId?: SystemId) => {
       const map = get().getMap();
       const ring = getCurrentPlaceableRing(map);
-      const ringIndices = RING_INDICES[ring as 1 | 2 | 3] || [];
+      const ringKey2 = ring as keyof typeof RING_INDICES;
+      const ringIndices = RING_INDICES[ringKey2] || [];
 
       if (!draggedSystemId) {
         // No restrictions when not dragging

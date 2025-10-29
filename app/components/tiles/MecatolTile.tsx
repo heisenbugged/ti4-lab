@@ -9,9 +9,9 @@ import { PlanetName, PlanetStats } from "../Planet";
 
 import classes from "./Tiles.module.css";
 
-type Props = { mapId: string; tile: SystemTile; hideValues?: boolean };
+type Props = { mapId: string; tile: SystemTile; hideValues?: boolean; disablePopover?: boolean };
 
-export function MecatolTile({ mapId, tile, hideValues = false }: Props) {
+export function MecatolTile({ mapId, tile, hideValues = false, disablePopover = false }: Props) {
   const { radius } = useContext(MapContext);
   const scale = calcScale(radius);
   return (

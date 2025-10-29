@@ -15,7 +15,7 @@ async function backfillDraftMetadata() {
       const draftData = JSON.parse(draft.data as string) as Draft;
       const type = draftData.settings?.type || null;
       const isComplete =
-        draftData.selections?.length === draftData.pickOrder?.length ? 1 : 0;
+        draftData.selections?.length === draftData.pickOrder?.length;
 
       await db
         .update(drafts)

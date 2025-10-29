@@ -1,10 +1,18 @@
 import { draftStoreAtom, useDraft } from "~/draftStore";
-import { Player, DraftSelection, HydratedPlayer, DiscordPlayer } from "~/types";
+import {
+  Player,
+  DraftSelection,
+  HydratedPlayer,
+  DiscordPlayer,
+  PlayerId,
+  FactionReferenceCardPack,
+} from "~/types";
 import { hydrateMap } from "~/utils/map";
 import { atom } from "jotai/vanilla";
 import { useAtom } from "jotai";
 import { draftConfig } from "~/draft";
 import { factionSystems } from "~/data/systemData";
+import { factions as allFactions } from "~/data/factionData";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 // check if the player name is either empty or Player N where 'n' is a number
@@ -17,6 +25,7 @@ export function hydratePlayers(
   selections: DraftSelection[],
   draftSpeaker: boolean = false,
   discordPlayers: DiscordPlayer[] = [],
+  availableReferenceCardPacks?: FactionReferenceCardPack[],
 ): HydratedPlayer[] {
   const hydratedPlayers = players.map((p) => {
     const discordPlayer = discordPlayers.find((dp) => dp.playerId === p.id);
@@ -38,8 +47,11 @@ export function hydratePlayers(
 
   return selections.reduce(
     (acc, selection) => {
-      const playerIdx = acc.findIndex((p) => p.id === selection.playerId);
-      if (playerIdx === -1) return acc;
+      let playerIdx = -1;
+      if (draftSelectionHasPlayerId(selection)) {
+        playerIdx = acc.findIndex((p) => p.id === selection.playerId);
+        if (playerIdx === -1) return acc;
+      }
 
       if (selection.type === "BAN_FACTION") {
         acc[playerIdx] = {
@@ -77,6 +89,75 @@ export function hydratePlayers(
           ...acc[playerIdx],
           minorFaction: selection.minorFactionId,
         };
+      }
+
+      if (selection.type === "SELECT_REFERENCE_CARD_PACK") {
+        acc[playerIdx] = {
+          ...acc[playerIdx],
+          referenceCardPackIdx: selection.packIdx,
+        };
+      }
+
+      if (selection.type === "COMMIT_PRIORITY_VALUES") {
+        selection.selections.forEach(({ playerId, priorityValueFactionId }) => {
+          const idx = acc.findIndex((p) => p.id === playerId);
+          if (idx !== -1) {
+            acc[idx] = {
+              ...acc[idx],
+              priorityValueFactionId,
+            };
+          }
+        });
+
+        const sortedByPriority = [...selection.selections].sort((a, b) => {
+          const factionA = allFactions[a.priorityValueFactionId];
+          const factionB = allFactions[b.priorityValueFactionId];
+          const priorityA = factionA?.priorityOrder ?? 999;
+          const priorityB = factionB?.priorityOrder ?? 999;
+          return priorityA - priorityB;
+        });
+
+        sortedByPriority.forEach(({ playerId }, seatIdx) => {
+          const idx = acc.findIndex((p) => p.id === playerId);
+          if (idx !== -1) {
+            acc[idx] = {
+              ...acc[idx],
+              seatIdx,
+              speakerOrder: seatIdx,
+            };
+          }
+        });
+      }
+
+      if (selection.type === "COMMIT_HOME_SYSTEMS") {
+        selection.selections.forEach(({ playerId, homeSystemFactionId }) => {
+          const idx = acc.findIndex((p) => p.id === playerId);
+          if (idx !== -1) {
+            acc[idx] = {
+              ...acc[idx],
+              homeSystemFactionId,
+            };
+
+            if (
+              acc[idx].referenceCardPackIdx !== undefined &&
+              availableReferenceCardPacks
+            ) {
+              const pack =
+                availableReferenceCardPacks[acc[idx].referenceCardPackIdx!]!;
+              const startingUnitsCard = pack.find(
+                (cardId) =>
+                  cardId !== acc[idx].priorityValueFactionId &&
+                  cardId !== acc[idx].homeSystemFactionId,
+              );
+              if (startingUnitsCard) {
+                acc[idx] = {
+                  ...acc[idx],
+                  startingUnitsFactionId: startingUnitsCard,
+                };
+              }
+            }
+          }
+        });
       }
 
       if (selection.type === "SELECT_SEAT") {
@@ -119,6 +200,7 @@ export const hydratedPlayersAtom = atom((get) => {
     draft.selections,
     draft.settings.draftSpeaker,
     draft.integrations.discord?.players,
+    draft.availableReferenceCardPacks,
   );
 });
 
@@ -144,8 +226,11 @@ export const hydratedMapStringAtom = atom((get) => {
     .map((t) => {
       if (t.type === "HOME") {
         const player = hydratedPlayers.find((p) => p.id === t.playerId);
-        if (player?.faction === undefined) return "0";
-        return factionSystems[player.faction]?.id ?? "0";
+
+        const faction = player?.homeSystemFactionId ?? player?.faction;
+
+        if (faction === undefined) return "0";
+        return factionSystems[faction]?.id ?? "0";
       }
       if (t.type === "SYSTEM") return t.systemId;
       return "-1";
@@ -178,3 +263,9 @@ export function useHydratedDraft() {
     draftFinished,
   };
 }
+
+export const draftSelectionHasPlayerId = (
+  selection: DraftSelection,
+): selection is Extract<DraftSelection, { playerId: PlayerId }> => {
+  return "playerId" in selection;
+};

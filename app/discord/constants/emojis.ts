@@ -47,7 +47,7 @@ export const positionEmojis: Record<number, string> = {
 } as const;
 
 export const unpickedFactionEmoji = "<:GoodDog:1068567308819255316>";
-export const factionEmojis: Record<FactionId, string> = {
+export const factionEmojis: Partial<Record<FactionId, string>> = {
   // Base Game Factions
   arborec: "<:Arborec:1156670455856513175>",
   argent: "<:Argent:1156670457123192873>",
