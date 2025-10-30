@@ -210,3 +210,109 @@ export function createCanvas(width: number, height: number): {
   const ctx = canvas.getContext("2d") as any as CanvasRenderingContext2D;
   return { canvas, ctx };
 }
+
+/**
+ * Save canvas context, execute callback, then restore context
+ */
+export function withContext(
+  ctx: CanvasRenderingContext2D,
+  callback: () => void,
+): void {
+  ctx.save();
+  try {
+    callback();
+  } finally {
+    ctx.restore();
+  }
+}
+
+/**
+ * Draw an image rotated by a specified angle (in degrees)
+ */
+export function drawRotatedImage(
+  ctx: CanvasRenderingContext2D,
+  image: any,
+  x: number,
+  y: number,
+  size: number,
+  rotationDegrees: number,
+): void {
+  ctx.save();
+  ctx.translate(x + size / 2, y + size / 2);
+  ctx.rotate((rotationDegrees * Math.PI) / 180);
+  ctx.drawImage(image, -size / 2, -size / 2, size, size);
+  ctx.restore();
+}
+
+/**
+ * Measure text and truncate if necessary to fit within maxWidth
+ */
+export function measureAndTruncateText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  maxFontSize: number,
+  minFontSize: number,
+  fontFamily: string,
+): { displayText: string; fontSize: number; width: number } {
+  let fontSize = maxFontSize;
+  let displayText = text;
+  let width = 0;
+
+  // Try decreasing font size until text fits
+  while (fontSize >= minFontSize) {
+    ctx.font = `${fontSize}px ${fontFamily}`;
+    width = ctx.measureText(displayText).width;
+
+    if (width <= maxWidth) {
+      break;
+    }
+
+    // If still too wide, try truncating text
+    if (fontSize === minFontSize) {
+      // Truncate text with ellipsis
+      let truncated = text;
+      while (truncated.length > 0) {
+        truncated = truncated.slice(0, -1);
+        const testText = truncated + "...";
+        ctx.font = `${fontSize}px ${fontFamily}`;
+        const testWidth = ctx.measureText(testText).width;
+        if (testWidth <= maxWidth) {
+          displayText = testText;
+          width = testWidth;
+          break;
+        }
+      }
+      break;
+    }
+
+    fontSize -= 1;
+  }
+
+  // Ensure we don't go below minFontSize
+  if (fontSize < minFontSize) {
+    fontSize = minFontSize;
+    ctx.font = `${fontSize}px ${fontFamily}`;
+    width = ctx.measureText(displayText).width;
+  }
+
+  return { displayText, fontSize, width };
+}
+
+/**
+ * Draw a rounded rectangle
+ */
+export function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+  fillColor: string,
+): void {
+  ctx.fillStyle = fillColor;
+  ctx.beginPath();
+  ctx.roundRect(x, y, width, height, radius);
+  ctx.fill();
+}

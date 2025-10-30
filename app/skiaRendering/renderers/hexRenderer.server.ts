@@ -79,7 +79,8 @@ export function drawHexTile(
       // Draw hyperlanes
       const hasHyperlanes = system.hyperlanes && system.hyperlanes.length > 0;
       if (hasHyperlanes && system.hyperlanes) {
-        drawHyperlanes(ctx, system.hyperlanes, vertices);
+        const rotation = tile.rotation ?? 0;
+        drawHyperlanes(ctx, system.hyperlanes, vertices, rotation);
       }
 
       // Draw system ID at top center (with background for hyperlane tiles)
@@ -100,7 +101,14 @@ function drawHyperlanes(
   ctx: CanvasRenderingContext2D,
   hyperlanes: number[][],
   vertices: { x: number; y: number }[],
+  rotation: number = 0,
 ): void {
+  // Rotate side indices based on tile rotation
+  // Rotation is in degrees, each hex side is 60 degrees
+  // Convert rotation to side offset (wrap around 6 sides)
+  const sideOffset = Math.round((rotation / 60) % 6);
+  const normalizedOffset = ((sideOffset % 6) + 6) % 6;
+
   const sides = calculateHexSides(vertices);
 
   // Calculate hex center from vertices
@@ -108,8 +116,12 @@ function drawHyperlanes(
   const centerY = vertices.reduce((sum, v) => sum + v.y, 0) / vertices.length;
 
   hyperlanes.forEach(([start, end]) => {
-    const p1 = sides[start];
-    const p2 = sides[end];
+    // Rotate side indices based on tile rotation
+    const rotatedStart = (start + normalizedOffset) % 6;
+    const rotatedEnd = (end + normalizedOffset) % 6;
+
+    const p1 = sides[rotatedStart];
+    const p2 = sides[rotatedEnd];
 
     // Draw blue glow layer
     withContext(ctx, () => {
