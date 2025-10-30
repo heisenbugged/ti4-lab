@@ -140,11 +140,18 @@ export const generateSlices = (
       const minAlphas = config.numAlphas ?? DEFAULT_CONFIG.minAlphaWormholes;
       const minBetas = config.numBetas ?? DEFAULT_CONFIG.minBetaWormholes;
       const minLegendaries =
-        config.numLegendaries ?? DEFAULT_CONFIG.minLegendaries;
+        config.minLegendaries ?? DEFAULT_CONFIG.minLegendaries;
+      const maxLegendaries = config.maxLegendaries;
+
+      const meetsMinLegendaries = legendaries >= minLegendaries;
+      const meetsMaxLegendaries =
+        maxLegendaries === undefined || legendaries <= maxLegendaries;
+
       return (
         alphas >= minAlphas &&
         betas >= minBetas &&
-        legendaries >= minLegendaries
+        meetsMinLegendaries &&
+        meetsMaxLegendaries
       );
     },
     validateSlice: (slice: SystemIds, config: SliceGenerationConfig) => {
@@ -156,7 +163,10 @@ export const generateSlices = (
         systems.filter(isLegendary).length <= 1;
       if (!validSpecialTiles) return false;
 
-      const optimal = optimalStatsForSystems(systems);
+      const optimal = optimalStatsForSystems(
+        systems,
+        config.entropicScarValue ?? 2,
+      );
       const totalOptimal = optimal.resources + optimal.influence + optimal.flex;
 
       const minOptimal = config.minOptimal ?? DEFAULT_CONFIG.minOptimal;

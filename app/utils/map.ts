@@ -27,7 +27,6 @@ export const playerSpeakerOrder = [
   "5th",
   "6th",
 ];
-const miltyEqLeftEquidistants = [8, 10, 12, 14, 16, 18];
 export const playerLetters = ["a", "b", "c", "d", "e", "f"];
 
 export const isTileModifiable = (config: DraftConfig, tileIdx: number) =>
@@ -207,12 +206,19 @@ export const totalStatsForSystems = (systems: System[]) =>
     { resources: 0, influence: 0 },
   );
 
-export const optimalStatsForSystems = (systems: System[]) =>
+export const optimalStatsForSystems = (
+  systems: System[],
+  entropicScarValue: number = 2,
+) =>
   systems.reduce(
     (acc, s) => {
       acc.resources += s.optimalSpend.resources;
       acc.influence += s.optimalSpend.influence;
       acc.flex += s.optimalSpend.flex;
+      // Add entropic scar value to resources (counts as resources)
+      if (s.anomalies.includes("ENTROPIC_SCAR")) {
+        acc.resources += entropicScarValue;
+      }
       return acc;
     },
     { resources: 0, influence: 0, flex: 0 },

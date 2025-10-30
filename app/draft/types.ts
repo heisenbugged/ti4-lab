@@ -45,7 +45,8 @@ export type MapSize = 3 | 4;
 export type SliceGenerationConfig = {
   numAlphas?: number;
   numBetas?: number;
-  numLegendaries?: number;
+  minLegendaries?: number;
+  maxLegendaries?: number;
   maxOptimal?: number;
   minOptimal?: number;
   minOptimalInfluence?: number;
@@ -56,6 +57,7 @@ export type SliceGenerationConfig = {
   highQualityAdjacent?: number;
   hasMinorFactions?: boolean;
   minorFactionPool?: FactionId[];
+  entropicScarValue?: number;
 };
 
 export type DraftConfig = {

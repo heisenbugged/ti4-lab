@@ -9,6 +9,7 @@ export interface SettingStepperProps<T extends string> {
   onChange: (property: T, value: number | undefined) => void;
   defaultValue?: number;
   allowUndefined?: boolean;
+  minValue?: number;
 }
 
 export function SettingStepper<T extends string>({
@@ -19,27 +20,36 @@ export function SettingStepper<T extends string>({
   onChange,
   defaultValue,
   allowUndefined = false,
+  minValue,
 }: SettingStepperProps<T>) {
   const handleDecrease = () => {
     if (value === undefined) return;
 
-    if (value <= 0 && allowUndefined) {
+    if (minValue !== undefined) {
+      onChange(property, Math.max(minValue, value - 1));
+      return;
+    }
+
+    const newValue = value - 1;
+    if (newValue <= 0 && allowUndefined) {
       onChange(property, undefined);
     } else {
-      onChange(property, Math.max(0, value - 1));
+      onChange(property, Math.max(0, newValue));
     }
   };
 
   const handleIncrease = () => {
     if (value === undefined) {
-      onChange(property, defaultValue || 0);
+      onChange(property, defaultValue ?? minValue ?? 0);
     } else {
       onChange(property, value + 1);
     }
   };
 
   const decreaseDisabled =
-    value === undefined || (!allowUndefined && value <= 0);
+    value === undefined ||
+    (minValue !== undefined && value <= minValue) ||
+    (!allowUndefined && value <= 0);
   const increaseDisabled = false;
 
   return (

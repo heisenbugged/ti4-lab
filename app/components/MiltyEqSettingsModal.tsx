@@ -14,6 +14,8 @@ export interface MiltyEqDraftSettings {
   minAlphaWormholes: number;
   minBetaWormholes: number;
   minLegendaries: number;
+  maxLegendaries?: number;
+  entropicScarValue: number;
 }
 
 export const DEFAULT_MILTYEQ_SETTINGS: MiltyEqDraftSettings = {
@@ -27,6 +29,8 @@ export const DEFAULT_MILTYEQ_SETTINGS: MiltyEqDraftSettings = {
   minAlphaWormholes: 2,
   minBetaWormholes: 2,
   minLegendaries: 1,
+  maxLegendaries: 3,
+  entropicScarValue: 2,
 };
 
 type Props = {
@@ -53,6 +57,32 @@ export function MiltyEqSettingsModal({
       ...prev,
       [property]: value,
     }));
+  };
+
+  const handleMinLegendariesChange = (
+    property: keyof MiltyEqDraftSettings,
+    value: number | undefined,
+  ) => {
+    handleSettingChange(property, value);
+    // Auto-adjust maxLegendaries if it becomes less than the new min
+    if (
+      value !== undefined &&
+      localSettings.maxLegendaries !== undefined &&
+      localSettings.maxLegendaries < value
+    ) {
+      handleSettingChange("maxLegendaries", value);
+    }
+  };
+
+  const handleMaxLegendariesChange = (
+    property: keyof MiltyEqDraftSettings,
+    value: number | undefined,
+  ) => {
+    const constrainedValue =
+      value !== undefined && value < localSettings.minLegendaries
+        ? localSettings.minLegendaries
+        : value;
+    handleSettingChange(property, constrainedValue);
   };
 
   return (
@@ -148,6 +178,25 @@ export function MiltyEqSettingsModal({
               description="Minimum number of legendary planets required across all slices"
               property="minLegendaries"
               value={localSettings.minLegendaries}
+              onChange={handleMinLegendariesChange}
+            />
+
+            <SettingStepper
+              label="Maximum Legendary Planets"
+              description="Maximum number of legendary planets allowed across all slices"
+              property="maxLegendaries"
+              value={localSettings.maxLegendaries}
+              onChange={handleMaxLegendariesChange}
+              allowUndefined={true}
+              defaultValue={DEFAULT_MILTYEQ_SETTINGS.maxLegendaries}
+              minValue={localSettings.minLegendaries}
+            />
+
+            <SettingStepper
+              label="Entropic Scar Value"
+              description="Value assigned to entropic scar systems in slice scoring"
+              property="entropicScarValue"
+              value={localSettings.entropicScarValue}
               onChange={handleSettingChange}
             />
           </Stack>

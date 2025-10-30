@@ -121,7 +121,7 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
         const slices = generateSlices(6, systemPool, {
           numAlphas: 2,
           numBetas: 2,
-          numLegendaries: 1,
+          minLegendaries: 1,
         });
 
         if (!slices) {

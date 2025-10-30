@@ -11,7 +11,7 @@ function generateSlices(sliceCount: number, availableSystems: SystemId[]) {
     {
       numAlphas: 0,
       numBetas: 0,
-      numLegendaries: 0,
+      minLegendaries: 0,
     },
     SLICE_SHAPES.wekker,
   );

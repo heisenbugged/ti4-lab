@@ -85,7 +85,7 @@ export function coreRerollSlice(
       ...settings.sliceGenerationConfig,
       numAlphas: 0,
       numBetas: 0,
-      numLegendaries: 0,
+      minLegendaries: 0,
       minorFactionPool,
     });
     if (!newSlices || newSlices.length === 0) return undefined;
@@ -181,10 +181,9 @@ const validateMap = (
     numTilesAvailable(config) * RED_TILE_RATIO,
   );
 
-  const maxLegendaries = Math.max(
-    settings.sliceGenerationConfig?.numLegendaries ?? 0,
-    3,
-  );
+  // Use maxLegendaries from config if set, otherwise use default of 3
+  const maxLegendaries =
+    settings.sliceGenerationConfig?.maxLegendaries ?? 3;
 
   const chosenMapLocations = map.reduce(
     (acc, tile) => {

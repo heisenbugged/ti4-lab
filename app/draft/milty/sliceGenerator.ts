@@ -22,7 +22,7 @@ export function generateSlices(
   config: SliceGenerationConfig = {
     numAlphas: 2,
     numBetas: 2,
-    numLegendaries: 1,
+    minLegendaries: 1,
     maxOptimal: undefined,
     minOptimal: undefined,
     minorFactionPool: undefined,
@@ -44,10 +44,18 @@ export function generateSlices(
 
     const minAlphas = config.numAlphas ?? 2;
     const minBetas = config.numBetas ?? 2;
-    const minLegendaries = config.numLegendaries ?? 1;
+    const minLegendaries = config.minLegendaries ?? 1;
+    const maxLegendaries = config.maxLegendaries;
+
+    const meetsMinLegendaries = legendaries >= minLegendaries;
+    const meetsMaxLegendaries =
+      maxLegendaries === undefined || legendaries <= maxLegendaries;
 
     return (
-      alphas >= minAlphas && betas >= minBetas && legendaries >= minLegendaries
+      alphas >= minAlphas &&
+      betas >= minBetas &&
+      meetsMinLegendaries &&
+      meetsMaxLegendaries
     );
   };
 
@@ -65,7 +73,10 @@ export function generateSlices(
     }
 
     // check optimal values.
-    const optimal = optimalStatsForSystems(systems);
+    const optimal = optimalStatsForSystems(
+      systems,
+      config.entropicScarValue ?? 2,
+    );
     const totalOptimal = optimal.resources + optimal.influence + optimal.flex;
     const infOptimal = optimal.influence + optimal.flex;
     const resOptimal = optimal.resources + optimal.flex;
@@ -102,7 +113,7 @@ export function generateSlices(
     slices.forEach((slice) => {
       const minorFaction = chosenMinorFactions.pop()!;
       const minorFactionTier =
-        Object.entries(minorFactionTiers).find(([tier, factions]) =>
+        Object.entries(minorFactionTiers).find(([, factions]) =>
           factions.includes(minorFaction),
         )?.[0] ?? ("med" as ChoosableTier);
 

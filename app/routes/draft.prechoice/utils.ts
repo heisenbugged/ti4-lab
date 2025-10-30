@@ -56,7 +56,9 @@ export const buildSliceGenerationConfig = (
       highQualityAdjacent: miltySettings.highQualityAdjacent,
       numAlphas: miltySettings.minAlphaWormholes,
       numBetas: miltySettings.minBetaWormholes,
-      numLegendaries: miltySettings.minLegendaries,
+      minLegendaries: miltySettings.minLegendaries,
+      maxLegendaries: miltySettings.maxLegendaries,
+      entropicScarValue: miltySettings.entropicScarValue,
       hasMinorFactions,
     };
   }
@@ -97,7 +99,9 @@ export const buildSliceGenerationConfig = (
       highQualityAdjacent: miltyEqSettings.highQualityAdjacent,
       numAlphas: miltyEqSettings.minAlphaWormholes,
       numBetas: miltyEqSettings.minBetaWormholes,
-      numLegendaries: miltyEqSettings.minLegendaries,
+      minLegendaries: miltyEqSettings.minLegendaries,
+      maxLegendaries: miltyEqSettings.maxLegendaries,
+      entropicScarValue: miltyEqSettings.entropicScarValue,
       hasMinorFactions,
     };
   }

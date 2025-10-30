@@ -69,7 +69,7 @@ function getHexDistance(idx1: number, idx2: number): number {
 /**
  * Calculate simple value for a system (used for slice scoring)
  */
-function getSystemValue(systemId: SystemId): number {
+function getSystemValue(systemId: SystemId, entropicScarValue: number = 2): number {
   const system = systemData[systemId];
   if (!system) return 0;
 
@@ -92,7 +92,7 @@ function getSystemValue(systemId: SystemId): number {
 
   // Add bonus for entropic scar (system-level anomaly)
   if (system.anomalies.includes("ENTROPIC_SCAR")) {
-    value += 2;
+    value += entropicScarValue;
   }
 
   return value;
@@ -102,7 +102,7 @@ function getSystemValue(systemId: SystemId): number {
  * Calculate the value of a slice (home system and adjacent systems)
  * Returns a score based on nearby system values weighted by distance
  */
-export function calculateSliceValue(map: Map, homeIdx: number): number {
+export function calculateSliceValue(map: Map, homeIdx: number, entropicScarValue: number = 2): number {
   let totalValue = 0;
 
   // Find all systems within 3 spaces
@@ -115,7 +115,7 @@ export function calculateSliceValue(map: Map, homeIdx: number): number {
     // Only count systems within 3 spaces
     if (distance === 0 || distance > 3) continue;
 
-    const systemValue = getSystemValue(tile.systemId);
+    const systemValue = getSystemValue(tile.systemId, entropicScarValue);
 
     // Weight by distance: distance 1 = full value, distance 2 = 0.5x, distance 3 = 0.25x
     const distanceMultiplier = distance === 1 ? 1.0 : distance === 2 ? 0.5 : 0.25;
@@ -187,11 +187,11 @@ export function calculateSliceStats(map: Map, homeIdx: number): SliceStats {
 /**
  * Get all home system values from the map
  */
-export function getAllSliceValues(map: Map): Record<number, number> {
+export function getAllSliceValues(map: Map, entropicScarValue: number = 2): Record<number, number> {
   const values: Record<number, number> = {};
 
   MILTY_6P_HOME_POSITIONS.forEach((homeIdx) => {
-    values[homeIdx] = calculateSliceValue(map, homeIdx);
+    values[homeIdx] = calculateSliceValue(map, homeIdx, entropicScarValue);
   });
 
   return values;

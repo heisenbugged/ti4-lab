@@ -157,6 +157,7 @@ export function fillSlicesWithRemainingTiles(
   tieredSlices: TieredSlice[],
   remainingSystems: TieredSystems,
   slices: SystemIds[],
+  entropicScarValue: number = 2,
 ) {
   const remainingTiers = [
     remainingSystems.low,
@@ -200,7 +201,7 @@ export function fillSlicesWithRemainingTiles(
 
       const slice = slices[sliceIdx];
       const choices = takeFrom.map((system, takeFromIndex) => ({
-        weight: calculateSliceScore(slice, system),
+        weight: calculateSliceScore(slice, system, entropicScarValue),
         value: { system, takeFromIndex },
       }));
 
@@ -213,12 +214,19 @@ export function fillSlicesWithRemainingTiles(
   });
 }
 
-function calculateSliceScore(sliceSoFar: SystemId[], withNewSystem: SystemId) {
+function calculateSliceScore(
+  sliceSoFar: SystemId[],
+  withNewSystem: SystemId,
+  entropicScarValue: number = 2,
+) {
   // Consider a slice with the new tile added.
   const slice = [...sliceSoFar];
   slice.push(withNewSystem);
 
-  const { optInf, optRes, wormholes, legendaries } = summarizeRaw(slice);
+  const { optInf, optRes, wormholes, legendaries } = summarizeRaw(
+    slice,
+    entropicScarValue,
+  );
   const avgOptInf = optInf / slice.length;
   const avgOptRes = optRes / slice.length;
 
@@ -268,7 +276,7 @@ function calculateSliceScore(sliceSoFar: SystemId[], withNewSystem: SystemId) {
   return score;
 }
 
-function summarizeRaw(systems: SystemId[]) {
+function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
   let res = 0;
   let optRes = 0;
   let inf = 0;
@@ -306,6 +314,10 @@ function summarizeRaw(systems: SystemId[]) {
       if (planet.legendary) {
         legendaries.push("L");
       }
+    }
+    // Add entropic scar value to optimal resources (counts as resources)
+    if (system.anomalies.includes("ENTROPIC_SCAR")) {
+      optRes += entropicScarValue;
     }
     for (const wormhole of system.wormholes) {
       switch (wormhole) {

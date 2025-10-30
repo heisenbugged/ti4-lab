@@ -13,7 +13,13 @@ import {
   fillSlicesWithRemainingTiles,
   fillSlicesWithRequiredTiles,
 } from "../helpers/sliceGeneration";
-import { PlanetTrait, SystemIds, SystemId, DraftSettings, FactionId } from "~/types";
+import {
+  PlanetTrait,
+  SystemIds,
+  SystemId,
+  DraftSettings,
+  FactionId,
+} from "~/types";
 import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
@@ -198,7 +204,7 @@ export function generateMap(
   const slices = generateSlices(sliceCount, remainingSystems(), {
     numAlphas: remainingAlphas,
     numBetas: remainingBetas,
-    numLegendaries: remainingLegendaries,
+    minLegendaries: remainingLegendaries,
   });
   // promote the chosen slice systems.
   chosenSliceSystems = slices.flat(1);
@@ -240,6 +246,7 @@ export function generateMap(
       tieredSystems,
       chosenMapLocations,
       occupiedCorePositions,
+      settings.sliceGenerationConfig?.entropicScarValue ?? 2,
     );
   }
 
@@ -321,7 +328,10 @@ export function generateMap(
     const maxPlanets = Math.max(...planetCounts);
 
     const totalSpends = slices.map((s) => {
-      const stats = optimalStatsForSystems(s.map((id) => systemData[id]));
+      const stats = optimalStatsForSystems(
+        s.map((id) => systemData[id]),
+        settings.sliceGenerationConfig?.entropicScarValue ?? 2,
+      );
       return stats.resources + stats.influence + stats.flex;
     });
     const minTotalSpend = Math.min(...totalSpends);
@@ -331,6 +341,7 @@ export function generateMap(
     const coreSliceStats = calculateCoreSliceStats(
       CORE_SLICES,
       chosenMapLocations,
+      settings.sliceGenerationConfig?.entropicScarValue ?? 2,
     );
 
     const coreSliceSpends = coreSliceStats.map(
@@ -384,6 +395,7 @@ export function generateMap(
 function calculateCoreSliceStats(
   coreSlices: number[][],
   chosenMapLocations: Record<number, SystemId>,
+  entropicScarValue: number = 2,
 ) {
   return coreSlices.map((positions) => {
     const systems = positions
@@ -391,7 +403,7 @@ function calculateCoreSliceStats(
       .map((pos) => chosenMapLocations[pos])
       .map((id) => systemData[id]);
 
-    return optimalStatsForSystems(systems);
+    return optimalStatsForSystems(systems, entropicScarValue);
   });
 }
 
@@ -405,6 +417,7 @@ function fillCoreSlices(
   tieredSystems: Record<ChoosableTier, SystemId[]>,
   chosenMapLocations: Record<number, SystemId>,
   occupiedCorePositions: Record<number, SystemId>,
+  entropicScarValue: number = 2,
 ) {
   // For each core slice
   for (let i = 0; i < coreSlices.length; i++) {
@@ -463,14 +476,14 @@ function fillCoreSlices(
 
         // Sort candidates by how well they balance the slice
         candidateSystems.sort((a, b) => {
-          const optA = optimalStatsForSystems([
-            ...currentSliceSystems,
-            systemData[a],
-          ]);
-          const optB = optimalStatsForSystems([
-            ...currentSliceSystems,
-            systemData[b],
-          ]);
+          const optA = optimalStatsForSystems(
+            [...currentSliceSystems, systemData[a]],
+            entropicScarValue,
+          );
+          const optB = optimalStatsForSystems(
+            [...currentSliceSystems, systemData[b]],
+            entropicScarValue,
+          );
           const totalA = optA.resources + optA.influence + optA.flex;
           const totalB = optB.resources + optB.influence + optB.flex;
 
@@ -544,8 +557,8 @@ const rebalanceTraits = (
   const candidatesToRemove = usedSystemsCopy
     .filter((id) => {
       // Must have at least one planet with the most common trait
-      const hasMaxTrait = systemData[id].planets.some(
-        ({ trait }) => trait?.includes(maxTrait),
+      const hasMaxTrait = systemData[id].planets.some(({ trait }) =>
+        trait?.includes(maxTrait),
       );
       // If it's on the map and has wormholes, don't swap it to avoid breaking wormhole placement
       const isSafeToRemove = !(
@@ -556,8 +569,10 @@ const rebalanceTraits = (
     .sort(
       // Sort by how many planets have the max trait, most first
       (a, b) =>
-        systemData[b].planets.filter(({ trait }) => trait?.includes(maxTrait)).length -
-        systemData[a].planets.filter(({ trait }) => trait?.includes(maxTrait)).length,
+        systemData[b].planets.filter(({ trait }) => trait?.includes(maxTrait))
+          .length -
+        systemData[a].planets.filter(({ trait }) => trait?.includes(maxTrait))
+          .length,
     );
 
   // Try each candidate for removal
@@ -565,8 +580,8 @@ const rebalanceTraits = (
     // Find possible additions that have the least common trait
     const possibleAdditions = availableSystemsCopy.filter((id) => {
       // Must have at least one planet with the least common trait
-      const hasMinTrait = systemData[id].planets.some(
-        ({ trait }) => trait?.includes(minTrait),
+      const hasMinTrait = systemData[id].planets.some(({ trait }) =>
+        trait?.includes(minTrait),
       );
 
       // Planet count constraint is relaxed - allow +/-1 difference to increase swap opportunities
@@ -678,7 +693,7 @@ export function generateSlices(
   config: SliceGenerationConfig = {
     numAlphas: 0,
     numBetas: 0,
-    numLegendaries: 0,
+    minLegendaries: 0,
   },
 ) {
   const tieredSlices: TieredSlice[] = [];
@@ -693,7 +708,7 @@ export function generateSlices(
     {
       minAlphaWormholes: config.numAlphas,
       minBetaWormholes: config.numBetas,
-      minLegendary: config.numLegendaries,
+      minLegendary: config.minLegendaries ?? 0,
     },
   );
   const tieredChosenTiles = getTieredSystems(chosenTiles);
@@ -706,7 +721,12 @@ export function generateSlices(
 
   // fill slices with remaining tiles, respecting the 'tier' requirements
   // of the spots in each slice.
-  fillSlicesWithRemainingTiles(tieredSlices, tieredRemainingTiles, slices);
+  fillSlicesWithRemainingTiles(
+    tieredSlices,
+    tieredRemainingTiles,
+    slices,
+    config?.entropicScarValue ?? 2,
+  );
 
   // shuffle the slices
   return slices.map((slice) => shuffle(slice));
