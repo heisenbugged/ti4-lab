@@ -6,6 +6,7 @@ import {
   Text,
   ActionIcon,
   Select,
+  MultiSelect,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -32,6 +33,7 @@ import {
   IconArrowsShuffle,
   IconInfoCircle,
   IconShare,
+  IconPhoto,
 } from "@tabler/icons-react";
 import { autoCompleteMap } from "../utils/mapCompletion";
 import { useMapStats } from "../utils/mapStats";
@@ -70,6 +72,7 @@ function MapGeneratorContent() {
   const map = useMapBuilder((state) => state.state.map);
   const systemPool = useMapBuilder((state) => state.state.systemPool);
   const mapConfigId = useMapBuilder((state) => state.state.mapConfigId);
+  const gameSets = useMapBuilder((state) => state.state.gameSets);
   const {
     addSystemToMap,
     removeSystemFromMap,
@@ -120,6 +123,29 @@ function MapGeneratorContent() {
     const queryString = params.toString();
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
   }, [map, mapConfigId]);
+
+  const imageUrl = useMemo(() => {
+    const systemIds = map
+      .filter((tile) => tile.type === "SYSTEM" && tile.idx !== 0)
+      .map((tile) => (tile.type === "SYSTEM" ? tile.systemId : ""))
+      .filter(Boolean)
+      .join(",");
+    const baseUrl = "https://tidraft.com/map-generator.png";
+    const params = new URLSearchParams();
+    if (systemIds) {
+      params.set("mapSystemIds", systemIds);
+    }
+    if (mapConfigId !== "milty6p") {
+      params.set("mapConfig", mapConfigId);
+    }
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  }, [map, mapConfigId]);
+
+  // Check if map is complete (no OPEN tiles, excluding CLOSED tiles)
+  const isMapComplete = useMemo(() => {
+    return !map.some((tile) => tile.type === "OPEN");
+  }, [map]);
 
   // Make all tiles except Mecatol Rex (index 0) and HOME tiles modifiable
   const modifiableMapTiles = Array.from(
@@ -338,6 +364,33 @@ function MapGeneratorContent() {
                       },
                     }}
                   />
+                  <MultiSelect
+                    data={[
+                      { value: "base", label: "Base" },
+                      { value: "pok", label: "PoK" },
+                      { value: "te", label: "Thunder's Edge" },
+                      { value: "unchartedstars", label: "Uncharted Stars" },
+                    ]}
+                    value={gameSets}
+                    onChange={(value) => setGameSets(value as GameSet[])}
+                    placeholder="Game Sets"
+                    size="xs"
+                    w={180}
+                    checkIconPosition="right"
+                    clearable
+                    maxValues={4}
+                    styles={{
+                      input: {
+                        backgroundColor: "var(--mantine-color-dark-6)",
+                        borderColor: "var(--mantine-color-dark-4)",
+                        color: "var(--mantine-color-gray-0)",
+                        overflow: "hidden",
+                      },
+                      pill: {
+                        display: "none",
+                      },
+                    }}
+                  />
                   <Button
                     leftSection={<IconRefresh size={16} />}
                     variant="filled"
@@ -374,6 +427,16 @@ function MapGeneratorContent() {
                     size="xs"
                   >
                     Share
+                  </Button>
+                  <Button
+                    leftSection={<IconPhoto size={16} />}
+                    variant="filled"
+                    color="purple"
+                    onClick={() => window.open(imageUrl, "_blank")}
+                    size="xs"
+                    disabled={!isMapComplete}
+                  >
+                    Share Image
                   </Button>
                 </Group>
                 {balanceGap > 0 && (

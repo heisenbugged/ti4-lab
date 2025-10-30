@@ -1,18 +1,15 @@
-import { Box, ScrollArea, SegmentedControl, Stack, Text, MultiSelect } from "@mantine/core";
+import { Box, ScrollArea, SegmentedControl, Stack, Text } from "@mantine/core";
 import { useState } from "react";
 import { useMapBuilder } from "~/mapBuilderStore";
 import { systemsFromIds } from "~/utils/system";
 import { DraggableSidebarTile } from "./DraggableSidebarTile";
 import { MiniHex } from "./MiniHex";
 import { MiniWormhole } from "./MiniWormhole";
-import { GameSet } from "~/types";
 
 type TileFilter = "all" | "blue" | "red" | "wormhole";
 
 export function TileSidebar() {
-  const gameSets = useMapBuilder((state) => state.state.gameSets);
   const systemPool = useMapBuilder((state) => state.state.systemPool);
-  const setGameSets = useMapBuilder((state) => state.actions.setGameSets);
   const systems = systemsFromIds(systemPool);
   const map = useMapBuilder((state) => state.state.map);
   const [filter, setFilter] = useState<TileFilter>("all");
@@ -50,30 +47,6 @@ export function TileSidebar() {
         pb="xs"
         style={{ zIndex: 9 }}
       >
-        <MultiSelect
-          data={[
-            { value: "base", label: "Base" },
-            { value: "pok", label: "PoK" },
-            { value: "te", label: "Thunder's Edge" },
-            { value: "unchartedstars", label: "Uncharted Stars" },
-          ]}
-          value={gameSets}
-          onChange={(value) => setGameSets(value as GameSet[])}
-          placeholder="Game Sets"
-          size="xs"
-          mb="xs"
-          checkIconPosition="right"
-          clearable
-          maxValues={4}
-          styles={{
-            input: {
-              overflow: "hidden",
-            },
-            pill: {
-              display: "none",
-            },
-          }}
-        />
         <Text size="xs" fw={600} tt="uppercase" c="gray.4" mb="xs">
           Available Tiles ({availableSystems.length})
         </Text>
