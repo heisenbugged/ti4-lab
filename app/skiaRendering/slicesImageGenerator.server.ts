@@ -1,17 +1,18 @@
-import { Canvas } from "skia-canvas";
 import { Draft, Slice, Tile } from "~/types";
-import { calcHexHeight, calculateMaxHexWidthRadius } from "~/utils/positioning";
+import { calcHexHeight } from "~/utils/positioning";
 import {
   initializeFonts,
   loadAllAssets,
-  getBackgroundTileCache,
-  getLogoCache,
   getLegendaryIconCache,
   getTechIconCache,
   getFactionIconCache,
 } from "./cache.server";
-import { TILE_COLORS } from "./constants";
 import { drawHexTile } from "./renderers/hexRenderer.server";
+import {
+  drawBackground,
+  drawBranding,
+  createCanvas,
+} from "./canvasUtils.server";
 import { systemData } from "~/data/systemData";
 import { Wormhole, TechSpecialty } from "~/types";
 import { drawWormhole } from "./renderers/wormholeRenderer.server";
@@ -41,14 +42,21 @@ export async function generateDraftSlicesImage(
   const canvasHeight =
     rows * (sliceWidth + sliceHeaderHeight) + (rows + 1) * gap + padding * 2;
 
-  const canvas = new Canvas(canvasWidth, canvasHeight);
-  const ctx = canvas.getContext("2d") as any as CanvasRenderingContext2D;
+  const { canvas, ctx } = createCanvas(canvasWidth, canvasHeight);
 
   // Draw background
-  drawBackground(ctx, canvasWidth, canvasHeight);
+  drawBackground(ctx, canvasWidth, canvasHeight, {
+    withGradient: true,
+    tileOpacity: 0.5,
+  });
 
   // Draw branding
-  drawBranding(ctx, canvasWidth, canvasHeight, draftId);
+  drawBranding(ctx, canvasWidth, canvasHeight, {
+    urlText: `tidraft.com/draft/${draftId}`,
+    urlPosition: "inline",
+    logoX: 20,
+    logoY: 20,
+  });
 
   // Draw section labels
   const slicesLabelY = padding + 10;
@@ -94,44 +102,6 @@ export async function generateDraftSlicesImage(
   });
 
   return await canvas.toBuffer("png");
-}
-
-function drawBackground(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-): void {
-  // Draw deep space gradient background
-  const gradient = ctx.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, "#0a0f1a");
-  gradient.addColorStop(0.5, "#12101f");
-  gradient.addColorStop(1, "#0b1018");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
-
-  const backgroundTileCache = getBackgroundTileCache();
-
-  if (backgroundTileCache) {
-    const tileSize = 1024;
-    const tilesX = Math.ceil(width / tileSize);
-    const tilesY = Math.ceil(height / tileSize);
-
-    // Draw nebula overlay with reduced opacity
-    ctx.save();
-    ctx.globalAlpha = 0.5;
-    for (let y = 0; y < tilesY; y++) {
-      for (let x = 0; x < tilesX; x++) {
-        ctx.drawImage(
-          backgroundTileCache,
-          x * tileSize,
-          y * tileSize,
-          tileSize,
-          tileSize,
-        );
-      }
-    }
-    ctx.restore();
-  }
 }
 
 function drawSectionLabel(
@@ -214,45 +184,6 @@ function drawFactionList(
   });
 }
 
-function drawBranding(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  draftId: string,
-): void {
-  const logoCache = getLogoCache();
-
-  // Draw logo at top left
-  if (logoCache) {
-    const logoSize = 70;
-    const logoX = 20;
-    const logoY = 20;
-    ctx.drawImage(logoCache, logoX, logoY, logoSize, logoSize);
-
-    ctx.font = "bold 42px Orbitron, sans-serif";
-    ctx.fillStyle = "#BEABF0";
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "left";
-    ctx.fillText("TI4 Lab", logoX + logoSize + 12, logoY + logoSize / 2);
-
-    // Draw vertical separator
-    const separatorX = logoX + logoSize + 220;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(separatorX, logoY + 15);
-    ctx.lineTo(separatorX, logoY + logoSize - 15);
-    ctx.stroke();
-
-    // Draw draft URL in the same row
-    const draftUrl = `tidraft.com/draft/${draftId}`;
-    ctx.font = "28px Quantico, sans-serif";
-    ctx.fillStyle = "white";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText(draftUrl, separatorX + 30, logoY + logoSize / 2);
-  }
-}
 
 function drawSlice(
   ctx: CanvasRenderingContext2D,
