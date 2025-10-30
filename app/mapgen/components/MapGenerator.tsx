@@ -1,4 +1,12 @@
-import { AppShell, Box, Button, Group, Text, ActionIcon } from "@mantine/core";
+import {
+  AppShell,
+  Box,
+  Button,
+  Group,
+  Text,
+  ActionIcon,
+  Select,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { ClientOnly } from "remix-utils/client-only";
@@ -38,6 +46,7 @@ import { SliceScoringInfoModal } from "./SliceScoringInfoModal";
 import { MapStatsOverlay } from "./MapStatsOverlay";
 import { systemData } from "~/data/systemData";
 import { ShareMapModal } from "./ShareMapModal";
+import { mapConfigs } from "~/mapgen/mapConfigs";
 
 // Infer which game sets are used based on tile IDs
 function inferGameSetsFromTiles(systemIds: SystemId[]): GameSet[] {
@@ -60,6 +69,7 @@ function inferGameSetsFromTiles(systemIds: SystemId[]): GameSet[] {
 function MapGeneratorContent() {
   const map = useMapBuilder((state) => state.state.map);
   const systemPool = useMapBuilder((state) => state.state.systemPool);
+  const mapConfigId = useMapBuilder((state) => state.state.mapConfigId);
   const {
     addSystemToMap,
     removeSystemFromMap,
@@ -68,6 +78,7 @@ function MapGeneratorContent() {
     clearMap,
     setMap,
     setGameSets,
+    setMapConfig,
   } = useMapBuilder((state) => state.actions);
   const stats = useMapStats();
 
@@ -99,8 +110,16 @@ function MapGeneratorContent() {
       .filter(Boolean)
       .join(",");
     const baseUrl = "https://tidraft.com/map-generator";
-    return systemIds ? `${baseUrl}?mapSystemIds=${systemIds}` : baseUrl;
-  }, [map]);
+    const params = new URLSearchParams();
+    if (systemIds) {
+      params.set("mapSystemIds", systemIds);
+    }
+    if (mapConfigId !== "milty6p") {
+      params.set("mapConfig", mapConfigId);
+    }
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  }, [map, mapConfigId]);
 
   // Make all tiles except Mecatol Rex (index 0) and HOME tiles modifiable
   const modifiableMapTiles = Array.from(
@@ -114,12 +133,24 @@ function MapGeneratorContent() {
   const handleRandomize = () => {
     clearMap();
     const clearedMap = useMapBuilder.getState().state.map;
+    const currentConfigId = useMapBuilder.getState().state.mapConfigId;
+    const config = mapConfigs[currentConfigId];
+
+    // Get preset tile indices (hyperlanes) that should not be overwritten
+    const presetTileIndices = new Set(
+      Object.keys(config.presetTiles).map(Number),
+    );
 
     const completedMap = autoCompleteMap(clearedMap, systemPool);
 
     if (completedMap) {
       completedMap.forEach((tile, idx) => {
-        if (tile.type === "SYSTEM" && idx !== 0) {
+        // Skip Mecatol Rex (index 0), HOME tiles, and preset tiles (hyperlanes)
+        if (
+          tile.type === "SYSTEM" &&
+          idx !== 0 &&
+          !presetTileIndices.has(idx)
+        ) {
           addSystemToMap(idx, tile.systemId);
         }
       });
@@ -134,7 +165,8 @@ function MapGeneratorContent() {
 
       const shuffledSystems = [...systemPool].sort(() => Math.random() - 0.5);
       modifiableMapTiles.forEach((tileIdx, i) => {
-        if (i < shuffledSystems.length) {
+        // Skip preset tiles (hyperlanes) in fallback too
+        if (!presetTileIndices.has(tileIdx) && i < shuffledSystems.length) {
           addSystemToMap(tileIdx, shuffledSystems[i]);
         }
       });
@@ -156,6 +188,15 @@ function MapGeneratorContent() {
 
     const params = new URLSearchParams(window.location.search);
     const mapSystemIds = params.get("mapSystemIds");
+    const configId = params.get("mapConfig");
+
+    // Set map config first if specified (this will clear the map)
+    if (configId && mapConfigs[configId]) {
+      const currentConfigId = useMapBuilder.getState().state.mapConfigId;
+      if (configId !== currentConfigId) {
+        setMapConfig(configId);
+      }
+    }
 
     if (mapSystemIds) {
       const systemIds = mapSystemIds.split(",").filter(Boolean) as SystemId[];
@@ -165,31 +206,27 @@ function MapGeneratorContent() {
         const inferredSets = inferGameSetsFromTiles(systemIds);
         setGameSets(inferredSets);
 
-        // Clear map and add systems
-        clearMap();
+        // Wait for map config to be applied if needed, then add systems
+        const clearedMap = useMapBuilder.getState().state.map;
+        let tileIndex = 0;
 
-        // Small delay to ensure game sets are updated
-        setTimeout(() => {
-          const clearedMap = useMapBuilder.getState().state.map;
-          let tileIndex = 0;
+        systemIds.forEach((systemId) => {
+          // Find next available OPEN tile (skip Mecatol Rex at index 0)
+          while (
+            tileIndex < clearedMap.length &&
+            (clearedMap[tileIndex].type !== "OPEN" || tileIndex === 0)
+          ) {
+            tileIndex++;
+          }
 
-          systemIds.forEach((systemId) => {
-            // Find next available OPEN tile (skip Mecatol Rex at index 0)
-            while (
-              tileIndex < clearedMap.length &&
-              (clearedMap[tileIndex].type !== "OPEN" || tileIndex === 0)
-            ) {
-              tileIndex++;
-            }
-
-            if (tileIndex < clearedMap.length && systemData[systemId]) {
-              addSystemToMap(tileIndex, systemId);
-              tileIndex++;
-            }
-          });
-        }, 100);
+          if (tileIndex < clearedMap.length && systemData[systemId]) {
+            addSystemToMap(tileIndex, systemId);
+            tileIndex++;
+          }
+        });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -280,6 +317,27 @@ function MapGeneratorContent() {
             <Box bg="dark.7" p="sm">
               <Group justify="space-between">
                 <Group>
+                  <Select
+                    data={Object.values(mapConfigs).map((config) => ({
+                      value: config.id,
+                      label: config.name,
+                    }))}
+                    value={mapConfigId}
+                    onChange={(value) => {
+                      if (value && mapConfigs[value]) {
+                        setMapConfig(value);
+                      }
+                    }}
+                    size="xs"
+                    w={150}
+                    styles={{
+                      input: {
+                        backgroundColor: "var(--mantine-color-dark-6)",
+                        borderColor: "var(--mantine-color-dark-4)",
+                        color: "var(--mantine-color-gray-0)",
+                      },
+                    }}
+                  />
                   <Button
                     leftSection={<IconRefresh size={16} />}
                     variant="filled"

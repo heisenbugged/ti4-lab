@@ -1,8 +1,12 @@
 import { create } from "zustand";
 import { FactionId, GameSet, Map, SystemId } from "~/types";
-import { generateStandard6pMap } from "~/utils/mapGenerator";
 import { systemData } from "~/data/systemData";
 import { getSystemPool } from "~/utils/system";
+import {
+  mapConfigs,
+  defaultMapConfigId,
+  generateMapFromConfig,
+} from "~/mapgen/mapConfigs";
 
 type PlanetFinderModal = {
   mode: "map";
@@ -16,6 +20,7 @@ type MapBuilderState = {
   gameSets: GameSet[];
   factionPool: FactionId[];
   allowHomePlanetSearch: boolean;
+  mapConfigId: string;
 };
 
 type MapBuilderActions = {
@@ -24,6 +29,7 @@ type MapBuilderActions = {
   clearMap: () => void;
   setMap: (map: Map) => void;
   setGameSets: (gameSets: GameSet[]) => void;
+  setMapConfig: (configId: string) => void;
   openPlanetFinderForMap: (tileIdx: number) => void;
   closePlanetFinder: () => void;
   selectSystemForPlanetFinder: (systemId: SystemId) => void;
@@ -46,15 +52,18 @@ type MapBuilderStore = {
 export const useMapBuilder = create<MapBuilderStore>((set, get) => {
   const initialGameSets: GameSet[] = ["base", "pok"];
   const systemPool = getSystemPool(initialGameSets);
+  const initialMapConfigId = defaultMapConfigId;
+  const initialMap = generateMapFromConfig(mapConfigs[initialMapConfigId]);
 
   return {
     state: {
-      map: generateStandard6pMap(),
+      map: initialMap,
       planetFinderModal: null,
       systemPool,
       gameSets: initialGameSets,
       factionPool: [],
       allowHomePlanetSearch: false,
+      mapConfigId: initialMapConfigId,
     },
 
     // Expose for PlanetFinder compatibility
@@ -75,15 +84,31 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
 
           if (!system) return store;
 
+          const config = mapConfigs[store.state.mapConfigId];
+          const presetTileIndices = new Set(
+            Object.keys(config.presetTiles).map(Number),
+          );
+
           // Remove any existing instance of this system from the map
+          // BUT preserve preset tiles (hyperlanes)
           for (let i = 0; i < newMap.length; i++) {
             const tile = newMap[i];
-            if (tile.type === "SYSTEM" && tile.systemId === systemId) {
+            if (
+              tile.type === "SYSTEM" &&
+              tile.systemId === systemId &&
+              !presetTileIndices.has(i) &&
+              i !== 0 // Never remove Mecatol Rex
+            ) {
               newMap[i] = {
                 ...tile,
                 type: "OPEN",
               };
             }
+          }
+
+          // Don't add to preset tile positions
+          if (presetTileIndices.has(tileIdx)) {
+            return store;
           }
 
           // Add the system to the new location
@@ -105,6 +130,16 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
 
       removeSystemFromMap: (tileIdx: number) => {
         set((store) => {
+          const config = mapConfigs[store.state.mapConfigId];
+          const presetTileIndices = new Set(
+            Object.keys(config.presetTiles).map(Number),
+          );
+
+          // Don't remove preset tiles (hyperlanes) or Mecatol Rex
+          if (presetTileIndices.has(tileIdx) || tileIdx === 0) {
+            return store;
+          }
+
           const newMap = [...store.state.map];
 
           // Convert back to OPEN tile
@@ -124,13 +159,34 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
       },
 
       clearMap: () => {
-        set((store) => ({
-          ...store,
-          state: {
-            ...store.state,
-            map: generateStandard6pMap(),
-          },
-        }));
+        set((store) => {
+          const config = mapConfigs[store.state.mapConfigId];
+          const newMap = generateMapFromConfig(config);
+          return {
+            ...store,
+            state: {
+              ...store.state,
+              map: newMap,
+            },
+          };
+        });
+      },
+
+      setMapConfig: (configId: string) => {
+        set((store) => {
+          const config = mapConfigs[configId];
+          if (!config) return store;
+
+          const newMap = generateMapFromConfig(config);
+          return {
+            ...store,
+            state: {
+              ...store.state,
+              mapConfigId: configId,
+              map: newMap,
+            },
+          };
+        });
       },
 
       setMap: (map: Map) => {
@@ -147,14 +203,20 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
         set((store) => {
           const newSystemPool = getSystemPool(gameSets);
           const poolSet = new Set(newSystemPool);
+          const config = mapConfigs[store.state.mapConfigId];
+          const presetTileIndices = new Set(
+            Object.keys(config.presetTiles).map(Number),
+          );
 
           // Remove systems from map that are no longer in the pool
           // NEVER remove Mecatol Rex (system 18) from index 0
+          // NEVER remove preset tiles (hyperlanes)
           const newMap = store.state.map.map((tile, idx) => {
             if (
               tile.type === "SYSTEM" &&
               !poolSet.has(tile.systemId) &&
-              !(idx === 0 && tile.systemId === "18")
+              !(idx === 0 && tile.systemId === "18") &&
+              !presetTileIndices.has(idx)
             ) {
               return {
                 ...tile,

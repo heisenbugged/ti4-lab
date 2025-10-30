@@ -1,9 +1,7 @@
 import { Map, SystemTile } from "~/types";
-import { calculateSliceValue, getAllSliceValues, calculateBalanceGap } from "./sliceScoring";
+import { getAllSliceValues, calculateBalanceGap } from "./sliceScoring";
 import { systemData } from "~/data/systemData";
 import { mapStringOrder } from "~/data/mapStringOrder";
-
-const MILTY_6P_HOME_POSITIONS = [19, 22, 25, 28, 31, 34];
 
 /**
  * Get adjacent tile indices
@@ -27,7 +25,9 @@ function getAdjacentTileIndices(tileIdx: number, mapSize: number): number[] {
   for (let i = 0; i < Math.min(mapSize, mapStringOrder.length); i++) {
     const tilePos = mapStringOrder[i];
     if (
-      adjacentPositions.some((adj) => adj.x === tilePos.x && adj.y === tilePos.y)
+      adjacentPositions.some(
+        (adj) => adj.x === tilePos.x && adj.y === tilePos.y,
+      )
     ) {
       adjacentIndices.push(i);
     }
@@ -58,7 +58,7 @@ function isMapLegal(map: Map): boolean {
       // Check wormhole rule: same wormholes cannot be adjacent
       if (system.wormholes.length > 0 && adjSystem.wormholes.length > 0) {
         const hasMatchingWormhole = system.wormholes.some((wh) =>
-          adjSystem.wormholes.includes(wh)
+          adjSystem.wormholes.includes(wh),
         );
         if (hasMatchingWormhole) return false;
       }
@@ -90,11 +90,15 @@ function shuffle<T>(array: T[]): T[] {
  * Returns the improved map if successful, null otherwise
  */
 export function improveBalance(map: Map): Map | null {
-  // Get all eligible system positions (exclude Mecatol Rex at index 0 and HOME tiles)
+  // Get all eligible system positions (exclude Mecatol Rex at index 0, HOME tiles, and hyperlanes)
   const eligibleSystemIndices: number[] = [];
   map.forEach((tile, idx) => {
     if (tile.type === "SYSTEM" && tile.systemId !== "18" && idx !== 0) {
-      eligibleSystemIndices.push(idx);
+      const system = systemData[tile.systemId];
+      // Exclude hyperlanes from balance improvement
+      if (system && system.type !== "HYPERLANE") {
+        eligibleSystemIndices.push(idx);
+      }
     }
   });
 

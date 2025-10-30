@@ -1,9 +1,6 @@
-import { Map, SystemId, Tile } from "~/types";
+import { Map, SystemId } from "~/types";
 import { systemData } from "~/data/systemData";
 import { mapStringOrder } from "~/data/mapStringOrder";
-
-// Standard Milty 6p home system positions
-const MILTY_6P_HOME_POSITIONS = [19, 22, 25, 28, 31, 34];
 
 /**
  * Simple slice scoring algorithm based on ti4-map-lab.
@@ -40,7 +37,9 @@ function getAdjacentIndices(idx: number, mapLength: number): number[] {
   for (let i = 0; i < Math.min(mapLength, mapStringOrder.length); i++) {
     const tilePos = mapStringOrder[i];
     if (
-      adjacentPositions.some((adj) => adj.x === tilePos.x && adj.y === tilePos.y)
+      adjacentPositions.some(
+        (adj) => adj.x === tilePos.x && adj.y === tilePos.y,
+      )
     ) {
       adjacentIndices.push(i);
     }
@@ -61,7 +60,9 @@ function getHexDistance(idx1: number, idx2: number): number {
   // Cube coordinate distance
   const dx = Math.abs(pos1.x - pos2.x);
   const dy = Math.abs(pos1.y - pos2.y);
-  const dz = Math.abs((pos1.z ?? -pos1.x - pos1.y) - (pos2.z ?? -pos2.x - pos2.y));
+  const dz = Math.abs(
+    (pos1.z ?? -pos1.x - pos1.y) - (pos2.z ?? -pos2.x - pos2.y),
+  );
 
   return Math.max(dx, dy, dz);
 }
@@ -69,7 +70,10 @@ function getHexDistance(idx1: number, idx2: number): number {
 /**
  * Calculate simple value for a system (used for slice scoring)
  */
-function getSystemValue(systemId: SystemId, entropicScarValue: number = 2): number {
+function getSystemValue(
+  systemId: SystemId,
+  entropicScarValue: number = 2,
+): number {
   const system = systemData[systemId];
   if (!system) return 0;
 
@@ -102,7 +106,11 @@ function getSystemValue(systemId: SystemId, entropicScarValue: number = 2): numb
  * Calculate the value of a slice (home system and adjacent systems)
  * Returns a score based on nearby system values weighted by distance
  */
-export function calculateSliceValue(map: Map, homeIdx: number, entropicScarValue: number = 2): number {
+export function calculateSliceValue(
+  map: Map,
+  homeIdx: number,
+  entropicScarValue: number = 2,
+): number {
   let totalValue = 0;
 
   // Find all systems within 3 spaces
@@ -118,7 +126,8 @@ export function calculateSliceValue(map: Map, homeIdx: number, entropicScarValue
     const systemValue = getSystemValue(tile.systemId, entropicScarValue);
 
     // Weight by distance: distance 1 = full value, distance 2 = 0.5x, distance 3 = 0.25x
-    const distanceMultiplier = distance === 1 ? 1.0 : distance === 2 ? 0.5 : 0.25;
+    const distanceMultiplier =
+      distance === 1 ? 1.0 : distance === 2 ? 0.5 : 0.25;
 
     totalValue += systemValue * distanceMultiplier;
   }
@@ -155,10 +164,15 @@ export function calculateSliceStats(map: Map, homeIdx: number): SliceStats {
       if (planet.tech) {
         planet.tech.forEach((tech) => {
           const techAbbr =
-            tech === "BIOTIC" ? "G" :
-            tech === "WARFARE" ? "R" :
-            tech === "PROPULSION" ? "B" :
-            tech === "CYBERNETIC" ? "Y" : "";
+            tech === "BIOTIC"
+              ? "G"
+              : tech === "WARFARE"
+                ? "R"
+                : tech === "PROPULSION"
+                  ? "B"
+                  : tech === "CYBERNETIC"
+                    ? "Y"
+                    : "";
           if (techAbbr && !techs.includes(techAbbr)) {
             techs.push(techAbbr);
           }
@@ -187,11 +201,17 @@ export function calculateSliceStats(map: Map, homeIdx: number): SliceStats {
 /**
  * Get all home system values from the map
  */
-export function getAllSliceValues(map: Map, entropicScarValue: number = 2): Record<number, number> {
+export function getAllSliceValues(
+  map: Map,
+  entropicScarValue: number = 2,
+): Record<number, number> {
   const values: Record<number, number> = {};
 
-  MILTY_6P_HOME_POSITIONS.forEach((homeIdx) => {
-    values[homeIdx] = calculateSliceValue(map, homeIdx, entropicScarValue);
+  // Find all HOME tiles in the map dynamically
+  map.forEach((tile, idx) => {
+    if (tile.type === "HOME") {
+      values[idx] = calculateSliceValue(map, idx, entropicScarValue);
+    }
   });
 
   return values;
@@ -203,8 +223,11 @@ export function getAllSliceValues(map: Map, entropicScarValue: number = 2): Reco
 export function getAllSliceStats(map: Map): Record<number, SliceStats> {
   const stats: Record<number, SliceStats> = {};
 
-  MILTY_6P_HOME_POSITIONS.forEach((homeIdx) => {
-    stats[homeIdx] = calculateSliceStats(map, homeIdx);
+  // Find all HOME tiles in the map dynamically
+  map.forEach((tile, idx) => {
+    if (tile.type === "HOME") {
+      stats[idx] = calculateSliceStats(map, idx);
+    }
   });
 
   return stats;
@@ -213,7 +236,9 @@ export function getAllSliceStats(map: Map): Record<number, SliceStats> {
 /**
  * Calculate the balance gap (difference between highest and lowest slice values)
  */
-export function calculateBalanceGap(sliceValues: Record<number, number>): number {
+export function calculateBalanceGap(
+  sliceValues: Record<number, number>,
+): number {
   const values = Object.values(sliceValues);
   if (values.length === 0) return 0;
 
