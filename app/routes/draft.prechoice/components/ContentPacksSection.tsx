@@ -48,7 +48,7 @@ export function ContentPacksSection() {
 
       <Stack>
         <Checkbox
-          label="Thunder's Edge (only lab view and no info for new factions)"
+          label="Thunder's Edge"
           checked={withTE}
           onChange={() => content.setWithTE(!withTE)}
         />
