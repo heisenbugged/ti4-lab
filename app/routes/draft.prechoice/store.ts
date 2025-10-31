@@ -61,6 +61,10 @@ type DraftSetupStore = {
     numSlices: number;
     setNumSlices: (num: number) => void;
   };
+  referenceCardPacks: {
+    numReferenceCardPacks: number;
+    setNumReferenceCardPacks: (num: number) => void;
+  };
   content: {
     flags: ContentFlags;
     setExcludeBaseFactions: (v: boolean) => void;
@@ -171,6 +175,12 @@ export const useDraftSetup = create<DraftSetupStore>()(
       setDraftMode: (mode: DraftMode) =>
         set((state) => {
           state.draftMode = mode;
+
+          // When switching to Twilight's Fall, set reference card packs to player count
+          if (mode === "twilightFalls") {
+            const playerCount = state.player.players.length;
+            state.referenceCardPacks.numReferenceCardPacks = playerCount;
+          }
         }),
 
       validateSetup: () => {
@@ -179,6 +189,15 @@ export const useDraftSetup = create<DraftSetupStore>()(
 
           if (state.slices.numSlices < playerCount) {
             state.slices.numSlices = playerCount;
+          }
+
+          // Update reference card packs default to player count if it's less
+          if (state.referenceCardPacks.numReferenceCardPacks < playerCount) {
+            state.referenceCardPacks.numReferenceCardPacks = playerCount;
+          }
+          // Ensure it doesn't exceed 10
+          if (state.referenceCardPacks.numReferenceCardPacks > 10) {
+            state.referenceCardPacks.numReferenceCardPacks = 10;
           }
 
           const currentMap = MAPS[state.map.selectedMapType];
@@ -280,6 +299,21 @@ export const useDraftSetup = create<DraftSetupStore>()(
         setNumSlices: (num: number) => {
           setAndValidate((state) => {
             state.slices.numSlices = num;
+          });
+        },
+      },
+
+      referenceCardPacks: {
+        numReferenceCardPacks: 6, // Default to player count, will be updated in validateSetup
+
+        setNumReferenceCardPacks: (num: number) => {
+          set((state) => {
+            // Clamp between player count and 10
+            const playerCount = state.player.players.length;
+            state.referenceCardPacks.numReferenceCardPacks = Math.max(
+              playerCount,
+              Math.min(10, num),
+            );
           });
         },
       },

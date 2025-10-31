@@ -599,7 +599,7 @@ export const draftStore = createStore<DraftV2State>()(
           if (settings.draftGameMode === "twilightsFall") {
             draft.availableFactions = state.factionPool;
             draft.availableReferenceCardPacks = generateReferenceCardPacks(
-              players.length,
+              settings.numReferenceCardPacks ?? players.length,
             );
           } else {
             draft.availableFactions = randomizeFactions(
@@ -724,7 +724,7 @@ export const draftStore = createStore<DraftV2State>()(
         set(({ draft }) => {
           if (draft.settings.draftGameMode !== "twilightsFall") return;
           draft.availableReferenceCardPacks = generateReferenceCardPacks(
-            draft.players.length,
+            draft.settings.numReferenceCardPacks ?? draft.players.length,
           );
         }),
 

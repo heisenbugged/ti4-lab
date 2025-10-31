@@ -252,6 +252,9 @@ export type DraftSettings = {
 
   draftGameMode?: "twilightsFall";
 
+  /** Number of reference card packs for Twilight's Fall (defaults to player count, max 10) */
+  numReferenceCardPacks?: number;
+
   // Legacy settings
   allowEmptyTiles: boolean;
   randomizeSlices: boolean;

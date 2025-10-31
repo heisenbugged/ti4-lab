@@ -39,6 +39,7 @@ import { useDraftSetup } from "./store";
 import { MAPS, ChoosableDraftType } from "./maps";
 import { FactionConfigurationSection } from "./components/FactionConfigurationSection";
 import { SlicesConfigurationSection } from "./components/SlicesConfigurationSection";
+import { ReferenceCardPacksConfigurationSection } from "./components/ReferenceCardPacksConfigurationSection";
 import { MultidraftSection } from "./components/MultidraftSection";
 import { MinorFactionsSection } from "./components/MinorFactionsSection";
 import { ContentPacksSection } from "./components/ContentPacksSection";
@@ -62,6 +63,8 @@ export default function DraftPrechoice() {
   const slices = useDraftSetup((state) => state.slices);
   const draftMode = useDraftSetup((state) => state.draftMode);
   const setDraftMode = useDraftSetup((state) => state.setDraftMode);
+  const referenceCardPacks = useDraftSetup((state) => state.referenceCardPacks);
+  const content = useDraftSetup((state) => state.content);
 
   const [miltySettings, setMiltySettings] = useState<MiltyDraftSettings>(
     DEFAULT_MILTY_SETTINGS,
@@ -97,13 +100,24 @@ export default function DraftPrechoice() {
 
   const handleContinue = () => {
     if (draftMode === "twilightFalls") {
-      // For Twilight's Fall, use defaults and only respect # of slices
+      const playerCount = player.players.length;
+      const miltyVariantMap: Record<number, ChoosableDraftType> = {
+        4: "milty4p",
+        5: "milty5p",
+        6: "milty",
+        7: "milty7p",
+        8: "milty8p",
+      };
+
+      const draftType: ChoosableDraftType = miltyVariantMap[playerCount]!;
+
       const twilightsFallSettings: DraftSettings = {
-        type: "milty",
+        type: draftType,
         numFactions: 8, // Always 8 Mahact Kings
         factionGameSets: ["twilightsFall"], // Only Mahact Kings faction set
         tileGameSets: ["base", "pok", "te"],
         numSlices: Number(slices.numSlices), // Only customizable setting
+        numReferenceCardPacks: referenceCardPacks.numReferenceCardPacks,
         randomizeMap: true,
         randomizeSlices: true,
         draftSpeaker: false,
@@ -332,6 +346,7 @@ export default function DraftPrechoice() {
                   </Alert>
 
                   <SlicesConfigurationSection />
+                  <ReferenceCardPacksConfigurationSection />
                 </Stack>
               </Tabs.Panel>
             </Tabs>
