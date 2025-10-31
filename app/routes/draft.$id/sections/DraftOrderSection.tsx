@@ -1,4 +1,4 @@
-import { Anchor, Button, Group, Stack, Switch } from "@mantine/core";
+import { Anchor, Button, Group, Stack, Switch, ActionIcon } from "@mantine/core";
 import { SectionTitle } from "~/components/Section";
 import { DraftOrder } from "../components/DraftOrder";
 import { useDraft } from "~/draftStore";
@@ -11,7 +11,11 @@ import { useState } from "react";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
 import { notifications } from "@mantine/notifications";
 import { Link } from "@remix-run/react";
-import { IconPlayerPlay, IconShare } from "@tabler/icons-react";
+import { IconPlayerPlay, IconShare, IconVolume, IconVolumeOff } from "@tabler/icons-react";
+import {
+  isAudioAlertEnabled,
+  setAudioAlertEnabled,
+} from "~/utils/audioAlert";
 
 export function DraftOrderSection() {
   const { adminMode, pickForAnyone, setAdminMode, setPickForAnyone } =
@@ -101,6 +105,41 @@ export function DraftOrderSection() {
   const showPickForAnyoneControl = !hasAdminPassword || adminMode;
   const showUndoLastSelection = !hasAdminPassword || adminMode;
 
+  const [audioAlertEnabled, setAudioAlertEnabledState] = useState(
+    isAudioAlertEnabled(),
+  );
+
+  const AudioAlertToggle = (
+    <ActionIcon
+      variant={audioAlertEnabled ? "filled" : "subtle"}
+      color={audioAlertEnabled ? "blue" : "gray"}
+      size="lg"
+      onClick={() => {
+        const newValue = !audioAlertEnabled;
+        setAudioAlertEnabled(newValue);
+        setAudioAlertEnabledState(newValue);
+        notifications.show({
+          title: newValue ? "Audio alerts enabled" : "Audio alerts disabled",
+          message: newValue
+            ? "You'll hear a sound when it's your turn to draft"
+            : "You won't hear sounds when it's your turn",
+          color: newValue ? "blue" : "gray",
+        });
+      }}
+      title={
+        audioAlertEnabled
+          ? "Disable audio alerts"
+          : "Enable audio alerts"
+      }
+    >
+      {audioAlertEnabled ? (
+        <IconVolume size={18} />
+      ) : (
+        <IconVolumeOff size={18} />
+      )}
+    </ActionIcon>
+  );
+
   return (
     <Stack>
       <AdminPasswordModal
@@ -114,6 +153,7 @@ export function DraftOrderSection() {
           <Group hiddenFrom="sm" justify="flex-end">
             {adminMode && <ExportDraftState />}
             {showUndoLastSelection && UndoLastSelection}
+            {AudioAlertToggle}
             {ReplayButton}
             <OriginalArtToggle />
           </Group>
@@ -146,6 +186,7 @@ export function DraftOrderSection() {
             <>
               {adminMode && <ExportDraftState />}
               {showUndoLastSelection && UndoLastSelection}
+              {AudioAlertToggle}
               {ReplayButton}
               {showPickForAnyoneControl && pickForAnyoneControl}
               {adminControl}

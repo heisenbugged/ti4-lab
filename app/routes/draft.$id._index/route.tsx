@@ -44,6 +44,7 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { BanPhase } from "../draft.$id/sections/BanPhase";
 import { IconRefresh } from "@tabler/icons-react";
 import { useSocketConnection } from "~/useSocketConnection";
+import { AudioAlertConsentModal } from "../draft.$id/components/AudioAlertConsentModal";
 import { DraftableReferenceCardPacksSection } from "../draft.$id/sections/DraftableReferenceCardPacksSection";
 import { PriorityValueSelectionPhase } from "../draft.$id/sections/PriorityValueSelectionPhase";
 import { HomeSystemSelectionPhase } from "../draft.$id/sections/HomeSystemSelectionPhase";
@@ -182,6 +183,7 @@ export default function RunningDraft() {
       )}
 
       <PlanetFinder onSystemSelected={syncDraft} />
+      <AudioAlertConsentModal />
       <audio id="notificationSound" src="/chime.mp3" preload="auto">
         <track kind="captions" />
       </audio>
