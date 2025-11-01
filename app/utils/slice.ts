@@ -79,9 +79,12 @@ export const systemIdsToSlice = (
 export const systemIdsToSlices = (
   config: DraftConfig,
   rawSlices: SystemId[][],
+  entropicScarValue = 2,
 ): Slice[] => {
   const sorted = [...rawSlices].sort(
-    (a, b) => valueSlice(systemsFromIds(b)) - valueSlice(systemsFromIds(a)),
+    (a, b) =>
+      valueSlice(systemsFromIds(b), entropicScarValue) -
+      valueSlice(systemsFromIds(a), entropicScarValue),
   );
   return sorted.map((systemIds, idx) =>
     systemIdsToSlice(config, `Slice ${idx + 1}`, systemIds),

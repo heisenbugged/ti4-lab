@@ -171,7 +171,11 @@ const validateMap = (
   slices: SystemIds[],
 ) => {
   // For validating 'globals', we grab the N richest slices.
-  const slicesToValidate = systemIdsToSlices(config, slices)
+  const slicesToValidate = systemIdsToSlices(
+    config,
+    slices,
+    settings.sliceGenerationConfig?.entropicScarValue,
+  )
     .slice(0, config.numPlayers)
     .map((s) => systemIdsInSlice(s));
 
@@ -182,8 +186,7 @@ const validateMap = (
   );
 
   // Use maxLegendaries from config if set, otherwise use default of 3
-  const maxLegendaries =
-    settings.sliceGenerationConfig?.maxLegendaries ?? 3;
+  const maxLegendaries = settings.sliceGenerationConfig?.maxLegendaries ?? 3;
 
   const chosenMapLocations = map.reduce(
     (acc, tile) => {
