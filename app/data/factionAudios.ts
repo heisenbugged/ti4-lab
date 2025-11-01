@@ -65,7 +65,7 @@ export type FactionAudio = {
 
 export const factionAudios: Partial<Record<FactionId, FactionAudio>> = {
   creuss: {
-    battleAnthem: "",
+    battleAnthem: "spotify:track:018SQDupRTRsl1Wolu1X0c",
     homeDefense: [
       {
         url: `${CDN_BASE_URL}/voices/ghosts/homedefense.mp3`,
@@ -272,7 +272,7 @@ export const factionAudios: Partial<Record<FactionId, FactionAudio>> = {
     },
   },
   sardakk: {
-    battleAnthem: "",
+    battleAnthem: "spotify:track:1N7LRc9YuyMjWKEkrmlogM",
     homeDefense: [
       {
         url: `${CDN_BASE_URL}/voices/sardakk/homedefense.mp3`,
@@ -1030,7 +1030,7 @@ export const factionAudios: Partial<Record<FactionId, FactionAudio>> = {
     },
   },
   naalu: {
-    battleAnthem: "",
+    battleAnthem: "spotify:track:018SQDupRTRsl1Wolu1X0c",
     homeDefense: [
       {
         url: `${CDN_BASE_URL}/voices/naalu/homedefense.mp3`,
