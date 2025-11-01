@@ -101,6 +101,9 @@ export function SummaryCard({
   showSeat,
   showPlayerColor,
 }: Props) {
+  const entropicScarValue = useDraft(
+    (state) => state.draft.settings.sliceGenerationConfig?.entropicScarValue,
+  );
   let faction: Faction | undefined;
   let minorFaction: Faction | undefined;
   let systems: System[] | undefined;
@@ -113,7 +116,7 @@ export function SummaryCard({
   if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
-    optimal = optimalStatsForSystems(systems);
+    optimal = optimalStatsForSystems(systems, entropicScarValue);
     // specialties = techSpecialtiesForSystems(systems);
   }
 
@@ -203,6 +206,9 @@ function SummaryRow({
   showMinorFaction,
   showPlayerColor,
 }: Props) {
+  const entropicScarValue = useDraft(
+    (state) => state.draft.settings.sliceGenerationConfig?.entropicScarValue,
+  );
   let faction: Faction | undefined;
   let minorFaction: Faction | undefined;
   let systems: System[] | undefined;
@@ -215,7 +221,7 @@ function SummaryRow({
   if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
-    optimal = optimalStatsForSystems(systems);
+    optimal = optimalStatsForSystems(systems, entropicScarValue);
     // specialties = techSpecialtiesForSystems(systems);
   }
 

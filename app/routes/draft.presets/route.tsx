@@ -24,6 +24,7 @@ import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionPool } from "~/utils/factions";
 import { useCreateDraft } from "../draft.new/useCreateDraft";
 import { shuffle } from "~/draft/helpers/randomization";
+import { useDraft } from "~/draftStore";
 
 type PresetCardProps = {
   sliceIDs: SystemId[][];
@@ -42,10 +43,13 @@ const defaultPlayers = [
 ];
 
 function usePresetCardStats(sliceIds: SystemId[][]) {
+  const entropicScarValue = useDraft(
+    (state) => state.draft.settings.sliceGenerationConfig?.entropicScarValue,
+  );
   const slices = sliceIds.map((ids, idx) => {
     const slice = systemIdsToSlice(draftConfig.milty, `Slice ${idx + 1}`, ids);
     const systems = systemsFromIds(ids);
-    const { resources, influence, flex } = optimalStatsForSystems(systems);
+    const { resources, influence, flex } = optimalStatsForSystems(systems, entropicScarValue);
     return {
       slice,
       optimalStats: {
