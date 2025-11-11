@@ -8,6 +8,7 @@ import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
 
 import classes from "~/components/Table.module.css";
+import { useDraft } from "~/draftStore";
 
 type Props = {
   slices: Slice[];
@@ -15,7 +16,10 @@ type Props = {
 };
 
 export function SlicesTable({ slices, draftedSlices = [] }: Props) {
-  const sortedSlices = useSortedSlices(slices, draftedSlices);
+  const entropicScarValue = useDraft(
+    (state) => state.draft.settings.sliceGenerationConfig?.entropicScarValue,
+  );
+  const sortedSlices = useSortedSlices(slices, draftedSlices, entropicScarValue);
   return (
     <Table className={classes.table}>
       <Table.Thead>
@@ -30,7 +34,7 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
         {sortedSlices.map(({ slice, idx }) => {
           const systems = systemsInSlice(slice);
           const total = totalStatsForSystems(systems);
-          const optimal = optimalStatsForSystems(systems);
+          const optimal = optimalStatsForSystems(systems, entropicScarValue);
           const isDrafted = draftedSlices.includes(idx);
           return (
             <Table.Tr
@@ -47,7 +51,7 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
                     influence={optimal.influence}
                     flex={optimal.flex}
                   />
-                  <Box visibleFrom="xs">({valueSlice(systems).toString()})</Box>
+                  <Box visibleFrom="xs">({valueSlice(systems, entropicScarValue).toString()})</Box>
                 </Group>
               </Table.Td>
               <Table.Td>

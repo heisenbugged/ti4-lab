@@ -971,7 +971,11 @@ export const draftStore = createStore<DraftV2State>()(
           );
 
           if (rawSlices) {
-            draft.slices = systemIdsToSlices(config, rawSlices);
+            draft.slices = systemIdsToSlices(
+              config,
+              rawSlices,
+              draft.settings.sliceGenerationConfig?.entropicScarValue,
+            );
             draft.slices = setSliceNames(draft.slices);
           }
         }),
@@ -1012,7 +1016,11 @@ export function initializeSlices(
   );
 
   if (!rawSlices) return undefined;
-  return systemIdsToSlices(config, rawSlices);
+  return systemIdsToSlices(
+    config,
+    rawSlices,
+    settings.sliceGenerationConfig?.entropicScarValue,
+  );
 }
 
 export function initializeMap(
@@ -1147,7 +1155,11 @@ function generateMapAndSlices(
 
   return {
     presetMap: generated.map,
-    slices: systemIdsToSlices(config, generated.slices),
+    slices: systemIdsToSlices(
+      config,
+      generated.slices,
+      settings.sliceGenerationConfig?.entropicScarValue,
+    ),
   };
 }
 

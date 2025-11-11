@@ -3,7 +3,7 @@ import { valueSlice } from "~/stats";
 import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
 
-export function useSortedSlices(slices: Slice[], draftedSlices: number[]) {
+export function useSortedSlices(slices: Slice[], draftedSlices: number[], entropicScarValue = 2) {
   const sortedSlices = useMemo(() => {
     return slices
       .map((slice, idx) => ({ slice, idx }))
@@ -12,7 +12,7 @@ export function useSortedSlices(slices: Slice[], draftedSlices: number[]) {
         if (draftedSlices.includes(b.idx)) return -1;
         const aSystems = systemsInSlice(a.slice);
         const bSystems = systemsInSlice(b.slice);
-        return valueSlice(bSystems) - valueSlice(aSystems);
+        return valueSlice(bSystems, entropicScarValue) - valueSlice(aSystems, entropicScarValue);
       });
   }, [slices, draftedSlices]);
 
