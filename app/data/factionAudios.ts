@@ -1030,7 +1030,7 @@ export const factionAudios: Partial<Record<FactionId, FactionAudio>> = {
     },
   },
   naalu: {
-    battleAnthem: "spotify:track:018SQDupRTRsl1Wolu1X0c",
+    battleAnthem: "spotify:track:46h0MLW2ONEGKJTUdFNx5f",
     homeDefense: [
       {
         url: `${CDN_BASE_URL}/voices/naalu/homedefense.mp3`,
@@ -1654,8 +1654,8 @@ export const factionAudios: Partial<Record<FactionId, FactionAudio>> = {
     ],
   },
   saar: {
-    battleAnthem: "spotify:track:0G21yYKMZoHa30cYVi1iA8",
-    battleAnthemDelay: 28000,
+    battleAnthem: "spotify:track:2E6fyIzXqFKl7jmRDRoDSw",
+    battleAnthemDelay: 4000,
     homeDefense: [
       {
         url: `${CDN_BASE_URL}/voices/saar/homedefense.mp3`,

@@ -5,7 +5,7 @@ import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { PlayerChipOrSelect } from "../components/PlayerChipOrSelect";
-import { SelectableCard, PlayerColor } from "~/ui";
+import { Surface, PlayerColor } from "~/ui";
 
 const colors = [
   "Green",
@@ -25,9 +25,6 @@ export function DraftablePlayerColorsSection() {
   const { selectPlayerColor } = useDraft((state) => state.draftActions);
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
-  const pickOrder = useDraft((state) => state.draft.pickOrder);
-  const selections = useDraft((state) => state.draft.selections);
-  const remainingPicks = pickOrder.length - selections.length;
 
   const { syncDraft } = useSyncDraft();
   const canSelect =
@@ -41,49 +38,66 @@ export function DraftablePlayerColorsSection() {
         {colors.map((color) => {
           const player = hydratedPlayers.find((p) => p.factionColor === color);
           const playerColor =
-            player?.id !== undefined ? (playerColors[player.id] as PlayerColor) : undefined;
+            player?.id !== undefined
+              ? (playerColors[player.id] as PlayerColor)
+              : undefined;
           const disabled =
             !!player?.factionColor && player.factionColor !== color;
 
+          const handleSelect = canSelect
+            ? () => {
+                if (confirm(`Selecting color ${color}`)) {
+                  selectPlayerColor(activePlayer.id, color);
+                  syncDraft();
+                }
+              }
+            : undefined;
+
+          const variant = handleSelect ? "interactive" : "card";
+          const surfaceColor = player && playerColor ? playerColor : undefined;
+
           return (
-            <SelectableCard
+            <Surface
               key={color}
-              selected={!!player}
-              selectedColor={playerColor}
-              disabled={disabled}
-              header={
-                <Group
-                  align="center"
-                  flex={1}
-                  style={{
-                    overflow: "hidden",
-                    flexWrap: "nowrap",
-                  }}
-                  py={5}
-                  px="sm"
-                >
-                  <Text flex={1} size="14px" ff="heading" fw="bold">
-                    {color}
-                  </Text>
-                </Group>
-              }
-              body={
-                <PlayerChipOrSelect
-                  player={player}
-                  onSelect={
-                    canSelect
-                      ? () => {
-                          if (confirm(`Selecting color ${color}`)) {
-                            selectPlayerColor(activePlayer.id, color);
-                            syncDraft();
-                          }
-                        }
-                      : undefined
-                  }
-                  disabled={disabled}
-                />
-              }
-            />
+              variant={variant}
+              color={surfaceColor}
+              onClick={handleSelect}
+              style={{
+                cursor: handleSelect ? "pointer" : "default",
+                opacity: disabled ? 0.5 : player ? 0.5 : 1,
+                position: "relative",
+                borderRadius: "var(--mantine-radius-md)",
+              }}
+            >
+              <Group
+                align="center"
+                flex={1}
+                style={{
+                  overflow: "hidden",
+                  flexWrap: "nowrap",
+                }}
+                pt={5}
+                pb={15}
+                px="sm"
+              >
+                <Text flex={1} size="14px" ff="heading" fw="bold">
+                  {color}
+                </Text>
+              </Group>
+
+              <PlayerChipOrSelect
+                player={player}
+                onSelect={
+                  handleSelect
+                    ? (e) => {
+                        e.preventDefault();
+                        handleSelect();
+                      }
+                    : undefined
+                }
+                disabled={disabled}
+              />
+            </Surface>
           );
         })}
       </SimpleGrid>

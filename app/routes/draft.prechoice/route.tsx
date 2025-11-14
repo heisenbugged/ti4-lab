@@ -12,7 +12,7 @@ import {
   Text,
 } from "@mantine/core";
 import { DiscordData, Draft, DraftSettings } from "~/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
@@ -59,6 +59,7 @@ export default function DraftPrechoice() {
   >();
 
   const player = useDraftSetup((state) => state.player);
+  const setPlayers = useDraftSetup((state) => state.player.setPlayers);
   const map = useDraftSetup((state) => state.map);
   const slices = useDraftSetup((state) => state.slices);
   const draftMode = useDraftSetup((state) => state.draftMode);
@@ -75,16 +76,18 @@ export default function DraftPrechoice() {
   );
 
   // Initialize players from Discord data if available
+  const discordDataInitialized = useRef(false);
   useEffect(() => {
-    if (discordData?.players) {
-      player.setPlayers(
+    if (discordData?.players && !discordDataInitialized.current) {
+      setPlayers(
         discordData.players.map((discordPlayer) => ({
           id: discordPlayer.playerId,
           name: discordPlayer.type === "unidentified" ? discordPlayer.name : "",
         })),
       );
+      discordDataInitialized.current = true;
     }
-  }, [discordData, player]);
+  }, [discordData, setPlayers]);
 
   const mapType = hoveredMapType ?? map.selectedMapType;
 
