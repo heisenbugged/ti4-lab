@@ -101,9 +101,13 @@ function MapGeneratorContent() {
   // Generate map string and share URL
   const mapString = useMemo(() => {
     return map
-      .filter((tile) => tile.type === "SYSTEM" && tile.idx !== 0)
-      .map((tile) => (tile.type === "SYSTEM" ? tile.systemId : ""))
-      .join(",");
+      .slice(1) // Skip Mecatol Rex at index 0
+      .map((tile) => {
+        if (tile.type === "HOME") return "0";
+        if (tile.type === "SYSTEM") return tile.systemId;
+        return "-1";
+      })
+      .join(" ");
   }, [map]);
 
   const shareUrl = useMemo(() => {
