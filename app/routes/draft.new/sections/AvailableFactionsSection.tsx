@@ -22,7 +22,7 @@ export function AvailableFactionsSection() {
     (state) => state.draft.settings.numPreassignedFactions,
   );
   const factionPool = useDraft((state) =>
-    (state.draft.availableFactions ?? state.factionPool).filter(
+    state.factionPool.filter(
       (f: FactionId) => !state.draft.availableMinorFactions?.includes(f),
     ),
   );
