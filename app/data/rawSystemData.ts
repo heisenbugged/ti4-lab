@@ -448,7 +448,7 @@ export const rawSystems: Record<string, RawSystem> = {
         trait: ["CULTURAL"],
       },
       {
-        name: "Resulon",
+        name: "Resculon",
         resources: 2,
         influence: 0,
         legendary: false,
