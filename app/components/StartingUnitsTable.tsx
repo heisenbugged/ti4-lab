@@ -23,6 +23,7 @@ export function StartingUnitsTable({
     { key: "spacedock", name: "Space Dock" },
     { key: "fighter", name: "Fighter" },
     { key: "pds", name: "PDS" },
+    { key: "mech", name: "Mech" },
   ] as const;
 
   const units = unitOrder

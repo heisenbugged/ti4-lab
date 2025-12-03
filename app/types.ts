@@ -168,6 +168,7 @@ export type FleetComposition = {
   pds?: number;
   warsun?: number;
   flagship?: number;
+  mech?: number;
 };
 
 export type SystemStats = {
@@ -254,6 +255,11 @@ export type DraftSettings = {
 
   /** Number of reference card packs for Twilight's Fall (defaults to player count, max 10) */
   numReferenceCardPacks?: number;
+
+  /** Pre-seeded slices from map generator (SystemId arrays) */
+  presetSlices?: SystemId[][];
+  /** Pre-seeded map from map generator (for center tiles/equidistants) */
+  presetMap?: Map;
 
   // Legacy settings
   allowEmptyTiles: boolean;

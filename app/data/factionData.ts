@@ -326,6 +326,7 @@ export const factions: Record<FactionId, Faction> = {
       infantry: 3,
       fighter: 2,
       spacedock: 1,
+      mech: 1,
     },
   },
   nomad: {

@@ -16,7 +16,12 @@ import { useEffect, useRef, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
-import { useLoaderData, useLocation, useNavigate } from "@remix-run/react";
+import {
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "@remix-run/react";
 import {
   IconBrandDiscordFilled,
   IconFile,
@@ -49,11 +54,15 @@ import { DiscordIntegrationModal } from "./components/DiscordIntegrationModal";
 import { MinorFactionsInfoModal } from "./components/MinorFactionsInfoModal";
 import { SavedStateModal } from "./components/SavedStateModal";
 import { MapStyleSelector } from "./components/MapStyleSelector";
+import { SeededMapBanner } from "./components/SeededMapBanner";
+import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
 
 export default function DraftPrechoice() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { discordData, discordOauthUrl } = useLoaderData<typeof loader>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { discordData, discordOauthUrl, mapSlicesString, selectedDraftType } =
+    useLoaderData<typeof loader>();
   const [hoveredMapType, setHoveredMapType] = useState<
     ChoosableDraftType | undefined
   >();
@@ -89,6 +98,46 @@ export default function DraftPrechoice() {
     }
   }, [discordData, setPlayers]);
 
+  // Initialize from seeded map URL param (one-time on mount)
+  const seededMapInitialized = useRef(false);
+  useEffect(() => {
+    if (mapSlicesString && !seededMapInitialized.current) {
+      const seededData = decodeSeededMapData(mapSlicesString);
+      if (seededData) {
+        // Set player count based on slice count
+        const sliceCount = seededData.slices.length;
+        const currentPlayerCount = player.players.length;
+        if (sliceCount !== currentPlayerCount) {
+          const newPlayers = Array(sliceCount)
+            .fill(null)
+            .map((_, i) => ({
+              id: i,
+              name: player.players[i]?.name ?? "",
+            }));
+          setPlayers(newPlayers);
+        }
+
+        // Set map type to selected type from URL, or first compatible type
+        const draftTypeToUse =
+          selectedDraftType &&
+          seededData.compatibleDraftTypes.includes(
+            selectedDraftType as ChoosableDraftType,
+          )
+            ? (selectedDraftType as ChoosableDraftType)
+            : seededData.compatibleDraftTypes[0];
+
+        if (draftTypeToUse) {
+          map.setSelectedMapType(draftTypeToUse as ChoosableDraftType);
+        }
+
+        // Set slice count
+        slices.setNumSlices(sliceCount);
+
+        seededMapInitialized.current = true;
+      }
+    }
+  }, [mapSlicesString, selectedDraftType, player, setPlayers, map, slices]);
+
   const mapType = hoveredMapType ?? map.selectedMapType;
 
   const { buildDraftSettings } = useDraftSettingsBuilder(
@@ -99,6 +148,17 @@ export default function DraftPrechoice() {
 
   const handleChangeName = (playerIdx: number, name: string) => {
     player.changeName(playerIdx, name);
+  };
+
+  const handleMapTypeSelect = (mapType: ChoosableDraftType) => {
+    // Clear seeded map params from URL when map type changes
+    if (searchParams.has("mapSlices")) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("mapSlices");
+      newParams.delete("draftType");
+      setSearchParams(newParams, { replace: true });
+    }
+    map.setSelectedMapType(mapType);
   };
 
   const handleContinue = () => {
@@ -237,6 +297,11 @@ export default function DraftPrechoice() {
         discordOauthUrl={discordOauthUrl}
         onClose={closeDiscord}
       />
+      {mapSlicesString && (
+        <Grid.Col span={12}>
+          <SeededMapBanner />
+        </Grid.Col>
+      )}
       {discordData && (
         <Grid.Col span={12}>
           <DiscordBanner />
@@ -265,7 +330,7 @@ export default function DraftPrechoice() {
               playerCount={player.players.length}
               selectedMapType={map.selectedMapType}
               onMapTypeHover={setHoveredMapType}
-              onMapTypeSelect={map.setSelectedMapType}
+              onMapTypeSelect={handleMapTypeSelect}
               onOpenMiltySettings={openMiltySettings}
               onOpenMiltyEqSettings={openMiltyEqSettings}
               onOpenMinorFactionsInfo={openMinorFactions}
@@ -407,5 +472,20 @@ export const loader = async (args: LoaderFunctionArgs) => {
     discordData = JSON.parse(atob(discordString)) as DiscordData;
   }
 
-  return { discordData, discordOauthUrl: global.env.discordOauthUrl };
+  // Parse seeded map data from URL param
+  const mapSlicesString = new URL(args.request.url).searchParams.get(
+    "mapSlices",
+  );
+
+  // Parse selected draft type from URL param
+  const selectedDraftType = new URL(args.request.url).searchParams.get(
+    "draftType",
+  );
+
+  return {
+    discordData,
+    discordOauthUrl: global.env.discordOauthUrl,
+    mapSlicesString,
+    selectedDraftType,
+  };
 };

@@ -1,9 +1,10 @@
-import { useNavigate, useSubmit } from "@remix-run/react";
+import { useNavigate, useSearchParams, useSubmit } from "@remix-run/react";
 import type { DraftSettings, DiscordData } from "~/types";
 import type { MiltyDraftSettings } from "~/components/MiltySettingsModal";
 import type { MiltyEqDraftSettings } from "~/components/MiltyEqSettingsModal";
 import { useDraftSetup } from "./store";
 import { buildSliceGenerationConfig } from "./utils";
+import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
 
 export const useDraftSettingsBuilder = (
   miltySettings: MiltyDraftSettings,
@@ -69,13 +70,35 @@ export const useDraftSettingsBuilder = (
 export const useDraftNavigation = (discordData?: DiscordData) => {
   const navigate = useNavigate();
   const submit = useSubmit();
+  const [searchParams] = useSearchParams();
   const player = useDraftSetup((state) => state.player);
   const multidraft = useDraftSetup((state) => state.multidraft);
+  const map = useDraftSetup((state) => state.map);
 
   const navigateToDraft = (draftSettings: DraftSettings) => {
+    // Check if we have seeded map data in URL params AND it's compatible with selected map type
+    const mapSlicesString = searchParams.get("mapSlices");
+    let finalDraftSettings = draftSettings;
+
+    if (mapSlicesString) {
+      const seededData = decodeSeededMapData(mapSlicesString);
+      // Only use seeded data if the current map type is compatible
+      if (
+        seededData &&
+        seededData.compatibleDraftTypes.includes(map.selectedMapType)
+      ) {
+        finalDraftSettings = {
+          ...draftSettings,
+          randomizeSlices: false, // Use pre-seeded slices instead of generating
+          presetSlices: seededData.slices,
+          presetMap: seededData.presetMap,
+        };
+      }
+    }
+
     if (multidraft.isMultidraft) {
       const formData = new FormData();
-      formData.append("draftSettings", JSON.stringify(draftSettings));
+      formData.append("draftSettings", JSON.stringify(finalDraftSettings));
       formData.append("players", JSON.stringify(player.players));
       formData.append(
         "discordData",
@@ -92,7 +115,7 @@ export const useDraftNavigation = (discordData?: DiscordData) => {
 
     navigate("/draft/new", {
       state: {
-        draftSettings,
+        draftSettings: finalDraftSettings,
         players: player.players,
         discordData,
       },

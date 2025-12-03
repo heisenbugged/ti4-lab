@@ -34,7 +34,17 @@ import {
   IconInfoCircle,
   IconShare,
   IconPhoto,
+  IconWand,
 } from "@tabler/icons-react";
+import { useNavigate } from "@remix-run/react";
+import { draftConfig } from "~/draft/draftConfig";
+import {
+  mapConfigToCompatibleDraftTypes,
+  extractSlicesFromMap,
+  buildPresetMap,
+  encodeSeededMapData,
+  SeededMapData,
+} from "../utils/mapToDraft";
 import { autoCompleteMap } from "../utils/mapCompletion";
 import { useMapStats } from "../utils/mapStats";
 import {
@@ -49,6 +59,8 @@ import { MapStatsOverlay } from "./MapStatsOverlay";
 import { systemData } from "~/data/systemData";
 import { ShareMapModal } from "./ShareMapModal";
 import { mapConfigs } from "~/mapgen/mapConfigs";
+import { DraftTypeSelectionModal } from "./DraftTypeSelectionModal";
+import { DraftType } from "~/draft/types";
 
 // Infer which game sets are used based on tile IDs
 function inferGameSetsFromTiles(systemIds: SystemId[]): GameSet[] {
@@ -69,6 +81,7 @@ function inferGameSetsFromTiles(systemIds: SystemId[]): GameSet[] {
 }
 
 function MapGeneratorContent() {
+  const navigate = useNavigate();
   const map = useMapBuilder((state) => state.state.map);
   const systemPool = useMapBuilder((state) => state.state.systemPool);
   const mapConfigId = useMapBuilder((state) => state.state.mapConfigId);
@@ -97,6 +110,13 @@ function MapGeneratorContent() {
     useDisclosure(false);
   const [shareOpened, { open: openShare, close: closeShare }] =
     useDisclosure(false);
+  const [
+    draftTypeOpened,
+    { open: openDraftType, close: closeDraftType },
+  ] = useDisclosure(false);
+  const [compatibleDraftTypes, setCompatibleDraftTypes] = useState<DraftType[]>(
+    [],
+  );
 
   // Generate map string and share URL
   const mapString = useMemo(() => {
@@ -210,6 +230,58 @@ function MapGeneratorContent() {
     }
   };
 
+  const handleCreateDraft = () => {
+    const compatibleTypes = mapConfigToCompatibleDraftTypes[mapConfigId];
+    if (!compatibleTypes || compatibleTypes.length === 0) {
+      notifications.show({
+        title: "Unsupported",
+        message: "This map type doesn't support draft creation",
+        color: "red",
+      });
+      return;
+    }
+
+    // If multiple compatible types, show selection modal
+    if (compatibleTypes.length > 1) {
+      setCompatibleDraftTypes(compatibleTypes);
+      openDraftType();
+      return;
+    }
+
+    // Single compatible type - navigate directly
+    navigateToDraft(compatibleTypes[0]);
+  };
+
+  const navigateToDraft = (selectedDraftType: DraftType) => {
+    const compatibleTypes = mapConfigToCompatibleDraftTypes[mapConfigId];
+    const config = draftConfig[selectedDraftType];
+    const mapConfig = mapConfigs[mapConfigId];
+    const { slices, sliceTileIndices } = extractSlicesFromMap(
+      map,
+      mapConfig,
+      config,
+    );
+    const presetMap = buildPresetMap(map, sliceTileIndices);
+
+    const seededData: SeededMapData = {
+      slices,
+      presetMap,
+      mapConfigId,
+      // Pass all compatible types so user can switch between them in prechoice
+      compatibleDraftTypes: compatibleTypes,
+      gameSets,
+    };
+
+    const encoded = encodeSeededMapData(seededData);
+    // Include the selected draft type in the URL so prechoice uses it
+    navigate(`/draft/prechoice?mapSlices=${encoded}&draftType=${selectedDraftType}`);
+  };
+
+  const handleDraftTypeSelect = (draftType: DraftType) => {
+    closeDraftType();
+    navigateToDraft(draftType);
+  };
+
   const [activeSystemId, setActiveSystemId] = useState<string | null>(null);
 
   // Parse URL parameters and seed map on page load
@@ -320,6 +392,12 @@ function MapGeneratorContent() {
         shareUrl={shareUrl}
         opened={shareOpened}
         onClose={closeShare}
+      />
+      <DraftTypeSelectionModal
+        opened={draftTypeOpened}
+        compatibleTypes={compatibleDraftTypes}
+        onClose={closeDraftType}
+        onSelect={handleDraftTypeSelect}
       />
 
       <MapBuilderPlanetFinder
@@ -441,6 +519,16 @@ function MapGeneratorContent() {
                     disabled={!isMapComplete}
                   >
                     Share Image
+                  </Button>
+                  <Button
+                    leftSection={<IconWand size={16} />}
+                    variant="filled"
+                    color="teal"
+                    onClick={handleCreateDraft}
+                    size="xs"
+                    disabled={!isMapComplete}
+                  >
+                    Create Draft
                   </Button>
                 </Group>
                 {balanceGap > 0 && (

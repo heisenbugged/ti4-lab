@@ -628,7 +628,16 @@ export const draftStore = createStore<DraftV2State>()(
           }
 
           // Generate map and slices using the utility function
-          if (config.generateMap) {
+          // Check for pre-seeded slices and map from map generator
+          if (settings.presetSlices && settings.presetMap) {
+            // Use pre-seeded slices from map generator
+            draft.slices = systemIdsToSlices(
+              config,
+              settings.presetSlices,
+              settings.sliceGenerationConfig?.entropicScarValue,
+            );
+            draft.presetMap = settings.presetMap;
+          } else if (config.generateMap) {
             const generated = generateMapAndSlices(
               config,
               settings,
