@@ -1,19 +1,31 @@
 .resources {
-
-    @mixin light { background-color: var(--mantine-color-yellow-filled); }
-    @mixin dark { background-color: var(--mantine-color-yellow-8); }
+    border-radius: 4px;
+    min-width: 26px;
+    text-align: center;
+    @mixin light { background-color: var(--mantine-color-yellow-6); }
+    @mixin dark { background-color: var(--mantine-color-yellow-7); }
 }
 
 .influence {
-    @mixin light { background-color: var(--mantine-color-blue-4); }
-    @mixin dark { background-color: var(--mantine-color-blue-8); }
+    border-radius: 4px;
+    min-width: 26px;
+    text-align: center;
+    @mixin light { background-color: var(--mantine-color-blue-6); }
+    @mixin dark { background-color: var(--mantine-color-blue-7); }
 }
 
 .flex {
-    @mixin light { background-color: var(--mantine-color-purple-2); }
-    @mixin dark { background-color: var(--mantine-color-purple-6); }
+    border-radius: 4px;
+    min-width: 26px;
+    text-align: center;
+    @mixin light { background-color: var(--mantine-color-grape-6); }
+    @mixin dark { background-color: var(--mantine-color-grape-6); }
 }
 
 .text {
-    @mixin dark { color: white;}
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+    @mixin light { color: white; }
+    @mixin dark { color: white; }
 }

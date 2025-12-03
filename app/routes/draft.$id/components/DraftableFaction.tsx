@@ -28,14 +28,15 @@ export function DraftableFaction({
     player?.id !== undefined ? (playerColors[player.id] as PlayerColor) : undefined;
 
   const hasRegularSelectOnly = onSelect && !onSelectMinor;
+  const isAlreadySelected = !!player;
 
   return (
     <SelectableCard
-      selected={!!player}
+      selected={isAlreadySelected}
       selectedColor={playerColor}
-      hoverable={hasRegularSelectOnly}
+      hoverable={hasRegularSelectOnly && !isAlreadySelected}
       disabled={disabled}
-      onSelect={hasRegularSelectOnly ? onSelect : undefined}
+      onSelect={hasRegularSelectOnly && !isAlreadySelected ? onSelect : undefined}
       header={
         <>
           <Group
@@ -45,17 +46,33 @@ export function DraftableFaction({
               overflow: "hidden",
               flexWrap: "nowrap",
             }}
-            pt={5}
-            pb={15}
+            py="sm"
             px="sm"
+            gap="sm"
           >
-            <Flex align="center" w="25px" h="25px">
+            <Flex
+              align="center"
+              justify="center"
+              w="28px"
+              h="28px"
+              style={{ flexShrink: 0 }}
+            >
               <FactionIcon
                 faction={faction.id}
-                style={{ width: 25, height: 25 }}
+                style={{ width: 28, height: 28 }}
               />
             </Flex>
-            <Text flex={1} size="14px" ff="heading" fw="bold">
+            <Text
+              flex={1}
+              size="sm"
+              ff="heading"
+              fw={600}
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               {faction.name}
             </Text>
           </Group>

@@ -1,5 +1,6 @@
 .section {
   border-top-left-radius: 8px;
+
   @mixin dark {
     background: var(--mantine-color-dark-7);
     border-bottom: 1px solid var(--mantine-color-dark-5);

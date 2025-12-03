@@ -18,11 +18,8 @@ export function AvailableFactionsSection() {
 
   const hasBanPhase = useHasBanPhase();
 
-  const numPreassignedFactions = useDraft(
-    (state) => state.draft.settings.numPreassignedFactions,
-  );
   const factionPool = useDraft((state) =>
-    (state.draft.availableFactions ?? state.factionPool).filter(
+    state.factionPool.filter(
       (f: FactionId) => !state.draft.availableMinorFactions?.includes(f),
     ),
   );
@@ -45,15 +42,12 @@ export function AvailableFactionsSection() {
         <SectionTitle title="Faction Pool">
           <Group>
             <Text># factions: {numFactions}</Text>
-            {/* cannot change number of factions if using 'bag draft' method */}
-            {numPreassignedFactions === undefined && (
-              <NumberStepper
-                decrease={removeLastFaction}
-                increase={addRandomFaction}
-                decreaseDisabled={numFactions <= 6}
-                increaseDisabled={numFactions >= factionPool.length}
-              />
-            )}
+            <NumberStepper
+              decrease={removeLastFaction}
+              increase={addRandomFaction}
+              decreaseDisabled={numFactions <= 6}
+              increaseDisabled={numFactions >= factionPool.length}
+            />
           </Group>
         </SectionTitle>
 
@@ -87,15 +81,12 @@ export function AvailableFactionsSection() {
           </Button>
 
           <Text># factions: {numFactions}</Text>
-          {/* cannot change number of factions if using 'bag draft' method */}
-          {numPreassignedFactions === undefined && (
-            <NumberStepper
-              decrease={removeLastFaction}
-              increase={addRandomFaction}
-              decreaseDisabled={numFactions <= 6}
-              increaseDisabled={numFactions >= factionPool.length}
-            />
-          )}
+          <NumberStepper
+            decrease={removeLastFaction}
+            increase={addRandomFaction}
+            decreaseDisabled={numFactions <= 6}
+            increaseDisabled={numFactions >= factionPool.length}
+          />
         </Group>
       </SectionTitle>
       <SimpleGrid
@@ -106,11 +97,7 @@ export function AvailableFactionsSection() {
           <NewDraftFaction
             key={`${factionId}-${idx}`}
             faction={factions[factionId]}
-            onRemove={
-              numPreassignedFactions === undefined
-                ? () => removeFaction(factionId)
-                : undefined
-            }
+            onRemove={() => removeFaction(factionId)}
             removeEnabled={availableFactions.length > 6}
           />
         ))}

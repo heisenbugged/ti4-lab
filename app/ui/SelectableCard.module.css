@@ -1,13 +1,22 @@
 .header {
     border-radius: var(--mantine-radius-md) var(--mantine-radius-md) 0 0;
+    border-bottom: none;
 }
 
 .body {
     border-radius: 0 0 var(--mantine-radius-md) var(--mantine-radius-md);
-    border-top: 0;
+    overflow: hidden;
 }
 
 .body > * {
     border-radius: 0 0 var(--mantine-radius-md) var(--mantine-radius-md);
-    border-top: 0;
+    border: none;
+    border-top: 1px solid;
+    @mixin light { border-color: var(--mantine-color-gray-2); }
+    @mixin dark { border-color: var(--mantine-color-dark-4); }
+}
+
+/* Button group within body */
+.body :global(.mantine-Button-root) {
+    transition: background-color 0.15s ease;
 }

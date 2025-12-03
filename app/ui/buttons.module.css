@@ -1,0 +1,33 @@
+/* Primary CTA - bold, prominent, for main actions */
+.primaryCta {
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
+}
+
+@mixin light {
+    .primaryCta {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+    .primaryCta:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    }
+}
+
+@mixin dark {
+    .primaryCta {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .primaryCta:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+}
+
+.primaryCta:hover {
+    transform: translateY(-1px);
+}
+
+.primaryCta:active {
+    transform: translateY(0);
+}

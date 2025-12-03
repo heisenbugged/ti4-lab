@@ -1,4 +1,13 @@
-import { Box, Group, Paper, Stack, Text, TextInput } from "@mantine/core";
+import {
+  Box,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+} from "@mantine/core";
+import { IconHelpCircleFilled } from "@tabler/icons-react";
 import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { SliceHeader } from "./SliceHeader";
@@ -66,19 +75,51 @@ export function BaseSlice({
         </SliceHeader>
 
         <Group className={classes.stats}>
-          <PlanetStatsPill
-            resources={optimal.resources}
-            influence={optimal.influence}
-            flex={optimal.flex}
-          />
-          <Text fw={600} size="sm">
+          <Group gap={6}>
+            <Text size="10px" c="dimmed" fw={600} tt="uppercase">
+              Opt
+            </Text>
+            <PlanetStatsPill
+              resources={optimal.resources}
+              influence={optimal.influence}
+              flex={optimal.flex}
+            />
+          </Group>
+          <Text size="xs" c="dimmed" fw={500}>
             /
           </Text>
-          <PlanetStatsPill
-            size="xs"
-            resources={total.resources}
-            influence={total.influence}
-          />
+          <Group gap={6}>
+            <Text size="10px" c="dimmed" fw={600} tt="uppercase">
+              Tot
+            </Text>
+            <PlanetStatsPill
+              size="xs"
+              resources={total.resources}
+              influence={total.influence}
+            />
+          </Group>
+          <Tooltip
+            label="Optimal counts each planet for only its best value (e.g., a 2/1 planet counts as 2 resources OR 1 influence, not both). Total counts all values. Purple means flex—equal resources and influence (e.g., 2/2 shows as 2 purple)."
+            multiline
+            w={280}
+            withArrow
+            events={{ hover: true, focus: true, touch: true }}
+          >
+            <Box
+              component="span"
+              style={{
+                cursor: "help",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <IconHelpCircleFilled
+                size={16}
+                color="var(--mantine-color-dimmed)"
+              />
+            </Box>
+          </Tooltip>
         </Group>
 
         <Box className={classes.map}>

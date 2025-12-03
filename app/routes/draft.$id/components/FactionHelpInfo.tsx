@@ -17,9 +17,9 @@ export function FactionHelpInfo({ faction }: Props) {
           size="xs"
           variant="subtle"
           flex={1}
-          style={{ borderTopLeftRadius: 0 }}
-          leftSection={<IconEye size={16} />}
-          color="blue"
+          style={{ borderRadius: 0 }}
+          leftSection={<IconEye size={14} />}
+          color="gray"
           onMouseDown={open}
         >
           Info
@@ -28,9 +28,9 @@ export function FactionHelpInfo({ faction }: Props) {
           size="xs"
           variant="subtle"
           flex={1}
-          style={{ borderTopRightRadius: 0 }}
-          leftSection={<IconLink size={16} />}
-          color="pink"
+          style={{ borderRadius: 0 }}
+          leftSection={<IconLink size={14} />}
+          color="gray"
           onClick={() => {
             window.open(faction.wiki, "_blank");
           }}

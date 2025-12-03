@@ -4,27 +4,42 @@
 
 .stats {
     align-items: center;
-    gap: var(--mantine-spacing-xs);
-    padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+    gap: var(--mantine-spacing-sm);
+    padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+    border-top: 1px solid;
 
-    @mixin light { background-color: var(--mantine-color-gray-1) }
-    @mixin dark { background-color: var(--mantine-color-dark-7) }
+    @mixin light {
+        background-color: var(--mantine-color-gray-0);
+        border-color: var(--mantine-color-gray-2);
+    }
+    @mixin dark {
+        background-color: var(--mantine-color-dark-7);
+        border-color: var(--mantine-color-dark-5);
+    }
 }
 
 .features {
-    box-shadow: 0 5px 7px rgba(0, 0, 0, 0.1) inset;
+    border-top: 1px solid;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
-    min-height: 50px;
-    padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+    min-height: 40px;
+    padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+    display: flex;
+    align-items: center;
 
-    @mixin light { background-color: var(--mantine-color-gray-2) }
-    @mixin dark { background-color: var(--mantine-color-dark-6) }
+    @mixin light {
+        background-color: var(--mantine-color-gray-0);
+        border-color: var(--mantine-color-gray-2);
+    }
+    @mixin dark {
+        background-color: var(--mantine-color-dark-6);
+        border-color: var(--mantine-color-dark-5);
+    }
 }
 
 .map {
-    padding-top: var(--mantine-spacing-sm);
-    padding-bottom: var(--mantine-spacing-md);
+    padding-top: var(--mantine-spacing-xs);
+    padding-bottom: var(--mantine-spacing-sm);
     @mixin light { background-color: transparent }
     @mixin dark { background-color: var(--mantine-color-dark-7) }
 }
@@ -53,11 +68,11 @@
     gap: 0;
     align-items: center;
     justify-content: space-between;
-    padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+    padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    @mixin light { background-color: var(--mantine-color-spaceBlue-filled);  }
-    @mixin dark { background-color: var(--mantine-color-dark-6); }
+    @mixin light { background-color: var(--mantine-color-spaceBlue-filled); }
+    @mixin dark { background-color: var(--mantine-color-dark-5); }
 }
 
 

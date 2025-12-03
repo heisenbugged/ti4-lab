@@ -7,19 +7,42 @@
 
 .surface.withBorder {
     border: 1px solid;
-    @mixin light { border-color: rgba(0, 0, 0, 0.1); }
-    @mixin dark { border-color: var(--mantine-color-dark-5); }
+    transition: all 0.15s ease;
+    @mixin light { border-color: var(--mantine-color-gray-3); }
+    @mixin dark { border-color: var(--mantine-color-dark-4); }
+}
+
+.surface.withBorder.hoverable {
+    @mixin light {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    @mixin dark {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
 }
 
 .surface.withBorder.hoverable:hover {
     cursor: pointer;
+    transform: translateY(-1px);
     @mixin light {
         background-color: var(--mantine-color-gray-0);
-        border-color: var(--mantine-color-blue-5);
+        border-color: var(--mantine-color-blue-6);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
     @mixin dark {
         background-color: var(--mantine-color-dark-5);
-        border-color: var(--mantine-color-purple-5);
+        border-color: var(--mantine-color-violet-4);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+}
+
+.surface.withBorder.hoverable:active {
+    transform: translateY(0);
+    @mixin light {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    @mixin dark {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 }
 
@@ -71,4 +94,44 @@
     border: 1px solid;
     @mixin light { border-color: rgba(0, 0, 0, 0.1); }
     @mixin dark { border-color: var(--mantine-color-dark-5); }
+}
+
+/* Elevated variant - for primary cards like slices and factions */
+.elevated {
+    border-width: 2px;
+    @mixin light {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border-color: var(--mantine-color-gray-3);
+    }
+    @mixin dark {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+        background: var(--mantine-color-dark-5);
+        border-color: var(--mantine-color-dark-4);
+    }
+}
+
+/* Panel variant - for config sections with left accent */
+.panel {
+    border-left: 3px solid var(--mantine-color-blue-6);
+    border-radius: 0 8px 8px 0;
+    @mixin light {
+        background: var(--mantine-color-gray-0);
+        border-top: 1px solid var(--mantine-color-gray-2);
+        border-right: 1px solid var(--mantine-color-gray-2);
+        border-bottom: 1px solid var(--mantine-color-gray-2);
+    }
+    @mixin dark {
+        background: var(--mantine-color-dark-6);
+        border-top: 1px solid var(--mantine-color-dark-4);
+        border-right: 1px solid var(--mantine-color-dark-4);
+        border-bottom: 1px solid var(--mantine-color-dark-4);
+    }
+}
+
+/* Inline variant - for subtle/helper containers */
+.inline {
+    background: transparent;
+    border: 1px dashed;
+    @mixin light { border-color: var(--mantine-color-gray-4); }
+    @mixin dark { border-color: var(--mantine-color-dark-4); }
 }

@@ -13,9 +13,7 @@ export function AvailableMinorFactionsSection() {
     randomizeMinorFactions,
     removeMinorFaction,
   } = useDraft((state) => state.actions);
-  const numPreassignedFactions = useDraft(
-    (state) => state.draft.settings.numPreassignedFactions,
-  );
+
   const factionPool = useDraft((state) =>
     state.factionPool.filter((f) => !state.draft.availableFactions.includes(f)),
   );
@@ -42,15 +40,12 @@ export function AvailableMinorFactionsSection() {
           </Button>
 
           <Text># factions: {numFactions}</Text>
-          {/* cannot change number of factions if using 'bag draft' method */}
-          {numPreassignedFactions === undefined && (
-            <NumberStepper
-              decrease={removeLastMinorFaction}
-              increase={addRandomMinorFaction}
-              decreaseDisabled={numFactions <= 6}
-              increaseDisabled={numFactions >= factionPool.length}
-            />
-          )}
+          <NumberStepper
+            decrease={removeLastMinorFaction}
+            increase={addRandomMinorFaction}
+            decreaseDisabled={numFactions <= 6}
+            increaseDisabled={numFactions >= factionPool.length}
+          />
         </Group>
       </SectionTitle>
       <SimpleGrid
@@ -61,11 +56,7 @@ export function AvailableMinorFactionsSection() {
           <NewDraftFaction
             key={factionId}
             faction={factions[factionId]}
-            onRemove={
-              numPreassignedFactions === undefined
-                ? () => removeMinorFaction(factionId)
-                : undefined
-            }
+            onRemove={() => removeMinorFaction(factionId)}
             removeEnabled={availableFactions.length > 6}
           />
         ))}

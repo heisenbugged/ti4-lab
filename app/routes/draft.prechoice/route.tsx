@@ -56,6 +56,7 @@ import { SavedStateModal } from "./components/SavedStateModal";
 import { MapStyleSelector } from "./components/MapStyleSelector";
 import { SeededMapBanner } from "./components/SeededMapBanner";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
+import buttonClasses from "~/ui/buttons.module.css";
 
 export default function DraftPrechoice() {
   const location = useLocation();
@@ -432,6 +433,7 @@ export default function DraftPrechoice() {
             size="lg"
             onMouseDown={handleContinue}
             leftSection={<IconPlayerPlay />}
+            className={buttonClasses.primaryCta}
           >
             Continue
           </Button>
