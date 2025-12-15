@@ -21,9 +21,8 @@ import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { SpectatorModeNotice } from "../components/SpectatorModeNotice";
 
 export function PriorityValueSelectionPhase() {
-  const { stagePriorityValue, syncDraft } = useSyncDraft();
+  const { stagePriorityValue, undoLastPick } = useSyncDraft();
   const { adminMode, setAdminMode } = useSafeOutletContext();
-  const { undoLastSelection } = useDraft((state) => state.draftActions);
   const selections = useDraft((state) => state.draft.selections);
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
   const adminPassword = useDraft((state) => state.draft.settings.adminPassword);
@@ -68,12 +67,11 @@ export function PriorityValueSelectionPhase() {
       <Group justify="flex-end">
         {showUndoLastSelection && (
           <Button
-            onClick={() => {
+            onClick={async () => {
               if (
                 confirm("Are you sure you want to undo the last selection?")
               ) {
-                undoLastSelection();
-                syncDraft();
+                await undoLastPick();
               }
             }}
             disabled={selections.length === 0}

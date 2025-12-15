@@ -6,9 +6,9 @@ import { notifications } from "@mantine/notifications";
 import { FactionId, PlayerId } from "~/types";
 
 export function useSyncDraft() {
-  const { syncDraft, syncing, stagePriorityValue, stageHomeSystem } =
+  const { syncDraft, syncing, stagePriorityValue, stageHomeSystem, undoLastPick } =
     useContext(SyncDraftContext);
-  return { syncDraft, syncing, stagePriorityValue, stageHomeSystem };
+  return { syncDraft, syncing, stagePriorityValue, stageHomeSystem, undoLastPick };
 }
 
 export function useSyncDraftFetcher() {
@@ -16,15 +16,37 @@ export function useSyncDraftFetcher() {
   const socket = useSocket();
 
   useEffect(() => {
-    if ((fetcher.data as { success: boolean })?.success === false) {
-      window.location.reload();
+    const data = fetcher.data as {
+      success: boolean;
+      error?: string;
+      message?: string;
+      discordError?: boolean;
+      discordMessage?: string;
+      serverSelectionCount?: number;
+      clientSelectionCount?: number;
+    };
+
+    if (data?.success === false) {
+      // Handle out-of-sync error specifically
+      if (data.error === "out_of_sync") {
+        notifications.show({
+          id: "out-of-sync-error",
+          title: "Draft Out of Sync",
+          message: `${data.message} (Server: ${data.serverSelectionCount} picks, Your client: ${data.clientSelectionCount} picks). Refreshing...`,
+          color: "orange",
+          autoClose: 3000,
+        });
+        // Delay refresh slightly so user sees the notification
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        // Other errors - just reload
+        window.location.reload();
+      }
     }
 
     // Show Discord error notification if present
-    const data = fetcher.data as {
-      discordError?: boolean;
-      discordMessage?: string;
-    };
     if (data?.discordError && data?.discordMessage) {
       notifications.show({
         title: "Discord Notification Failed",
@@ -102,6 +124,54 @@ export function useSyncDraftFetcher() {
         draftActions.update(draftId, data.draft);
       }
     },
+    undoLastPick: async () => {
+      const { draftId, draft, draftActions } = draftStore.getState();
+      if (!draftId || !draft) return { success: false };
+
+      const expectedSelectionCount = draft.selections.length;
+
+      const response = await fetch(`/api/draft/${draftId}/undo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedSelectionCount }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Failed to undo:", error);
+
+        if (error.error === "out_of_sync") {
+          notifications.show({
+            title: "Cannot Undo - Out of Sync",
+            message: `${error.message} Refreshing...`,
+            color: "orange",
+            autoClose: 3000,
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        } else {
+          notifications.show({
+            title: "Error",
+            message: error.error || "Failed to undo last pick",
+            color: "red",
+          });
+        }
+        return { success: false };
+      }
+
+      const data = await response.json();
+      if (data.success && data.draft) {
+        draftActions.update(draftId, data.draft);
+        notifications.show({
+          title: "Pick Undone",
+          message: "The last selection has been removed.",
+          color: "green",
+          autoClose: 3000,
+        });
+      }
+      return { success: true, removedSelection: data.removedSelection };
+    },
     syncing: fetcher.state === "submitting",
   };
 }
@@ -112,5 +182,6 @@ export const SyncDraftContext = createContext({
   stagePriorityValue: async (_: PlayerId, __: FactionId) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   stageHomeSystem: async (_: PlayerId, __: FactionId) => {},
+  undoLastPick: async () => ({ success: false } as { success: boolean; removedSelection?: unknown }),
   syncing: false,
 });

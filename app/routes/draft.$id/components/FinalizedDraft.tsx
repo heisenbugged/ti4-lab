@@ -43,7 +43,6 @@ export function FinalizedDraft() {
   const draftUrl = useDraft((state) => state.draftUrl);
   const draft = useDraft((state) => state.draft);
   const { updatePlayerName } = useDraft((state) => state.actions);
-  const { undoLastSelection } = useDraft((state) => state.draftActions);
   const selections = useDraft((state) => state.draft.selections);
   const {
     slices,
@@ -56,7 +55,7 @@ export function FinalizedDraft() {
       state.draft.availableMinorFactions !== undefined,
   );
   const { hydratedPlayers } = useHydratedDraft();
-  const { syncDraft } = useSyncDraft();
+  const { syncDraft, undoLastPick } = useSyncDraft();
 
   const sortedPlayers = useMemo(
     () => hydratedPlayers.sort((a, b) => a.speakerOrder! - b.speakerOrder!),
@@ -86,10 +85,9 @@ export function FinalizedDraft() {
         <Title>Draft complete!</Title>
         <Group gap="md">
           <Button
-            onClick={() => {
+            onClick={async () => {
               if (confirm("Are you sure you want to undo the last selection?")) {
-                undoLastSelection();
-                syncDraft();
+                await undoLastPick();
               }
             }}
             disabled={selections.length === 0}

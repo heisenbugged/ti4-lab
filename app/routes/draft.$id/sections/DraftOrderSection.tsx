@@ -23,10 +23,9 @@ export function DraftOrderSection() {
 
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
-  const { undoLastSelection } = useDraft((state) => state.draftActions);
   const replayMode = useDraft((state) => state.replayMode);
   const draftUrl = useDraft((state) => state.draftUrl);
-  const { syncDraft } = useSyncDraft();
+  const { syncDraft, undoLastPick } = useSyncDraft();
   const { hydratedPlayers, currentPick } = useHydratedDraft();
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const selections = useDraft((state) => state.draft.selections);
@@ -35,10 +34,9 @@ export function DraftOrderSection() {
 
   const UndoLastSelection = (
     <Button
-      onClick={() => {
+      onClick={async () => {
         if (confirm("Are you sure you want to undo the last selection?")) {
-          undoLastSelection();
-          syncDraft();
+          await undoLastPick();
         }
       }}
       disabled={selections.length === 0}

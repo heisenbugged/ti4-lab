@@ -24,6 +24,7 @@ import {
   updateDraft,
 } from "~/drizzle/draft.server";
 import { notifyPick } from "~/discord/bot.server";
+import { validateDraftSync } from "~/utils/draftSync.server";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import {
   SlicesSection,
@@ -53,8 +54,13 @@ export default function RunningDraft() {
   const { adminMode } = useSafeOutletContext();
   useNotifyActivePlayer();
   const result = useLoaderData<typeof loader>();
-  const { syncDraft, syncing, stagePriorityValue, stageHomeSystem } =
-    useSyncDraftFetcher();
+  const {
+    syncDraft,
+    syncing,
+    stagePriorityValue,
+    stageHomeSystem,
+    undoLastPick,
+  } = useSyncDraftFetcher();
   const draftStore = useDraft();
   const draft = draftStore.draft;
   const settings = draft.settings;
@@ -94,7 +100,13 @@ export default function RunningDraft() {
   if (draftFinished) {
     return (
       <SyncDraftContext.Provider
-        value={{ syncDraft, syncing, stagePriorityValue, stageHomeSystem }}
+        value={{
+          syncDraft,
+          syncing,
+          stagePriorityValue,
+          stageHomeSystem,
+          undoLastPick,
+        }}
       >
         <FinalizedDraft />
       </SyncDraftContext.Provider>
@@ -129,7 +141,13 @@ export default function RunningDraft() {
   if (isInBanPhase()) {
     return (
       <SyncDraftContext.Provider
-        value={{ syncDraft, syncing, stagePriorityValue, stageHomeSystem }}
+        value={{
+          syncDraft,
+          syncing,
+          stagePriorityValue,
+          stageHomeSystem,
+          undoLastPick,
+        }}
       >
         <BanPhase />
       </SyncDraftContext.Provider>
@@ -141,7 +159,13 @@ export default function RunningDraft() {
   if (currentPick === PRIORITY_PHASE) {
     return (
       <SyncDraftContext.Provider
-        value={{ syncDraft, syncing, stagePriorityValue, stageHomeSystem }}
+        value={{
+          syncDraft,
+          syncing,
+          stagePriorityValue,
+          stageHomeSystem,
+          undoLastPick,
+        }}
       >
         <PriorityValueSelectionPhase />
       </SyncDraftContext.Provider>
@@ -151,7 +175,13 @@ export default function RunningDraft() {
   if (currentPick === HOME_PHASE) {
     return (
       <SyncDraftContext.Provider
-        value={{ syncDraft, syncing, stagePriorityValue, stageHomeSystem }}
+        value={{
+          syncDraft,
+          syncing,
+          stagePriorityValue,
+          stageHomeSystem,
+          undoLastPick,
+        }}
       >
         <HomeSystemSelectionPhase />
       </SyncDraftContext.Provider>
@@ -160,7 +190,13 @@ export default function RunningDraft() {
 
   return (
     <SyncDraftContext.Provider
-      value={{ syncDraft, syncing, stagePriorityValue, stageHomeSystem }}
+      value={{
+        syncDraft,
+        syncing,
+        stagePriorityValue,
+        stageHomeSystem,
+        undoLastPick,
+      }}
     >
       {socket && isDisconnected && (
         <Button
@@ -284,11 +320,18 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   const existingDraft = await draftById(id);
-  const existingDraftData = JSON.parse(existingDraft.data as string) as Draft;
+  const serverSelections = (JSON.parse(existingDraft.data as string) as Draft)
+    .selections;
+
+  const validation = validateDraftSync(serverSelections, draft.selections);
+  if (!validation.valid) {
+    return validation.response;
+  }
+
   await updateDraft(id, draft);
 
   // only notify if a selection was made
-  if (existingDraftData.selections.length != draft.selections.length) {
+  if (serverSelections.length !== draft.selections.length) {
     const notifyResult = await notifyPick(id, existingDraft.urlName!, draft);
     if (!notifyResult.success) {
       return json({
