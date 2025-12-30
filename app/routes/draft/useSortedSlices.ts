@@ -1,10 +1,24 @@
 import { useMemo } from "react";
-import { valueSlice } from "~/stats";
+import {
+  buildSliceValueConfig,
+  calculateSliceValue,
+  getEquidistantIndices,
+} from "~/stats";
 import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
+import { useDraft } from "~/draftStore";
 
-export function useSortedSlices(slices: Slice[], draftedSlices: number[], entropicScarValue = 2) {
+export function useSortedSlices(slices: Slice[], draftedSlices: number[]) {
+  const sliceValueModifiers = useDraft(
+    (state) => state.draft.settings.sliceGenerationConfig?.sliceValueModifiers,
+  );
+  const draftType = useDraft((state) => state.draft.settings.type);
+
   const sortedSlices = useMemo(() => {
+    const config = buildSliceValueConfig(
+      sliceValueModifiers,
+      getEquidistantIndices(draftType),
+    );
     return slices
       .map((slice, idx) => ({ slice, idx }))
       .sort((a, b) => {
@@ -12,9 +26,12 @@ export function useSortedSlices(slices: Slice[], draftedSlices: number[], entrop
         if (draftedSlices.includes(b.idx)) return -1;
         const aSystems = systemsInSlice(a.slice);
         const bSystems = systemsInSlice(b.slice);
-        return valueSlice(bSystems, entropicScarValue) - valueSlice(aSystems, entropicScarValue);
+        return (
+          calculateSliceValue(bSystems, config) -
+          calculateSliceValue(aSystems, config)
+        );
       });
-  }, [slices, draftedSlices]);
+  }, [slices, draftedSlices, sliceValueModifiers, draftType]);
 
   return sortedSlices;
 }

@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
-import { Button, Stack, Text } from "@mantine/core";
+import { Button, Group, Stack, Text } from "@mantine/core";
 import type { HomeTile, SystemTile, FactionId, Player } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
 import { FactionIcon } from "../icons/FactionIcon";
@@ -15,6 +15,8 @@ import { OriginalArtTile } from "./OriginalArtTile";
 import { useRawDraftContext } from "~/contexts/RawDraftContext";
 import classes from "./Tiles.module.css";
 import { SystemTile as SystemTileComponent } from "./SystemTile";
+import { CoreSliceData } from "~/hooks/useCoreSliceValues";
+import { SliceValuePopover } from "../Slice/SliceValuePopover";
 
 type SliceStats = {
   resources: number;
@@ -31,6 +33,7 @@ type Props = {
   showStats?: boolean;
   sliceValue?: number;
   sliceStats?: SliceStats;
+  coreSliceData?: CoreSliceData;
 };
 
 const seatLabel = ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
@@ -43,6 +46,7 @@ export function HomeTile({
   showStats = false,
   sliceValue,
   sliceStats,
+  coreSliceData,
 }: Props) {
   const { originalArt } = useSafeOutletContext();
   const { radius, disabled } = useContext(MapContext);
@@ -136,6 +140,18 @@ export function HomeTile({
               {seatLabel[tile.seat]}
             </Text>
           )}
+          {coreSliceData && (
+            <Group gap={4} align="center">
+              <Text fz={{ base: "sm", xs: "lg" }} fw="bold" c="yellow.5">
+                {coreSliceData.value.toFixed(1)}
+              </Text>
+              <SliceValuePopover
+                breakdown={coreSliceData.breakdown}
+                title="Seat Value"
+                variant="dark"
+              />
+            </Group>
+          )}
           {selectable && (
             <Button
               ta="center"
@@ -190,30 +206,7 @@ export function HomeTile({
               style={{ maxWidth: radius * 0.6, maxHeight: radius * 0.6 }}
             />
           )}
-          {/* Use smaller sizes in raw draft mode, and also smaller in regular draft */}
-          {rawDraftContext ? (
-            <>
-              <PlayerChip player={player} size="sm" visibleFrom="lg" />
-              <PlayerChip
-                player={player}
-                size="sm"
-                visibleFrom="md"
-                hiddenFrom="lg"
-              />
-              <PlayerChip player={player} size="sm" hiddenFrom="md" />
-            </>
-          ) : (
-            <>
-              <PlayerChip player={player} size="md" visibleFrom="lg" />
-              <PlayerChip
-                player={player}
-                size="sm"
-                visibleFrom="md"
-                hiddenFrom="lg"
-              />
-              <PlayerChip player={player} size="sm" hiddenFrom="md" />
-            </>
-          )}
+          <PlayerChip player={player} compact />
         </Stack>
       )}
     </Hex>

@@ -9,6 +9,7 @@ import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraft } from "~/draftStore";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
+import { useCoreSliceValues } from "~/hooks/useCoreSliceValues";
 
 export function MapSection() {
   const { adminMode } = useSafeOutletContext();
@@ -17,12 +18,19 @@ export function MapSection() {
   const height = getBoundedMapHeight(width, windowHeight - 150);
 
   const config = useDraftConfig();
+  const draftType = useDraft((state) => state.draft.settings.type);
+  const sliceValueModifiers = useDraft(
+    (state) => state.draft.settings.sliceGenerationConfig?.sliceValueModifiers,
+  );
   const { activePlayer, currentlyPicking, hydratedMap } = useHydratedDraft();
   const { removeSystemFromMap, openPlanetFinderForMap } = useDraft(
     (state) => state.actions,
   );
   const { syncDraft } = useSyncDraft();
   const { selectSeat } = useDraft((state) => state.draftActions);
+
+  const isHeisenDraft = draftType === "heisen" || draftType === "heisen8p";
+  const coreSliceData = useCoreSliceValues(hydratedMap, sliceValueModifiers);
 
   const canSelect = currentlyPicking && activePlayer?.seatIdx === undefined;
 
@@ -59,6 +67,7 @@ export function MapSection() {
             removeSystemFromMap(tile.idx);
           }}
           editable={adminMode}
+          coreSliceData={isHeisenDraft ? coreSliceData : undefined}
         />
       </Box>
     </div>

@@ -1,11 +1,11 @@
-import { Flex, Group, Text } from "@mantine/core";
+import { Flex, Text } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction, HydratedPlayer } from "~/types";
 import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
-
 import { playerColors } from "~/data/factionData";
 import { FactionHelpInfo } from "~/routes/draft.$id/components/FactionHelpInfo";
-import { SelectableCard, PlayerColor } from "~/ui";
+import { PlayerColor } from "~/ui";
+import classes from "./DraftableFaction.module.css";
 
 type Props = {
   faction: Faction;
@@ -29,72 +29,54 @@ export function DraftableFaction({
 
   const hasRegularSelectOnly = onSelect && !onSelectMinor;
   const isAlreadySelected = !!player;
+  const isAvailable = hasRegularSelectOnly && !isAlreadySelected && !disabled;
+
+  const cardClasses = [
+    classes.factionCard,
+    isAvailable && classes.available,
+    isAlreadySelected && classes.claimed,
+    isAlreadySelected && playerColor && classes[playerColor],
+    disabled && !isAlreadySelected && classes.disabled,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const handleClick = () => {
+    if (isAvailable && onSelect) {
+      onSelect();
+    }
+  };
 
   return (
-    <SelectableCard
-      selected={isAlreadySelected}
-      selectedColor={playerColor}
-      hoverable={hasRegularSelectOnly && !isAlreadySelected}
-      disabled={disabled}
-      onSelect={hasRegularSelectOnly && !isAlreadySelected ? onSelect : undefined}
-      header={
-        <>
-          <Group
-            align="center"
-            flex={1}
-            style={{
-              overflow: "hidden",
-              flexWrap: "nowrap",
-            }}
-            py="sm"
-            px="sm"
-            gap="sm"
-          >
-            <Flex
-              align="center"
-              justify="center"
-              w="28px"
-              h="28px"
-              style={{ flexShrink: 0 }}
-            >
-              <FactionIcon
-                faction={faction.id}
-                style={{ width: 28, height: 28 }}
-              />
-            </Flex>
-            <Text
-              flex={1}
-              size="sm"
-              ff="heading"
-              fw={600}
-              style={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {faction.name}
-            </Text>
-          </Group>
-
-          <PlayerChipOrSelect
-            player={player}
-            selectTitle={selectTitle}
-            onSelect={
-              onSelect
-                ? (e) => {
-                    e.preventDefault();
-                    onSelect();
-                  }
-                : undefined
-            }
-            onSelectMinor={onSelectMinor}
-            disabled={disabled}
-            isMinor={player?.minorFaction === faction.id}
+    <div className={cardClasses} onClick={handleClick}>
+      <div className={classes.header}>
+        <div className={classes.iconContainer}>
+          <FactionIcon
+            faction={faction.id}
+            style={{ width: 28, height: 28 }}
           />
-        </>
-      }
-      body={<FactionHelpInfo faction={faction} />}
-    />
+        </div>
+        <Text className={classes.factionName}>{faction.name}</Text>
+        <PlayerChipOrSelect
+          player={player}
+          selectTitle={selectTitle}
+          onSelect={
+            onSelect
+              ? (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onSelect();
+                }
+              : undefined
+          }
+          onSelectMinor={onSelectMinor}
+          disabled={disabled}
+          isMinor={player?.minorFaction === faction.id}
+        />
+      </div>
+      <div className={classes.details}>
+        <FactionHelpInfo faction={faction} />
+      </div>
+    </div>
   );
 }

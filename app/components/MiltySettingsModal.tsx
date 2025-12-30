@@ -1,10 +1,17 @@
 import { useState } from "react";
-import { Button, Group, Modal, Stack } from "@mantine/core";
-import { SettingStepper } from "~/components/SettingStepper";
+import { Button, Group, Modal, SimpleGrid, Text } from "@mantine/core";
+import { CompactSetting } from "~/components/CompactSetting";
+import { SettingsSection } from "~/components/SettingsSection";
+import {
+  IconChartBar,
+  IconRoute,
+  IconAlien,
+  IconSettings,
+} from "@tabler/icons-react";
 
 export interface MiltyDraftSettings {
-  minOptimal?: number;
-  maxOptimal?: number;
+  minSliceValue?: number;
+  maxSliceValue?: number;
   minOptimalInfluence?: number;
   minOptimalResources?: number;
 
@@ -21,8 +28,8 @@ export interface MiltyDraftSettings {
 export const DEFAULT_MILTY_SETTINGS: MiltyDraftSettings = {
   minOptimalInfluence: 4,
   minOptimalResources: 3,
-  minOptimal: 9,
-  maxOptimal: 13,
+  minSliceValue: 9,
+  maxSliceValue: 13,
   safePathToMecatol: 0,
   centerTileNotEmpty: 0,
   highQualityAdjacent: 0,
@@ -64,7 +71,6 @@ export function MiltySettingsModal({
     value: number | undefined,
   ) => {
     handleSettingChange(property, value);
-    // Auto-adjust maxLegendaries if it becomes less than the new min
     if (
       value !== undefined &&
       localSettings.maxLegendaries !== undefined &&
@@ -85,126 +91,146 @@ export function MiltySettingsModal({
     handleSettingChange(property, constrainedValue);
   };
 
+  const handleReset = () => {
+    setLocalSettings(DEFAULT_MILTY_SETTINGS);
+  };
+
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title="Milty Draft Settings"
-      size="xl"
+      title={
+        <Text
+          fw={700}
+          style={{ fontFamily: "Orbitron", letterSpacing: "0.05em" }}
+        >
+          Milty Draft Settings
+        </Text>
+      }
+      size="lg"
     >
-      <Stack p="md">
-        <Group align="flex-start">
-          <Stack style={{ flex: 1 }}>
-            <SettingStepper
-              label="Minimum Optimal Influence"
-              property="minOptimalInfluence"
-              value={localSettings.minOptimalInfluence}
-              onChange={handleSettingChange}
-              allowUndefined={true}
-              defaultValue={DEFAULT_MILTY_SETTINGS.minOptimalInfluence}
-            />
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+        <SettingsSection title="Slice Value" icon={<IconChartBar size={12} />}>
+          <CompactSetting
+            label="Min Optimal Influence"
+            property="minOptimalInfluence"
+            value={localSettings.minOptimalInfluence}
+            onChange={handleSettingChange}
+            allowUndefined={true}
+            defaultValue={DEFAULT_MILTY_SETTINGS.minOptimalInfluence}
+          />
+          <CompactSetting
+            label="Min Optimal Resources"
+            property="minOptimalResources"
+            value={localSettings.minOptimalResources}
+            onChange={handleSettingChange}
+            allowUndefined={true}
+            defaultValue={DEFAULT_MILTY_SETTINGS.minOptimalResources}
+          />
+          <CompactSetting
+            label="Min Slice Value"
+            property="minSliceValue"
+            value={localSettings.minSliceValue}
+            onChange={handleSettingChange}
+            allowUndefined={true}
+            defaultValue={DEFAULT_MILTY_SETTINGS.minSliceValue}
+          />
+          <CompactSetting
+            label="Max Slice Value"
+            property="maxSliceValue"
+            value={localSettings.maxSliceValue}
+            onChange={handleSettingChange}
+            allowUndefined={true}
+            defaultValue={DEFAULT_MILTY_SETTINGS.maxSliceValue}
+          />
+        </SettingsSection>
 
-            <SettingStepper
-              label="Minimum Optimal Resources"
-              property="minOptimalResources"
-              value={localSettings.minOptimalResources}
-              onChange={handleSettingChange}
-              allowUndefined={true}
-              defaultValue={DEFAULT_MILTY_SETTINGS.minOptimalResources}
-            />
+        <SettingsSection title="Slice Quality" icon={<IconRoute size={12} />}>
+          <CompactSetting
+            label="Safe Path to Mecatol"
+            description="Slices with clear path to center"
+            property="safePathToMecatol"
+            value={localSettings.safePathToMecatol}
+            onChange={handleSettingChange}
+          />
+          <CompactSetting
+            label="High-Quality Adjacent"
+            description="Slices with good tiles adjacent to home"
+            property="highQualityAdjacent"
+            value={localSettings.highQualityAdjacent}
+            onChange={handleSettingChange}
+          />
+          <CompactSetting
+            label="Safe Center Tile"
+            description="Slices with no empty/anomaly center"
+            property="centerTileNotEmpty"
+            value={localSettings.centerTileNotEmpty}
+            onChange={handleSettingChange}
+          />
+        </SettingsSection>
 
-            <SettingStepper
-              label="Minimum Optimal Total"
-              property="minOptimal"
-              value={localSettings.minOptimal}
-              onChange={handleSettingChange}
-              allowUndefined={true}
-              defaultValue={DEFAULT_MILTY_SETTINGS.minOptimal}
-            />
+        <SettingsSection
+          title="Wormholes & Legendaries"
+          icon={<IconAlien size={12} />}
+        >
+          <CompactSetting
+            label="Min Alpha Wormholes"
+            property="minAlphaWormholes"
+            value={localSettings.minAlphaWormholes}
+            onChange={handleSettingChange}
+          />
+          <CompactSetting
+            label="Min Beta Wormholes"
+            property="minBetaWormholes"
+            value={localSettings.minBetaWormholes}
+            onChange={handleSettingChange}
+          />
+          <CompactSetting
+            label="Min Legendary Planets"
+            property="minLegendaries"
+            value={localSettings.minLegendaries}
+            onChange={handleMinLegendariesChange}
+          />
+          <CompactSetting
+            label="Max Legendary Planets"
+            property="maxLegendaries"
+            value={localSettings.maxLegendaries}
+            onChange={handleMaxLegendariesChange}
+            allowUndefined={true}
+            defaultValue={DEFAULT_MILTY_SETTINGS.maxLegendaries}
+            minValue={localSettings.minLegendaries}
+          />
+        </SettingsSection>
 
-            <SettingStepper
-              label="Maximum Optimal Total"
-              property="maxOptimal"
-              value={localSettings.maxOptimal}
-              onChange={handleSettingChange}
-              allowUndefined={true}
-              defaultValue={DEFAULT_MILTY_SETTINGS.maxOptimal}
-            />
+        <SettingsSection title="Scoring" icon={<IconSettings size={12} />}>
+          <CompactSetting
+            label="Entropic Scar Value"
+            description="Value for entropic scar systems"
+            property="entropicScarValue"
+            value={localSettings.entropicScarValue}
+            onChange={handleSettingChange}
+          />
+        </SettingsSection>
+      </SimpleGrid>
 
-            <SettingStepper
-              label="Slices with Safe Path to Mecatol"
-              description="Number of slices that must have a clear path to Mecatol without anomalies on the straight line from home system to center"
-              property="safePathToMecatol"
-              value={localSettings.safePathToMecatol}
-              onChange={handleSettingChange}
-            />
-
-            <SettingStepper
-              label="Slices with High-Quality Adjacent"
-              description="Number of slices that must have high-quality tiles adjacent to home"
-              property="highQualityAdjacent"
-              value={localSettings.highQualityAdjacent}
-              onChange={handleSettingChange}
-            />
-
-            <SettingStepper
-              label="Slices with safe center"
-              description="Number of slices with no empty and no anomaly center tile"
-              property="centerTileNotEmpty"
-              value={localSettings.centerTileNotEmpty}
-              onChange={handleSettingChange}
-            />
-          </Stack>
-
-          <Stack style={{ flex: 1 }}>
-            <SettingStepper
-              label="Minimum Alpha Wormholes"
-              description="Minimum number of alpha wormholes required across all slices"
-              property="minAlphaWormholes"
-              value={localSettings.minAlphaWormholes}
-              onChange={handleSettingChange}
-            />
-
-            <SettingStepper
-              label="Minimum Beta Wormholes"
-              description="Minimum number of beta wormholes required across all slices"
-              property="minBetaWormholes"
-              value={localSettings.minBetaWormholes}
-              onChange={handleSettingChange}
-            />
-
-            <SettingStepper
-              label="Minimum Legendary Planets"
-              description="Minimum number of legendary planets required across all slices"
-              property="minLegendaries"
-              value={localSettings.minLegendaries}
-              onChange={handleMinLegendariesChange}
-            />
-
-            <SettingStepper
-              label="Maximum Legendary Planets"
-              description="Maximum number of legendary planets allowed across all slices"
-              property="maxLegendaries"
-              value={localSettings.maxLegendaries}
-              onChange={handleMaxLegendariesChange}
-              allowUndefined={true}
-              defaultValue={DEFAULT_MILTY_SETTINGS.maxLegendaries}
-              minValue={localSettings.minLegendaries}
-            />
-
-            <SettingStepper
-              label="Entropic Scar Value"
-              description="Value assigned to entropic scar systems in slice scoring"
-              property="entropicScarValue"
-              value={localSettings.entropicScarValue}
-              onChange={handleSettingChange}
-            />
-          </Stack>
-        </Group>
-
-        <Group justify="flex-end" mt="md">
+      <Group
+        justify="space-between"
+        mt="md"
+        pt="md"
+        style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}
+      >
+        <Text
+          size="xs"
+          c="dimmed"
+          style={{ cursor: "pointer" }}
+          onClick={handleReset}
+        >
+          Reset to defaults
+        </Text>
+        <Group gap="xs">
           <Button
             variant="default"
+            size="sm"
             onClick={() => {
               setLocalSettings(settings);
               onClose();
@@ -213,15 +239,16 @@ export function MiltySettingsModal({
             Cancel
           </Button>
           <Button
+            size="sm"
             onClick={() => {
               onSave(localSettings);
               onClose();
             }}
           >
-            Save Settings
+            Save
           </Button>
         </Group>
-      </Stack>
+      </Group>
     </Modal>
   );
 }

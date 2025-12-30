@@ -1,4 +1,5 @@
-import { Button, Group, Text } from "@mantine/core";
+import { ActionIcon, Group, Text } from "@mantine/core";
+import { IconMinus, IconPlus } from "@tabler/icons-react";
 
 type Props = {
   value?: number;
@@ -16,26 +17,30 @@ export function NumberStepper({
   increaseDisabled,
 }: Props) {
   return (
-    <Group gap={value !== undefined ? "sm" : 2}>
-      <Button
-        size="compact-md"
-        color="red"
-        variant="filled"
+    <Group gap={4}>
+      <ActionIcon
+        size="sm"
+        variant="subtle"
+        color="gray"
         disabled={decreaseDisabled}
         onMouseDown={decrease}
       >
-        -
-      </Button>
-      {value !== undefined ? <Text>{value}</Text> : undefined}
-      <Button
-        size="compact-md"
-        color="green"
-        variant="filled"
+        <IconMinus size={14} />
+      </ActionIcon>
+      {value !== undefined && (
+        <Text size="sm" fw={600} miw={20} ta="center" c="purple.3">
+          {value}
+        </Text>
+      )}
+      <ActionIcon
+        size="sm"
+        variant="subtle"
+        color="gray"
         disabled={increaseDisabled}
         onMouseDown={increase}
       >
-        +
-      </Button>
+        <IconPlus size={14} />
+      </ActionIcon>
     </Group>
   );
 }

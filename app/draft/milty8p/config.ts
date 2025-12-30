@@ -7,6 +7,7 @@ export const milty8p: DraftConfig = {
   type: "milty8p",
   mapSize: 4,
   numSystemsInSlice: 5,
+  mecatolPathSystemIndices: [1, 4],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
   homeIdxInMapString: [37, 40, 43, 46, 49, 52, 55, 58],

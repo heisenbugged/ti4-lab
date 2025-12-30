@@ -1,4 +1,4 @@
-import { Button, Group, SimpleGrid, Text } from "@mantine/core";
+import { ActionIcon, Group, SimpleGrid, Text, Tooltip } from "@mantine/core";
 import { factions } from "~/data/factionData";
 import { Section, SectionTitle } from "~/components/Section";
 import { NumberStepper } from "~/components/NumberStepper";
@@ -40,8 +40,15 @@ export function AvailableFactionsSection() {
     return (
       <Section>
         <SectionTitle title="Faction Pool">
-          <Group>
-            <Text># factions: {numFactions}</Text>
+          <Group gap="sm">
+            <Group gap={4}>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+                Count
+              </Text>
+              <Text size="sm" fw={600} c="purple.3">
+                {numFactions}
+              </Text>
+            </Group>
             <NumberStepper
               decrease={removeLastFaction}
               increase={addRandomFaction}
@@ -51,7 +58,7 @@ export function AvailableFactionsSection() {
           </Group>
         </SectionTitle>
 
-        <Text c="dimmed">
+        <Text c="dimmed" px="sm">
           Factions pool will be made during the draft after the ban phase
         </Text>
       </Section>
@@ -61,26 +68,39 @@ export function AvailableFactionsSection() {
   return (
     <Section>
       <SectionTitle title="Faction Pool">
-        <Group>
-          <Button
-            size="xs"
-            onMouseDown={randomizeFactions}
-            color="gray.7"
-            variant="filled"
-          >
-            <IconDice6Filled size={24} />
-          </Button>
+        <Group gap="sm">
+          <Group gap={4}>
+            <Tooltip label="Randomize factions" withArrow position="top">
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                color="gray"
+                onMouseDown={randomizeFactions}
+              >
+                <IconDice6Filled size={16} />
+              </ActionIcon>
+            </Tooltip>
 
-          <Button
-            size="xs"
-            onMouseDown={openFactionSettings}
-            color="gray.7"
-            variant="filled"
-          >
-            <IconSettings size={24} />
-          </Button>
+            <Tooltip label="Configure pool" withArrow position="top">
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                color="gray"
+                onMouseDown={openFactionSettings}
+              >
+                <IconSettings size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
 
-          <Text># factions: {numFactions}</Text>
+          <Group gap={4}>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
+              Count
+            </Text>
+            <Text size="sm" fw={600} c="purple.3">
+              {numFactions}
+            </Text>
+          </Group>
           <NumberStepper
             decrease={removeLastFaction}
             increase={addRandomFaction}

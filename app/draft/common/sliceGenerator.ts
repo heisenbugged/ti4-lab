@@ -174,7 +174,7 @@ const validateMap = (
   const slicesToValidate = systemIdsToSlices(
     config,
     slices,
-    settings.sliceGenerationConfig?.entropicScarValue,
+    settings.sliceGenerationConfig?.sliceValueModifiers,
   )
     .slice(0, config.numPlayers)
     .map((s) => systemIdsInSlice(s));
@@ -306,10 +306,10 @@ export function coreGenerateSlices({
         const slice: SystemId[] = tierValues.map(
           (tier) => t_tieredSystems[tier as ChoosableTier].shift()!,
         );
-        if (!validateSlice(slice, config)) {
-          break;
-        }
-        slices.push(shuffle(slice));
+
+        const shuffledSlice = shuffle(slice);
+        if (!validateSlice(shuffledSlice, config)) break;
+        slices.push(shuffledSlice);
       }
       if (slices.length !== sliceCount) {
         slices = [];

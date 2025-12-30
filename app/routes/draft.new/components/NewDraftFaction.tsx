@@ -1,9 +1,8 @@
-import { Button, Checkbox, Group, Text } from "@mantine/core";
+import { ActionIcon, Box, Checkbox, Group, Text } from "@mantine/core";
 import { Faction } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
-import { IconTrashFilled } from "@tabler/icons-react";
+import { IconX } from "@tabler/icons-react";
 
-import surfaceClasses from "~/components/Surface.module.css";
 import classes from "./NewDraftFaction.module.css";
 
 type Props = {
@@ -21,41 +20,47 @@ export function NewDraftFaction({
   onCheck,
   onRemove,
 }: Props) {
+  const isSelectable = !!onCheck;
+
   return (
     <Group
       gap="xs"
-      className={`${surfaceClasses.surface} ${surfaceClasses.withBorder}`}
+      className={classes.factionCard}
+      data-selectable={isSelectable || undefined}
       align="center"
       px="sm"
-      py={4}
-      style={{
-        borderRadius: "var(--mantine-radius-lg)",
-        flexWrap: "nowrap",
-      }}
-      onMouseDown={() => onCheck?.(!checked)}
+      py={6}
+      wrap="nowrap"
+      style={{ cursor: isSelectable ? "pointer" : undefined }}
+      onMouseDown={isSelectable ? () => onCheck(!checked) : undefined}
     >
+      <Box className={classes.indicator} />
       <FactionIcon
         faction={faction.id}
-        style={{ minWidth: 30, maxWidth: 30 }}
+        style={{ minWidth: 28, maxWidth: 28 }}
       />
-      <Text flex={1} lh={1}>
+      <Text size="sm" flex={1} lh={1.2} truncate>
         {faction.name}
       </Text>
       {onRemove && (
-        <Button
-          size="compact-xs"
-          variant="filled"
-          className={`${classes["remove-button"]} ${removeEnabled ? "" : classes.withDisabled}`}
-          onMouseDown={onRemove}
+        <ActionIcon
+          size="xs"
+          variant="subtle"
+          color="gray"
+          className={classes.removeButton}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
           disabled={!removeEnabled}
         >
-          <IconTrashFilled size={16} />
-        </Button>
+          <IconX size={12} />
+        </ActionIcon>
       )}
       {onCheck && (
         <Checkbox
           radius="xl"
-          size="md"
+          size="sm"
           checked={checked}
           onChange={() => onCheck(!checked)}
         />

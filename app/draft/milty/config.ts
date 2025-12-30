@@ -15,6 +15,7 @@ export const milty: DraftConfig = {
   numPlayers: 6,
   type: "milty",
   numSystemsInSlice: 5,
+  mecatolPathSystemIndices: [1, 4],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
   homeIdxInMapString: [19, 22, 25, 28, 31, 34],

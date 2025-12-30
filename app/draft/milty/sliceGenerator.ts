@@ -9,7 +9,7 @@ import {
   isLegendary,
 } from "../helpers/sliceGeneration";
 import { factionSystems, systemData } from "~/data/systemData";
-import { calculateSliceValue } from "~/stats";
+import { calculateSliceValue, getSliceValueConfig } from "~/stats";
 import {
   coreGenerateSlices,
   postProcessSlices,
@@ -23,8 +23,8 @@ export function generateSlices(
     numAlphas: 2,
     numBetas: 2,
     minLegendaries: 1,
-    maxOptimal: undefined,
-    minOptimal: undefined,
+    maxSliceValue: undefined,
+    minSliceValue: undefined,
     minorFactionPool: undefined,
   },
   sliceShape: string[] = SLICE_SHAPES.milty,
@@ -74,7 +74,11 @@ export function generateSlices(
 
     const totalOptimal = calculateSliceValue(
       systems,
-      config.entropicScarValue ?? 2,
+      getSliceValueConfig(
+        config.sliceValueModifiers,
+        [3],
+        config.mecatolPathSystemIndices!,
+      ),
     );
     const rawOptimal = systems.reduce(
       (acc, s) => ({
@@ -91,13 +95,15 @@ export function generateSlices(
       return false;
     if (config.minOptimalResources && resOptimal < config.minOptimalResources)
       return false;
-    if (config.maxOptimal && totalOptimal > config.maxOptimal) return false;
-    if (config.minOptimal && totalOptimal < config.minOptimal) return false;
+    if (config.maxSliceValue && totalOptimal > config.maxSliceValue)
+      return false;
+    if (config.minSliceValue && totalOptimal < config.minSliceValue)
+      return false;
     return true;
   };
 
   const slices = coreGenerateSlices({
-    mecatolPath: [1, 4],
+    mecatolPath: config.mecatolPathSystemIndices!,
     centerTile: 1,
     sliceCount,
     availableSystems,

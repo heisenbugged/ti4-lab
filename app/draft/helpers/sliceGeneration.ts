@@ -9,6 +9,11 @@ import { systemData } from "~/data/systemData";
 import { ChoosableTier, TieredSlice, TieredSystems } from "../types";
 import { neighbors } from "../hex";
 import { shuffle, weightedChoice } from "./randomization";
+import {
+  DEFAULT_SLICE_VALUE_MODIFIERS,
+  SliceValueConfig,
+  SliceValueModifiers,
+} from "~/stats";
 
 const DEBUG_SLICE_SCORING = false;
 
@@ -157,7 +162,7 @@ export function fillSlicesWithRemainingTiles(
   tieredSlices: TieredSlice[],
   remainingSystems: TieredSystems,
   slices: SystemIds[],
-  entropicScarValue: number = 2,
+  sliceValueModifiers?: Partial<SliceValueModifiers>,
 ) {
   const remainingTiers = [
     remainingSystems.low,
@@ -201,7 +206,7 @@ export function fillSlicesWithRemainingTiles(
 
       const slice = slices[sliceIdx];
       const choices = takeFrom.map((system, takeFromIndex) => ({
-        weight: calculateSliceScore(slice, system, entropicScarValue),
+        weight: calculateSliceScore(slice, system, sliceValueModifiers),
         value: { system, takeFromIndex },
       }));
 
@@ -217,7 +222,7 @@ export function fillSlicesWithRemainingTiles(
 function calculateSliceScore(
   sliceSoFar: SystemId[],
   withNewSystem: SystemId,
-  entropicScarValue: number = 2,
+  sliceValueModifiers?: Partial<SliceValueModifiers>,
 ) {
   // Consider a slice with the new tile added.
   const slice = [...sliceSoFar];
@@ -225,7 +230,7 @@ function calculateSliceScore(
 
   const { optInf, optRes, sliceValue, wormholes, legendaries } = summarizeRaw(
     slice,
-    entropicScarValue,
+    sliceValueModifiers,
   );
   const avgOptInf = optInf / slice.length;
   const avgOptRes = optRes / slice.length;
@@ -273,7 +278,17 @@ function calculateSliceScore(
   return score;
 }
 
-function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
+const DEFAULT_SUMMARIZE_CONFIG: SliceValueConfig = {
+  ...DEFAULT_SLICE_VALUE_MODIFIERS,
+  equidistantIndices: [],
+  mecatolPathIndices: [],
+};
+
+function summarizeRaw(
+  systems: SystemId[],
+  sliceValueModifiers?: Partial<SliceValueModifiers>,
+) {
+  const cfg = { ...DEFAULT_SUMMARIZE_CONFIG, ...sliceValueModifiers };
   let res = 0;
   let optRes = 0;
   let inf = 0;
@@ -284,8 +299,13 @@ function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
   const wormholes = [];
   const legendaries = [];
 
-  for (const id of systems) {
+  for (let idx = 0; idx < systems.length; idx++) {
+    const id = systems[idx];
     const system = systemData[id];
+    const isEquidistant = cfg.equidistantIndices.includes(idx);
+    const multiplier = isEquidistant ? cfg.equidistantMultiplier : 1;
+    let systemValue = 0;
+
     for (const planet of system.planets) {
       const r = planet.resources;
       const i = planet.influence;
@@ -293,20 +313,20 @@ function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
       inf += i;
       if (r > i) {
         optRes += r;
-        sliceValue += r;
+        systemValue += r;
       } else if (r < i) {
         optInf += i;
-        sliceValue += i;
+        systemValue += i;
       } else {
         optRes += r / 2;
         optInf += i / 2;
-        sliceValue += r;
+        systemValue += r;
       }
       if (planet.tech) {
         for (const planetTech of planet.tech) {
           tech.push(planetTech.substring(0, 1).toUpperCase());
         }
-        sliceValue += planet.tech.length * 0.5;
+        systemValue += planet.tech.length * cfg.techValue;
       }
       if (planet.trait) {
         for (const planetTrait of planet.trait) {
@@ -316,16 +336,30 @@ function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
       if (planet.legendary) {
         legendaries.push("L");
         if (planet.name === "Hope's End") {
-          sliceValue += 2;
+          systemValue += cfg.hopesEndValue;
         } else if (planet.name === "Emelpar") {
-          sliceValue += 3;
+          systemValue += cfg.emelparValue;
+        } else if (planet.name === "Industrex") {
+          systemValue += cfg.industrexValue;
         } else {
-          sliceValue += 1;
+          systemValue += cfg.otherLegendaryValue;
         }
+      }
+      if (planet.tradeStation) {
+        systemValue += cfg.tradeStationValue;
       }
     }
     if (system.anomalies.includes("ENTROPIC_SCAR")) {
-      sliceValue += entropicScarValue;
+      systemValue += cfg.entropicScarValue;
+    }
+    // Path-to-Mecatol anomaly penalties
+    if (cfg.mecatolPathIndices.includes(idx)) {
+      if (system.anomalies.includes("SUPERNOVA")) {
+        systemValue += cfg.supernovaOnPathPenalty;
+      }
+      if (system.anomalies.includes("NEBULA")) {
+        systemValue += cfg.nebulaOnPathPenalty;
+      }
     }
     for (const wormhole of system.wormholes) {
       switch (wormhole) {
@@ -343,6 +377,8 @@ function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
           break;
       }
     }
+
+    sliceValue += systemValue * multiplier;
   }
 
   return {

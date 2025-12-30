@@ -18,10 +18,15 @@ import {
 import { PlayerSelection, Tile } from "~/types";
 import { systemData } from "~/data/systemData";
 import { hydrateMap } from "~/utils/map";
+import { useCoreSliceValues } from "~/hooks/useCoreSliceValues";
 
 export function MapSection() {
   const config = useDraftConfig();
   const map = useDraft((state) => state.draft.presetMap);
+  const draftType = useDraft((state) => state.draft.settings.type);
+  const sliceValueModifiers = useDraft(
+    (state) => state.draft.settings.sliceGenerationConfig?.sliceValueModifiers,
+  );
   const {
     randomizeMap,
     clearMap,
@@ -30,6 +35,9 @@ export function MapSection() {
     openPlanetFinderForMap,
   } = useDraft((state) => state.actions);
   const stats = useFullMapStats();
+
+  const isHeisenDraft = draftType === "heisen" || draftType === "heisen8p";
+  const coreSliceData = useCoreSliceValues(map, sliceValueModifiers);
 
   const { ref, width } = useDimensions<HTMLDivElement>();
   const { height: windowHeight } = useWindowDimensions();
@@ -110,6 +118,7 @@ export function MapSection() {
             editable
             onSelectSystemTile={(t) => openPlanetFinderForMap(t.idx)}
             onDeleteSystemTile={(t) => removeSystemFromMap(t.idx)}
+            coreSliceData={isHeisenDraft ? coreSliceData : undefined}
           />
         </DndContext>
       </Box>

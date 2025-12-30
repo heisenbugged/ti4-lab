@@ -23,7 +23,7 @@ import {
 import { generateEmptyMap } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
-import { calculateSliceValue } from "~/stats";
+import { calculateSliceValue, getSliceValueConfig, SliceValueModifiers } from "~/stats";
 import {
   getAdjacentPositions,
   hasAdjacentAnomalies,
@@ -76,7 +76,8 @@ const SLICE_CHOICES: SliceChoice[] = [
 
 // NOTE: These indices are 0-based positions in the mapStringOrder array
 // Define core slices - the slices adjacent to Mecatol Rex (index 0)
-const CORE_SLICES = [
+// Each index corresponds to a seat (Seat 0 = CORE_SLICES[0], etc.)
+export const CORE_SLICES = [
   [1, 18, 8], // 12 o'clock core
   [2, 10, 8], // 2 o'clock core
   [3, 12, 10], // 4 o'clock core
@@ -86,8 +87,9 @@ const CORE_SLICES = [
 ];
 
 // Define the optimal value range for core slices
-const CORE_SLICE_MIN_OPTIMAL = 4; // Minimum optimal value for a core slice
+const CORE_SLICE_MIN_OPTIMAL = 3; // Minimum optimal value for a core slice
 const CORE_SLICE_MAX_OPTIMAL = 8; // Maximum optimal value for a core slice
+const CORE_SLICE_MAX_BALANCE = 6; // Maximum difference between best and worst core slice
 const MIN_RED_TILES = 11; // Minimum red tiles on the map
 
 export function generateMap(
@@ -98,6 +100,8 @@ export function generateMap(
 ) {
   const sliceCount = settings.numSlices;
   const config = draftConfig[settings.type];
+  const sliceValueModifiers =
+    settings.sliceGenerationConfig?.sliceValueModifiers;
 
   // a bit hacky, but works for now
   // this changes between heisen and heisen8p
@@ -247,7 +251,7 @@ export function generateMap(
       tieredSystems,
       chosenMapLocations,
       occupiedCorePositions,
-      settings.sliceGenerationConfig?.entropicScarValue ?? 2,
+      sliceValueModifiers,
     );
   }
 
@@ -331,7 +335,11 @@ export function generateMap(
     const totalSpends = slices.map((s) => {
       return calculateSliceValue(
         s.map((id) => systemData[id]),
-        settings.sliceGenerationConfig?.entropicScarValue ?? 2,
+        getSliceValueConfig(
+          sliceValueModifiers,
+          [],
+          config.mecatolPathSystemIndices!,
+        ),
       );
     });
     const minTotalSpend = Math.min(...totalSpends);
@@ -340,7 +348,7 @@ export function generateMap(
     const coreSliceValues = calculateCoreSliceValues(
       CORE_SLICES,
       chosenMapLocations,
-      settings.sliceGenerationConfig?.entropicScarValue ?? 2,
+      sliceValueModifiers,
     );
 
     const minCoreSpend = Math.min(...coreSliceValues);
@@ -361,22 +369,27 @@ export function generateMap(
     const mapStats = calculateMapStats(slices, map);
 
     // Check balance criteria
-    if (
-      minTotalSpend < 4 ||
-      maxTotalSpend > 9 ||
-      minPlanets < 2 ||
-      maxPlanets > 5 ||
-      redTileCount < MIN_RED_TILES || // Ensure minimum anomaly count
-      (config.type === "heisen" && mapStats.totalLegendary > 3) ||
-      minCoreSpend < CORE_SLICE_MIN_OPTIMAL || // Minimum viable core slice optimal spend
-      maxCoreSpend > CORE_SLICE_MAX_OPTIMAL || // Maximum core slice optimal spend
-      coreSliceBalance > 3 || // Core slices should be within 3 points of each other
-      hasAdjacentAnomalies(chosenMapLocations) // Check for adjacent anomalies
-    ) {
+    const rejectionReasons: string[] = [];
+    if (minTotalSpend < 4) rejectionReasons.push(`minTotalSpend=${minTotalSpend}<4`);
+    if (maxTotalSpend > 10) rejectionReasons.push(`maxTotalSpend=${maxTotalSpend}>10`);
+    if (minPlanets < 2) rejectionReasons.push(`minPlanets=${minPlanets}<2`);
+    if (maxPlanets > 5) rejectionReasons.push(`maxPlanets=${maxPlanets}>5`);
+    if (redTileCount < MIN_RED_TILES) rejectionReasons.push(`redTileCount=${redTileCount}<${MIN_RED_TILES}`);
+    if (config.type === "heisen" && mapStats.totalLegendary > 4) rejectionReasons.push(`totalLegendary=${mapStats.totalLegendary}>4`);
+    if (minCoreSpend < CORE_SLICE_MIN_OPTIMAL) rejectionReasons.push(`minCoreSpend=${minCoreSpend}<${CORE_SLICE_MIN_OPTIMAL}`);
+    if (maxCoreSpend > CORE_SLICE_MAX_OPTIMAL) rejectionReasons.push(`maxCoreSpend=${maxCoreSpend}>${CORE_SLICE_MAX_OPTIMAL}`);
+    if (coreSliceBalance > CORE_SLICE_MAX_BALANCE) rejectionReasons.push(`coreSliceBalance=${coreSliceBalance}>${CORE_SLICE_MAX_BALANCE}`);
+    if (hasAdjacentAnomalies(chosenMapLocations)) rejectionReasons.push(`hasAdjacentAnomalies`);
+
+    if (rejectionReasons.length > 0) {
+      console.log(`[heisen attempt ${attempts}] REJECTED: ${rejectionReasons.join(', ')}`);
       return generateMap(settings, systemPool, minorFactionPool, attempts + 1);
     }
   }
 
+  if (attempts > 0) {
+    console.log(`[heisen] SUCCESS after ${attempts} attempts`);
+  }
   return {
     map,
     slices,
@@ -387,7 +400,7 @@ export function generateMap(
 function calculateCoreSliceValues(
   coreSlices: number[][],
   chosenMapLocations: Record<number, SystemId>,
-  entropicScarValue: number = 2,
+  sliceValueModifiers?: Partial<SliceValueModifiers>,
 ): number[] {
   return coreSlices.map((positions) => {
     const systems = positions
@@ -395,7 +408,11 @@ function calculateCoreSliceValues(
       .map((pos) => chosenMapLocations[pos])
       .map((id) => systemData[id]);
 
-    return calculateSliceValue(systems, entropicScarValue);
+    return calculateSliceValue(systems, getSliceValueConfig(
+      sliceValueModifiers,
+      [1, 2],  // equidistantIndices
+      [0],     // mecatolPathIndices - ring 1 tile is on path to Rex
+    ));
   });
 }
 
@@ -409,7 +426,7 @@ function fillCoreSlices(
   tieredSystems: Record<ChoosableTier, SystemId[]>,
   chosenMapLocations: Record<number, SystemId>,
   occupiedCorePositions: Record<number, SystemId>,
-  entropicScarValue: number = 2,
+  sliceValueModifiers?: Partial<SliceValueModifiers>,
 ) {
   // For each core slice
   for (let i = 0; i < coreSlices.length; i++) {
@@ -470,11 +487,11 @@ function fillCoreSlices(
         candidateSystems.sort((a, b) => {
           const totalA = calculateSliceValue(
             [...currentSliceSystems, systemData[a]],
-            entropicScarValue,
+            sliceValueModifiers,
           );
           const totalB = calculateSliceValue(
             [...currentSliceSystems, systemData[b]],
-            entropicScarValue,
+            sliceValueModifiers,
           );
 
           // Prioritize systems that keep the slice within optimal range
@@ -715,7 +732,7 @@ export function generateSlices(
     tieredSlices,
     tieredRemainingTiles,
     slices,
-    config?.entropicScarValue ?? 2,
+    config?.sliceValueModifiers,
   );
 
   // shuffle the slices

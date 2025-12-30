@@ -264,8 +264,8 @@ export type DraftSettings = {
   // Legacy settings
   allowEmptyTiles: boolean;
   randomizeSlices: boolean;
-  minOptimal?: number; // now in sliceGenerationConfig
-  maxOptimal?: number; // now in sliceGenerationConfig
+  minSliceValue?: number; // now in sliceGenerationConfig
+  maxSliceValue?: number; // now in sliceGenerationConfig
   numMinorFactions?: number; // now in minorFactionsMode
   minorFactionsInSharedPool?: boolean; // now in minorFactionsMode
 };

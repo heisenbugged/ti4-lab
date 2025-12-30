@@ -1,5 +1,5 @@
-import { Button, Divider, Grid, Stack } from "@mantine/core";
-import { IconSettings } from "@tabler/icons-react";
+import { ActionIcon, Box, Group, Stack, Text, UnstyledButton } from "@mantine/core";
+import { IconChevronRight, IconSettings } from "@tabler/icons-react";
 import { MAPS, ChoosableDraftType } from "../maps";
 
 type Props = {
@@ -28,80 +28,107 @@ export function MapStyleSelector({
 
   return (
     <Stack
-      gap="xs"
+      gap={4}
       onMouseLeave={() => onMapTypeHover(undefined)}
-      mt="sm"
+      mt="xs"
+      miw={180}
     >
       {Object.entries(MAPS).map(([type, { title, playerCount: mapPlayerCount }]) => {
         if (mapPlayerCount !== playerCount) return null;
 
+        const isSelected = selectedMapType === type;
         const openSettings = settingsOpeners[type as ChoosableDraftType];
 
         return (
-          <Grid key={type} gutter="xs" columns={12}>
-            {openSettings ? (
-              <>
-                <Grid.Col span={9}>
-                  <Button
-                    w="100%"
-                    color="blue"
-                    size="md"
-                    variant={selectedMapType === type ? "filled" : "outline"}
-                    ff="heading"
-                    onMouseOver={() =>
-                      onMapTypeHover(type as ChoosableDraftType)
-                    }
-                    onMouseDown={() =>
-                      onMapTypeSelect(type as ChoosableDraftType)
-                    }
-                  >
-                    {title}
-                  </Button>
-                </Grid.Col>
-                <Grid.Col span={3}>
-                  <Button
-                    variant="outline"
-                    color="blue"
-                    size="md"
-                    onClick={() => {
-                      onMapTypeSelect(type as ChoosableDraftType);
-                      openSettings();
-                    }}
-                  >
-                    <IconSettings size={18} />
-                  </Button>
-                </Grid.Col>
-              </>
-            ) : (
-              <Grid.Col span={12}>
-                <Button
-                  w="100%"
-                  color="blue"
-                  size="md"
-                  variant={selectedMapType === type ? "filled" : "outline"}
-                  ff="heading"
-                  onMouseOver={() =>
-                    onMapTypeHover(type as ChoosableDraftType)
-                  }
-                  onMouseDown={() =>
-                    onMapTypeSelect(type as ChoosableDraftType)
-                  }
+          <Group key={type} gap={4} wrap="nowrap">
+            <UnstyledButton
+              onMouseOver={() => onMapTypeHover(type as ChoosableDraftType)}
+              onMouseDown={() => onMapTypeSelect(type as ChoosableDraftType)}
+              style={{ flex: 1 }}
+            >
+              <Group
+                gap="xs"
+                py={6}
+                px="sm"
+                wrap="nowrap"
+                style={{
+                  borderRadius: 4,
+                  border: isSelected
+                    ? "1px solid var(--mantine-color-blue-6)"
+                    : "1px solid var(--mantine-color-default-border)",
+                  background: isSelected
+                    ? "var(--mantine-color-blue-light)"
+                    : "var(--mantine-color-default)",
+                  transition: "all 100ms ease",
+                }}
+              >
+                <Box
+                  w={3}
+                  h={16}
+                  style={{
+                    borderRadius: 1,
+                    background: isSelected
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-dimmed)",
+                    opacity: isSelected ? 1 : 0.3,
+                    transition: "all 100ms ease",
+                  }}
+                />
+                <Text
+                  size="xs"
+                  fw={isSelected ? 600 : 500}
+                  style={{
+                    flex: 1,
+                    fontFamily: "Orbitron",
+                    letterSpacing: "0.03em",
+                  }}
                 >
                   {title}
-                </Button>
-              </Grid.Col>
+                </Text>
+                <IconChevronRight
+                  size={12}
+                  style={{
+                    opacity: isSelected ? 0.7 : 0.3,
+                    transition: "opacity 100ms ease",
+                  }}
+                />
+              </Group>
+            </UnstyledButton>
+            {openSettings && (
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                color="gray"
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  onMapTypeSelect(type as ChoosableDraftType);
+                  openSettings();
+                }}
+              >
+                <IconSettings size={14} />
+              </ActionIcon>
             )}
-          </Grid>
+          </Group>
         );
       })}
-      <Divider />
-      <Button
-        color="orange"
-        variant="outline"
-        onMouseDown={onOpenMinorFactionsInfo}
-      >
-        Minor Factions
-      </Button>
+
+      {/* Minor Factions Info Link */}
+      <UnstyledButton onMouseDown={onOpenMinorFactionsInfo}>
+        <Group
+          gap="xs"
+          py={4}
+          px="sm"
+          mt="xs"
+          style={{
+            borderTop: "1px dashed var(--mantine-color-default-border)",
+          }}
+        >
+          <Text size="xs" c="orange.5" fw={500}>
+            Minor Factions Info
+          </Text>
+          <IconChevronRight size={10} color="var(--mantine-color-orange-5)" />
+        </Group>
+      </UnstyledButton>
     </Stack>
   );
 }

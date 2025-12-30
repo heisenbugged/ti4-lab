@@ -16,6 +16,7 @@ export const milty5p: DraftConfig = {
   type: "milty5p",
   minorFactionsEqPositions: [8, 10, 13, 16, 18],
   numSystemsInSlice: 5,
+  mecatolPathSystemIndices: [1, 4],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
   homeIdxInMapString: [19, 22, 25, 31, 34],

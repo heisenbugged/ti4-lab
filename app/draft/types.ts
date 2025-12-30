@@ -6,6 +6,7 @@ import {
   Map,
   FactionId,
 } from "~/types";
+import { SliceValueModifiers } from "~/stats";
 
 export type Tier = "low" | "med" | "high" | "red" | "resolved";
 export type ChoosableTier = "low" | "med" | "high" | "red";
@@ -47,8 +48,8 @@ export type SliceGenerationConfig = {
   numBetas?: number;
   minLegendaries?: number;
   maxLegendaries?: number;
-  maxOptimal?: number;
-  minOptimal?: number;
+  maxSliceValue?: number;
+  minSliceValue?: number;
   minOptimalInfluence?: number;
   minOptimalResources?: number;
 
@@ -57,7 +58,8 @@ export type SliceGenerationConfig = {
   highQualityAdjacent?: number;
   hasMinorFactions?: boolean;
   minorFactionPool?: FactionId[];
-  entropicScarValue?: number;
+  sliceValueModifiers?: Partial<SliceValueModifiers>;
+  mecatolPathSystemIndices?: number[];
 };
 
 export type DraftConfig = {
@@ -129,6 +131,14 @@ export type DraftConfig = {
    * Whether to allow independent map randomization.
    */
   allowIndependentMapRandomization?: boolean;
+
+  /**
+   * The indices (into the systems array, after filtering out HOME) of tiles
+   * on the path to Mecatol Rex. Used for applying anomaly penalties.
+   * For milty: [1, 4] (tiles at positions 1 and 4 form the path)
+   * For miltyeq: [1, 3] (shorter path)
+   */
+  mecatolPathSystemIndices?: number[];
 
   generateMap?: (
     settings: DraftSettings,

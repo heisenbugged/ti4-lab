@@ -17,7 +17,6 @@ import { BaseSlice } from "~/components/Slice";
 import { draftConfig } from "~/draft";
 import { SystemId } from "~/types";
 import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
-import { calculateSliceValue } from "~/stats";
 import { systemIdsToSlice } from "~/utils/slice";
 import { systemsFromIds } from "~/utils/system";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
@@ -25,7 +24,8 @@ import { NumberStepper } from "~/components/NumberStepper";
 import { getFactionPool } from "~/utils/factions";
 import { useCreateDraft } from "../draft.new/useCreateDraft";
 import { shuffle } from "~/draft/helpers/randomization";
-import { useDraft } from "~/draftStore";
+import { useSliceValueConfig } from "~/hooks/useSliceValue";
+import { calculateSliceValue } from "~/stats";
 
 type PresetCardProps = {
   sliceIDs: SystemId[][];
@@ -44,14 +44,12 @@ const defaultPlayers = [
 ];
 
 function usePresetCardStats(sliceIds: SystemId[][]) {
-  const entropicScarValue = useDraft(
-    (state) => state.draft.settings.sliceGenerationConfig?.entropicScarValue,
-  );
+  const config = useSliceValueConfig();
   const slices = sliceIds.map((ids, idx) => {
     const slice = systemIdsToSlice(draftConfig.milty, `Slice ${idx + 1}`, ids);
     const systems = systemsFromIds(ids);
     const { resources, influence, flex } = optimalStatsForSystems(systems);
-    const sliceValue = calculateSliceValue(systems, entropicScarValue);
+    const sliceValue = calculateSliceValue(systems, config);
     return {
       slice,
       optimalStats: {

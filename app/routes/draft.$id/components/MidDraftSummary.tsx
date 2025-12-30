@@ -11,7 +11,7 @@ import { DraftConfig } from "~/draft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { systemsInSlice } from "~/utils/slice";
-import { calculateSliceValue } from "~/stats";
+import { useSliceValue } from "~/hooks/useSliceValue";
 
 import classes from "./MidDraftSummary.module.css";
 import { FactionHelpInfo } from "~/routes/draft.$id/components/FactionHelpInfo";
@@ -102,23 +102,19 @@ export function SummaryCard({
   showSeat,
   showPlayerColor,
 }: Props) {
-  const entropicScarValue = useDraft(
-    (state) => state.draft.settings.sliceGenerationConfig?.entropicScarValue,
-  );
+  const sliceValue = useSliceValue(slice);
   let faction: Faction | undefined;
   let minorFaction: Faction | undefined;
   let systems: System[] | undefined;
   let optimal:
     | { resources: number; influence: number; flex: number }
     | undefined;
-  let sliceValue: number | undefined;
 
   if (player.faction) faction = factions[player.faction];
   if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
     optimal = optimalStatsForSystems(systems);
-    sliceValue = calculateSliceValue(systems, entropicScarValue);
   }
 
   return (
@@ -217,23 +213,19 @@ function SummaryRow({
   showMinorFaction,
   showPlayerColor,
 }: Props) {
-  const entropicScarValue = useDraft(
-    (state) => state.draft.settings.sliceGenerationConfig?.entropicScarValue,
-  );
+  const sliceValue = useSliceValue(slice);
   let faction: Faction | undefined;
   let minorFaction: Faction | undefined;
   let systems: System[] | undefined;
   let optimal:
     | { resources: number; influence: number; flex: number }
     | undefined;
-  let sliceValue: number | undefined;
 
   if (player.faction) faction = factions[player.faction];
   if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
     optimal = optimalStatsForSystems(systems);
-    sliceValue = calculateSliceValue(systems, entropicScarValue);
   }
 
   return (

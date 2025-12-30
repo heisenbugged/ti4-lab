@@ -14,6 +14,7 @@ export const miltyeq4p: DraftConfig = {
   numPlayers: 4,
   type: "miltyeq4p",
   numSystemsInSlice: 4,
+  mecatolPathSystemIndices: [1, 3],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
   homeIdxInMapString: [25, 31, 34, 22],

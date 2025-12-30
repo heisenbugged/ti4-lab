@@ -634,7 +634,7 @@ export const draftStore = createStore<DraftV2State>()(
             draft.slices = systemIdsToSlices(
               config,
               settings.presetSlices,
-              settings.sliceGenerationConfig?.entropicScarValue,
+              settings.sliceGenerationConfig?.sliceValueModifiers,
             );
             draft.presetMap = settings.presetMap;
           } else if (config.generateMap) {
@@ -983,7 +983,7 @@ export const draftStore = createStore<DraftV2State>()(
             draft.slices = systemIdsToSlices(
               config,
               rawSlices,
-              draft.settings.sliceGenerationConfig?.entropicScarValue,
+              draft.settings.sliceGenerationConfig?.sliceValueModifiers,
             );
             draft.slices = setSliceNames(draft.slices);
           }
@@ -1019,8 +1019,8 @@ export function initializeSlices(
     settings.numSlices,
     systemPool,
     settings.sliceGenerationConfig ?? {
-      maxOptimal: settings.maxOptimal,
-      minOptimal: settings.minOptimal,
+      maxSliceValue: settings.maxSliceValue,
+      minSliceValue: settings.minSliceValue,
     },
   );
 
@@ -1028,7 +1028,7 @@ export function initializeSlices(
   return systemIdsToSlices(
     config,
     rawSlices,
-    settings.sliceGenerationConfig?.entropicScarValue,
+    settings.sliceGenerationConfig?.sliceValueModifiers,
   );
 }
 
@@ -1167,7 +1167,7 @@ function generateMapAndSlices(
     slices: systemIdsToSlices(
       config,
       generated.slices,
-      settings.sliceGenerationConfig?.entropicScarValue,
+      settings.sliceGenerationConfig?.sliceValueModifiers,
     ),
   };
 }

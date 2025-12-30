@@ -11,7 +11,7 @@ import {
 } from "../helpers/sliceGeneration";
 import { systemData } from "~/data/systemData";
 import { generateEmptyMap } from "~/utils/map";
-import { calculateSliceValue } from "~/stats";
+import { calculateSliceValue, getSliceValueConfig } from "~/stats";
 import {
   coreGenerateMap,
   coreGenerateSlices,
@@ -111,13 +111,54 @@ export const generateMap = (
   return coreGenerateMap(settings, systemPool, attempts, generateSlices);
 };
 
+const validateSlice = (slice: SystemIds, config: SliceGenerationConfig) => {
+  const systems = slice.map((systemId: SystemId) => systemData[systemId]);
+  // can't have two alphas, two betas, or two legendaries
+  const validSpecialTiles =
+    systems.filter(isAlpha).length <= 1 &&
+    systems.filter(isBeta).length <= 1 &&
+    systems.filter(isLegendary).length <= 1;
+  if (!validSpecialTiles) return false;
+
+  const totalOptimal = calculateSliceValue(
+    systems,
+    getSliceValueConfig(
+      config.sliceValueModifiers,
+      [],
+      config.mecatolPathSystemIndices!,
+    ),
+  );
+
+  const minSliceValue = config.minSliceValue ?? DEFAULT_CONFIG.minSliceValue;
+  const maxSliceValue = config.maxSliceValue ?? DEFAULT_CONFIG.maxSliceValue;
+  const rawOptimal = systems.reduce(
+    (acc, s) => ({
+      resources: acc.resources + s.optimalSpend.resources,
+      influence: acc.influence + s.optimalSpend.influence,
+      flex: acc.flex + s.optimalSpend.flex,
+    }),
+    { resources: 0, influence: 0, flex: 0 },
+  );
+  const infOptimal = rawOptimal.influence + rawOptimal.flex;
+  const resOptimal = rawOptimal.resources + rawOptimal.flex;
+
+  if (config.minOptimalInfluence && infOptimal < config.minOptimalInfluence)
+    return false;
+  if (config.minOptimalResources && resOptimal < config.minOptimalResources)
+    return false;
+  if (maxSliceValue !== undefined && totalOptimal > maxSliceValue) return false;
+  if (minSliceValue !== undefined && totalOptimal < minSliceValue) return false;
+
+  return true;
+};
+
 export const generateSlices = (
   sliceCount: number,
   availableSystems: SystemId[],
   config?: SliceGenerationConfig,
 ) =>
   coreGenerateSlices({
-    mecatolPath: [1, 3],
+    mecatolPath: config!.mecatolPathSystemIndices!,
     centerTile: 1,
     sliceCount,
     availableSystems,
@@ -155,41 +196,6 @@ export const generateSlices = (
         meetsMaxLegendaries
       );
     },
-    validateSlice: (slice: SystemIds, config: SliceGenerationConfig) => {
-      const systems = slice.map((systemId: SystemId) => systemData[systemId]);
-      // can't have two alphas, two betas, or two legendaries
-      const validSpecialTiles =
-        systems.filter(isAlpha).length <= 1 &&
-        systems.filter(isBeta).length <= 1 &&
-        systems.filter(isLegendary).length <= 1;
-      if (!validSpecialTiles) return false;
-
-      const totalOptimal = calculateSliceValue(
-        systems,
-        config.entropicScarValue ?? 2,
-      );
-
-      const minOptimal = config.minOptimal ?? DEFAULT_CONFIG.minOptimal;
-      const maxOptimal = config.maxOptimal ?? DEFAULT_CONFIG.maxOptimal;
-      const rawOptimal = systems.reduce(
-        (acc, s) => ({
-          resources: acc.resources + s.optimalSpend.resources,
-          influence: acc.influence + s.optimalSpend.influence,
-          flex: acc.flex + s.optimalSpend.flex,
-        }),
-        { resources: 0, influence: 0, flex: 0 },
-      );
-      const infOptimal = rawOptimal.influence + rawOptimal.flex;
-      const resOptimal = rawOptimal.resources + rawOptimal.flex;
-
-      if (config.minOptimalInfluence && infOptimal < config.minOptimalInfluence)
-        return false;
-      if (config.minOptimalResources && resOptimal < config.minOptimalResources)
-        return false;
-      if (maxOptimal !== undefined && totalOptimal > maxOptimal) return false;
-      if (minOptimal !== undefined && totalOptimal < minOptimal) return false;
-
-      return true;
-    },
+    validateSlice,
     postProcessSlices,
   });

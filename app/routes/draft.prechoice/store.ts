@@ -21,6 +21,19 @@ import {
 import { filterFactionList } from "./utils";
 
 type ContentFlags = {
+  // Base game
+  withBaseTiles: boolean;
+  withBaseFactions: boolean;
+  // Prophecy of Kings
+  withPokTiles: boolean;
+  withPokFactions: boolean;
+  // Thunder's Edge
+  withTETiles: boolean;
+  withTEFactions: boolean;
+  // Discordant Stars
+  withDiscordantTiles: boolean;
+  withDiscordantFactions: boolean;
+  // Legacy flags for compatibility
   excludeBaseFactions: boolean;
   excludePokFactions: boolean;
   withDiscordant: boolean;
@@ -67,6 +80,16 @@ type DraftSetupStore = {
   };
   content: {
     flags: ContentFlags;
+    // New granular setters
+    setWithBaseTiles: (v: boolean) => void;
+    setWithBaseFactions: (v: boolean) => void;
+    setWithPokTiles: (v: boolean) => void;
+    setWithPokFactions: (v: boolean) => void;
+    setWithTETiles: (v: boolean) => void;
+    setWithTEFactions: (v: boolean) => void;
+    setWithDiscordantTiles: (v: boolean) => void;
+    setWithDiscordantFactions: (v: boolean) => void;
+    // Legacy setters (kept for compatibility)
     setExcludeBaseFactions: (v: boolean) => void;
     setExcludePokFactions: (v: boolean) => void;
     setWithDiscordantExp: (v: boolean) => void;
@@ -320,24 +343,107 @@ export const useDraftSetup = create<DraftSetupStore>()(
 
       content: {
         flags: {
+          // New granular flags - default everything ON except Discordant
+          withBaseTiles: true,
+          withBaseFactions: true,
+          withPokTiles: true,
+          withPokFactions: true,
+          withTETiles: true,
+          withTEFactions: true,
+          withDiscordantTiles: false,
+          withDiscordantFactions: false,
+          // Legacy flags
           excludeBaseFactions: false,
           excludePokFactions: false,
           withDiscordant: false,
           withDiscordantExp: false,
           withUnchartedStars: false,
           withDrahn: false,
-          withTE: false,
+          withTE: true, // TE on by default now
         },
 
+        // New granular setters
+        setWithBaseTiles: (v: boolean) => {
+          setAndValidate((state) => {
+            state.content.flags.withBaseTiles = v;
+          });
+        },
+
+        setWithBaseFactions: (v: boolean) => {
+          setAndValidate((state) => {
+            state.content.flags.withBaseFactions = v;
+            state.content.flags.excludeBaseFactions = !v;
+          });
+        },
+
+        setWithPokTiles: (v: boolean) => {
+          setAndValidate((state) => {
+            state.content.flags.withPokTiles = v;
+          });
+        },
+
+        setWithPokFactions: (v: boolean) => {
+          setAndValidate((state) => {
+            state.content.flags.withPokFactions = v;
+            state.content.flags.excludePokFactions = !v;
+          });
+        },
+
+        setWithTETiles: (v: boolean) => {
+          setAndValidate((state) => {
+            state.content.flags.withTETiles = v;
+            // Sync legacy flag
+            if (!v && !state.content.flags.withTEFactions) {
+              state.content.flags.withTE = false;
+            } else if (v) {
+              state.content.flags.withTE = true;
+            }
+          });
+        },
+
+        setWithTEFactions: (v: boolean) => {
+          setAndValidate((state) => {
+            state.content.flags.withTEFactions = v;
+            // Sync legacy flag
+            if (!v && !state.content.flags.withTETiles) {
+              state.content.flags.withTE = false;
+            } else if (v) {
+              state.content.flags.withTE = true;
+            }
+          });
+        },
+
+        setWithDiscordantTiles: (v: boolean) => {
+          setAndValidate((state) => {
+            state.content.flags.withDiscordantTiles = v;
+            // Sync legacy flags
+            state.content.flags.withDiscordant = v || state.content.flags.withDiscordantFactions;
+            state.content.flags.withDiscordantExp = v || state.content.flags.withDiscordantFactions;
+            state.content.flags.withUnchartedStars = v || state.content.flags.withDiscordantFactions;
+          });
+        },
+
+        setWithDiscordantFactions: (v: boolean) => {
+          setAndValidate((state) => {
+            state.content.flags.withDiscordantFactions = v;
+            // Sync legacy flags
+            state.content.flags.withDiscordant = v || state.content.flags.withDiscordantTiles;
+            state.content.flags.withDiscordantExp = v || state.content.flags.withDiscordantTiles;
+          });
+        },
+
+        // Legacy setters
         setExcludeBaseFactions: (v: boolean) => {
           setAndValidate((state) => {
             state.content.flags.excludeBaseFactions = v;
+            state.content.flags.withBaseFactions = !v;
           });
         },
 
         setExcludePokFactions: (v: boolean) => {
           setAndValidate((state) => {
             state.content.flags.excludePokFactions = v;
+            state.content.flags.withPokFactions = !v;
           });
         },
 
@@ -362,16 +468,20 @@ export const useDraftSetup = create<DraftSetupStore>()(
         setWithTE: (v: boolean) => {
           setAndValidate((state) => {
             state.content.flags.withTE = v;
+            state.content.flags.withTETiles = v;
+            state.content.flags.withTEFactions = v;
           });
         },
 
         toggleDiscordantStars: () => {
           setAndValidate((state) => {
-            state.content.flags.withDiscordant =
-              !state.content.flags.withDiscordant;
+            const newValue = !state.content.flags.withDiscordant;
+            state.content.flags.withDiscordant = newValue;
+            state.content.flags.withDiscordantTiles = newValue;
+            state.content.flags.withDiscordantFactions = newValue;
 
             // Update dependent flags based on withDiscordant state
-            if (state.content.flags.withDiscordant) {
+            if (newValue) {
               // When discordant is on, enable dependent flags
               state.content.flags.withDiscordantExp = true;
               state.content.flags.withUnchartedStars = true;
@@ -387,22 +497,30 @@ export const useDraftSetup = create<DraftSetupStore>()(
 
         getTileGameSets: () => {
           const { flags } = get().content;
-          const tileGameSets: GameSet[] = ["base", "pok"];
-          if (flags.withDiscordant) tileGameSets.push("discordant");
-          if (flags.withDiscordantExp) tileGameSets.push("discordantexp");
-          if (flags.withUnchartedStars) tileGameSets.push("unchartedstars");
-          if (flags.withTE) tileGameSets.push("te");
+          const tileGameSets: GameSet[] = [];
+          // Use new granular flags
+          if (flags.withBaseTiles) tileGameSets.push("base");
+          if (flags.withPokTiles) tileGameSets.push("pok");
+          if (flags.withTETiles) tileGameSets.push("te");
+          if (flags.withDiscordantTiles) {
+            tileGameSets.push("discordant");
+            if (flags.withDiscordantExp) tileGameSets.push("discordantexp");
+            if (flags.withUnchartedStars) tileGameSets.push("unchartedstars");
+          }
           return tileGameSets;
         },
 
         getFactionGameSets: () => {
           const { flags } = get().content;
           const factionGameSets: GameSet[] = [];
-          if (!flags.excludeBaseFactions) factionGameSets.push("base");
-          if (!flags.excludePokFactions) factionGameSets.push("pok");
-          if (flags.withDiscordant) factionGameSets.push("discordant");
-          if (flags.withDiscordantExp) factionGameSets.push("discordantexp");
-          if (flags.withTE) factionGameSets.push("te");
+          // Use new granular flags
+          if (flags.withBaseFactions) factionGameSets.push("base");
+          if (flags.withPokFactions) factionGameSets.push("pok");
+          if (flags.withTEFactions) factionGameSets.push("te");
+          if (flags.withDiscordantFactions) {
+            factionGameSets.push("discordant");
+            if (flags.withDiscordantExp) factionGameSets.push("discordantexp");
+          }
           if (flags.withDrahn) factionGameSets.push("drahn");
           return factionGameSets;
         },

@@ -412,11 +412,11 @@ function calculateSliceStats(slice: Slice): {
   };
 }
 
-function calculateSliceValueForSlice(slice: Slice, entropicScarValue = 2): number {
+function calculateSliceValueForSlice(slice: Slice): number {
   const systems: System[] = slice.tiles
     .filter((t) => t.type === "SYSTEM")
     .map((t) => systemData[t.systemId])
     .filter((s) => !!s);
 
-  return calculateSliceValue(systems, entropicScarValue);
+  return calculateSliceValue(systems);
 }

@@ -7,6 +7,7 @@ import {
   Grid,
   Group,
   Paper,
+  SimpleGrid,
   Stack,
   Tabs,
   Text,
@@ -42,13 +43,9 @@ import {
 } from "~/components/MiltyEqSettingsModal";
 import { useDraftSetup } from "./store";
 import { MAPS, ChoosableDraftType } from "./maps";
-import { FactionConfigurationSection } from "./components/FactionConfigurationSection";
-import { SlicesConfigurationSection } from "./components/SlicesConfigurationSection";
 import { ReferenceCardPacksConfigurationSection } from "./components/ReferenceCardPacksConfigurationSection";
-import { MultidraftSection } from "./components/MultidraftSection";
-import { MinorFactionsSection } from "./components/MinorFactionsSection";
-import { ContentPacksSection } from "./components/ContentPacksSection";
-import { AdvancedSettingsSection } from "./components/AdvancedSettingsSection";
+import { SlicesConfigurationSection } from "./components/SlicesConfigurationSection";
+import { DraftConfigurationPanel } from "./components/DraftConfigurationPanel";
 import { useDraftSettingsBuilder, useDraftNavigation } from "./hooks";
 import { DiscordIntegrationModal } from "./components/DiscordIntegrationModal";
 import { MinorFactionsInfoModal } from "./components/MinorFactionsInfoModal";
@@ -397,37 +394,26 @@ export default function DraftPrechoice() {
               </Tabs.List>
 
               <Tabs.Panel value="base">
-                <Stack>
-                  <FactionConfigurationSection />
-                  <SlicesConfigurationSection />
-                </Stack>
+                <DraftConfigurationPanel />
               </Tabs.Panel>
 
               <Tabs.Panel value="twilightFalls">
-                <Stack gap="md">
-                  <Alert color="blue" title="Simplified Configuration">
-                    To be compatible with milty drafting, instead of doing a
-                    whole sub-draft, players simply pick a &quot;reference card
-                    pack&quot; as part of the main snake draft. After all
-                    components are drafted, players will choose their home
-                    system, faction, and priority order from their reference
-                    card pack.
+                <Stack gap="sm">
+                  <Alert color="blue" title="Simplified Configuration" variant="light">
+                    <Text size="xs">
+                      Players pick a &quot;reference card pack&quot; during the snake draft.
+                      After drafting, choose home system, faction, and priority from your pack.
+                    </Text>
                   </Alert>
 
-                  <SlicesConfigurationSection />
-                  <ReferenceCardPacksConfigurationSection />
+                  <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+                    <SlicesConfigurationSection />
+                    <ReferenceCardPacksConfigurationSection />
+                  </SimpleGrid>
                 </Stack>
               </Tabs.Panel>
             </Tabs>
           </Stack>
-          {draftMode === "base" && (
-            <>
-              <MultidraftSection />
-              <MinorFactionsSection />
-              <ContentPacksSection />
-              <AdvancedSettingsSection />
-            </>
-          )}
 
           <Button
             size="lg"

@@ -21,6 +21,7 @@ export const heisen8p: DraftConfig = {
     33: { systemId: "85B", rotation: 120 },
   },
   closedMapTiles: [41, 42, 45, 53, 54, 57],
+  mecatolPathSystemIndices: [1],
   seatTilePositions: [
     { x: 0, y: 0 },
     { x: -1, y: 0 },

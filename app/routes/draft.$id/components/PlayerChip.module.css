@@ -1,0 +1,64 @@
+/* Compact player chip for home tiles */
+
+.compactChip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Quantico", sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    padding: 3px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: visible; /* Allow slight overflow */
+    position: relative;
+    background: var(--chip-color);
+    color: white;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Text container - clips without ellipsis, fades at edge */
+.compactText {
+    display: block;
+    max-width: 70px;
+    overflow: hidden;
+    /* Fade out at the end instead of ellipsis */
+    mask-image: linear-gradient(
+        to right,
+        black 0%,
+        black 80%,
+        transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+        to right,
+        black 0%,
+        black 80%,
+        transparent 100%
+    );
+}
+
+/* Larger screens can show full name */
+@media (min-width: 768px) {
+    .compactChip {
+        font-size: 11px;
+        padding: 3px 10px;
+    }
+
+    .compactText {
+        max-width: 100px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .compactText {
+        max-width: none;
+        mask-image: none;
+        -webkit-mask-image: none;
+    }
+}

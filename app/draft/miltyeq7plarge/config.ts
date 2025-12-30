@@ -14,6 +14,7 @@ export const miltyeq7plarge: DraftConfig = {
   type: "miltyeq7plarge",
   mapSize: 4,
   numSystemsInSlice: 4,
+  mecatolPathSystemIndices: [1, 3],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
   homeIdxInMapString: [46, 49, 52, 56, 59, 39, 42],

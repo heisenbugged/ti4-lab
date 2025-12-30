@@ -1,14 +1,14 @@
 import {
+  Box,
+  Button,
   Group,
-  Indicator,
-  Input,
+  SimpleGrid,
   Stack,
   Text,
+  TextInput,
   useMantineTheme,
 } from "@mantine/core";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
-import { NumberStepper } from "~/components/NumberStepper";
-import { Section, SectionTitle } from "~/components/Section";
 import { playerColors } from "~/data/factionData";
 import { DiscordData, Player } from "~/types";
 
@@ -32,64 +32,95 @@ export function PlayerInputSection({
   onChangeName,
 }: Props) {
   const { colors } = useMantineTheme();
-  return (
-    <Section>
-      <SectionTitle title="Players">
-        {onIncreasePlayers && onDecreasePlayers && (
-          <NumberStepper
-            value={players.length}
-            decrease={onDecreasePlayers}
-            increase={onIncreasePlayers}
-            decreaseDisabled={players.length <= 4}
-            increaseDisabled={players.length >= maxPlayers}
-          />
-        )}
-      </SectionTitle>
-      <Group align="flex-start">
-        <Stack gap="xs" flex={1}>
-          {players.map((player, idx) => {
-            const discordPlayer = discordData?.players.find(
-              (discordPlayer) => discordPlayer.playerId === idx,
-            );
 
-            return (
-              <Group key={idx} gap="lg">
-                {discordPlayer?.type !== "identified" && (
-                  <>
-                    <Indicator
-                      color={playerColors[player.id]}
-                      size={18}
-                      zIndex={0}
-                    />
-                    <Input
-                      key={idx}
-                      flex={1}
-                      size="md"
-                      value={player.name}
-                      placeholder={`Player ${placeholderName[idx]}`}
-                      onChange={(e) => onChangeName(idx, e.currentTarget.value)}
-                    />
-                  </>
-                )}
-                {discordPlayer?.type === "identified" && (
-                  <>
-                    <IconBrandDiscordFilled
-                      color={
-                        colors[playerColors[player.id]]?.[5] ||
-                        colors.blue?.[5] ||
-                        "#228be6"
-                      }
-                    />
-                    <Text py="8.5">
-                      {discordPlayer.nickname ?? discordPlayer.username}
-                    </Text>
-                  </>
-                )}
-              </Group>
-            );
-          })}
-        </Stack>
+  return (
+    <Stack gap="xs">
+      {/* Header */}
+      <Group justify="space-between">
+        <Text
+          size="sm"
+          fw={600}
+          tt="uppercase"
+          style={{ letterSpacing: "0.05em", fontFamily: "Orbitron" }}
+        >
+          Players
+        </Text>
+        {onIncreasePlayers && onDecreasePlayers && (
+          <Group gap={2}>
+            <Button
+              size="compact-xs"
+              variant="subtle"
+              color="gray"
+              disabled={players.length <= 4}
+              onMouseDown={onDecreasePlayers}
+            >
+              -
+            </Button>
+            <Text size="sm" fw={600} miw={20} ta="center" c="purple.3">
+              {players.length}
+            </Text>
+            <Button
+              size="compact-xs"
+              variant="subtle"
+              color="gray"
+              disabled={players.length >= maxPlayers}
+              onMouseDown={onIncreasePlayers}
+            >
+              +
+            </Button>
+          </Group>
+        )}
       </Group>
-    </Section>
+
+      {/* Player Grid */}
+      <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="xs" verticalSpacing={6}>
+        {players.map((player, idx) => {
+          const discordPlayer = discordData?.players.find(
+            (dp) => dp.playerId === idx,
+          );
+          const color = playerColors[player.id];
+
+          return (
+            <Group key={idx} gap="xs" wrap="nowrap">
+              {/* Color accent bar */}
+              <Box
+                w={3}
+                h={28}
+                style={{
+                  borderRadius: 1,
+                  background: `var(--mantine-color-${color}-5)`,
+                  flexShrink: 0,
+                }}
+              />
+
+              {discordPlayer?.type === "identified" ? (
+                <Group gap="xs" flex={1} wrap="nowrap">
+                  <IconBrandDiscordFilled
+                    size={16}
+                    color={colors[color]?.[5] || colors.blue?.[5] || "#228be6"}
+                  />
+                  <Text size="sm" truncate flex={1}>
+                    {discordPlayer.nickname ?? discordPlayer.username}
+                  </Text>
+                </Group>
+              ) : (
+                <TextInput
+                  size="xs"
+                  flex={1}
+                  value={player.name}
+                  placeholder={`Player ${placeholderName[idx]}`}
+                  onChange={(e) => onChangeName(idx, e.currentTarget.value)}
+                  styles={{
+                    input: {
+                      height: 28,
+                    },
+                  }}
+                />
+              )}
+            </Group>
+          );
+        })}
+      </SimpleGrid>
+    </Stack>
   );
 }

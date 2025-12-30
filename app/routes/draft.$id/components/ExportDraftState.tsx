@@ -29,8 +29,13 @@ export function ExportDraftState() {
 
   return (
     <>
-      <Button onClick={() => setModalOpen(true)} ml="md">
-        Export Draft State
+      <Button
+        onClick={() => setModalOpen(true)}
+        size="compact-xs"
+        variant="subtle"
+        color="gray"
+      >
+        Export
       </Button>
       <Modal
         opened={modalOpen}

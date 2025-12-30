@@ -7,6 +7,7 @@ import { MapTile } from "./MapTile";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
 import { MapContext } from "~/contexts/MapContext";
+import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
 
 type SliceStats = {
   resources: number;
@@ -28,6 +29,7 @@ type Props = {
   showHomeStats?: boolean;
   sliceValues?: Record<number, number>;
   sliceStats?: Record<number, SliceStats>;
+  coreSliceData?: CoreSliceData[]; // Indexed by seat number
 };
 
 export function Map({
@@ -43,6 +45,7 @@ export function Map({
   showHomeStats = false,
   sliceValues = {},
   sliceStats = {},
+  coreSliceData,
 }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = calculateConcentricCircles(map.length);
@@ -83,6 +86,11 @@ export function Map({
               showHomeStats={showHomeStats}
               sliceValue={sliceValues[tile.idx]}
               sliceStats={sliceStats[tile.idx]}
+              coreSliceData={
+                tile.type === "HOME" && tile.seat !== undefined && coreSliceData
+                  ? coreSliceData[tile.seat]
+                  : undefined
+              }
             />
           ))}
       </Box>

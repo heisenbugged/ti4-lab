@@ -5,15 +5,14 @@ import {
   Stack,
   Text,
   TextInput,
-  Tooltip,
 } from "@mantine/core";
-import { IconHelpCircleFilled } from "@tabler/icons-react";
 import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { SliceHeader } from "./SliceHeader";
 import { Slice, Tile } from "~/types";
 import { useSlice } from "./useSlice";
 import { SliceFeatures } from "./SliceFeatures";
+import { SliceValuePopover } from "./SliceValuePopover";
 
 import classes from "./Slice.module.css";
 import { DraftConfig } from "~/draft";
@@ -82,28 +81,7 @@ export function BaseSlice({
             <Text size="sm" fw={700} c="yellow.5">
               {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
             </Text>
-            <Tooltip
-              label="Slice Value (SV) = optimal resources + influence + flex, plus bonuses for tech skips (+0.5), legendaries (+1 to +3), and entropic scar."
-              multiline
-              w={280}
-              withArrow
-              events={{ hover: true, focus: true, touch: true }}
-            >
-              <Box
-                component="span"
-                style={{
-                  cursor: "help",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <IconHelpCircleFilled
-                  size={14}
-                  color="var(--mantine-color-dimmed)"
-                />
-              </Box>
-            </Tooltip>
+            <SliceValuePopover slice={slice} />
           </Group>
           <Group gap={6}>
             <Text size="10px" c="dimmed" fw={600} tt="uppercase">

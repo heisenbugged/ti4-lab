@@ -6,6 +6,7 @@ export const miltyeq5p: DraftConfig = {
   type: "miltyeq5p",
   minorFactionsEqPositions: [8, 10, 13, 16, 18],
   numSystemsInSlice: 4,
+  mecatolPathSystemIndices: [1, 3],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
   homeIdxInMapString: [19, 22, 25, 31, 34],

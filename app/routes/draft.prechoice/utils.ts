@@ -3,9 +3,9 @@ import type { MiltyDraftSettings } from "~/components/MiltySettingsModal";
 import type { MiltyEqDraftSettings } from "~/components/MiltyEqSettingsModal";
 import type { FactionId } from "~/types";
 
-export type OptimalRange = {
-  minOptimal: number | undefined;
-  maxOptimal: number | undefined;
+export type SliceValueRange = {
+  minSliceValue: number | undefined;
+  maxSliceValue: number | undefined;
 };
 
 export const filterFactionList = (
@@ -17,21 +17,21 @@ export const filterFactionList = (
   return filtered.length === 0 ? undefined : filtered;
 };
 
-export const calculateOptimalRange = (
-  settings: { minOptimal?: number; maxOptimal?: number },
+export const calculateSliceValueRange = (
+  settings: { minSliceValue?: number; maxSliceValue?: number },
   hasMinorFactions: boolean,
-): OptimalRange => {
-  const minOptimal =
-    hasMinorFactions && settings.minOptimal
-      ? settings.minOptimal - 2
-      : settings.minOptimal;
+): SliceValueRange => {
+  const minSliceValue =
+    hasMinorFactions && settings.minSliceValue
+      ? settings.minSliceValue - 2
+      : settings.minSliceValue;
 
-  const maxOptimal =
-    hasMinorFactions && settings.maxOptimal
-      ? settings.maxOptimal + 2
-      : settings.maxOptimal;
+  const maxSliceValue =
+    hasMinorFactions && settings.maxSliceValue
+      ? settings.maxSliceValue + 2
+      : settings.maxSliceValue;
 
-  return { minOptimal, maxOptimal };
+  return { minSliceValue, maxSliceValue };
 };
 
 export const buildSliceGenerationConfig = (
@@ -41,14 +41,14 @@ export const buildSliceGenerationConfig = (
   hasMinorFactions: boolean,
 ) => {
   if (mapType === "milty") {
-    const { minOptimal, maxOptimal } = calculateOptimalRange(
+    const { minSliceValue, maxSliceValue } = calculateSliceValueRange(
       miltySettings,
       hasMinorFactions,
     );
 
     return {
-      minOptimal,
-      maxOptimal,
+      minSliceValue,
+      maxSliceValue,
       minOptimalInfluence: miltySettings.minOptimalInfluence,
       minOptimalResources: miltySettings.minOptimalResources,
       safePathToMecatol: miltySettings.safePathToMecatol,
@@ -58,7 +58,7 @@ export const buildSliceGenerationConfig = (
       numBetas: miltySettings.minBetaWormholes,
       minLegendaries: miltySettings.minLegendaries,
       maxLegendaries: miltySettings.maxLegendaries,
-      entropicScarValue: miltySettings.entropicScarValue,
+      sliceValueModifiers: { entropicScarValue: miltySettings.entropicScarValue },
       hasMinorFactions,
     };
   }
@@ -69,14 +69,14 @@ export const buildSliceGenerationConfig = (
     mapType === "milty7p" ||
     mapType === "milty8p"
   ) {
-    const { minOptimal, maxOptimal } = calculateOptimalRange(
+    const { minSliceValue, maxSliceValue } = calculateSliceValueRange(
       miltySettings,
       hasMinorFactions,
     );
 
     return {
-      minOptimal,
-      maxOptimal,
+      minSliceValue,
+      maxSliceValue,
       minOptimalInfluence: miltySettings.minOptimalInfluence,
       minOptimalResources: miltySettings.minOptimalResources,
       hasMinorFactions,
@@ -90,8 +90,8 @@ export const buildSliceGenerationConfig = (
     mapType === "miltyeq8p"
   ) {
     return {
-      minOptimal: miltyEqSettings.minOptimal,
-      maxOptimal: miltyEqSettings.maxOptimal,
+      minSliceValue: miltyEqSettings.minSliceValue,
+      maxSliceValue: miltyEqSettings.maxSliceValue,
       minOptimalInfluence: miltyEqSettings.minOptimalInfluence,
       minOptimalResources: miltyEqSettings.minOptimalResources,
       safePathToMecatol: miltyEqSettings.safePathToMecatol,
@@ -101,7 +101,7 @@ export const buildSliceGenerationConfig = (
       numBetas: miltyEqSettings.minBetaWormholes,
       minLegendaries: miltyEqSettings.minLegendaries,
       maxLegendaries: miltyEqSettings.maxLegendaries,
-      entropicScarValue: miltyEqSettings.entropicScarValue,
+      sliceValueModifiers: { entropicScarValue: miltyEqSettings.entropicScarValue },
       hasMinorFactions,
     };
   }

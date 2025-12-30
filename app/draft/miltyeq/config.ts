@@ -6,6 +6,7 @@ export const miltyeq: DraftConfig = {
   minorFactionsEqPositions: [8, 10, 12, 14, 16, 18],
   type: "miltyeq",
   numSystemsInSlice: 4,
+  mecatolPathSystemIndices: [1, 3],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
   homeIdxInMapString: [19, 22, 25, 28, 31, 34],

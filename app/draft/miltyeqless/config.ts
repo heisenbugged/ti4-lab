@@ -5,6 +5,7 @@ export const miltyeqless: DraftConfig = {
   numPlayers: 6,
   type: "miltyeqless",
   numSystemsInSlice: 4,
+  mecatolPathSystemIndices: [1, 3],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
   homeIdxInMapString: [19, 22, 25, 28, 31, 34],

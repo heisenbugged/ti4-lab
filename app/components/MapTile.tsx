@@ -13,6 +13,7 @@ import { MapContext } from "~/contexts/MapContext";
 import { OriginalArtTile } from "./tiles/OriginalArtTile";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
+import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
 
 type SliceStats = {
   resources: number;
@@ -32,6 +33,7 @@ type Props = {
   showHomeStats?: boolean;
   sliceValue?: number;
   sliceStats?: SliceStats;
+  coreSliceData?: CoreSliceData;
 };
 const MECATOL_REX_ID = "18";
 
@@ -62,6 +64,7 @@ function OriginalArtMapTile(props: Props) {
           showStats={props.showHomeStats}
           sliceValue={props.sliceValue}
           sliceStats={props.sliceStats}
+          coreSliceData={props.coreSliceData}
         />
       );
       break;
@@ -160,6 +163,7 @@ function AbstractArtMapTile(props: Props) {
           showStats={props.showHomeStats}
           sliceValue={props.sliceValue}
           sliceStats={props.sliceStats}
+          coreSliceData={props.coreSliceData}
         />
       );
       break;

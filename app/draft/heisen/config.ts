@@ -11,6 +11,7 @@ export const heisen: DraftConfig = {
   modifiableMapTiles: [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18],
   presetTiles: {},
   closedMapTiles: [],
+  mecatolPathSystemIndices: [1],
   seatTilePositions: [
     { x: 0, y: 0 },
     { x: -1, y: 0 },

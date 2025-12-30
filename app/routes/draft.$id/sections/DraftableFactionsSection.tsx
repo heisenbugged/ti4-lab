@@ -14,10 +14,12 @@ export function DraftableFactionsSection() {
   return (
     <Section>
       <SectionTitle title="Available Factions" />
-      {!!playerFactionPool && (
-        <GroupedFactionSelection playerFactionPools={playerFactionPool} />
-      )}
-      {!playerFactionPool && <PoolFactionSelection />}
+      <Box pt={4}>
+        {!!playerFactionPool && (
+          <GroupedFactionSelection playerFactionPools={playerFactionPool} />
+        )}
+        {!playerFactionPool && <PoolFactionSelection />}
+      </Box>
     </Section>
   );
 }
