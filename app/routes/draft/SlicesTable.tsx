@@ -1,8 +1,8 @@
-import { Box, Group, Table } from "@mantine/core";
+import { Group, Table, Text } from "@mantine/core";
 import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
-import { valueSlice } from "~/stats";
-import { optimalStatsForSystems, totalStatsForSystems } from "~/utils/map";
+import { calculateSliceValue } from "~/stats";
+import { optimalStatsForSystems } from "~/utils/map";
 import { useSortedSlices } from "./useSortedSlices";
 import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
@@ -25,16 +25,16 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Name</Table.Th>
+          <Table.Th>SV</Table.Th>
           <Table.Th>Optimal</Table.Th>
-          <Table.Th>Total</Table.Th>
           <Table.Th visibleFrom="xs">Features</Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
         {sortedSlices.map(({ slice, idx }) => {
           const systems = systemsInSlice(slice);
-          const total = totalStatsForSystems(systems);
-          const optimal = optimalStatsForSystems(systems, entropicScarValue);
+          const optimal = optimalStatsForSystems(systems);
+          const sliceValue = calculateSliceValue(systems, entropicScarValue);
           const isDrafted = draftedSlices.includes(idx);
           return (
             <Table.Tr
@@ -44,26 +44,21 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
             >
               <Table.Td>{slice.name}</Table.Td>
               <Table.Td>
-                <Group gap={2}>
+                <Text fw={700} c="yellow.5">
+                  {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Group gap={4}>
                   <PlanetStatsPill
                     size="sm"
                     resources={optimal.resources}
                     influence={optimal.influence}
                     flex={optimal.flex}
                   />
-                  <Box visibleFrom="xs">({valueSlice(systems, entropicScarValue).toString()})</Box>
-                </Group>
-              </Table.Td>
-              <Table.Td>
-                <Group gap={2}>
-                  <PlanetStatsPill
-                    size="sm"
-                    resources={total.resources}
-                    influence={total.influence}
-                  />
-                  <Box visibleFrom="xs">
-                    ({(total.resources + total.influence).toString()})
-                  </Box>
+                  <Text size="xs" c="dimmed">
+                    ({optimal.resources + optimal.influence + optimal.flex})
+                  </Text>
                 </Group>
               </Table.Td>
               <Table.Td visibleFrom="xs">

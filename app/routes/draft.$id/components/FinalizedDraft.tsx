@@ -163,8 +163,8 @@ export function FinalizedDraft() {
                   <Table.Th>Faction</Table.Th>
                   <Table.Th>Speaker Order</Table.Th>
                   {draftSpeaker && <Table.Th>Seat</Table.Th>}
-                  <Table.Th>Optimal Value</Table.Th>
-                  <Table.Th>Total Value</Table.Th>
+                  <Table.Th>SV</Table.Th>
+                  <Table.Th>Optimal</Table.Th>
                   <Table.Th>Features</Table.Th>
                   {draftPlayerColors && <Table.Th>Color</Table.Th>}
                 </Table.Tr>

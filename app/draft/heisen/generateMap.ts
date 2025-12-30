@@ -20,9 +20,10 @@ import {
   DraftSettings,
   FactionId,
 } from "~/types";
-import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
+import { generateEmptyMap } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
+import { calculateSliceValue } from "~/stats";
 import {
   getAdjacentPositions,
   hasAdjacentAnomalies,
@@ -328,28 +329,22 @@ export function generateMap(
     const maxPlanets = Math.max(...planetCounts);
 
     const totalSpends = slices.map((s) => {
-      const stats = optimalStatsForSystems(
+      return calculateSliceValue(
         s.map((id) => systemData[id]),
         settings.sliceGenerationConfig?.entropicScarValue ?? 2,
       );
-      return stats.resources + stats.influence + stats.flex;
     });
     const minTotalSpend = Math.min(...totalSpends);
     const maxTotalSpend = Math.max(...totalSpends);
 
-    // Calculate core slice statistics and balance
-    const coreSliceStats = calculateCoreSliceStats(
+    const coreSliceValues = calculateCoreSliceValues(
       CORE_SLICES,
       chosenMapLocations,
       settings.sliceGenerationConfig?.entropicScarValue ?? 2,
     );
 
-    const coreSliceSpends = coreSliceStats.map(
-      (stats) => stats.resources + stats.influence + stats.flex,
-    );
-
-    const minCoreSpend = Math.min(...coreSliceSpends);
-    const maxCoreSpend = Math.max(...coreSliceSpends);
+    const minCoreSpend = Math.min(...coreSliceValues);
+    const maxCoreSpend = Math.max(...coreSliceValues);
 
     // Calculate maximum difference between core slices (measure of balance)
     const coreSliceBalance = maxCoreSpend - minCoreSpend;
@@ -389,21 +384,18 @@ export function generateMap(
   };
 }
 
-/**
- * Calculate the optimal stats for each core slice
- */
-function calculateCoreSliceStats(
+function calculateCoreSliceValues(
   coreSlices: number[][],
   chosenMapLocations: Record<number, SystemId>,
   entropicScarValue: number = 2,
-) {
+): number[] {
   return coreSlices.map((positions) => {
     const systems = positions
       .filter((pos) => chosenMapLocations[pos])
       .map((pos) => chosenMapLocations[pos])
       .map((id) => systemData[id]);
 
-    return optimalStatsForSystems(systems, entropicScarValue);
+    return calculateSliceValue(systems, entropicScarValue);
   });
 }
 
@@ -476,16 +468,14 @@ function fillCoreSlices(
 
         // Sort candidates by how well they balance the slice
         candidateSystems.sort((a, b) => {
-          const optA = optimalStatsForSystems(
+          const totalA = calculateSliceValue(
             [...currentSliceSystems, systemData[a]],
             entropicScarValue,
           );
-          const optB = optimalStatsForSystems(
+          const totalB = calculateSliceValue(
             [...currentSliceSystems, systemData[b]],
             entropicScarValue,
           );
-          const totalA = optA.resources + optA.influence + optA.flex;
-          const totalB = optB.resources + optB.influence + optB.flex;
 
           // Prioritize systems that keep the slice within optimal range
           const aInRange =

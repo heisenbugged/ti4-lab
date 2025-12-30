@@ -223,12 +223,13 @@ function calculateSliceScore(
   const slice = [...sliceSoFar];
   slice.push(withNewSystem);
 
-  const { optInf, optRes, wormholes, legendaries } = summarizeRaw(
+  const { optInf, optRes, sliceValue, wormholes, legendaries } = summarizeRaw(
     slice,
     entropicScarValue,
   );
   const avgOptInf = optInf / slice.length;
   const avgOptRes = optRes / slice.length;
+  const avgSliceValue = sliceValue / slice.length;
 
   // Avoid multi-wormhole systems.
   if (wormholes.length > 1) {
@@ -240,25 +241,20 @@ function calculateSliceScore(
     return 0.001;
   }
 
-  // Milty draft requires:
-  // - mininf = 4.0,
-  // - minres = 2.5,
-  // - mintot = 9.0,
-  // - maxtot = 13.0
   const minAvgOptInf = 4 / 5;
   const minAvgOptRes = 2.5 / 5;
-  const minAvgTot = 9 / 5;
-  const maxAvgTot = 13 / 5;
+  const minAvgSliceValue = 9 / 5;
+  const maxAvgSliceValue = 13 / 5;
   const targetOptInf = 1.354; // 4/(4+2.5)*11/5
   const targetOptRes = 0.846; // 2.5/(4+2.5)*11/5
 
   const weights = [
-    Math.min(1, avgOptInf / minAvgOptInf), // minInf
-    Math.min(1, avgOptRes / minAvgOptRes), // minRes
-    Math.min(1, (avgOptInf + avgOptRes) / minAvgTot), // minTot
-    avgOptInf + avgOptRes > maxAvgTot ? 0.001 : 1, // maxTot
-    1 / (Math.abs(avgOptInf - targetOptInf) + 1), // targetInf
-    1 / (Math.abs(avgOptRes - targetOptRes) + 1), // targetRes
+    Math.min(1, avgOptInf / minAvgOptInf),
+    Math.min(1, avgOptRes / minAvgOptRes),
+    Math.min(1, avgSliceValue / minAvgSliceValue),
+    avgSliceValue > maxAvgSliceValue ? 0.001 : 1,
+    1 / (Math.abs(avgOptInf - targetOptInf) + 1),
+    1 / (Math.abs(avgOptRes - targetOptRes) + 1),
   ];
   const score = 100 * weights.reduce((acc, w) => acc * w, 1);
 
@@ -267,6 +263,7 @@ function calculateSliceScore(
       JSON.stringify({
         avgOptInf,
         avgOptRes,
+        avgSliceValue,
         weights,
         score,
       }),
@@ -281,6 +278,7 @@ function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
   let optRes = 0;
   let inf = 0;
   let optInf = 0;
+  let sliceValue = 0;
   const tech = [];
   const traits = [];
   const wormholes = [];
@@ -295,16 +293,20 @@ function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
       inf += i;
       if (r > i) {
         optRes += r;
+        sliceValue += r;
       } else if (r < i) {
         optInf += i;
+        sliceValue += i;
       } else {
         optRes += r / 2;
         optInf += i / 2;
+        sliceValue += r;
       }
       if (planet.tech) {
         for (const planetTech of planet.tech) {
           tech.push(planetTech.substring(0, 1).toUpperCase());
         }
+        sliceValue += planet.tech.length * 0.5;
       }
       if (planet.trait) {
         for (const planetTrait of planet.trait) {
@@ -313,11 +315,17 @@ function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
       }
       if (planet.legendary) {
         legendaries.push("L");
+        if (planet.name === "Hope's End") {
+          sliceValue += 2;
+        } else if (planet.name === "Emelpar") {
+          sliceValue += 3;
+        } else {
+          sliceValue += 1;
+        }
       }
     }
-    // Add entropic scar value to optimal resources (counts as resources)
     if (system.anomalies.includes("ENTROPIC_SCAR")) {
-      optRes += entropicScarValue;
+      sliceValue += entropicScarValue;
     }
     for (const wormhole of system.wormholes) {
       switch (wormhole) {
@@ -342,6 +350,7 @@ function summarizeRaw(systems: SystemId[], entropicScarValue: number = 2) {
     optRes,
     inf,
     optInf,
+    sliceValue,
     tech,
     traits,
     wormholes,

@@ -206,19 +206,12 @@ export const totalStatsForSystems = (systems: System[]) =>
     { resources: 0, influence: 0 },
   );
 
-export const optimalStatsForSystems = (
-  systems: System[],
-  entropicScarValue: number = 2,
-) =>
+export const optimalStatsForSystems = (systems: System[]) =>
   systems.reduce(
     (acc, s) => {
       acc.resources += s.optimalSpend.resources;
       acc.influence += s.optimalSpend.influence;
       acc.flex += s.optimalSpend.flex;
-      // Add entropic scar value to resources (counts as resources)
-      if (s.anomalies.includes("ENTROPIC_SCAR")) {
-        acc.resources += entropicScarValue;
-      }
       return acc;
     },
     { resources: 0, influence: 0, flex: 0 },

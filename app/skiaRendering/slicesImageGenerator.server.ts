@@ -1,4 +1,4 @@
-import { Draft, Slice, Tile } from "~/types";
+import { Draft, Slice, Tile, System } from "~/types";
 import { calcHexHeight } from "~/utils/positioning";
 import {
   initializeFonts,
@@ -17,6 +17,7 @@ import { systemData } from "~/data/systemData";
 import { Wormhole, TechSpecialty } from "~/types";
 import { drawWormhole } from "./renderers/wormholeRenderer.server";
 import { factions } from "~/data/factionData";
+import { calculateSliceValue } from "~/stats";
 
 export async function generateDraftSlicesImage(
   draft: Draft,
@@ -220,18 +221,17 @@ function drawSlice(
 
   // Draw slice stats
   const stats = calculateSliceStats(slice);
+  const sliceValue = calculateSliceValueForSlice(slice);
   ctx.font = "26px Quantico, sans-serif";
+
+  ctx.fillStyle = "#fcc419";
+  const svText = `SV: ${sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}`;
+  ctx.fillText(svText, x + 15, y + 55);
+
   ctx.fillStyle = "#51cf66";
-  const optimalText = `Optimal: ${stats.optimal.resources}/${stats.optimal.influence}/${stats.optimal.flex}`;
-
-  ctx.fillText(optimalText, x + 15, y + 55);
-
-  ctx.fillStyle = "#868e96";
-  ctx.fillText(
-    `Total: ${stats.total.resources}/${stats.total.influence}`,
-    x + 250,
-    y + 55,
-  );
+  const optimalSum = stats.optimal.resources + stats.optimal.influence + stats.optimal.flex;
+  const optimalText = `Opt: ${stats.optimal.resources}/${stats.optimal.influence}/${stats.optimal.flex} (${optimalSum})`;
+  ctx.fillText(optimalText, x + 150, y + 55);
 
   // Draw slice features in top right
   drawSliceFeatures(ctx, slice, x, y, width);
@@ -387,20 +387,15 @@ function getSliceHeightForDraftType(draftType: string): number {
 
 function calculateSliceStats(slice: Slice): {
   optimal: { resources: number; influence: number; flex: number };
-  total: { resources: number; influence: number };
 } {
   let optimalResources = 0;
   let optimalInfluence = 0;
   let optimalFlex = 0;
-  let totalResources = 0;
-  let totalInfluence = 0;
 
   slice.tiles.forEach((tile) => {
     if (tile.type === "SYSTEM") {
       const system = systemData[tile.systemId];
       if (system) {
-        totalResources += system.totalSpend.resources;
-        totalInfluence += system.totalSpend.influence;
         optimalResources += system.optimalSpend.resources;
         optimalInfluence += system.optimalSpend.influence;
         optimalFlex += system.optimalSpend.flex;
@@ -414,6 +409,14 @@ function calculateSliceStats(slice: Slice): {
       influence: optimalInfluence,
       flex: optimalFlex,
     },
-    total: { resources: totalResources, influence: totalInfluence },
   };
+}
+
+function calculateSliceValueForSlice(slice: Slice, entropicScarValue = 2): number {
+  const systems: System[] = slice.tiles
+    .filter((t) => t.type === "SYSTEM")
+    .map((t) => systemData[t.systemId])
+    .filter((s) => !!s);
+
+  return calculateSliceValue(systems, entropicScarValue);
 }

@@ -11,6 +11,7 @@ import { DraftConfig } from "~/draft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { systemsInSlice } from "~/utils/slice";
+import { calculateSliceValue } from "~/stats";
 
 import classes from "./MidDraftSummary.module.css";
 import { FactionHelpInfo } from "~/routes/draft.$id/components/FactionHelpInfo";
@@ -110,28 +111,38 @@ export function SummaryCard({
   let optimal:
     | { resources: number; influence: number; flex: number }
     | undefined;
-  // let specialties: string[] | undefined;
+  let sliceValue: number | undefined;
 
   if (player.faction) faction = factions[player.faction];
   if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
-    optimal = optimalStatsForSystems(systems, entropicScarValue);
-    // specialties = techSpecialtiesForSystems(systems);
+    optimal = optimalStatsForSystems(systems);
+    sliceValue = calculateSliceValue(systems, entropicScarValue);
   }
 
   return (
     <Card shadow="xs" padding="md" withBorder>
       <Group justify="space-between">
         <PlayerChip player={player} />
-        <Group>
+        <Group gap="sm">
+          {sliceValue !== undefined && (
+            <Text fw={700} c="yellow.5">
+              SV: {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
+            </Text>
+          )}
           {optimal && (
-            <PlanetStatsPill
-              size="sm"
-              resources={optimal.resources}
-              influence={optimal.influence}
-              flex={optimal.flex}
-            />
+            <Group gap={4}>
+              <PlanetStatsPill
+                size="sm"
+                resources={optimal.resources}
+                influence={optimal.influence}
+                flex={optimal.flex}
+              />
+              <Text size="xs" c="dimmed">
+                ({optimal.resources + optimal.influence + optimal.flex})
+              </Text>
+            </Group>
           )}
         </Group>
       </Group>
@@ -215,14 +226,14 @@ function SummaryRow({
   let optimal:
     | { resources: number; influence: number; flex: number }
     | undefined;
-  // let specialties: string[] | undefined;
+  let sliceValue: number | undefined;
 
   if (player.faction) faction = factions[player.faction];
   if (player.minorFaction) minorFaction = factions[player.minorFaction];
   if (slice) {
     systems = systemsInSlice(slice);
-    optimal = optimalStatsForSystems(systems, entropicScarValue);
-    // specialties = techSpecialtiesForSystems(systems);
+    optimal = optimalStatsForSystems(systems);
+    sliceValue = calculateSliceValue(systems, entropicScarValue);
   }
 
   return (
@@ -265,13 +276,23 @@ function SummaryRow({
       )}
       <Table.Td>
         <Group>
+          {sliceValue !== undefined && (
+            <Text fw={700} c="yellow.5">
+              {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
+            </Text>
+          )}
           {optimal && (
-            <PlanetStatsPill
-              size="sm"
-              resources={optimal.resources}
-              influence={optimal.influence}
-              flex={optimal.flex}
-            />
+            <Group gap={4}>
+              <PlanetStatsPill
+                size="sm"
+                resources={optimal.resources}
+                influence={optimal.influence}
+                flex={optimal.flex}
+              />
+              <Text size="xs" c="dimmed">
+                ({optimal.resources + optimal.influence + optimal.flex})
+              </Text>
+            </Group>
           )}
           {slice !== undefined && <SliceFeatures slice={slice} />}
         </Group>

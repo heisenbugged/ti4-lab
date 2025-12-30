@@ -22,7 +22,7 @@ export function SummaryRow({
   showPlayerColor = false,
 }: Props) {
   const faction = factions[player.faction!];
-  const { total, optimal } = useSlice(slice);
+  const { optimal, sliceValue } = useSlice(slice);
   return (
     <Table.Tr>
       <Table.Td>
@@ -41,19 +41,22 @@ export function SummaryRow({
       {draftSpeaker && <Table.Td>{player.seatIdx! + 1}</Table.Td>}
 
       <Table.Td>
-        <PlanetStatsPill
-          size="sm"
-          resources={optimal.resources}
-          influence={optimal.influence}
-          flex={optimal.flex}
-        />
+        <Text fw={700} c="yellow.5">
+          {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
+        </Text>
       </Table.Td>
       <Table.Td>
-        <PlanetStatsPill
-          size="sm"
-          resources={total.resources}
-          influence={total.influence}
-        />
+        <Group gap={4}>
+          <PlanetStatsPill
+            size="sm"
+            resources={optimal.resources}
+            influence={optimal.influence}
+            flex={optimal.flex}
+          />
+          <Text size="xs" c="dimmed">
+            ({optimal.resources + optimal.influence + optimal.flex})
+          </Text>
+        </Group>
       </Table.Td>
       <Table.Td>
         <SliceFeatures slice={slice} />

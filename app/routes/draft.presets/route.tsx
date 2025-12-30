@@ -17,6 +17,7 @@ import { BaseSlice } from "~/components/Slice";
 import { draftConfig } from "~/draft";
 import { SystemId } from "~/types";
 import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
+import { calculateSliceValue } from "~/stats";
 import { systemIdsToSlice } from "~/utils/slice";
 import { systemsFromIds } from "~/utils/system";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
@@ -49,13 +50,15 @@ function usePresetCardStats(sliceIds: SystemId[][]) {
   const slices = sliceIds.map((ids, idx) => {
     const slice = systemIdsToSlice(draftConfig.milty, `Slice ${idx + 1}`, ids);
     const systems = systemsFromIds(ids);
-    const { resources, influence, flex } = optimalStatsForSystems(systems, entropicScarValue);
+    const { resources, influence, flex } = optimalStatsForSystems(systems);
+    const sliceValue = calculateSliceValue(systems, entropicScarValue);
     return {
       slice,
       optimalStats: {
         resources: resources + flex * 0.5,
         influence: influence + flex * 0.5,
       },
+      sliceValue,
     };
   });
 

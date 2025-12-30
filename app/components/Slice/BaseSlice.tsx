@@ -45,7 +45,7 @@ export function BaseSlice({
   onDeleteTile,
   onNameChange,
 }: Props) {
-  const { total, optimal } = useSlice(slice);
+  const { optimal, sliceValue } = useSlice(slice);
   return (
     <Paper
       shadow="sm"
@@ -74,7 +74,37 @@ export function BaseSlice({
           </Group>
         </SliceHeader>
 
-        <Group className={classes.stats}>
+        <Group className={classes.stats} justify="space-between">
+          <Group gap={6}>
+            <Text size="10px" c="dimmed" fw={600} tt="uppercase">
+              SV
+            </Text>
+            <Text size="sm" fw={700} c="yellow.5">
+              {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
+            </Text>
+            <Tooltip
+              label="Slice Value (SV) = optimal resources + influence + flex, plus bonuses for tech skips (+0.5), legendaries (+1 to +3), and entropic scar."
+              multiline
+              w={280}
+              withArrow
+              events={{ hover: true, focus: true, touch: true }}
+            >
+              <Box
+                component="span"
+                style={{
+                  cursor: "help",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <IconHelpCircleFilled
+                  size={14}
+                  color="var(--mantine-color-dimmed)"
+                />
+              </Box>
+            </Tooltip>
+          </Group>
           <Group gap={6}>
             <Text size="10px" c="dimmed" fw={600} tt="uppercase">
               Opt
@@ -84,42 +114,10 @@ export function BaseSlice({
               influence={optimal.influence}
               flex={optimal.flex}
             />
-          </Group>
-          <Text size="xs" c="dimmed" fw={500}>
-            /
-          </Text>
-          <Group gap={6}>
-            <Text size="10px" c="dimmed" fw={600} tt="uppercase">
-              Tot
+            <Text size="xs" c="dimmed">
+              ({optimal.resources + optimal.influence + optimal.flex})
             </Text>
-            <PlanetStatsPill
-              size="xs"
-              resources={total.resources}
-              influence={total.influence}
-            />
           </Group>
-          <Tooltip
-            label="Optimal counts each planet for only its best value (e.g., a 2/1 planet counts as 2 resources OR 1 influence, not both). Total counts all values. Purple means flex—equal resources and influence (e.g., 2/2 shows as 2 purple)."
-            multiline
-            w={280}
-            withArrow
-            events={{ hover: true, focus: true, touch: true }}
-          >
-            <Box
-              component="span"
-              style={{
-                cursor: "help",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <IconHelpCircleFilled
-                size={16}
-                color="var(--mantine-color-dimmed)"
-              />
-            </Box>
-          </Tooltip>
         </Group>
 
         <Box className={classes.map}>
