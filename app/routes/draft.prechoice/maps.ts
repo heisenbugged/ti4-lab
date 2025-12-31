@@ -3,7 +3,7 @@ import { draftConfig } from "~/draft";
 import { hydrateDemoMap } from "~/utils/map";
 import { std4p } from "~/draft/std4p";
 
-export type ChoosableDraftType = Exclude<DraftType, "miltyeqless">;
+export type ChoosableDraftType = DraftType;
 
 export type PrechoiceMap = {
   title: string;
@@ -116,14 +116,6 @@ export const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
       "Features a galactic nucleus for interesting map construction and a balanced draft which separates seat from speaker order. Beneficial for players who want to design their own maps while still running a draft. Randomization prioritizes high wormholes, and separates them for maximum impact.",
     map: hydrateDemoMap(draftConfig.heisen),
     titles: ["P1", "P2", "P3", "P4", "P5", "P6"],
-    playerCount: 6,
-  },
-  wekker: {
-    title: "Spiral",
-    description:
-      "Slices contained tiles that are close to other players. Slice generation follows 'milty draft' rules (2 red tiles, 3 blue tiles). Fun for players who want to have a more chaotic draft result.",
-    map: hydrateDemoMap(draftConfig.wekker),
-    titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th"],
     playerCount: 6,
   },
   miltyeq8p: {

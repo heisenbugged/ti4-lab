@@ -15,10 +15,8 @@ import { miltyeq5p } from "./miltyeq5p";
 import { miltyeq7p } from "./miltyeq7p";
 import { miltyeq7plarge } from "./miltyeq7plarge";
 import { miltyeq8p } from "./miltyeq8p";
-import { miltyeqless } from "./miltyeqless";
 import { std4p } from "./std4p";
 import { DraftConfig, DraftType } from "./types";
-import { wekker } from "./wekker";
 
 /**
  * The configuration for each draft type.
@@ -28,8 +26,6 @@ export const draftConfig: Record<DraftType, DraftConfig> = {
   miltyeq5p,
   miltyeq4p,
   miltyeq7p,
-  wekker,
-  miltyeqless,
   milty,
   heisen,
   heisen8p,

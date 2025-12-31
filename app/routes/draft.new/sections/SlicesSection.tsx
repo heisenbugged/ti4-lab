@@ -64,7 +64,7 @@ export function SlicesSection() {
   });
   const sensors = useSensors(delayedPointerSensor);
 
-  const xxlCols = config.type !== "wekker" ? 6 : 4;
+  const xxlCols = 6;
   const cols = { base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: xxlCols };
   return (
     <Section>

@@ -20,14 +20,6 @@ export const SLICE_SHAPES = {
   bunker_fixed: [
     "<2,0,-2>", // front-far
   ],
-  wekker: [
-    "<0,0,0>", //home
-    "<0,1,-1>", // right
-    "<0,2,-2>", // right-right
-    "<2,-1,-1>", // left-eq
-    "<3,-1,-2>", // left-far
-    "<1,0,-1>", // front
-  ],
   milty: [
     "<0,0,0>", // home system
     "<1,-1,0>", // left

@@ -12,8 +12,9 @@ async function migrateState() {
     const result = await findDrafts({ page, pageSize: 100 });
 
     for (const draft of result.drafts) {
-      // Delete drafts with miltyeqless or wekker draft types
-      if (draft.data.settings.type === "miltyeqless" || draft.data.settings.type === "wekker") {
+      // Delete drafts with miltyeqless or wekker draft types (legacy types no longer in DraftType union)
+      const draftType = draft.data.settings.type as string;
+      if (draftType === "miltyeqless" || draftType === "wekker") {
         await db.delete(drafts).where(eq(drafts.id, draft.id));
         deletedCount++;
         console.log(`Deleted draft ${draft.id} with type ${draft.data.settings.type}`);

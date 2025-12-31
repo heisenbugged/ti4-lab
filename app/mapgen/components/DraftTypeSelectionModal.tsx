@@ -5,7 +5,6 @@ const DRAFT_TYPE_LABELS: Record<string, string> = {
   milty: "Milty",
   miltyeq: "Milty EQ",
   heisen: "Nucleus",
-  wekker: "Wekker",
   milty4p: "Milty",
   miltyeq4p: "Milty EQ",
   milty5p: "Milty",

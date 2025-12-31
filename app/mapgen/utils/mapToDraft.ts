@@ -16,10 +16,10 @@ export type SeededMapData = {
 
 /**
  * Map configs to compatible draft types.
- * Some map configs support multiple draft types (e.g., milty6p works with milty, miltyeq, heisen, wekker).
+ * Some map configs support multiple draft types (e.g., milty6p works with milty, miltyeq, heisen).
  */
 export const mapConfigToCompatibleDraftTypes: Record<string, DraftType[]> = {
-  milty6p: ["milty", "miltyeq", "heisen", "wekker"],
+  milty6p: ["milty", "miltyeq", "heisen"],
   hyperlane4p: ["milty4p", "miltyeq4p"],
   std4p: ["std4p"],
   hyperlane5p: ["milty5p", "miltyeq5p"],
