@@ -6,11 +6,16 @@ import {
   Table,
   Text,
   Title,
-  Badge,
   Group,
   Anchor,
+  Divider,
 } from "@mantine/core";
-import { IconShare } from "@tabler/icons-react";
+import {
+  IconShare,
+  IconPlayerPlay,
+  IconArrowBackUp,
+  IconMicrophone2,
+} from "@tabler/icons-react";
 import { useDraft } from "~/draftStore";
 import { Section, SectionTitle } from "~/components/Section";
 import { SummaryRow } from "./SummaryRow";
@@ -28,16 +33,15 @@ import { useAtom } from "jotai";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { PlanetFinder } from "./PlanetFinder";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
-import styles from "./FinalizedDraft.module.css";
 import { trackButtonClick } from "~/lib/analytics.client";
-import { OriginalArtToggle } from "~/components/OriginalArtToggle";
+import { LabArtToggleButton } from "~/components/LabArtToggleButton";
 import { StartingUnitsTable } from "~/components/StartingUnitsTable";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions as allFactions } from "~/data/factionData";
 
 export function FinalizedDraft() {
   const navigate = useNavigate();
-  const { adminMode } = useSafeOutletContext();
+  const { adminMode, originalArt, setOriginalArt } = useSafeOutletContext();
 
   const config = useDraftConfig();
   const draftUrl = useDraft((state) => state.draftUrl);
@@ -79,12 +83,52 @@ export function FinalizedDraft() {
   };
 
   return (
-    <Stack mt="lg" gap={30}>
+    <Stack mt="lg" gap="xl">
       <PlanetFinder onSystemSelected={syncDraft} />
-      <Group justify="space-between">
-        <Title>Draft complete!</Title>
-        <Group gap="md">
+
+      {/* Header */}
+      <Box>
+        <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
+          <Title order={1}>Draft Complete</Title>
+          <Group gap="sm">
+            <Anchor href={`/draft/${draftUrl}.png`} target="_blank">
+              <Button
+                size="md"
+                color="green"
+                leftSection={<IconShare size={18} />}
+              >
+                Share Image
+              </Button>
+            </Anchor>
+            <Button
+              size="md"
+              variant="light"
+              color="orange"
+              leftSection={<IconMicrophone2 size={18} />}
+              onClick={handleSoundboardClick}
+            >
+              Soundboard
+            </Button>
+          </Group>
+        </Group>
+
+        <Divider my="md" />
+
+        <Group gap="xs">
           <Button
+            size="xs"
+            variant="subtle"
+            color="gray"
+            leftSection={<IconPlayerPlay size={14} />}
+            onClick={() => navigate(`/draft/${draftUrl}/replay`)}
+          >
+            Replay Draft
+          </Button>
+          <Button
+            size="xs"
+            variant="subtle"
+            color="gray"
+            leftSection={<IconArrowBackUp size={14} />}
             onClick={async () => {
               if (confirm("Are you sure you want to undo the last selection?")) {
                 await undoLastPick();
@@ -92,47 +136,10 @@ export function FinalizedDraft() {
             }}
             disabled={selections.length === 0}
           >
-            Undo Last Selection
+            Undo Last
           </Button>
-          <Button
-            size="lg"
-            variant="light"
-            onClick={() => navigate(`/draft/${draftUrl}/replay`)}
-          >
-            Replay Draft
-          </Button>
-          <Anchor href={`/draft/${draftUrl}.png`} target="_blank">
-            <Button
-              size="lg"
-              color="green"
-              leftSection={<IconShare size={20} />}
-            >
-              Share
-            </Button>
-          </Anchor>
-          <Box pos="relative">
-            <Badge
-              size="lg"
-              variant="filled"
-              color="orange"
-              pos="absolute"
-              top={-10}
-              right={-10}
-              style={{ zIndex: 1 }}
-            >
-              NEW
-            </Badge>
-            <Button
-              size="xl"
-              variant="outline"
-              onClick={handleSoundboardClick}
-              className={styles.soundboardButton}
-            >
-              Load Soundboard
-            </Button>
-          </Box>
         </Group>
-      </Group>
+      </Box>
       <SimpleGrid
         cols={{ base: 1, sm: 1, md: 1, lg: 2 }}
         style={{ gap: 30 }}
@@ -264,9 +271,15 @@ export function FinalizedDraft() {
             </Box>
           )}
         </Stack>
-        <Stack flex={1} gap="xl">
-          <OriginalArtToggle />
-          <MapSection />
+        <Stack flex={1} gap="md">
+          <MapSection
+            titleChildren={
+              <LabArtToggleButton
+                originalArt={originalArt}
+                onToggle={() => setOriginalArt(!originalArt)}
+              />
+            }
+          />
         </Stack>
       </SimpleGrid>
     </Stack>

@@ -16,9 +16,8 @@ import {
   IconVolume,
   IconVolumeOff,
   IconArrowBackUp,
-  IconPhoto,
-  IconPhotoOff,
 } from "@tabler/icons-react";
+import { LabArtToggleButton } from "~/components/LabArtToggleButton";
 import {
   isAudioAlertEnabled,
   setAudioAlertEnabled,
@@ -107,16 +106,10 @@ export function DraftOrderSection() {
       </Button>
 
       {/* Art toggle - prominent with different colors for each state */}
-      <Button
-        size="compact-xs"
-        variant="filled"
-        color={originalArt ? "orange" : "violet"}
-        leftSection={originalArt ? <IconPhoto size={14} /> : <IconPhotoOff size={14} />}
-        onClick={() => setOriginalArt(!originalArt)}
-        title={originalArt ? "Switch to abstract tiles" : "Switch to original art"}
-      >
-        {originalArt ? "Original" : "Lab Art"}
-      </Button>
+      <LabArtToggleButton
+        originalArt={originalArt}
+        onToggle={() => setOriginalArt(!originalArt)}
+      />
 
       {/* Other view controls */}
       <Group gap={4}>
