@@ -100,8 +100,12 @@ export function generateMap(
 ) {
   const sliceCount = settings.numSlices;
   const config = draftConfig[settings.type];
-  const sliceValueModifiers =
-    settings.sliceGenerationConfig?.sliceValueModifiers;
+  const sliceGenConfig = settings.sliceGenerationConfig;
+  const sliceValueModifiers = sliceGenConfig?.sliceValueModifiers;
+
+  // Slice value constraints from config, with fallback defaults
+  const minSliceValue = sliceGenConfig?.minSliceValue ?? 4;
+  const maxSliceValue = sliceGenConfig?.maxSliceValue ?? 10;
 
   // a bit hacky, but works for now
   // this changes between heisen and heisen8p
@@ -370,8 +374,8 @@ export function generateMap(
 
     // Check balance criteria
     const rejectionReasons: string[] = [];
-    if (minTotalSpend < 4) rejectionReasons.push(`minTotalSpend=${minTotalSpend}<4`);
-    if (maxTotalSpend > 10) rejectionReasons.push(`maxTotalSpend=${maxTotalSpend}>10`);
+    if (minTotalSpend < minSliceValue) rejectionReasons.push(`minTotalSpend=${minTotalSpend}<${minSliceValue}`);
+    if (maxTotalSpend > maxSliceValue) rejectionReasons.push(`maxTotalSpend=${maxTotalSpend}>${maxSliceValue}`);
     if (minPlanets < 2) rejectionReasons.push(`minPlanets=${minPlanets}<2`);
     if (maxPlanets > 5) rejectionReasons.push(`maxPlanets=${maxPlanets}>5`);
     if (redTileCount < MIN_RED_TILES) rejectionReasons.push(`redTileCount=${redTileCount}<${MIN_RED_TILES}`);

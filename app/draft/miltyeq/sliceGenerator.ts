@@ -17,7 +17,7 @@ import {
   coreGenerateSlices,
   postProcessSlices,
 } from "../common/sliceGenerator";
-import { DEFAULT_MILTYEQ_SETTINGS } from "~/components/MiltyEqSettingsModal";
+import { DEFAULT_SLICE_SETTINGS } from "~/components/SliceSettingsModal";
 import { draftConfig } from "../draftConfig";
 import { getFactionPool } from "~/utils/factions";
 import { mapStringOrder } from "~/data/mapStringOrder";
@@ -43,7 +43,7 @@ const MINOR_FACTION_SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "red", "med", "med"] }, // 4
 ];
 
-const DEFAULT_CONFIG = DEFAULT_MILTYEQ_SETTINGS;
+const DEFAULT_CONFIG = DEFAULT_SLICE_SETTINGS.miltyeq;
 
 export const generateMap = (
   settings: DraftSettings,

@@ -32,15 +32,11 @@ import {
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { useDisclosure } from "@mantine/hooks";
 import {
-  MiltySettingsModal,
-  DEFAULT_MILTY_SETTINGS,
-  MiltyDraftSettings,
-} from "~/components/MiltySettingsModal";
-import {
-  MiltyEqSettingsModal,
-  DEFAULT_MILTYEQ_SETTINGS,
-  MiltyEqDraftSettings,
-} from "~/components/MiltyEqSettingsModal";
+  SliceSettingsModal,
+  DEFAULT_SLICE_SETTINGS,
+  SliceGenerationSettings,
+  SliceSettingsFormatType,
+} from "~/components/SliceSettingsModal";
 import { useDraftSetup } from "./store";
 import { MAPS, ChoosableDraftType } from "./maps";
 import { ReferenceCardPacksConfigurationSection } from "./components/ReferenceCardPacksConfigurationSection";
@@ -74,13 +70,16 @@ export default function DraftPrechoice() {
   const referenceCardPacks = useDraftSetup((state) => state.referenceCardPacks);
   const content = useDraftSetup((state) => state.content);
 
-  const [miltySettings, setMiltySettings] = useState<MiltyDraftSettings>(
-    DEFAULT_MILTY_SETTINGS,
-  );
+  const [sliceSettings, setSliceSettings] = useState<
+    Record<SliceSettingsFormatType, SliceGenerationSettings>
+  >({
+    milty: DEFAULT_SLICE_SETTINGS.milty,
+    miltyeq: DEFAULT_SLICE_SETTINGS.miltyeq,
+    heisen: DEFAULT_SLICE_SETTINGS.heisen,
+  });
 
-  const [miltyEqSettings, setMiltyEqSettings] = useState<MiltyEqDraftSettings>(
-    DEFAULT_MILTYEQ_SETTINGS,
-  );
+  const [activeSettingsFormat, setActiveSettingsFormat] =
+    useState<SliceSettingsFormatType>("milty");
 
   // Initialize players from Discord data if available
   const discordDataInitialized = useRef(false);
@@ -138,10 +137,7 @@ export default function DraftPrechoice() {
 
   const mapType = hoveredMapType ?? map.selectedMapType;
 
-  const { buildDraftSettings } = useDraftSettingsBuilder(
-    miltySettings,
-    miltyEqSettings,
-  );
+  const { buildDraftSettings } = useDraftSettingsBuilder(sliceSettings);
   const { navigateToDraft } = useDraftNavigation(discordData);
 
   const handleChangeName = (playerIdx: number, name: string) => {
@@ -252,29 +248,28 @@ export default function DraftPrechoice() {
   };
 
   const [
-    miltySettingsOpened,
-    { open: openMiltySettings, close: closeMiltySettings },
+    sliceSettingsOpened,
+    { open: openSliceSettings, close: closeSliceSettings },
   ] = useDisclosure(false);
 
-  const [
-    miltyEqSettingsOpened,
-    { open: openMiltyEqSettings, close: closeMiltyEqSettings },
-  ] = useDisclosure(false);
+  const handleOpenSettings = (formatType: SliceSettingsFormatType) => {
+    setActiveSettingsFormat(formatType);
+    openSliceSettings();
+  };
 
   return (
     <Grid mt="lg">
-      <MiltySettingsModal
-        opened={miltySettingsOpened}
-        settings={miltySettings}
-        onClose={closeMiltySettings}
-        onSave={(newSettings) => setMiltySettings(newSettings)}
-      />
-
-      <MiltyEqSettingsModal
-        opened={miltyEqSettingsOpened}
-        settings={miltyEqSettings}
-        onClose={closeMiltyEqSettings}
-        onSave={(newSettings) => setMiltyEqSettings(newSettings)}
+      <SliceSettingsModal
+        opened={sliceSettingsOpened}
+        formatType={activeSettingsFormat}
+        settings={sliceSettings[activeSettingsFormat]}
+        onClose={closeSliceSettings}
+        onSave={(newSettings) => {
+          setSliceSettings((prev) => ({
+            ...prev,
+            [activeSettingsFormat]: newSettings,
+          }));
+        }}
       />
 
       <SavedStateModal
@@ -329,8 +324,7 @@ export default function DraftPrechoice() {
               selectedMapType={map.selectedMapType}
               onMapTypeHover={setHoveredMapType}
               onMapTypeSelect={handleMapTypeSelect}
-              onOpenMiltySettings={openMiltySettings}
-              onOpenMiltyEqSettings={openMiltyEqSettings}
+              onOpenSettings={handleOpenSettings}
               onOpenMinorFactionsInfo={openMinorFactions}
             />
             <Box flex={1} pos="relative" mt="sm">

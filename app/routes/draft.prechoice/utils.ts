@@ -1,6 +1,8 @@
 import type { ChoosableDraftType } from "./maps";
-import type { MiltyDraftSettings } from "~/components/MiltySettingsModal";
-import type { MiltyEqDraftSettings } from "~/components/MiltyEqSettingsModal";
+import type {
+  SliceGenerationSettings,
+  SliceSettingsFormatType,
+} from "~/components/SliceSettingsModal";
 import type { FactionId } from "~/types";
 
 export type SliceValueRange = {
@@ -34,77 +36,54 @@ export const calculateSliceValueRange = (
   return { minSliceValue, maxSliceValue };
 };
 
+// Determine which settings format to use based on map type
+function getSettingsFormatType(
+  mapType: ChoosableDraftType,
+): SliceSettingsFormatType | null {
+  if (mapType.startsWith("miltyeq")) return "miltyeq";
+  if (mapType.startsWith("milty")) return "milty";
+  if (mapType.startsWith("heisen")) return "heisen";
+  return null;
+}
+
 export const buildSliceGenerationConfig = (
   mapType: ChoosableDraftType,
-  miltySettings: MiltyDraftSettings,
-  miltyEqSettings: MiltyEqDraftSettings,
+  sliceSettings: Record<SliceSettingsFormatType, SliceGenerationSettings>,
   hasMinorFactions: boolean,
 ) => {
-  if (mapType === "milty") {
-    const { minSliceValue, maxSliceValue } = calculateSliceValueRange(
-      miltySettings,
-      hasMinorFactions,
-    );
+  const formatType = getSettingsFormatType(mapType);
+  if (!formatType) return undefined;
 
-    return {
-      minSliceValue,
-      maxSliceValue,
-      minOptimalInfluence: miltySettings.minOptimalInfluence,
-      minOptimalResources: miltySettings.minOptimalResources,
-      safePathToMecatol: miltySettings.safePathToMecatol,
-      centerTileNotEmpty: miltySettings.centerTileNotEmpty,
-      highQualityAdjacent: miltySettings.highQualityAdjacent,
-      numAlphas: miltySettings.minAlphaWormholes,
-      numBetas: miltySettings.minBetaWormholes,
-      minLegendaries: miltySettings.minLegendaries,
-      maxLegendaries: miltySettings.maxLegendaries,
-      sliceValueModifiers: { entropicScarValue: miltySettings.entropicScarValue },
-      hasMinorFactions,
-    };
-  }
+  const settings = sliceSettings[formatType];
+  const { minSliceValue, maxSliceValue } = calculateSliceValueRange(
+    settings,
+    hasMinorFactions,
+  );
 
-  if (
-    mapType === "milty4p" ||
-    mapType === "milty5p" ||
-    mapType === "milty7p" ||
-    mapType === "milty8p"
-  ) {
-    const { minSliceValue, maxSliceValue } = calculateSliceValueRange(
-      miltySettings,
-      hasMinorFactions,
-    );
-
-    return {
-      minSliceValue,
-      maxSliceValue,
-      minOptimalInfluence: miltySettings.minOptimalInfluence,
-      minOptimalResources: miltySettings.minOptimalResources,
-      hasMinorFactions,
-    };
-  }
-
-  if (
-    mapType === "miltyeq" ||
-    mapType === "miltyeq4p" ||
-    mapType === "miltyeq7p" ||
-    mapType === "miltyeq8p"
-  ) {
-    return {
-      minSliceValue: miltyEqSettings.minSliceValue,
-      maxSliceValue: miltyEqSettings.maxSliceValue,
-      minOptimalInfluence: miltyEqSettings.minOptimalInfluence,
-      minOptimalResources: miltyEqSettings.minOptimalResources,
-      safePathToMecatol: miltyEqSettings.safePathToMecatol,
-      centerTileNotEmpty: miltyEqSettings.centerTileNotEmpty,
-      highQualityAdjacent: miltyEqSettings.highQualityAdjacent,
-      numAlphas: miltyEqSettings.minAlphaWormholes,
-      numBetas: miltyEqSettings.minBetaWormholes,
-      minLegendaries: miltyEqSettings.minLegendaries,
-      maxLegendaries: miltyEqSettings.maxLegendaries,
-      sliceValueModifiers: { entropicScarValue: miltyEqSettings.entropicScarValue },
-      hasMinorFactions,
-    };
-  }
-
-  return undefined;
+  return {
+    minSliceValue,
+    maxSliceValue,
+    minOptimalInfluence: settings.minOptimalInfluence,
+    minOptimalResources: settings.minOptimalResources,
+    safePathToMecatol: settings.safePathToMecatol,
+    centerTileNotEmpty: settings.centerTileNotEmpty,
+    highQualityAdjacent: settings.highQualityAdjacent,
+    numAlphas: settings.minAlphaWormholes,
+    numBetas: settings.minBetaWormholes,
+    minLegendaries: settings.minLegendaries,
+    maxLegendaries: settings.maxLegendaries,
+    sliceValueModifiers: {
+      entropicScarValue: settings.entropicScarValue,
+      techValue: settings.techValue,
+      hopesEndValue: settings.hopesEndValue,
+      emelparValue: settings.emelparValue,
+      industrexValue: settings.industrexValue,
+      otherLegendaryValue: settings.otherLegendaryValue,
+      tradeStationValue: settings.tradeStationValue,
+      equidistantMultiplier: settings.equidistantMultiplier,
+      supernovaOnPathPenalty: settings.supernovaOnPathPenalty,
+      nebulaOnPathPenalty: settings.nebulaOnPathPenalty,
+    },
+    hasMinorFactions,
+  };
 };

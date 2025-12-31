@@ -1,14 +1,15 @@
 import { useNavigate, useSearchParams, useSubmit } from "@remix-run/react";
 import type { DraftSettings, DiscordData } from "~/types";
-import type { MiltyDraftSettings } from "~/components/MiltySettingsModal";
-import type { MiltyEqDraftSettings } from "~/components/MiltyEqSettingsModal";
+import type {
+  SliceGenerationSettings,
+  SliceSettingsFormatType,
+} from "~/components/SliceSettingsModal";
 import { useDraftSetup } from "./store";
 import { buildSliceGenerationConfig } from "./utils";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
 
 export const useDraftSettingsBuilder = (
-  miltySettings: MiltyDraftSettings,
-  miltyEqSettings: MiltyEqDraftSettings,
+  sliceSettings: Record<SliceSettingsFormatType, SliceGenerationSettings>,
 ) => {
   const content = useDraftSetup((state) => state.content);
   const map = useDraftSetup((state) => state.map);
@@ -45,8 +46,7 @@ export const useDraftSettingsBuilder = (
 
     const sliceConfig = buildSliceGenerationConfig(
       map.selectedMapType,
-      miltySettings,
-      miltyEqSettings,
+      sliceSettings,
       hasMinorFactions,
     );
 

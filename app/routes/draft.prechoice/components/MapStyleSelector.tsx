@@ -1,30 +1,35 @@
 import { ActionIcon, Box, Group, Stack, Text, UnstyledButton } from "@mantine/core";
 import { IconChevronRight, IconSettings } from "@tabler/icons-react";
 import { MAPS, ChoosableDraftType } from "../maps";
+import { SliceSettingsFormatType } from "~/components/SliceSettingsModal";
 
 type Props = {
   playerCount: number;
   selectedMapType: ChoosableDraftType;
   onMapTypeHover: (mapType: ChoosableDraftType | undefined) => void;
   onMapTypeSelect: (mapType: ChoosableDraftType) => void;
-  onOpenMiltySettings: () => void;
-  onOpenMiltyEqSettings: () => void;
+  onOpenSettings: (formatType: SliceSettingsFormatType) => void;
   onOpenMinorFactionsInfo: () => void;
 };
+
+// Map draft types to their settings format type
+function getSettingsFormatType(
+  draftType: ChoosableDraftType,
+): SliceSettingsFormatType | undefined {
+  if (draftType.startsWith("miltyeq")) return "miltyeq";
+  if (draftType.startsWith("milty")) return "milty";
+  if (draftType.startsWith("heisen")) return "heisen";
+  return undefined;
+}
 
 export function MapStyleSelector({
   playerCount,
   selectedMapType,
   onMapTypeHover,
   onMapTypeSelect,
-  onOpenMiltySettings,
-  onOpenMiltyEqSettings,
+  onOpenSettings,
   onOpenMinorFactionsInfo,
 }: Props) {
-  const settingsOpeners: Partial<Record<ChoosableDraftType, () => void>> = {
-    milty: onOpenMiltySettings,
-    miltyeq: onOpenMiltyEqSettings,
-  };
 
   return (
     <Stack
@@ -37,7 +42,7 @@ export function MapStyleSelector({
         if (mapPlayerCount !== playerCount) return null;
 
         const isSelected = selectedMapType === type;
-        const openSettings = settingsOpeners[type as ChoosableDraftType];
+        const settingsFormat = getSettingsFormatType(type as ChoosableDraftType);
 
         return (
           <Group key={type} gap={4} wrap="nowrap">
@@ -94,7 +99,7 @@ export function MapStyleSelector({
                 />
               </Group>
             </UnstyledButton>
-            {openSettings && (
+            {settingsFormat && (
               <ActionIcon
                 size="sm"
                 variant="subtle"
@@ -102,7 +107,7 @@ export function MapStyleSelector({
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   onMapTypeSelect(type as ChoosableDraftType);
-                  openSettings();
+                  onOpenSettings(settingsFormat);
                 }}
               >
                 <IconSettings size={14} />
