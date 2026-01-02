@@ -1,0 +1,218 @@
+/* Voice Line Button - Unified command-console aesthetic */
+.voiceLineButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  min-height: 32px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  overflow: visible;
+}
+
+.voiceLineButton:focus {
+  outline: none;
+}
+
+.voiceLineButton:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-5);
+  outline-offset: 2px;
+}
+
+/* Primary variant - for main combat actions */
+.primary {
+  @mixin dark {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--mantine-color-blue-6) 100%, transparent),
+      color-mix(in srgb, var(--mantine-color-blue-7) 100%, transparent)
+    );
+    border-color: var(--mantine-color-blue-5);
+    color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  @mixin light {
+    background: linear-gradient(
+      180deg,
+      var(--mantine-color-blue-5),
+      var(--mantine-color-blue-6)
+    );
+    border-color: var(--mantine-color-blue-6);
+    color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
+.primary:hover:not(.disabled) {
+  @mixin dark {
+    background: linear-gradient(
+      180deg,
+      var(--mantine-color-blue-5),
+      var(--mantine-color-blue-6)
+    );
+    border-color: var(--mantine-color-blue-4);
+  }
+  @mixin light {
+    background: linear-gradient(
+      180deg,
+      var(--mantine-color-blue-4),
+      var(--mantine-color-blue-5)
+    );
+  }
+}
+
+.primary:active:not(.disabled) {
+  transform: translateY(1px);
+}
+
+/* Secondary variant - for standard voice lines */
+.secondary {
+  @mixin dark {
+    background: var(--mantine-color-dark-6);
+    border-color: var(--mantine-color-dark-4);
+    color: var(--mantine-color-gray-3);
+  }
+  @mixin light {
+    background: var(--mantine-color-gray-1);
+    border-color: var(--mantine-color-gray-4);
+    color: var(--mantine-color-gray-7);
+  }
+}
+
+.secondary:hover:not(.disabled) {
+  @mixin dark {
+    background: var(--mantine-color-dark-5);
+    border-color: var(--mantine-color-dark-3);
+    color: var(--mantine-color-gray-1);
+  }
+  @mixin light {
+    background: var(--mantine-color-gray-2);
+    border-color: var(--mantine-color-gray-5);
+    color: var(--mantine-color-gray-9);
+  }
+}
+
+/* Tertiary variant - for roleplay/misc */
+.tertiary {
+  @mixin dark {
+    background: var(--mantine-color-dark-6);
+    border-color: var(--mantine-color-dark-4);
+    color: var(--mantine-color-gray-4);
+  }
+  @mixin light {
+    background: var(--mantine-color-gray-1);
+    border-color: var(--mantine-color-gray-4);
+    color: var(--mantine-color-gray-7);
+  }
+}
+
+.tertiary:hover:not(.disabled) {
+  @mixin dark {
+    background: var(--mantine-color-dark-5);
+    border-color: var(--mantine-color-dark-3);
+    color: var(--mantine-color-gray-2);
+  }
+  @mixin light {
+    background: var(--mantine-color-gray-2);
+    border-color: var(--mantine-color-gray-5);
+    color: var(--mantine-color-gray-8);
+  }
+}
+
+/* Queued state */
+.queued {
+  @mixin dark {
+    background: transparent !important;
+    border-color: var(--mantine-color-blue-6) !important;
+    border-style: dashed !important;
+    color: var(--mantine-color-blue-4) !important;
+  }
+  @mixin light {
+    background: transparent !important;
+    border-color: var(--mantine-color-blue-5) !important;
+    border-style: dashed !important;
+    color: var(--mantine-color-blue-6) !important;
+  }
+}
+
+/* Loading state - keep clickable so user can stop playback */
+.loading {
+  @mixin dark {
+    background: var(--mantine-color-dark-5) !important;
+    border-color: var(--mantine-color-blue-6) !important;
+    color: var(--mantine-color-blue-4) !important;
+  }
+  @mixin light {
+    background: var(--mantine-color-blue-0) !important;
+    border-color: var(--mantine-color-blue-5) !important;
+    color: var(--mantine-color-blue-6) !important;
+  }
+}
+
+/* Disabled state */
+.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Label - maintains size for layout stability */
+.label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.labelHidden {
+  visibility: hidden;
+}
+
+/* Loader overlay - positioned over the hidden text, clicks pass through */
+.loaderOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Badge for line count */
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @mixin dark {
+    background: var(--mantine-color-dark-4);
+    color: var(--mantine-color-gray-3);
+    border: 1px solid var(--mantine-color-dark-3);
+  }
+  @mixin light {
+    background: var(--mantine-color-gray-2);
+    color: var(--mantine-color-gray-7);
+    border: 1px solid var(--mantine-color-gray-4);
+  }
+}

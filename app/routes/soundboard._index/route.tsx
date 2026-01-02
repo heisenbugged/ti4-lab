@@ -57,6 +57,7 @@ import {
   IconX,
   IconList,
   IconInfoCircle,
+  IconMicrophone2,
 } from "@tabler/icons-react";
 import styles from "./styles.module.css";
 
@@ -491,7 +492,8 @@ export default function SoundboardMaster() {
     : [null, null];
 
   return (
-    <Container py="xl" maw={1400} pos="relative" mt="sm">
+    <Container py="lg" maw={1400}>
+      {/* Reconnect button */}
       {socket && isDisconnected && (
         <Button
           variant="filled"
@@ -512,190 +514,229 @@ export default function SoundboardMaster() {
         </Button>
       )}
 
-      <Stack mb="xl" gap="md" mt="lg">
-        {sessionId && (
-          <Group gap="lg">
-            <Stack>
-              <Text fw={500}>Session Code: {sessionId}</Text>
-              <Text>https://tidraft.com/voices/{sessionId}</Text>
-            </Stack>
-            <Stack align="center" gap={4}>
-              <QRCode
-                value={`https://tidraft.com/voices/${sessionId}`}
-                size={200}
-              />
+      {/* Page Header */}
+      <div className={styles.pageHeader}>
+        <Stack gap="xs">
+          <h1 className={styles.pageTitle}>Soundboard</h1>
+          {!sessionId ? (
+            <Form method="post">
+              <Button
+                type="submit"
+                size="md"
+                color="blue"
+                leftSection={<IconMusic size={18} />}
+              >
+                Create Session
+              </Button>
+            </Form>
+          ) : (
+            <Group gap="sm">
+              <Button
+                size="sm"
+                color="red"
+                variant="light"
+                onClick={() => (window.location.href = window.location.pathname)}
+              >
+                End Session
+              </Button>
+            </Group>
+          )}
+        </Stack>
 
-              <Text size="sm" c="dimmed">
-                Scan to join session
-              </Text>
-            </Stack>
-          </Group>
+        {/* Session Info */}
+        {sessionId && (
+          <div className={styles.sessionPanel}>
+            <Group gap="lg" align="flex-start">
+              <Stack gap="xs">
+                <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+                  Session Code
+                </Text>
+                <Text className={styles.sessionCode}>{sessionId}</Text>
+                <Text size="sm" c="dimmed">
+                  tidraft.com/voices/{sessionId}
+                </Text>
+              </Stack>
+              <Stack align="center" gap={4}>
+                <div className={styles.qrContainer}>
+                  <QRCode
+                    value={`https://tidraft.com/voices/${sessionId}`}
+                    size={100}
+                  />
+                </div>
+                <Text size="xs" c="dimmed">
+                  Scan to join
+                </Text>
+              </Stack>
+            </Group>
+          </div>
         )}
 
-        {!accessToken && (
-          <Paper
-            radius="md"
-            p="md"
-            withBorder
-            maw={400}
-            pos="absolute"
-            right={0}
-            top={0}
-          >
-            <Stack>
-              <Group align="center" gap="md" justify="space-between">
-                <div style={{ flex: 0.5, height: 38 }}>
-                  <img src="/spotifylogo.svg" alt="Spotify Logo" />
-                </div>
+        {/* Spotify Panel */}
+        <div className={styles.spotifyPanel}>
+          <Stack gap="sm">
+            <Group justify="space-between" align="center">
+              <Image
+                src="/spotifylogo.svg"
+                alt="Spotify"
+                style={{ width: 80, height: 24 }}
+              />
+              {accessToken ? (
+                <Button
+                  variant="subtle"
+                  color="red"
+                  size="compact-xs"
+                  component="a"
+                  href="/voices/logout"
+                >
+                  Logout
+                </Button>
+              ) : (
                 <SpotifyLoginButton
                   accessToken={accessToken}
                   spotifyCallbackUrl={spotifyCallbackUrl}
                   spotifyClientId={spotifyClientId}
                 />
-              </Group>
-              <Text size="sm" c="dimmed">
-                Log in with Spotify to control background music during peace and
-                war times. When war breaks out, the music will automatically
-                switch to more intense tracks, and return to the peaceful
-                playlist when war ends.
-              </Text>
-            </Stack>
-          </Paper>
-        )}
-
-        {/* Spotify Controls */}
-        <Group grow align="end" justify="flex-end">
-          {accessToken && playbackRestrictions === false ? (
-            <SpotifyPlaylistUI
-              playlistId={playlistId}
-              setPlaylistId={setPlaylistId}
-              isWarMode={isWarMode}
-              endWar={endWar}
-            />
-          ) : null}
-
-          {!sessionId ? (
-            <Form method="post">
-              <Button type="submit" size="xl">
-                Create Session
-              </Button>
-            </Form>
-          ) : (
-            <Button
-              size="xl"
-              color="blue"
-              variant="outline"
-              onClick={() => (window.location.href = window.location.pathname)}
-            >
-              End Session
-            </Button>
-          )}
-
-          {accessToken && (
-            <Stack mt={12} w={300} style={{ overflow: "hidden" }}>
-              {playbackRestrictions === null ? null : playbackRestrictions ? (
-                <Alert color="blue" title="Spotify Premium Required">
-                  Spotify Premium lets you play any track, podcast episode or
-                  audiobook, ad-free and with better audio quality. Go to{" "}
-                  <Anchor
-                    href="https://spotify.com/premium"
-                    target="_blank"
-                    c="blue"
-                  >
-                    spotify.com/premium
-                  </Anchor>{" "}
-                  to try it for free.
-                </Alert>
-              ) : (
-                <SpotifyPlaybackUI currentPlayback={currentPlayback} />
               )}
-            </Stack>
-          )}
-        </Group>
-      </Stack>
+            </Group>
 
-      <Table verticalSpacing="lg" horizontalSpacing="lg">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Faction</Table.Th>
-            <Table.Th>Lines</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
+            {!accessToken ? (
+              <Text size="xs" c="dimmed">
+                Connect Spotify to control background music. Battle music plays
+                automatically during combat.
+              </Text>
+            ) : playbackRestrictions ? (
+              <Alert color="yellow" variant="light" p="xs">
+                <Text size="xs">
+                  Spotify Premium required for playback control.
+                </Text>
+              </Alert>
+            ) : (
+              <>
+                {currentPlayback && (
+                  <div className={styles.playbackCard}>
+                    <Image
+                      src={currentPlayback.albumImage.url}
+                      alt="Album"
+                      w={40}
+                      h={40}
+                      radius="sm"
+                    />
+                    <div className={styles.playbackInfo}>
+                      <a
+                        href={currentPlayback.track.external_urls.spotify}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.trackName}
+                      >
+                        {currentPlayback.track.name}
+                      </a>
+                      <div className={styles.artistName}>
+                        {currentPlayback.artists
+                          .map((a: { name: string }) => a.name)
+                          .join(", ")}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <SpotifyPlaylistUI
+                  playlistId={playlistId}
+                  setPlaylistId={setPlaylistId}
+                  isWarMode={isWarMode}
+                  endWar={endWar}
+                />
+              </>
+            )}
+          </Stack>
+        </div>
+      </div>
+
+      {/* Factions Section */}
+      <section>
+        <div className={styles.sectionHeader}>
+          <IconMicrophone2 size={16} color="var(--mantine-color-dimmed)" />
+          <h2 className={styles.sectionTitle}>Voice Lines</h2>
+          <Text size="xs" c="dimmed" ml="auto">
+            {factionSlots.length} factions
+          </Text>
+        </div>
+
+        <div className={styles.factionGrid}>
           {factionSlots.map((faction, index) => (
-            <Table.Tr key={`${faction}-${index}`}>
-              <Table.Td>
-                <Group gap="xs">
-                  <FactionIcon
-                    faction={faction}
-                    style={{ width: 32, height: 32 }}
-                  />
-                  <Select
-                    value={faction}
-                    onChange={(newFaction) => {
-                      if (newFaction) {
-                        const newSlots = [...factionSlots];
-                        newSlots[index] = newFaction as FactionId;
-                        setFactionSlots(newSlots);
-                      }
-                    }}
-                    data={factionData}
-                    w={200}
-                  />
-                </Group>
-              </Table.Td>
-
-              <Table.Td>
-                <Group gap="md">
+            <div key={`${faction}-${index}`} className={styles.factionCard}>
+              <div className={styles.factionCardHeader}>
+                <FactionIcon
+                  faction={faction}
+                  style={{ width: 24, height: 24 }}
+                />
+                <span className={styles.factionName}>
+                  {factions[faction]?.name}
+                </span>
+                <Select
+                  size="xs"
+                  variant="unstyled"
+                  value={faction}
+                  onChange={(newFaction) => {
+                    if (newFaction) {
+                      const newSlots = [...factionSlots];
+                      newSlots[index] = newFaction as FactionId;
+                      setFactionSlots(newSlots);
+                    }
+                  }}
+                  data={factionData}
+                  w={32}
+                  styles={{
+                    input: { padding: 0, minHeight: 0, height: "auto" },
+                  }}
+                  rightSection={null}
+                  comboboxProps={{ width: 200, position: "bottom-end" }}
+                />
+              </div>
+              <div className={styles.factionCardBody}>
+                <div className={styles.voiceLineGroup}>
                   {accessToken && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      color="green"
-                      p={6}
-                      onClick={() => startBattle(faction)}
-                    >
-                      <IconMusic size={16} />
-                    </Button>
+                    <Tooltip label="Start battle music">
+                      <Button
+                        size="compact-xs"
+                        variant="light"
+                        color="green"
+                        onClick={() => startBattle(faction)}
+                      >
+                        <IconMusic size={14} />
+                      </Button>
+                    </Tooltip>
                   )}
                   <VoiceLineButton
                     faction={faction}
-                    label="Battle Line"
+                    label="Battle"
                     type="battleLines"
                     loadingAudio={loadingAudio}
                     onPlay={() => handlePlayAudio(faction, "battleLines")}
                     onStop={handleStopAudio}
                     isQueued={isVoiceLineQueued(faction, "battleLines")}
                   />
-                  <Stack gap="xs">
-                    <VoiceLineButton
-                      faction={faction}
-                      label="Outnumbered"
-                      type="defenseOutnumbered"
-                      loadingAudio={loadingAudio}
-                      onPlay={() =>
-                        handlePlayAudio(faction, "defenseOutnumbered")
-                      }
-                      onStop={handleStopAudio}
-                      isQueued={isVoiceLineQueued(
-                        faction,
-                        "defenseOutnumbered",
-                      )}
-                    />
-                    <VoiceLineButton
-                      faction={faction}
-                      label="Superiority"
-                      type="offenseSuperior"
-                      loadingAudio={loadingAudio}
-                      onPlay={() => handlePlayAudio(faction, "offenseSuperior")}
-                      onStop={handleStopAudio}
-                      isQueued={isVoiceLineQueued(faction, "offenseSuperior")}
-                    />
-                  </Stack>
-
                   <VoiceLineButton
                     faction={faction}
-                    label="Home Defense"
+                    label="Outnumbered"
+                    type="defenseOutnumbered"
+                    loadingAudio={loadingAudio}
+                    onPlay={() =>
+                      handlePlayAudio(faction, "defenseOutnumbered")
+                    }
+                    onStop={handleStopAudio}
+                    isQueued={isVoiceLineQueued(faction, "defenseOutnumbered")}
+                  />
+                  <VoiceLineButton
+                    faction={faction}
+                    label="Superior"
+                    type="offenseSuperior"
+                    loadingAudio={loadingAudio}
+                    onPlay={() => handlePlayAudio(faction, "offenseSuperior")}
+                    onStop={handleStopAudio}
+                    isQueued={isVoiceLineQueued(faction, "offenseSuperior")}
+                  />
+                  <VoiceLineButton
+                    faction={faction}
+                    label="Defend"
                     type="homeDefense"
                     loadingAudio={loadingAudio}
                     onPlay={() => handlePlayAudio(faction, "homeDefense")}
@@ -704,27 +745,28 @@ export default function SoundboardMaster() {
                   />
                   <VoiceLineButton
                     faction={faction}
-                    label="Planet Invasion"
+                    label="Invade"
                     type="homeInvasion"
                     loadingAudio={loadingAudio}
                     onPlay={() => handlePlayAudio(faction, "homeInvasion")}
                     onStop={handleStopAudio}
                     isQueued={isVoiceLineQueued(faction, "homeInvasion")}
                   />
-
-                  <VoiceLineButton
-                    faction={faction}
-                    label={factionAudios[faction]?.special?.title ?? ""}
-                    type="special"
-                    loadingAudio={loadingAudio}
-                    onPlay={() => handlePlayAudio(faction, "special")}
-                    onStop={handleStopAudio}
-                    isQueued={isVoiceLineQueued(faction, "special")}
-                  />
+                  {factionAudios[faction]?.special && (
+                    <VoiceLineButton
+                      faction={faction}
+                      label={factionAudios[faction]?.special?.title ?? "Special"}
+                      type="special"
+                      loadingAudio={loadingAudio}
+                      onPlay={() => handlePlayAudio(faction, "special")}
+                      onStop={handleStopAudio}
+                      isQueued={isVoiceLineQueued(faction, "special")}
+                    />
+                  )}
                   {factionAudios[faction]?.special2 && (
                     <VoiceLineButton
                       faction={faction}
-                      label={factionAudios[faction]?.special2?.title ?? ""}
+                      label={factionAudios[faction]?.special2?.title ?? "Special 2"}
                       type="special2"
                       loadingAudio={loadingAudio}
                       onPlay={() => handlePlayAudio(faction, "special2")}
@@ -732,7 +774,6 @@ export default function SoundboardMaster() {
                       isQueued={isVoiceLineQueued(faction, "special2")}
                     />
                   )}
-
                   <VoiceLineButton
                     faction={faction}
                     label="Joke"
@@ -742,191 +783,143 @@ export default function SoundboardMaster() {
                     onStop={handleStopAudio}
                     isQueued={isVoiceLineQueued(faction, "jokes")}
                   />
-                </Group>
-              </Table.Td>
-            </Table.Tr>
+                </div>
+              </div>
+            </div>
           ))}
-        </Table.Tbody>
-      </Table>
+        </div>
+      </section>
 
-      {/* Credits section - now a regular footer at bottom of content */}
-      <Box
-        style={(theme) => ({
-          borderTop: `1px solid ${theme.colors.dark[6]}`,
-          marginTop: theme.spacing.xl,
-          marginBottom: theme.spacing.xl,
-          paddingTop: theme.spacing.md,
-          paddingBottom: theme.spacing.md,
-          textAlign: "center",
-        })}
-      >
-        <Text size="xs" c="dimmed" fs="italic">
-          Many thanks to Cacotopos for writing, direction, and general
-          feedback/support. Absol for lore accuracy. Xane225 for a ridiculous
-          amount of editing.
-        </Text>
-      </Box>
+      {/* Credits */}
+      <div className={styles.credits}>
+        Many thanks to Cacotopos for writing, direction, and general
+        feedback/support. Absol for lore accuracy. Xane225 for a ridiculous
+        amount of editing.
+      </div>
 
-      {/* Spacing div to prevent content from being hidden behind fixed player */}
-      <div style={{ height: 100 }} />
+      {/* Footer spacer */}
+      <div className={styles.footerSpacer} />
 
-      {/* Footer */}
-      <Box
-        component="footer"
-        style={(theme) => ({
-          borderTop: `1px solid ${theme.colors.dark[6]}`,
-          padding: theme.spacing.md,
-          backgroundColor: theme.colors.dark[8],
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1,
-        })}
-      >
-        <Container size="xl" px={0}>
-          <Group gap="md" align="center">
-            <Group gap="xs">
-              <Button
-                variant="filled"
-                size="sm"
-                onClick={() => {
-                  if (playingFaction && playingLineType) {
-                    // Toggle pause/play on the voice line
-                    if (voiceLineRef.current?.playing()) {
-                      voiceLineRef.current.pause();
-                      setIsVoiceLinePlaying(false);
-                    } else {
-                      voiceLineRef.current?.play();
-                      setIsVoiceLinePlaying(true);
-                    }
-                  }
-                }}
-                disabled={!(playingFaction && playingLineType)}
-              >
-                {isVoiceLinePlaying ? (
-                  <IconSquare size={16} />
-                ) : (
-                  <IconPlayerPlay size={16} />
-                )}
-              </Button>
-
-              {/* Skip to next in queue button */}
-              {voiceLineQueue.length > 0 && (
-                <Tooltip label="Skip to next in queue">
-                  <ActionIcon
-                    variant="filled"
-                    color="blue"
-                    size="md"
-                    onClick={() => {
-                      stopAudio();
-                      if (voiceLineQueue.length > 0) {
-                        const nextItem = voiceLineQueue[0];
-                        playAudio(nextItem.factionId, nextItem.type, true);
-                      }
-                    }}
-                  >
-                    <IconPlayerSkipForward size={16} />
-                  </ActionIcon>
-                </Tooltip>
-              )}
-
-              {playingFaction && playingLineType && (
-                <Group gap="xs">
-                  <FactionIcon
-                    faction={playingFaction as FactionId}
-                    style={{ width: 16, height: 16 }}
-                  />
-                  <Text size="sm" fw={500} truncate>
-                    {playingLineType}
-                  </Text>
-                </Group>
-              )}
-            </Group>
-
-            <Group gap="xs" style={{ flex: 1 }}>
-              <Slider
-                w="100%"
-                min={0}
-                max={1}
-                step={0.1}
-                showLabelOnHover={false}
-                label={null}
-                labelAlwaysOn={false}
-                value={audioProgress || 0}
-                onChange={(newPosition) => {
-                  if (voiceLineRef.current && loadingAudio) {
-                    // Get the total duration of the audio and calculate the seek position
-                    const duration = voiceLineRef.current.duration();
-                    const seekPosition = duration * newPosition;
-                    voiceLineRef.current.seek(seekPosition);
-                  }
-                }}
-                disabled={!loadingAudio}
-                styles={(theme) => ({
-                  track: {
-                    backgroundColor: theme.colors.dark[4],
-                    height: 6,
-                  },
-                  bar: {
-                    backgroundColor: theme.colors.blue[6],
-                    height: 6,
-                  },
-                  thumb: {
-                    display: loadingAudio ? undefined : "none",
-                    height: 16,
-                    width: 16,
-                    backgroundColor: theme.white,
-                    borderWidth: 1,
-                  },
-                })}
-              />
-            </Group>
-
-            {/* Queue Display */}
-            <VoiceLineQueue
-              queue={voiceLineQueue}
-              onRemove={removeFromQueue}
-              onClear={clearQueue}
-            />
-
-            <Group gap="xs">
-              <Button
-                variant="subtle"
-                size="sm"
-                onClick={() => {
-                  if (volume > 0) {
-                    setVolume(0);
-                    voiceLineRef.current?.volume(0);
+      {/* Audio Player Footer */}
+      <footer className={styles.playerFooter}>
+        <div className={styles.playerContent}>
+          <div className={styles.playerControls}>
+            <Button
+              variant="filled"
+              size="compact-sm"
+              onClick={() => {
+                if (playingFaction && playingLineType) {
+                  if (voiceLineRef.current?.playing()) {
+                    voiceLineRef.current.pause();
+                    setIsVoiceLinePlaying(false);
                   } else {
-                    setVolume(0.5);
-                    voiceLineRef.current?.volume(0.5);
+                    voiceLineRef.current?.play();
+                    setIsVoiceLinePlaying(true);
                   }
-                }}
-              >
-                {volume === 0 ? (
-                  <IconVolumeOff size={16} />
-                ) : (
-                  <IconVolume size={16} />
-                )}
-              </Button>
-              <Slider
-                w={100}
-                min={0}
-                max={1}
-                step={0.01}
-                value={volume}
-                onChange={(newVolume) => {
-                  setVolume(newVolume);
-                  voiceLineRef.current?.volume(newVolume);
-                }}
-              />
-            </Group>
-          </Group>
-        </Container>
-      </Box>
+                }
+              }}
+              disabled={!(playingFaction && playingLineType)}
+            >
+              {isVoiceLinePlaying ? (
+                <IconSquare size={14} />
+              ) : (
+                <IconPlayerPlay size={14} />
+              )}
+            </Button>
 
-      {/* Add the device selector modal */}
+            {voiceLineQueue.length > 0 && (
+              <Tooltip label="Skip to next">
+                <ActionIcon
+                  variant="light"
+                  color="blue"
+                  size="md"
+                  onClick={() => {
+                    stopAudio();
+                    if (voiceLineQueue.length > 0) {
+                      const nextItem = voiceLineQueue[0];
+                      playAudio(nextItem.factionId, nextItem.type, true);
+                    }
+                  }}
+                >
+                  <IconPlayerSkipForward size={14} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+          </div>
+
+          {playingFaction && playingLineType && (
+            <div className={styles.nowPlaying}>
+              <FactionIcon
+                faction={playingFaction as FactionId}
+                style={{ width: 18, height: 18 }}
+              />
+              <span className={styles.nowPlayingText}>{playingLineType}</span>
+            </div>
+          )}
+
+          <div className={styles.progressContainer}>
+            <Slider
+              size="xs"
+              min={0}
+              max={1}
+              step={0.01}
+              label={null}
+              value={audioProgress || 0}
+              onChange={(newPosition) => {
+                if (voiceLineRef.current && loadingAudio) {
+                  const duration = voiceLineRef.current.duration();
+                  const seekPosition = duration * newPosition;
+                  voiceLineRef.current.seek(seekPosition);
+                }
+              }}
+              disabled={!loadingAudio}
+            />
+          </div>
+
+          <VoiceLineQueue
+            queue={voiceLineQueue}
+            onRemove={removeFromQueue}
+            onClear={clearQueue}
+          />
+
+          <div className={styles.volumeControls}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={() => {
+                if (volume > 0) {
+                  setVolume(0);
+                  voiceLineRef.current?.volume(0);
+                } else {
+                  setVolume(0.5);
+                  voiceLineRef.current?.volume(0.5);
+                }
+              }}
+            >
+              {volume === 0 ? (
+                <IconVolumeOff size={16} />
+              ) : (
+                <IconVolume size={16} />
+              )}
+            </ActionIcon>
+            <Slider
+              size="xs"
+              w={80}
+              min={0}
+              max={1}
+              step={0.01}
+              label={null}
+              value={volume}
+              onChange={(newVolume) => {
+                setVolume(newVolume);
+                voiceLineRef.current?.volume(newVolume);
+              }}
+            />
+          </div>
+        </div>
+      </footer>
+
+      {/* Device selector modal */}
       <SpotifyDeviceSelector
         isOpen={noActiveDeviceError}
         onClose={() => setNoActiveDeviceError(false)}

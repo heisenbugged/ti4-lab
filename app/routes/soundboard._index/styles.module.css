@@ -1,6 +1,325 @@
+/* Hoverable links */
 .hoverableTextLink {
-  &:hover {
-    text-decoration: underline;
-    color: white !important;
-  }
+    &:hover {
+        text-decoration: underline;
+        color: white !important;
+    }
+}
+
+/* Page header */
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--mantine-spacing-xl);
+    flex-wrap: wrap;
+    margin-bottom: var(--mantine-spacing-xl);
+}
+
+.pageTitle {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 700;
+    font-size: 1.75rem;
+    letter-spacing: 0.05em;
+    margin: 0;
+
+    @mixin dark {
+        color: var(--mantine-color-gray-1);
+    }
+    @mixin light {
+        color: var(--mantine-color-gray-9);
+    }
+}
+
+/* Session panel */
+.sessionPanel {
+    border-radius: 4px;
+    padding: var(--mantine-spacing-md);
+    border: 1px solid var(--mantine-color-default-border);
+    background: var(--mantine-color-default);
+}
+
+.sessionCode {
+    font-family: "Orbitron", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+
+    @mixin dark {
+        color: var(--mantine-color-blue-4);
+    }
+    @mixin light {
+        color: var(--mantine-color-blue-6);
+    }
+}
+
+.qrContainer {
+    padding: var(--mantine-spacing-sm);
+    background: white;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Spotify panel */
+.spotifyPanel {
+    border-radius: 4px;
+    padding: var(--mantine-spacing-md);
+    border: 1px solid;
+    max-width: 360px;
+
+    @mixin dark {
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, #1DB954 8%, var(--mantine-color-dark-7)),
+            var(--mantine-color-dark-7)
+        );
+        border-color: color-mix(in srgb, #1DB954 30%, var(--mantine-color-dark-4));
+    }
+    @mixin light {
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, #1DB954 10%, var(--mantine-color-gray-0)),
+            var(--mantine-color-gray-0)
+        );
+        border-color: color-mix(in srgb, #1DB954 30%, var(--mantine-color-gray-3));
+    }
+}
+
+/* Section styling */
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-sm);
+    padding-bottom: var(--mantine-spacing-xs);
+    margin-bottom: var(--mantine-spacing-md);
+    border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.sectionTitle {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mantine-color-dimmed);
+    margin: 0;
+}
+
+/* Faction grid */
+.factionGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--mantine-spacing-md);
+
+    @media (max-width: 400px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Faction card */
+.factionCard {
+    border-radius: 4px;
+    border: 1px solid var(--mantine-color-default-border);
+    overflow: hidden;
+    transition: border-color 150ms ease;
+
+    @mixin dark {
+        background: var(--mantine-color-dark-7);
+    }
+    @mixin light {
+        background: var(--mantine-color-gray-0);
+    }
+
+    &:hover {
+        @mixin dark {
+            border-color: var(--mantine-color-dark-3);
+        }
+        @mixin light {
+            border-color: var(--mantine-color-gray-4);
+        }
+    }
+}
+
+.factionCardHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-sm);
+    padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+    border-bottom: 1px solid var(--mantine-color-default-border);
+
+    @mixin dark {
+        background: var(--mantine-color-dark-6);
+    }
+    @mixin light {
+        background: var(--mantine-color-gray-1);
+    }
+}
+
+.factionName {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    flex: 1;
+
+    @mixin dark {
+        color: var(--mantine-color-gray-3);
+    }
+    @mixin light {
+        color: var(--mantine-color-gray-7);
+    }
+}
+
+.factionCardBody {
+    padding: var(--mantine-spacing-sm);
+}
+
+.voiceLineGroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Audio player footer */
+.playerFooter {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    border-top: 1px solid;
+    padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+
+    @mixin dark {
+        background: var(--mantine-color-dark-8);
+        border-color: var(--mantine-color-dark-5);
+    }
+    @mixin light {
+        background: var(--mantine-color-gray-0);
+        border-color: var(--mantine-color-gray-3);
+    }
+}
+
+.playerContent {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-md);
+}
+
+.playerControls {
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-xs);
+    flex-shrink: 0;
+}
+
+.nowPlaying {
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-xs);
+    min-width: 0;
+    flex-shrink: 0;
+    max-width: 200px;
+}
+
+.nowPlayingText {
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.progressContainer {
+    flex: 1;
+    min-width: 100px;
+}
+
+.volumeControls {
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-xs);
+    flex-shrink: 0;
+
+    @media (max-width: 600px) {
+        display: none;
+    }
+}
+
+/* Controls section in header */
+.controlsRow {
+    display: flex;
+    gap: var(--mantine-spacing-lg);
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.controlPanel {
+    border-radius: 4px;
+    padding: var(--mantine-spacing-md);
+    border: 1px solid var(--mantine-color-default-border);
+    background: var(--mantine-color-default);
+    flex: 1;
+    min-width: 280px;
+}
+
+/* Playback display */
+.playbackCard {
+    display: flex;
+    gap: var(--mantine-spacing-sm);
+    align-items: center;
+    padding: var(--mantine-spacing-xs);
+    border-radius: 4px;
+    border: 1px solid var(--mantine-color-default-border);
+    background: var(--mantine-color-default);
+}
+
+.playbackInfo {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.trackName {
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.artistName {
+    font-size: 0.75rem;
+    color: var(--mantine-color-dimmed);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+        text-decoration: underline;
+        color: var(--mantine-color-text);
+    }
+}
+
+/* Credits */
+.credits {
+    text-align: center;
+    padding: var(--mantine-spacing-lg) 0;
+    margin-top: var(--mantine-spacing-xl);
+    border-top: 1px solid var(--mantine-color-default-border);
+    font-size: 0.75rem;
+    font-style: italic;
+    color: var(--mantine-color-dimmed);
+}
+
+/* Footer spacer */
+.footerSpacer {
+    height: 80px;
 }

@@ -1,6 +1,7 @@
 import { Button, ButtonProps, Loader, Badge, Group } from "@mantine/core";
 import { factionAudios, LineType, FactionAudio } from "~/data/factionAudios";
 import type { FactionId } from "~/types";
+import styles from "./VoiceLineButton.module.css";
 
 interface VoiceLineControlProps {
   faction: FactionId;
@@ -8,87 +9,14 @@ interface VoiceLineControlProps {
   loadingAudio: string | null;
   onPlay: () => void;
   onStop: () => void;
+  onRemoveFromQueue?: () => void;
   size?: ButtonProps["size"];
   width?: number | string;
   label?: string;
   isQueued?: boolean;
-  lineCount?: number; // Remaining count of voice lines
+  lineCount?: number;
+  variant?: "primary" | "secondary" | "tertiary";
 }
-
-const voiceLineConfig: Partial<Record<
-  LineType,
-  {
-    color: ButtonProps["color"];
-    size?: ButtonProps["size"];
-    width?: string;
-  }
->> = {
-  battleLines: {
-    color: "green",
-    width: "120px",
-  },
-  defenseOutnumbered: {
-    color: "teal",
-    width: "110px",
-    size: "compact-xs",
-  },
-  offenseSuperior: {
-    color: "teal",
-    width: "110px",
-    size: "compact-xs",
-  },
-  homeDefense: {
-    color: "blue",
-    width: "200px",
-  },
-  homeInvasion: {
-    color: "red",
-    width: "140px",
-  },
-  jokes: {
-    color: "yellow",
-  },
-  special: {
-    color: "purple",
-    width: "180px",
-  },
-  special2: {
-    color: "purple",
-    width: "150px",
-  },
-  roleplayYes: {
-    color: "gray",
-    width: "80px",
-  },
-  roleplayNo: {
-    color: "gray",
-    width: "80px",
-  },
-  roleplayIRefuse: {
-    color: "gray",
-    width: "120px",
-  },
-  roleplayDealWithIt: {
-    color: "gray",
-    width: "120px",
-  },
-  roleplayNotEnough: {
-    color: "gray",
-    width: "120px",
-  },
-  roleplayTooMuch: {
-    color: "gray",
-    width: "120px",
-  },
-  roleplaySabotage: {
-    color: "gray",
-    width: "120px",
-  },
-  roleplayFire: {
-    color: "gray",
-    width: "80px",
-  },
-};
 
 export function VoiceLineButton({
   faction,
@@ -96,55 +24,54 @@ export function VoiceLineButton({
   loadingAudio,
   onPlay,
   onStop,
+  onRemoveFromQueue,
   width,
   label,
   size,
   isQueued = false,
   lineCount,
+  variant = "secondary",
 }: VoiceLineControlProps) {
-  const config = voiceLineConfig[type];
   const isLoading = loadingAudio === `${faction}-${type}`;
   const isDisabled = !factionAudios[faction]?.[type as keyof FactionAudio];
 
+  const variantClass =
+    variant === "primary"
+      ? styles.primary
+      : variant === "tertiary"
+        ? styles.tertiary
+        : styles.secondary;
+
   return (
-    <Button
-      variant={isQueued ? "outline" : "light"}
-      color={config?.color}
-      size={size ?? config?.size ?? "compact-md"}
+    <button
+      className={`${styles.voiceLineButton} ${variantClass} ${isQueued ? styles.queued : ""} ${isLoading ? styles.loading : ""} ${isDisabled ? styles.disabled : ""}`}
       disabled={isDisabled}
       onClick={() => {
         if (isLoading) {
           onStop();
           return;
         }
+        if (isQueued && onRemoveFromQueue) {
+          onRemoveFromQueue();
+          return;
+        }
         onPlay();
       }}
-      w={width ?? config?.width}
-      style={{ position: "relative", overflow: "visible" }}
+      style={{ width: width }}
     >
-      {isLoading ? (
-        <Loader size="xs" type="bars" color={config?.color} />
-      ) : isQueued ? (
-        "Queued"
-      ) : (
-        label
+      {/* Always render text to maintain button size, hide when loading */}
+      <span className={`${styles.label} ${isLoading ? styles.labelHidden : ""}`}>
+        {isQueued ? "Queued" : label}
+      </span>
+      {/* Loader overlays the hidden text */}
+      {isLoading && (
+        <span className={styles.loaderOverlay}>
+          <Loader size={14} type="bars" color="currentColor" />
+        </span>
       )}
       {!isLoading && !isQueued && lineCount !== undefined && lineCount > 1 && (
-        <Badge
-          size="xs"
-          variant="filled"
-          c="white"
-          pos="absolute"
-          top="-6px"
-          right="-6px"
-          fz="11px"
-          h="16px"
-          miw="16px"
-          p="0 4px"
-        >
-          {lineCount}
-        </Badge>
+        <span className={styles.badge}>{lineCount}</span>
       )}
-    </Button>
+    </button>
   );
 }

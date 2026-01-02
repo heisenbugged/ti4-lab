@@ -21,6 +21,7 @@ import {
   Switch,
   Image,
   Loader,
+  Title,
 } from "@mantine/core";
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -45,6 +46,8 @@ import {
   IconRefresh,
   IconInfoCircle,
   IconQrcode,
+  IconMicrophone2,
+  IconMusic,
 } from "@tabler/icons-react";
 import { SectionTitle } from "~/components/Section";
 import {
@@ -55,7 +58,8 @@ import {
   trackTimeOnPage,
 } from "~/lib/analytics.client";
 import { ClientOnly } from "remix-utils/client-only";
-import styles from "./ClosedCaptions.module.css";
+import ccStyles from "./ClosedCaptions.module.css";
+import styles from "./styles.module.css";
 import { SpotifyLoginButton } from "../soundboard._index/components/SpotifyLoginButton";
 import { useSpotifyLogin } from "../soundboard._index/useSpotifyLogin";
 import { SpotifyPlaybackState } from "~/vendors/spotifyApi";
@@ -150,95 +154,55 @@ const VoiceLineQueue = ({ queue, onRemove, onClear }: VoiceLineQueueProps) => {
       opened={opened}
       onChange={setOpened}
       position="top"
-      width={300}
-      shadow="md"
+      width={280}
+      shadow="none"
+      styles={{ dropdown: { padding: 0, border: "none", background: "transparent" } }}
     >
       <Popover.Target>
-        <Button
-          variant="subtle"
-          size="sm"
-          leftSection={<IconList size={16} />}
-          rightSection={
-            <Badge size="sm" circle variant="filled" color="blue">
-              {queue.length}
-            </Badge>
-          }
-          onClick={() => setOpened((o) => !o)}
-        >
-          Queue
-        </Button>
+        <button className={styles.queueButton} onClick={() => setOpened((o) => !o)}>
+          <IconList size={14} />
+          <span>Queue</span>
+          <span className={styles.queueBadge}>{queue.length}</span>
+        </button>
       </Popover.Target>
       <Popover.Dropdown>
-        <Stack>
-          <Group justify="space-between">
-            <Text fw={500}>Queued Voice Lines</Text>
-            <ActionIcon
-              variant="subtle"
-              color="red"
-              onClick={onClear}
-              title="Clear queue"
-            >
-              <IconTrash size={16} />
-            </ActionIcon>
-          </Group>
-          <ScrollArea h={Math.min(200, queue.length * 60)} offsetScrollbars>
-            <Stack gap="xs">
-              {queue.map((item, index) => (
-                <Paper key={item.id} withBorder p="xs">
-                  <Group justify="space-between" wrap="nowrap">
-                    <Group gap="xs" style={{ flex: 1 }}>
-                      <Text size="sm" fw={700} c="dimmed">
-                        {index + 1}.
-                      </Text>
-                      {item.factionId === "announcer" ? (
-                        <Box
-                          style={{
-                            width: 20,
-                            height: 20,
-                            borderRadius: "50%",
-                            backgroundColor: "orange",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "10px",
-                            fontWeight: "bold",
-                            color: "white",
-                          }}
-                        >
-                          A
-                        </Box>
-                      ) : (
-                        <FactionIcon
-                          faction={item.factionId as FactionId}
-                          style={{ width: 20, height: 20 }}
-                        />
-                      )}
-                      <Text size="sm" truncate style={{ flex: 1 }}>
-                        {item.factionId === "announcer"
-                          ? LINE_TYPE_DISPLAY_NAMES[item.type]
-                          : item.type === "special"
-                            ? factionAudios[item.factionId as FactionId]
-                                ?.special?.title
-                            : item.type === "special2"
-                              ? factionAudios[item.factionId as FactionId]
-                                  ?.special2?.title
-                              : LINE_TYPE_DISPLAY_NAMES[item.type]}
-                      </Text>
-                    </Group>
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      color="red"
-                      onClick={() => onRemove(item.id)}
-                    >
-                      <IconX size={14} />
-                    </ActionIcon>
-                  </Group>
-                </Paper>
-              ))}
-            </Stack>
-          </ScrollArea>
-        </Stack>
+        <div className={styles.queuePopover}>
+          <div className={styles.queueHeader}>
+            <span className={styles.queueTitle}>Queued Lines</span>
+            <button className={styles.queueClearButton} onClick={onClear} title="Clear queue">
+              <IconTrash size={14} />
+            </button>
+          </div>
+          <div className={styles.queueList}>
+            {queue.map((item, index) => (
+              <div key={item.id} className={styles.queueItem}>
+                <span className={styles.queueItemIndex}>{index + 1}</span>
+                <div className={styles.queueItemIcon}>
+                  {item.factionId === "announcer" ? (
+                    <div className={styles.queueItemAnnouncerIcon}>A</div>
+                  ) : (
+                    <FactionIcon
+                      faction={item.factionId as FactionId}
+                      style={{ width: 20, height: 20 }}
+                    />
+                  )}
+                </div>
+                <span className={styles.queueItemName}>
+                  {item.factionId === "announcer"
+                    ? LINE_TYPE_DISPLAY_NAMES[item.type]
+                    : item.type === "special"
+                      ? factionAudios[item.factionId as FactionId]?.special?.title
+                      : item.type === "special2"
+                        ? factionAudios[item.factionId as FactionId]?.special2?.title
+                        : LINE_TYPE_DISPLAY_NAMES[item.type]}
+                </span>
+                <button className={styles.queueItemRemove} onClick={() => onRemove(item.id)}>
+                  <IconX size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       </Popover.Dropdown>
     </Popover>
   );
@@ -343,8 +307,8 @@ const ClosedCaptions = ({
   if (!visible || !caption) return null;
 
   return (
-    <Box className={styles.container}>
-      <Paper withBorder className={styles.paper}>
+    <Box className={ccStyles.container}>
+      <Paper withBorder className={ccStyles.paper}>
         <Group gap="xs" justify="center" align="center">
           {factionId === "announcer" ? (
             <Box
@@ -369,7 +333,7 @@ const ClosedCaptions = ({
               style={{ width: 24, height: 24 }}
             />
           )}
-          <Text fw={600} c="white" ta="center" className={styles.text}>
+          <Text fw={600} c="white" ta="center" className={ccStyles.text}>
             {caption}
           </Text>
         </Group>
@@ -471,6 +435,7 @@ interface AnnouncerVoiceLineButtonProps {
   loadingAudio: string | null;
   onPlay: () => void;
   onStop: () => void;
+  onRemoveFromQueue?: () => void;
   label: string;
   isQueued?: boolean;
   lineCount?: number;
@@ -481,6 +446,7 @@ const AnnouncerVoiceLineButton = ({
   loadingAudio,
   onPlay,
   onStop,
+  onRemoveFromQueue,
   label,
   isQueued = false,
   lineCount,
@@ -489,45 +455,35 @@ const AnnouncerVoiceLineButton = ({
   const isDisabled = !announcerAudios[type as keyof typeof announcerAudios];
 
   return (
-    <Button
-      variant={isQueued ? "outline" : "light"}
-      color="orange"
-      size="compact-md"
+    <button
+      className={`${styles.announcerButton} ${isQueued ? styles.announcerButtonQueued : ""} ${isLoading ? styles.announcerButtonLoading : ""} ${isDisabled ? styles.announcerButtonDisabled : ""}`}
       disabled={isDisabled}
       onClick={() => {
         if (isLoading) {
           onStop();
           return;
         }
+        if (isQueued && onRemoveFromQueue) {
+          onRemoveFromQueue();
+          return;
+        }
         onPlay();
       }}
-      w="160px"
-      style={{ position: "relative", overflow: "visible" }}
     >
-      {isLoading ? (
-        <Loader size="xs" type="bars" color="orange" />
-      ) : isQueued ? (
-        "Queued"
-      ) : (
-        label
+      {/* Always render text to maintain button size, hide when loading */}
+      <span className={`${styles.announcerButtonLabel} ${isLoading ? styles.announcerButtonLabelHidden : ""}`}>
+        {isQueued ? "Queued" : label}
+      </span>
+      {/* Loader overlays the hidden text */}
+      {isLoading && (
+        <span className={styles.announcerButtonLoaderOverlay}>
+          <Loader size={14} type="bars" color="currentColor" />
+        </span>
       )}
       {!isLoading && !isQueued && lineCount !== undefined && lineCount > 1 && (
-        <Badge
-          size="xs"
-          variant="filled"
-          c="white"
-          pos="absolute"
-          top="-6px"
-          right="-6px"
-          fz="11px"
-          h="16px"
-          miw="16px"
-          p="0 4px"
-        >
-          {lineCount}
-        </Badge>
+        <span className={styles.announcerButtonBadge}>{lineCount}</span>
       )}
-    </Button>
+    </button>
   );
 };
 
@@ -679,13 +635,13 @@ export default function VoicesMaster() {
     };
   }, [sessionId, socket, factionSlots, playAudio, stopAudio]);
 
-  // Create lookup maps for queued voice lines for quick checking if a voice line is queued
+  // Create lookup maps for queued voice lines - stores item ID for removal
   const queuedLinesMap = useMemo(() => {
-    const map = new Map<string, boolean>();
+    const map = new Map<string, string>(); // key -> item.id
 
     voiceLineQueue.forEach((item) => {
       const key = `${item.factionId}-${item.type}`;
-      map.set(key, true);
+      map.set(key, item.id);
     });
 
     return map;
@@ -695,8 +651,24 @@ export default function VoicesMaster() {
     return queuedLinesMap.has(`${factionId}-${type}`);
   };
 
+  const getQueuedItemId = (factionId: FactionId | "announcer", type: LineType) => {
+    return queuedLinesMap.get(`${factionId}-${type}`);
+  };
+
   const isAnnouncerLineQueued = (type: LineType) => {
     return queuedLinesMap.has(`announcer-${type}`);
+  };
+
+  const handleRemoveFromQueue = (factionId: FactionId | "announcer", type: LineType) => {
+    const id = getQueuedItemId(factionId, type);
+    if (id) {
+      removeFromQueue(id);
+      trackButtonClick({
+        buttonType: "remove_from_queue",
+        context: `${factionId}-${type}`,
+        sessionId: sessionId || undefined,
+      });
+    }
   };
 
   const handlePlayAudio = async (factionId: FactionId, type: LineType) => {
@@ -819,7 +791,8 @@ export default function VoicesMaster() {
     : [null, null];
 
   return (
-    <Container py="xl" maw={1600} pos="relative" mt="sm">
+    <Container py="lg" maw={1400}>
+      {/* Reconnect button */}
       {socket && isDisconnected && (
         <Button
           variant="filled"
@@ -840,88 +813,156 @@ export default function VoicesMaster() {
         </Button>
       )}
 
-      <Stack mb="xl" gap="md" mt="lg">
-        <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
-          {/* Left component - changes based on session state */}
-          <Stack gap="md" style={{ flex: "1 1 300px" }}>
-            {sessionId ? (
-              <Group gap="md" align="center" wrap="wrap">
-                <Stack gap="xs">
-                  <Text fw={500}>Session Code: {sessionId}</Text>
-                  <Text size="sm" c="dimmed">
-                    https://tidraft.com/voices/{sessionId}
-                  </Text>
-                </Stack>
+      {/* Page Header */}
+      <Group className={styles.pageHeader} align="flex-start" justify="space-between" wrap="wrap">
+        <Stack gap="xs">
+          <Title order={1} className={styles.pageTitle}>Voice Lines</Title>
+          {!sessionId ? (
+            <Form method="post" onSubmit={handleCreateSession}>
+              <Button
+                type="submit"
+                size="md"
+                color="blue"
+                leftSection={<IconMusic size={18} />}
+              >
+                Create Session
+              </Button>
+            </Form>
+          ) : (
+            <Group gap="sm">
+              <Button
+                size="sm"
+                color="red"
+                variant="light"
+                onClick={() => {
+                  handleEndSession();
+                  window.location.href = window.location.pathname;
+                }}
+              >
+                End Session
+              </Button>
+            </Group>
+          )}
+        </Stack>
+
+        {/* Session Info */}
+        {sessionId && (
+          <Paper className={styles.sessionPanel} p="md" withBorder>
+            <Group gap="lg" align="flex-start">
+              <Stack gap="xs">
+                <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+                  Session Code
+                </Text>
+                <Text className={styles.sessionCode}>{sessionId}</Text>
+                <Text size="sm" c="dimmed">
+                  tidraft.com/voices/{sessionId}
+                </Text>
                 <Button
-                  variant="filled"
+                  size="xs"
+                  variant="light"
                   color="blue"
-                  leftSection={<IconQrcode size={16} />}
+                  leftSection={<IconQrcode size={14} />}
                   onClick={handleShowQrCode}
                 >
                   Show QR Code
                 </Button>
-                <Button
-                  variant="filled"
-                  color="red"
-                  onClick={() => {
-                    handleEndSession();
-                    window.location.href = window.location.pathname;
-                  }}
-                >
-                  End Session
-                </Button>
-              </Group>
-            ) : (
-              <Form method="post" onSubmit={handleCreateSession}>
-                <Button type="submit" size="xl">
-                  Create Session
-                </Button>
-              </Form>
-            )}
+              </Stack>
+              <Stack align="center" gap={4}>
+                <Box className={styles.qrContainer}>
+                  <QRCode
+                    value={`https://tidraft.com/voices/${sessionId}`}
+                    size={100}
+                  />
+                </Box>
+                <Text size="xs" c="dimmed">
+                  Scan to join
+                </Text>
+              </Stack>
+            </Group>
+          </Paper>
+        )}
 
-            {/* Spotify Login Prompt - moved here from absolute positioning */}
-            {!accessToken && (
-              <Paper radius="md" p="md" withBorder maw={400}>
-                <Stack>
-                  <Group align="center" gap="md" justify="space-between">
-                    <div style={{ flex: 0.5, height: 38 }}>
-                      <img src="/spotifylogo.svg" alt="Spotify Logo" />
-                    </div>
-                    <SpotifyLoginButton
-                      accessToken={accessToken}
-                      spotifyCallbackUrl={spotifyCallbackUrl}
-                      spotifyClientId={spotifyClientId}
+        {/* Spotify Panel */}
+        <Paper className={styles.spotifyPanel} p="md" withBorder>
+          <Stack gap="sm">
+            <Group justify="space-between" align="center">
+              <Image
+                src="/spotifylogo.svg"
+                alt="Spotify"
+                style={{ width: 80, height: 24 }}
+              />
+              {accessToken ? (
+                <Button
+                  variant="subtle"
+                  color="red"
+                  size="compact-xs"
+                  component="a"
+                  href="/voices/logout"
+                >
+                  Logout
+                </Button>
+              ) : (
+                <SpotifyLoginButton
+                  accessToken={accessToken}
+                  spotifyCallbackUrl={spotifyCallbackUrl}
+                  spotifyClientId={spotifyClientId}
+                />
+              )}
+            </Group>
+
+            {!accessToken ? (
+              <Text size="xs" c="dimmed">
+                Connect Spotify to control background music. Battle music plays
+                automatically during combat.
+              </Text>
+            ) : playbackRestrictions ? (
+              <Alert color="yellow" variant="light" p="xs">
+                <Text size="xs">
+                  Spotify Premium required for playback control.
+                </Text>
+              </Alert>
+            ) : (
+              <>
+                {currentPlayback && (
+                  <div className={styles.playbackCard}>
+                    <Image
+                      src={currentPlayback.albumImage.url}
+                      alt="Album"
+                      w={40}
+                      h={40}
+                      radius="sm"
                     />
-                  </Group>
-                  <Text size="sm" c="dimmed">
-                    Log in with Spotify to control background music during peace
-                    and war times. When war breaks out, the music will
-                    automatically switch to more intense tracks, and return to
-                    the peaceful playlist when war ends.
-                  </Text>
-                </Stack>
-              </Paper>
+                    <div className={styles.playbackInfo}>
+                      <a
+                        href={currentPlayback.track.external_urls.spotify}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.trackName}
+                      >
+                        {currentPlayback.track.name}
+                      </a>
+                      <div className={styles.artistName}>
+                        {currentPlayback.artists
+                          .map((a: { name: string }) => a.name)
+                          .join(", ")}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <SpotifyPlaylistUI
+                  playlistId={playlistId}
+                  setPlaylistId={setPlaylistId}
+                  isWarMode={isWarMode}
+                  endWar={endWar}
+                />
+              </>
             )}
           </Stack>
+        </Paper>
+      </Group>
 
-          {/* Right component - info alert */}
-          <Alert
-            variant="light"
-            color="blue"
-            title="How to use Voice Lines"
-            icon={<IconInfoCircle />}
-            style={{ flex: "0 1 600px", minWidth: "300px" }}
-          >
-            Trigger voice lines when pivotal moments happen in your play
-            sessions. Use the &apos;create session&apos; feature to allow
-            players to connect via their phones to trigger their own voice lines
-            on your sound system.
-          </Alert>
-        </Group>
-      </Stack>
-
-      {/* Closed Captions Toggle - positioned top right above table */}
-      <Group justify="flex-end" gap="md">
+      {/* Controls Row */}
+      <Group justify="flex-end" gap="md" mb="md">
         <ClientOnly>
           {() => (
             <ClosedCaptionsToggle
@@ -933,64 +974,25 @@ export default function VoicesMaster() {
         </ClientOnly>
       </Group>
 
-      {/* Spotify Controls */}
-      <Group grow align="end" justify="flex-end">
-        {accessToken && playbackRestrictions === false ? (
-          <SpotifyPlaylistUI
-            playlistId={playlistId}
-            setPlaylistId={setPlaylistId}
-            isWarMode={isWarMode}
-            endWar={endWar}
-          />
-        ) : null}
-
-        {accessToken && (
-          <Stack mt={12} w={300} style={{ overflow: "hidden" }}>
-            {playbackRestrictions === null ? null : playbackRestrictions ? (
-              <Alert color="blue" title="Spotify Premium Required">
-                Spotify Premium lets you play any track, podcast episode or
-                audiobook, ad-free and with better audio quality. Go to{" "}
-                <Anchor
-                  href="https://spotify.com/premium"
-                  target="_blank"
-                  c="blue"
-                >
-                  spotify.com/premium
-                </Anchor>{" "}
-                to try it for free.
-              </Alert>
-            ) : (
-              <SpotifyPlaybackUI currentPlayback={currentPlayback} />
-            )}
-          </Stack>
-        )}
-      </Group>
-
       {/* Announcer Section */}
-      <Stack gap="md" mb="xl">
-        <Group gap="md" align="center">
-          <Text size="lg" fw={700}>
-            Announcer
-          </Text>
-          <Text size="sm" c="dimmed">
+      <Paper className={styles.announcerPanel} p="md" withBorder mb="xl">
+        <Group className={styles.announcerHeader} gap="sm" mb="md">
+          <Box className={styles.announcerIcon}>A</Box>
+          <Title order={3} className={styles.announcerTitle}>Announcer</Title>
+          <Text size="xs" c="dimmed" ml="auto">
             Game event announcements
           </Text>
         </Group>
-
-        <Paper withBorder p="md">
-          <Group gap="md" wrap="wrap">
+        <Group gap="sm" wrap="wrap">
             <AnnouncerVoiceLineButton
               type="announcerWarsundown"
               label="War Sun Down"
               loadingAudio={loadingAudio}
               onPlay={() => handlePlayAnnouncerAudio("announcerWarsundown")}
               onStop={handleStopAudio}
+              onRemoveFromQueue={() => handleRemoveFromQueue("announcer", "announcerWarsundown")}
               isQueued={isAnnouncerLineQueued("announcerWarsundown")}
-              lineCount={getRemainingLineCount(
-                "announcer" as FactionId,
-                "announcerWarsundown",
-                voiceLineMemory,
-              )}
+              lineCount={getRemainingLineCount("announcer" as FactionId, "announcerWarsundown", voiceLineMemory)}
             />
 
             <AnnouncerVoiceLineButton
@@ -999,28 +1001,20 @@ export default function VoicesMaster() {
               loadingAudio={loadingAudio}
               onPlay={() => handlePlayAnnouncerAudio("announcerBreak")}
               onStop={handleStopAudio}
+              onRemoveFromQueue={() => handleRemoveFromQueue("announcer", "announcerBreak")}
               isQueued={isAnnouncerLineQueued("announcerBreak")}
-              lineCount={getRemainingLineCount(
-                "announcer" as FactionId,
-                "announcerBreak",
-                voiceLineMemory,
-              )}
+              lineCount={getRemainingLineCount("announcer" as FactionId, "announcerBreak", voiceLineMemory)}
             />
 
             <AnnouncerVoiceLineButton
               type="announcerInvasionstopped"
               label="Invasion Stopped"
               loadingAudio={loadingAudio}
-              onPlay={() =>
-                handlePlayAnnouncerAudio("announcerInvasionstopped")
-              }
+              onPlay={() => handlePlayAnnouncerAudio("announcerInvasionstopped")}
               onStop={handleStopAudio}
+              onRemoveFromQueue={() => handleRemoveFromQueue("announcer", "announcerInvasionstopped")}
               isQueued={isAnnouncerLineQueued("announcerInvasionstopped")}
-              lineCount={getRemainingLineCount(
-                "announcer" as FactionId,
-                "announcerInvasionstopped",
-                voiceLineMemory,
-              )}
+              lineCount={getRemainingLineCount("announcer" as FactionId, "announcerInvasionstopped", voiceLineMemory)}
             />
 
             <AnnouncerVoiceLineButton
@@ -1029,12 +1023,9 @@ export default function VoicesMaster() {
               loadingAudio={loadingAudio}
               onPlay={() => handlePlayAnnouncerAudio("announcerAnnihilation")}
               onStop={handleStopAudio}
+              onRemoveFromQueue={() => handleRemoveFromQueue("announcer", "announcerAnnihilation")}
               isQueued={isAnnouncerLineQueued("announcerAnnihilation")}
-              lineCount={getRemainingLineCount(
-                "announcer" as FactionId,
-                "announcerAnnihilation",
-                voiceLineMemory,
-              )}
+              lineCount={getRemainingLineCount("announcer" as FactionId, "announcerAnnihilation", voiceLineMemory)}
             />
 
             <AnnouncerVoiceLineButton
@@ -1043,12 +1034,9 @@ export default function VoicesMaster() {
               loadingAudio={loadingAudio}
               onPlay={() => handlePlayAnnouncerAudio("announcerDreaddown")}
               onStop={handleStopAudio}
+              onRemoveFromQueue={() => handleRemoveFromQueue("announcer", "announcerDreaddown")}
               isQueued={isAnnouncerLineQueued("announcerDreaddown")}
-              lineCount={getRemainingLineCount(
-                "announcer" as FactionId,
-                "announcerDreaddown",
-                voiceLineMemory,
-              )}
+              lineCount={getRemainingLineCount("announcer" as FactionId, "announcerDreaddown", voiceLineMemory)}
             />
 
             <AnnouncerVoiceLineButton
@@ -1057,12 +1045,9 @@ export default function VoicesMaster() {
               loadingAudio={loadingAudio}
               onPlay={() => handlePlayAnnouncerAudio("announcerCriticalhit")}
               onStop={handleStopAudio}
+              onRemoveFromQueue={() => handleRemoveFromQueue("announcer", "announcerCriticalhit")}
               isQueued={isAnnouncerLineQueued("announcerCriticalhit")}
-              lineCount={getRemainingLineCount(
-                "announcer" as FactionId,
-                "announcerCriticalhit",
-                voiceLineMemory,
-              )}
+              lineCount={getRemainingLineCount("announcer" as FactionId, "announcerCriticalhit", voiceLineMemory)}
             />
 
             <AnnouncerVoiceLineButton
@@ -1071,558 +1056,362 @@ export default function VoicesMaster() {
               loadingAudio={loadingAudio}
               onPlay={() => handlePlayAnnouncerAudio("announcerAgenda")}
               onStop={handleStopAudio}
+              onRemoveFromQueue={() => handleRemoveFromQueue("announcer", "announcerAgenda")}
               isQueued={isAnnouncerLineQueued("announcerAgenda")}
-              lineCount={getRemainingLineCount(
-                "announcer" as FactionId,
-                "announcerAgenda",
-                voiceLineMemory,
-              )}
+              lineCount={getRemainingLineCount("announcer" as FactionId, "announcerAgenda", voiceLineMemory)}
             />
-          </Group>
-        </Paper>
-      </Stack>
+        </Group>
+      </Paper>
 
-      <Table verticalSpacing="lg" horizontalSpacing="lg">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Faction</Table.Th>
-            <Table.Th>Lines</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
+      {/* Factions Section */}
+      <Box component="section">
+        <Group className={styles.sectionHeader} gap="sm" mb="md">
+          <IconMicrophone2 size={16} color="var(--mantine-color-dimmed)" />
+          <Title order={4} className={styles.sectionTitle}>Voice Lines</Title>
+          <Text size="xs" c="dimmed" ml="auto">
+            {factionSlots.length} factions
+          </Text>
+        </Group>
+
+        <Box className={styles.factionGrid}>
           {factionSlots.map((faction, index) => (
-            <>
-              <Table.Tr key={`${faction}-${index}`}>
-                <Table.Td>
-                  <Group gap="xs">
-                    <FactionIcon
-                      faction={faction}
-                      style={{ width: 32, height: 32 }}
-                    />
-                    <Select
-                      value={faction}
-                      onChange={(newFaction) => {
-                        if (newFaction) {
-                          const newSlots = [...factionSlots];
-                          newSlots[index] = newFaction as FactionId;
-                          setFactionSlots(newSlots);
+            <Paper key={`${faction}-${index}`} className={styles.factionCard} withBorder>
+              <Group className={styles.factionCardHeader} gap="sm">
+                <FactionIcon
+                  faction={faction}
+                  style={{ width: 24, height: 24 }}
+                />
+                <Text className={styles.factionName} flex={1}>
+                  {factions[faction]?.name}
+                </Text>
+                <Select
+                  size="xs"
+                  variant="default"
+                  value={faction}
+                  onChange={(newFaction) => {
+                    if (newFaction) {
+                      const newSlots = [...factionSlots];
+                      newSlots[index] = newFaction as FactionId;
+                      setFactionSlots(newSlots);
 
-                          // Analytics: Track faction selection
-                          trackButtonClick({
-                            buttonType: "faction_select",
-                            context: `${faction}_to_${newFaction}`,
-                            sessionId: sessionId || undefined,
-                          });
-                        }
-                      }}
-                      data={factionData}
-                      w={200}
-                    />
-                  </Group>
-                </Table.Td>
-
-                <Table.Td>
-                  <Group gap="md">
+                      trackButtonClick({
+                        buttonType: "faction_select",
+                        context: `${faction}_to_${newFaction}`,
+                        sessionId: sessionId || undefined,
+                      });
+                    }
+                  }}
+                  data={factionData}
+                  w={140}
+                  comboboxProps={{ width: 200, position: "bottom-end" }}
+                />
+              </Group>
+              <Box className={styles.factionCardBody}>
+                {/* Combat voice lines - primary actions */}
+                <div className={styles.voiceLineSection}>
+                  <div className={styles.voiceLineSectionLabel}>Combat</div>
+                  <div className={styles.voiceLineGroup}>
                     <VoiceLineButton
                       faction={faction}
-                      label="Battle Line"
+                      label="Battle"
                       type="battleLines"
+                      variant="primary"
                       loadingAudio={loadingAudio}
                       onPlay={() => handlePlayAudio(faction, "battleLines")}
                       onStop={handleStopAudio}
+                      onRemoveFromQueue={() => handleRemoveFromQueue(faction, "battleLines")}
                       isQueued={isVoiceLineQueued(faction, "battleLines")}
-                      lineCount={getRemainingLineCount(
-                        faction,
-                        "battleLines",
-                        voiceLineMemory,
-                      )}
+                      lineCount={getRemainingLineCount(faction, "battleLines", voiceLineMemory)}
                     />
-                    <Stack gap="xs">
-                      <VoiceLineButton
-                        faction={faction}
-                        label="Outnumbered"
-                        type="defenseOutnumbered"
-                        loadingAudio={loadingAudio}
-                        onPlay={() =>
-                          handlePlayAudio(faction, "defenseOutnumbered")
-                        }
-                        onStop={handleStopAudio}
-                        isQueued={isVoiceLineQueued(
-                          faction,
-                          "defenseOutnumbered",
-                        )}
-                        lineCount={getRemainingLineCount(
-                          faction,
-                          "defenseOutnumbered",
-                          voiceLineMemory,
-                        )}
-                      />
-                      <VoiceLineButton
-                        faction={faction}
-                        label="Superiority"
-                        type="offenseSuperior"
-                        loadingAudio={loadingAudio}
-                        onPlay={() =>
-                          handlePlayAudio(faction, "offenseSuperior")
-                        }
-                        onStop={handleStopAudio}
-                        isQueued={isVoiceLineQueued(faction, "offenseSuperior")}
-                        lineCount={getRemainingLineCount(
-                          faction,
-                          "offenseSuperior",
-                          voiceLineMemory,
-                        )}
-                      />
-                    </Stack>
-
                     <VoiceLineButton
                       faction={faction}
-                      label="Home Defense (Long)"
+                      label="Defend"
                       type="homeDefense"
+                      variant="primary"
                       loadingAudio={loadingAudio}
                       onPlay={() => handlePlayAudio(faction, "homeDefense")}
                       onStop={handleStopAudio}
+                      onRemoveFromQueue={() => handleRemoveFromQueue(faction, "homeDefense")}
                       isQueued={isVoiceLineQueued(faction, "homeDefense")}
-                      lineCount={getRemainingLineCount(
-                        faction,
-                        "homeDefense",
-                        voiceLineMemory,
-                      )}
+                      lineCount={getRemainingLineCount(faction, "homeDefense", voiceLineMemory)}
                     />
                     <VoiceLineButton
                       faction={faction}
-                      label="Planet Invasion"
+                      label="Invade"
                       type="homeInvasion"
+                      variant="primary"
                       loadingAudio={loadingAudio}
                       onPlay={() => handlePlayAudio(faction, "homeInvasion")}
                       onStop={handleStopAudio}
+                      onRemoveFromQueue={() => handleRemoveFromQueue(faction, "homeInvasion")}
                       isQueued={isVoiceLineQueued(faction, "homeInvasion")}
-                      lineCount={getRemainingLineCount(
-                        faction,
-                        "homeInvasion",
-                        voiceLineMemory,
-                      )}
+                      lineCount={getRemainingLineCount(faction, "homeInvasion", voiceLineMemory)}
                     />
-
                     <VoiceLineButton
                       faction={faction}
-                      label={factionAudios[faction]?.special?.title ?? ""}
-                      type="special"
+                      label="Outnumbered"
+                      type="defenseOutnumbered"
+                      variant="secondary"
                       loadingAudio={loadingAudio}
-                      onPlay={() => handlePlayAudio(faction, "special")}
+                      onPlay={() => handlePlayAudio(faction, "defenseOutnumbered")}
                       onStop={handleStopAudio}
-                      isQueued={isVoiceLineQueued(faction, "special")}
-                      lineCount={getRemainingLineCount(
-                        faction,
-                        "special",
-                        voiceLineMemory,
-                      )}
+                      onRemoveFromQueue={() => handleRemoveFromQueue(faction, "defenseOutnumbered")}
+                      isQueued={isVoiceLineQueued(faction, "defenseOutnumbered")}
+                      lineCount={getRemainingLineCount(faction, "defenseOutnumbered", voiceLineMemory)}
                     />
-                    {factionAudios[faction]?.special2 && (
+                    <VoiceLineButton
+                      faction={faction}
+                      label="Superior"
+                      type="offenseSuperior"
+                      variant="secondary"
+                      loadingAudio={loadingAudio}
+                      onPlay={() => handlePlayAudio(faction, "offenseSuperior")}
+                      onStop={handleStopAudio}
+                      onRemoveFromQueue={() => handleRemoveFromQueue(faction, "offenseSuperior")}
+                      isQueued={isVoiceLineQueued(faction, "offenseSuperior")}
+                      lineCount={getRemainingLineCount(faction, "offenseSuperior", voiceLineMemory)}
+                    />
+                  </div>
+                </div>
+
+                {/* Special abilities and misc */}
+                {(factionAudios[faction]?.special || factionAudios[faction]?.special2 || factionAudios[faction]?.jokes) && (
+                  <div className={styles.voiceLineSection}>
+                    <div className={styles.voiceLineSectionLabel}>Special</div>
+                    <div className={styles.voiceLineGroup}>
+                      {factionAudios[faction]?.special && (
+                        <VoiceLineButton
+                          faction={faction}
+                          label={factionAudios[faction]?.special?.title ?? "Special"}
+                          type="special"
+                          variant="secondary"
+                          loadingAudio={loadingAudio}
+                          onPlay={() => handlePlayAudio(faction, "special")}
+                          onStop={handleStopAudio}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "special")}
+                          isQueued={isVoiceLineQueued(faction, "special")}
+                          lineCount={getRemainingLineCount(faction, "special", voiceLineMemory)}
+                        />
+                      )}
+                      {factionAudios[faction]?.special2 && (
+                        <VoiceLineButton
+                          faction={faction}
+                          label={factionAudios[faction]?.special2?.title ?? "Special 2"}
+                          type="special2"
+                          variant="secondary"
+                          loadingAudio={loadingAudio}
+                          onPlay={() => handlePlayAudio(faction, "special2")}
+                          onStop={handleStopAudio}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "special2")}
+                          isQueued={isVoiceLineQueued(faction, "special2")}
+                          lineCount={getRemainingLineCount(faction, "special2", voiceLineMemory)}
+                        />
+                      )}
                       <VoiceLineButton
                         faction={faction}
-                        label={factionAudios[faction]?.special2?.title ?? ""}
-                        type="special2"
+                        label="Joke"
+                        type="jokes"
+                        variant="tertiary"
                         loadingAudio={loadingAudio}
-                        onPlay={() => handlePlayAudio(faction, "special2")}
+                        onPlay={() => handlePlayAudio(faction, "jokes")}
                         onStop={handleStopAudio}
-                        isQueued={isVoiceLineQueued(faction, "special2")}
-                        lineCount={getRemainingLineCount(
-                          faction,
-                          "special2",
-                          voiceLineMemory,
-                        )}
+                        onRemoveFromQueue={() => handleRemoveFromQueue(faction, "jokes")}
+                        isQueued={isVoiceLineQueued(faction, "jokes")}
+                        lineCount={getRemainingLineCount(faction, "jokes", voiceLineMemory)}
                       />
-                    )}
+                    </div>
+                  </div>
+                )}
 
-                    <VoiceLineButton
-                      faction={faction}
-                      label="Joke"
-                      type="jokes"
-                      loadingAudio={loadingAudio}
-                      onPlay={() => handlePlayAudio(faction, "jokes")}
-                      onStop={handleStopAudio}
-                      isQueued={isVoiceLineQueued(faction, "jokes")}
-                      lineCount={getRemainingLineCount(
-                        faction,
-                        "jokes",
-                        voiceLineMemory,
-                      )}
-                    />
-                  </Group>
-                </Table.Td>
-              </Table.Tr>
-              {/* Roleplay buttons for specific factions */}
-              {(faction === "nomad" ||
-                faction === "vulraith" ||
-                faction === "hacan") &&
-                factionAudios[faction]?.roleplayYes && (
-                  <Table.Tr key={`${faction}-roleplay-${index}`}>
-                    <Table.Td>
-                      <Text size="sm" c="dimmed" pl="xl">
-                        Roleplay Lines
-                      </Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Group gap="sm" wrap="wrap">
+                {/* Roleplay buttons for specific factions */}
+                {(faction === "nomad" || faction === "vulraith" || faction === "hacan") &&
+                  factionAudios[faction]?.roleplayYes && (
+                    <div className={styles.voiceLineSection}>
+                      <div className={styles.voiceLineSectionLabel}>Roleplay</div>
+                      <div className={styles.voiceLineGroup}>
                         <VoiceLineButton
                           faction={faction}
                           label="Yes"
                           type="roleplayYes"
+                          variant="tertiary"
                           loadingAudio={loadingAudio}
                           onPlay={() => handlePlayAudio(faction, "roleplayYes")}
                           onStop={handleStopAudio}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "roleplayYes")}
                           isQueued={isVoiceLineQueued(faction, "roleplayYes")}
-                          lineCount={getRemainingLineCount(
-                            faction,
-                            "roleplayYes",
-                            voiceLineMemory,
-                          )}
+                          lineCount={getRemainingLineCount(faction, "roleplayYes", voiceLineMemory)}
                         />
                         <VoiceLineButton
                           faction={faction}
                           label="No"
                           type="roleplayNo"
+                          variant="tertiary"
                           loadingAudio={loadingAudio}
                           onPlay={() => handlePlayAudio(faction, "roleplayNo")}
                           onStop={handleStopAudio}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "roleplayNo")}
                           isQueued={isVoiceLineQueued(faction, "roleplayNo")}
-                          lineCount={getRemainingLineCount(
-                            faction,
-                            "roleplayNo",
-                            voiceLineMemory,
-                          )}
+                          lineCount={getRemainingLineCount(faction, "roleplayNo", voiceLineMemory)}
                         />
                         <VoiceLineButton
                           faction={faction}
-                          label="I Refuse"
+                          label="Refuse"
                           type="roleplayIRefuse"
+                          variant="tertiary"
                           loadingAudio={loadingAudio}
-                          onPlay={() =>
-                            handlePlayAudio(faction, "roleplayIRefuse")
-                          }
+                          onPlay={() => handlePlayAudio(faction, "roleplayIRefuse")}
                           onStop={handleStopAudio}
-                          isQueued={isVoiceLineQueued(
-                            faction,
-                            "roleplayIRefuse",
-                          )}
-                          lineCount={getRemainingLineCount(
-                            faction,
-                            "roleplayIRefuse",
-                            voiceLineMemory,
-                          )}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "roleplayIRefuse")}
+                          isQueued={isVoiceLineQueued(faction, "roleplayIRefuse")}
+                          lineCount={getRemainingLineCount(faction, "roleplayIRefuse", voiceLineMemory)}
                         />
                         <VoiceLineButton
                           faction={faction}
-                          label="Deal With It"
+                          label="Deal"
                           type="roleplayDealWithIt"
+                          variant="tertiary"
                           loadingAudio={loadingAudio}
-                          onPlay={() =>
-                            handlePlayAudio(faction, "roleplayDealWithIt")
-                          }
+                          onPlay={() => handlePlayAudio(faction, "roleplayDealWithIt")}
                           onStop={handleStopAudio}
-                          isQueued={isVoiceLineQueued(
-                            faction,
-                            "roleplayDealWithIt",
-                          )}
-                          lineCount={getRemainingLineCount(
-                            faction,
-                            "roleplayDealWithIt",
-                            voiceLineMemory,
-                          )}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "roleplayDealWithIt")}
+                          isQueued={isVoiceLineQueued(faction, "roleplayDealWithIt")}
+                          lineCount={getRemainingLineCount(faction, "roleplayDealWithIt", voiceLineMemory)}
                         />
                         <VoiceLineButton
                           faction={faction}
                           label="Not Enough"
                           type="roleplayNotEnough"
+                          variant="tertiary"
                           loadingAudio={loadingAudio}
-                          onPlay={() =>
-                            handlePlayAudio(faction, "roleplayNotEnough")
-                          }
+                          onPlay={() => handlePlayAudio(faction, "roleplayNotEnough")}
                           onStop={handleStopAudio}
-                          isQueued={isVoiceLineQueued(
-                            faction,
-                            "roleplayNotEnough",
-                          )}
-                          lineCount={getRemainingLineCount(
-                            faction,
-                            "roleplayNotEnough",
-                            voiceLineMemory,
-                          )}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "roleplayNotEnough")}
+                          isQueued={isVoiceLineQueued(faction, "roleplayNotEnough")}
+                          lineCount={getRemainingLineCount(faction, "roleplayNotEnough", voiceLineMemory)}
                         />
                         <VoiceLineButton
                           faction={faction}
                           label="Too Much"
                           type="roleplayTooMuch"
+                          variant="tertiary"
                           loadingAudio={loadingAudio}
-                          onPlay={() =>
-                            handlePlayAudio(faction, "roleplayTooMuch")
-                          }
+                          onPlay={() => handlePlayAudio(faction, "roleplayTooMuch")}
                           onStop={handleStopAudio}
-                          isQueued={isVoiceLineQueued(
-                            faction,
-                            "roleplayTooMuch",
-                          )}
-                          lineCount={getRemainingLineCount(
-                            faction,
-                            "roleplayTooMuch",
-                            voiceLineMemory,
-                          )}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "roleplayTooMuch")}
+                          isQueued={isVoiceLineQueued(faction, "roleplayTooMuch")}
+                          lineCount={getRemainingLineCount(faction, "roleplayTooMuch", voiceLineMemory)}
                         />
                         <VoiceLineButton
                           faction={faction}
                           label="Sabotage"
                           type="roleplaySabotage"
+                          variant="tertiary"
                           loadingAudio={loadingAudio}
-                          onPlay={() =>
-                            handlePlayAudio(faction, "roleplaySabotage")
-                          }
+                          onPlay={() => handlePlayAudio(faction, "roleplaySabotage")}
                           onStop={handleStopAudio}
-                          isQueued={isVoiceLineQueued(
-                            faction,
-                            "roleplaySabotage",
-                          )}
-                          lineCount={getRemainingLineCount(
-                            faction,
-                            "roleplaySabotage",
-                            voiceLineMemory,
-                          )}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "roleplaySabotage")}
+                          isQueued={isVoiceLineQueued(faction, "roleplaySabotage")}
+                          lineCount={getRemainingLineCount(faction, "roleplaySabotage", voiceLineMemory)}
                         />
                         <VoiceLineButton
                           faction={faction}
                           label="Fire!"
                           type="roleplayFire"
+                          variant="tertiary"
                           loadingAudio={loadingAudio}
-                          onPlay={() =>
-                            handlePlayAudio(faction, "roleplayFire")
-                          }
+                          onPlay={() => handlePlayAudio(faction, "roleplayFire")}
                           onStop={handleStopAudio}
+                          onRemoveFromQueue={() => handleRemoveFromQueue(faction, "roleplayFire")}
                           isQueued={isVoiceLineQueued(faction, "roleplayFire")}
-                          lineCount={getRemainingLineCount(
-                            faction,
-                            "roleplayFire",
-                            voiceLineMemory,
-                          )}
+                          lineCount={getRemainingLineCount(faction, "roleplayFire", voiceLineMemory)}
                         />
-                      </Group>
-                    </Table.Td>
-                  </Table.Tr>
-                )}
-            </>
+                      </div>
+                    </div>
+                  )}
+              </Box>
+            </Paper>
           ))}
-        </Table.Tbody>
-      </Table>
-
-      {/* Credits section - now a regular footer at bottom of content */}
-      <Box
-        style={(theme) => ({
-          borderTop: `1px solid ${theme.colors.dark[6]}`,
-          marginTop: theme.spacing.xl,
-          marginBottom: theme.spacing.xl,
-          paddingTop: theme.spacing.md,
-          paddingBottom: theme.spacing.md,
-        })}
-      >
-        <Stack gap="md">
-          <SectionTitle title="Credits" />
-
-          <Stack gap="md" style={{ maxWidth: 900 }} ml="lg">
-            <Text size="xs" fw={700} c="dimmed" mt="lg">
-              Script & Direction
-            </Text>
-            {/* Script & Direction */}
-            <Group gap="xl" justify="space-between">
-              <Text size="sm" fw={700} w={150}>
-                Meme Philosopher
-              </Text>
-              <Text size="sm" c="dimmed" flex={1}>
-                General project director (scriptwriting, fx, website, and
-                funding).
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Text size="sm" fw={700} w={150}>
-                Cacotopos
-              </Text>
-              <Text size="sm" c="dimmed" flex={1}>
-                Scripts for Mentak Coalition, Nekro Virus, and Ghosts of Creuss
-                and lots of feedback.
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Text size="sm" fw={700} w={150}>
-                Mcstevo
-              </Text>
-              <Text size="sm" c="dimmed" flex={1}>
-                &quot;Chief Critic&quot; (allegedly)
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Text size="sm" fw={700} w={150}>
-                Absol225
-              </Text>
-              <Text size="sm" c="dimmed" flex={1}>
-                Lore accuracy and script feedback.
-              </Text>
-            </Group>
-
-            {/* Audio Editing Section */}
-            <Text size="xs" fw={700} c="dimmed" mt="lg">
-              Audio FX By
-            </Text>
-            <Group gap="xl" justify="space-between">
-              <Text size="sm" fw={700} w={150}>
-                Xane225
-              </Text>
-              <Text size="sm" c="dimmed" flex={1}>
-                Emirates of Hacan, L1Z1X Mindnet, Empyrean, Nomad, Embers of
-                Muaat, Mahact Gene-Sorcerors
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Anchor
-                size="sm"
-                fw={700}
-                c="blue"
-                href="https://www.martinpazosaudio.com/"
-                target="_blank"
-                w={150}
-              >
-                Martin Pazos
-              </Anchor>
-              <Text size="sm" c="dimmed" flex={1}>
-                Ghosts of Creuss, Sardakk N&apos;orr, Arborec, Argent Flight,
-                Naalu Collective, Naaz-Rhoka Alliance, Nekro Virus,
-                Vuil&apos;Raith Cabal, Barony of Letnev, Clan of Saar,
-                Universities of Jol-Nar,
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Text size="sm" fw={700} w={150}>
-                Meme Philosopher
-              </Text>
-              <Text size="sm" c="dimmed" flex={1}>
-                Yin Brotherhood, Yssaril, Nomad, Federation of Sol, Mentak
-                Coalition
-              </Text>
-            </Group>
-
-            {/* Voice Acting Section */}
-            <Text size="xs" fw={700} c="dimmed" mt="lg">
-              Voice performances by
-            </Text>
-            <Group gap="xl" justify="space-between">
-              <Anchor
-                size="sm"
-                c="blue"
-                fw={700}
-                w={150}
-                href="https://www.jennasharpe.com/"
-                target="_blank"
-              >
-                Jenna Sharpe
-              </Anchor>
-              <Text size="sm" c="dimmed" flex={1}>
-                Mentak Coalition, Argent Flight, Naalu Collective, Ghosts of
-                Creuss
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Anchor
-                size="sm"
-                c="blue"
-                fw={700}
-                w={150}
-                href="https://jaspatrick.com/"
-                target="_blank"
-              >
-                Jas Patrick
-              </Anchor>
-              <Text size="sm" c="dimmed" flex={1}>
-                Clan of Saar, Xxcha Kingdom, Yin Brotherhood, Barony of Letnev,
-                Yssaril, Naaz-Rhoka Alliance (Dart), Federation of Sol (male)
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Anchor
-                size="sm"
-                c="blue"
-                fw={700}
-                w={150}
-                href="https://soundcloud.com/depthpersuasion"
-                target="_blank"
-              >
-                Daniel Pierce
-              </Anchor>
-              <Text size="sm" c="dimmed" flex={1}>
-                Arborec, Vuil&apos;Raith Cabal, Emirates of Hacan, Nomad,
-                Sardakk N&apos;orr
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Anchor
-                size="sm"
-                c="blue"
-                fw={700}
-                w={150}
-                href="https://www.bryanjolson.com/"
-                target="_blank"
-              >
-                Bryan Olson
-              </Anchor>
-              <Text size="sm" c="dimmed" flex={1}>
-                Embers of Muaat, Empyrean, L1Z1X, Mahact Gene-Sorcerors, Nekro
-                Virus
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Anchor
-                size="sm"
-                c="blue"
-                fw={700}
-                w={150}
-                href="https://www.jackdoesvoices.com/"
-                target="_blank"
-              >
-                Jack Dundon
-              </Anchor>
-              <Text size="sm" c="dimmed" flex={1}>
-                Titans of Ul, Universities of Jol-Nar, Naaz-Rhoka Alliance (Tai)
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Anchor
-                size="sm"
-                c="blue"
-                fw={700}
-                w={150}
-                href="https://www.elizabethsaydahvo.com/"
-                target="_blank"
-              >
-                Elizabeth Sadyah
-              </Anchor>
-              <Text size="sm" c="dimmed" flex={1}>
-                Winnu
-              </Text>
-            </Group>
-            <Group gap="xl" justify="space-between">
-              <Anchor
-                size="sm"
-                c="blue"
-                fw={700}
-                w={150}
-                href="https://www.ginaleighsmith.com/"
-                target="_blank"
-              >
-                Gina Leigh Smith
-              </Anchor>
-              <Text size="sm" c="dimmed" flex={1}>
-                Federation of Sol (female)
-              </Text>
-            </Group>
-          </Stack>
-        </Stack>
+        </Box>
       </Box>
+
+      {/* Credits section */}
+      <div className={styles.creditsSection}>
+        <h3 className={styles.creditsTitle}>Credits</h3>
+
+        <div className={styles.creditsGroup}>
+          <div className={styles.creditsSubtitle}>Script & Direction</div>
+          <div className={styles.creditsList}>
+            <div className={styles.creditRow}>
+              <span className={styles.creditName}>Meme Philosopher</span>
+              <span className={styles.creditRole}>Project director, scriptwriting, FX, website & funding</span>
+            </div>
+            <div className={styles.creditRow}>
+              <span className={styles.creditName}>Cacotopos</span>
+              <span className={styles.creditRole}>Mentak, Nekro Virus, Ghosts of Creuss scripts & feedback</span>
+            </div>
+            <div className={styles.creditRow}>
+              <span className={styles.creditName}>Mcstevo</span>
+              <span className={styles.creditRole}>&quot;Chief Critic&quot; (allegedly)</span>
+            </div>
+            <div className={styles.creditRow}>
+              <span className={styles.creditName}>Absol225</span>
+              <span className={styles.creditRole}>Lore accuracy & script feedback</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.creditsGroup}>
+          <div className={styles.creditsSubtitle}>Audio FX</div>
+          <div className={styles.creditsList}>
+            <div className={styles.creditRow}>
+              <span className={styles.creditName}>Xane225</span>
+              <span className={styles.creditRole}>Hacan, L1Z1X, Empyrean, Nomad, Muaat, Mahact</span>
+            </div>
+            <div className={styles.creditRow}>
+              <a href="https://www.martinpazosaudio.com/" target="_blank" rel="noreferrer" className={styles.creditNameLink}>Martin Pazos</a>
+              <span className={styles.creditRole}>Creuss, Sardakk, Arborec, Argent, Naalu, Naaz-Rhoka, Nekro, Vuil&apos;Raith, Letnev, Saar, Jol-Nar</span>
+            </div>
+            <div className={styles.creditRow}>
+              <span className={styles.creditName}>Meme Philosopher</span>
+              <span className={styles.creditRole}>Yin, Yssaril, Nomad, Sol, Mentak</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.creditsGroup}>
+          <div className={styles.creditsSubtitle}>Voice Performances</div>
+          <div className={styles.creditsList}>
+            <div className={styles.creditRow}>
+              <a href="https://www.jennasharpe.com/" target="_blank" rel="noreferrer" className={styles.creditNameLink}>Jenna Sharpe</a>
+              <span className={styles.creditRole}>Mentak, Argent Flight, Naalu, Ghosts of Creuss</span>
+            </div>
+            <div className={styles.creditRow}>
+              <a href="https://jaspatrick.com/" target="_blank" rel="noreferrer" className={styles.creditNameLink}>Jas Patrick</a>
+              <span className={styles.creditRole}>Saar, Xxcha, Yin, Letnev, Yssaril, Naaz-Rhoka (Dart), Sol (male)</span>
+            </div>
+            <div className={styles.creditRow}>
+              <a href="https://soundcloud.com/depthpersuasion" target="_blank" rel="noreferrer" className={styles.creditNameLink}>Daniel Pierce</a>
+              <span className={styles.creditRole}>Arborec, Vuil&apos;Raith, Hacan, Nomad, Sardakk</span>
+            </div>
+            <div className={styles.creditRow}>
+              <a href="https://www.bryanjolson.com/" target="_blank" rel="noreferrer" className={styles.creditNameLink}>Bryan Olson</a>
+              <span className={styles.creditRole}>Muaat, Empyrean, L1Z1X, Mahact, Nekro Virus</span>
+            </div>
+            <div className={styles.creditRow}>
+              <a href="https://www.jackdoesvoices.com/" target="_blank" rel="noreferrer" className={styles.creditNameLink}>Jack Dundon</a>
+              <span className={styles.creditRole}>Titans of Ul, Jol-Nar, Naaz-Rhoka (Tai)</span>
+            </div>
+            <div className={styles.creditRow}>
+              <a href="https://www.elizabethsaydahvo.com/" target="_blank" rel="noreferrer" className={styles.creditNameLink}>Elizabeth Sadyah</a>
+              <span className={styles.creditRole}>Winnu</span>
+            </div>
+            <div className={styles.creditRow}>
+              <a href="https://www.ginaleighsmith.com/" target="_blank" rel="noreferrer" className={styles.creditNameLink}>Gina Leigh Smith</a>
+              <span className={styles.creditRole}>Federation of Sol (female)</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Device selector for Spotify when no active device */}
       <SpotifyDeviceSelector
@@ -1640,250 +1429,190 @@ export default function VoicesMaster() {
         }}
       />
 
-      {/* Spacing div to prevent content from being hidden behind fixed player */}
-      <div style={{ height: 100 }} />
+      {/* Footer spacer */}
+      <div className={styles.footerSpacer} />
 
-      {/* Footer */}
-      <Box
-        component="footer"
-        style={(theme) => ({
-          borderTop: `1px solid ${theme.colors.dark[6]}`,
-          padding: theme.spacing.md,
-          backgroundColor: theme.colors.dark[8],
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1,
-        })}
-      >
-        <Container size="xl" px={0}>
-          <Group gap="md" align="center">
-            <Group gap="xs">
-              <Button
-                variant="filled"
-                size="sm"
-                onClick={() => {
-                  if (playingFaction && playingLineType) {
-                    // Toggle pause/play on the voice line
-                    if (voiceLineRef.current?.playing()) {
-                      voiceLineRef.current.pause();
-                      setIsVoiceLinePlaying(false);
-
-                      // Analytics: Track pause action
-                      trackButtonClick({
-                        buttonType: "pause_audio",
-                        context: "footer_player",
-                        sessionId: sessionId || undefined,
-                      });
-                    } else {
-                      voiceLineRef.current?.play();
-                      setIsVoiceLinePlaying(true);
-
-                      // Analytics: Track resume action
-                      trackButtonClick({
-                        buttonType: "resume_audio",
-                        context: "footer_player",
-                        sessionId: sessionId || undefined,
-                      });
-                    }
-                  }
-                }}
-                disabled={!(playingFaction && playingLineType)}
-              >
-                {isVoiceLinePlaying ? (
-                  <IconSquare size={16} />
-                ) : (
-                  <IconPlayerPlay size={16} />
-                )}
-              </Button>
-
-              {/* Skip to next in queue button */}
-              {voiceLineQueue.length > 0 && (
-                <Tooltip label="Skip to next in queue">
-                  <ActionIcon
-                    variant="filled"
-                    color="blue"
-                    size="md"
-                    onClick={() => {
-                      // Analytics: Track skip action
-                      trackButtonClick({
-                        buttonType: "skip_to_next",
-                        context: "footer_player",
-                        sessionId: sessionId || undefined,
-                      });
-
-                      stopAudio();
-                      if (voiceLineQueue.length > 0) {
-                        const nextItem = voiceLineQueue[0];
-                        playAudio(nextItem.factionId, nextItem.type, true);
-                      }
-                    }}
-                  >
-                    <IconPlayerSkipForward size={16} />
-                  </ActionIcon>
-                </Tooltip>
-              )}
-
-              {playingFaction && playingLineType && (
-                <Group gap="xs">
-                  {playingFaction === "announcer" ? (
-                    <Box
-                      style={{
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        backgroundColor: "orange",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "8px",
-                        fontWeight: "bold",
-                        color: "white",
-                      }}
-                    >
-                      A
-                    </Box>
-                  ) : (
-                    <FactionIcon
-                      faction={playingFaction as FactionId}
-                      style={{ width: 16, height: 16 }}
-                    />
-                  )}
-                  <Text size="sm" fw={500} truncate>
-                    {playingLineType}
-                  </Text>
-                </Group>
-              )}
-            </Group>
-
-            <Group gap="xs" style={{ flex: 1 }}>
-              <Slider
-                w="100%"
-                min={0}
-                max={1}
-                step={0.1}
-                showLabelOnHover={false}
-                label={null}
-                labelAlwaysOn={false}
-                value={audioProgress || 0}
-                onChange={(newPosition) => {
-                  if (voiceLineRef.current && loadingAudio) {
-                    // Get the total duration of the audio and calculate the seek position
-                    const duration = voiceLineRef.current.duration();
-                    const seekPosition = duration * newPosition;
-                    voiceLineRef.current.seek(seekPosition);
-
-                    // Analytics: Track seek action
+      {/* Audio Player Footer */}
+      <footer className={styles.playerFooter}>
+        <div className={styles.playerContent}>
+          <div className={styles.playerControls}>
+            <Button
+              variant="filled"
+              size="compact-sm"
+              onClick={() => {
+                if (playingFaction && playingLineType) {
+                  if (voiceLineRef.current?.playing()) {
+                    voiceLineRef.current.pause();
+                    setIsVoiceLinePlaying(false);
                     trackButtonClick({
-                      buttonType: "audio_seek",
-                      context: "footer_player",
-                      sessionId: sessionId || undefined,
-                    });
-                  }
-                }}
-                disabled={!loadingAudio}
-                styles={(theme) => ({
-                  track: {
-                    backgroundColor: theme.colors.dark[4],
-                    height: 6,
-                  },
-                  bar: {
-                    backgroundColor: theme.colors.blue[6],
-                    height: 6,
-                  },
-                  thumb: {
-                    display: loadingAudio ? undefined : "none",
-                    height: 16,
-                    width: 16,
-                    backgroundColor: theme.white,
-                    borderWidth: 1,
-                  },
-                })}
-              />
-            </Group>
-
-            {/* Queue Display */}
-            <VoiceLineQueue
-              queue={voiceLineQueue}
-              onRemove={(id) => {
-                removeFromQueue(id);
-                // Analytics: Track queue removal
-                trackButtonClick({
-                  buttonType: "remove_from_queue",
-                  context: "queue_popup",
-                  sessionId: sessionId || undefined,
-                });
-              }}
-              onClear={() => {
-                clearQueue();
-                // Analytics: Track queue clear
-                trackButtonClick({
-                  buttonType: "clear_queue",
-                  context: "queue_popup",
-                  sessionId: sessionId || undefined,
-                });
-              }}
-            />
-
-            <Group gap="xs">
-              <Button
-                variant="subtle"
-                size="sm"
-                onClick={() => {
-                  if (volume > 0) {
-                    setVolume(0);
-                    voiceLineRef.current?.volume(0);
-
-                    // Analytics: Track mute action
-                    trackButtonClick({
-                      buttonType: "mute_audio",
+                      buttonType: "pause_audio",
                       context: "footer_player",
                       sessionId: sessionId || undefined,
                     });
                   } else {
-                    setVolume(0.5);
-                    voiceLineRef.current?.volume(0.5);
-
-                    // Analytics: Track unmute action
+                    voiceLineRef.current?.play();
+                    setIsVoiceLinePlaying(true);
                     trackButtonClick({
-                      buttonType: "unmute_audio",
+                      buttonType: "resume_audio",
                       context: "footer_player",
                       sessionId: sessionId || undefined,
                     });
                   }
-                }}
-              >
-                {volume === 0 ? (
-                  <IconVolumeOff size={16} />
-                ) : (
-                  <IconVolume size={16} />
-                )}
-              </Button>
-              <Slider
-                w={100}
-                min={0}
-                max={1}
-                step={0.01}
-                value={volume}
-                onChange={(newVolume) => {
-                  setVolume(newVolume);
-                  voiceLineRef.current?.volume(newVolume);
+                }
+              }}
+              disabled={!(playingFaction && playingLineType)}
+            >
+              {isVoiceLinePlaying ? (
+                <IconSquare size={14} />
+              ) : (
+                <IconPlayerPlay size={14} />
+              )}
+            </Button>
 
-                  // Analytics: Track volume change (debounced to avoid spam)
-                  if (newVolume % 0.1 === 0) {
+            {voiceLineQueue.length > 0 && (
+              <Tooltip label="Skip to next">
+                <ActionIcon
+                  variant="light"
+                  color="blue"
+                  size="md"
+                  onClick={() => {
                     trackButtonClick({
-                      buttonType: "volume_change",
+                      buttonType: "skip_to_next",
                       context: "footer_player",
                       sessionId: sessionId || undefined,
                     });
-                  }
-                }}
-              />
-            </Group>
-          </Group>
-        </Container>
-      </Box>
+                    stopAudio();
+                    if (voiceLineQueue.length > 0) {
+                      const nextItem = voiceLineQueue[0];
+                      playAudio(nextItem.factionId, nextItem.type, true);
+                    }
+                  }}
+                >
+                  <IconPlayerSkipForward size={14} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+          </div>
+
+          {playingFaction && playingLineType && (
+            <div className={styles.nowPlaying}>
+              {playingFaction === "announcer" ? (
+                <Box
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    backgroundColor: "orange",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "10px",
+                    fontWeight: "bold",
+                    color: "white",
+                  }}
+                >
+                  A
+                </Box>
+              ) : (
+                <FactionIcon
+                  faction={playingFaction as FactionId}
+                  style={{ width: 18, height: 18 }}
+                />
+              )}
+              <span className={styles.nowPlayingText}>{playingLineType}</span>
+            </div>
+          )}
+
+          <div className={styles.progressContainer}>
+            <Slider
+              size="xs"
+              min={0}
+              max={1}
+              step={0.01}
+              label={null}
+              value={audioProgress || 0}
+              onChange={(newPosition) => {
+                if (voiceLineRef.current && loadingAudio) {
+                  const duration = voiceLineRef.current.duration();
+                  const seekPosition = duration * newPosition;
+                  voiceLineRef.current.seek(seekPosition);
+                  trackButtonClick({
+                    buttonType: "audio_seek",
+                    context: "footer_player",
+                    sessionId: sessionId || undefined,
+                  });
+                }
+              }}
+              disabled={!loadingAudio}
+            />
+          </div>
+
+          <VoiceLineQueue
+            queue={voiceLineQueue}
+            onRemove={(id) => {
+              removeFromQueue(id);
+              trackButtonClick({
+                buttonType: "remove_from_queue",
+                context: "queue_popup",
+                sessionId: sessionId || undefined,
+              });
+            }}
+            onClear={() => {
+              clearQueue();
+              trackButtonClick({
+                buttonType: "clear_queue",
+                context: "queue_popup",
+                sessionId: sessionId || undefined,
+              });
+            }}
+          />
+
+          <div className={styles.volumeControls}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={() => {
+                if (volume > 0) {
+                  setVolume(0);
+                  voiceLineRef.current?.volume(0);
+                  trackButtonClick({
+                    buttonType: "mute_audio",
+                    context: "footer_player",
+                    sessionId: sessionId || undefined,
+                  });
+                } else {
+                  setVolume(0.5);
+                  voiceLineRef.current?.volume(0.5);
+                  trackButtonClick({
+                    buttonType: "unmute_audio",
+                    context: "footer_player",
+                    sessionId: sessionId || undefined,
+                  });
+                }
+              }}
+            >
+              {volume === 0 ? (
+                <IconVolumeOff size={16} />
+              ) : (
+                <IconVolume size={16} />
+              )}
+            </ActionIcon>
+            <Slider
+              size="xs"
+              w={80}
+              min={0}
+              max={1}
+              step={0.01}
+              label={null}
+              value={volume}
+              onChange={(newVolume) => {
+                setVolume(newVolume);
+                voiceLineRef.current?.volume(newVolume);
+              }}
+            />
+          </div>
+        </div>
+      </footer>
 
       {/* QR Code Modal */}
       <Modal
