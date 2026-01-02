@@ -14,7 +14,7 @@ import {
   IconSun,
   IconBrandGithub,
   IconMail,
-  IconBrandPatreon,
+  IconBrandDiscordFilled,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
@@ -96,21 +96,21 @@ function About() {
                 GitHub
               </Button>
               <Button
+                leftSection={<IconBrandDiscordFilled size={18} />}
+                component="a"
+                href="https://discord.gg/mVbAm4sS"
+                target="_blank"
+                variant="filled"
+                color="discordBlue"
+              >
+                Discord
+              </Button>
+              <Button
                 leftSection={<IconMail size={18} />}
                 component="a"
                 href="mailto:james@thestrongfamily.org"
               >
                 Contact Me
-              </Button>
-              <Button
-                leftSection={<IconBrandPatreon size={18} />}
-                component="a"
-                href="https://patreon.com/TI4Lab"
-                target="_blank"
-                variant="filled"
-                color="pink"
-              >
-                Patreon
               </Button>
             </Group>
           </Grid.Col>

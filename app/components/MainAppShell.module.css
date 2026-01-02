@@ -144,6 +144,38 @@
   flex: 1;
 }
 
+/* Discord button */
+.discordButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: all 120ms ease;
+
+  @mixin light {
+    background: var(--mantine-color-discordBlue-0);
+    color: var(--mantine-color-discordBlue-7);
+  }
+
+  @mixin dark {
+    background: rgba(91, 127, 213, 0.15);
+    color: var(--mantine-color-discordBlue-3);
+    border: 1px solid rgba(91, 127, 213, 0.25);
+  }
+}
+
+.discordButton:hover {
+  @mixin light {
+    background: var(--mantine-color-discordBlue-1);
+  }
+
+  @mixin dark {
+    background: rgba(91, 127, 213, 0.25);
+    border-color: rgba(91, 127, 213, 0.4);
+  }
+}
+
 /* Responsive breakpoint */
 @media (max-width: 568px) {
   .burger {

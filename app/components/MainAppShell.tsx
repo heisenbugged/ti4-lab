@@ -10,8 +10,11 @@ import {
   Text,
   UnstyledButton,
 } from "@mantine/core";
+import { IconBrandDiscordFilled } from "@tabler/icons-react";
 
 import { Link, useLocation, useNavigate } from "@remix-run/react";
+
+const DISCORD_INVITE_URL = "https://discord.gg/mVbAm4sS";
 import { useState } from "react";
 import { Logo } from "~/components/Logo";
 import { trackButtonClick } from "~/lib/analytics.client";
@@ -153,7 +156,18 @@ export function MainAppShell({ children, headerRightSection }: Props) {
           <nav className={classes.desktopMenu}>
             <Group gap={0}>{renderMenuItems()}</Group>
             <div style={{ flex: 1 }} />
-            {headerRightSection}
+            <Group gap="xs">
+              <UnstyledButton
+                component="a"
+                href={DISCORD_INVITE_URL}
+                target="_blank"
+                className={classes.discordButton}
+              >
+                <IconBrandDiscordFilled size={14} />
+                <Text size="xs" fw={500}>Join Discord</Text>
+              </UnstyledButton>
+              {headerRightSection}
+            </Group>
           </nav>
         </Group>
       </AppShell.Header>
@@ -184,7 +198,28 @@ export function MainAppShell({ children, headerRightSection }: Props) {
           },
         }}
       >
-        <Stack gap="xs">{renderMenuItems(true)}</Stack>
+        <Stack gap="xs">
+          {renderMenuItems(true)}
+          <UnstyledButton
+            component="a"
+            href={DISCORD_INVITE_URL}
+            target="_blank"
+            onClick={() => setMobileMenuOpened(false)}
+          >
+            <Box
+              className={classes.navItem}
+              data-mobile
+            >
+              <Box className={classes.navItemIndicator} />
+              <Group gap="xs">
+                <IconBrandDiscordFilled size={16} color="var(--mantine-color-discordBlue-5)" />
+                <Text size="sm" fw={500}>
+                  Discord
+                </Text>
+              </Group>
+            </Box>
+          </UnstyledButton>
+        </Stack>
         {headerRightSection && <Box mt="xl">{headerRightSection}</Box>}
       </Drawer>
 
