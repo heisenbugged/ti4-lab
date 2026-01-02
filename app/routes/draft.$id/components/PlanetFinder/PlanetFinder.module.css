@@ -1,0 +1,139 @@
+/* System Search Modal - Clean Industrial */
+
+/* Sticky header for search and filters bar */
+.stickyHeader {
+  position: sticky;
+  top: -16px; /* Offset for modal's internal padding */
+  z-index: 10;
+  padding-top: var(--mantine-spacing-md);
+  padding-bottom: var(--mantine-spacing-sm);
+  margin-top: calc(-1 * var(--mantine-spacing-md));
+
+  @mixin light { background: var(--mantine-color-white); }
+  @mixin dark { background: var(--mantine-color-dark-7); }
+}
+
+/* Two-column layout */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: var(--mantine-spacing-md);
+  min-height: 420px;
+  max-height: 60vh;
+}
+
+@media (max-width: 700px) {
+  .layout {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .filterPanel {
+    max-height: 180px;
+    overflow-y: auto;
+  }
+}
+
+/* Filter panel - uses panel variant style */
+.filterPanel {
+  border-left: 3px solid var(--mantine-color-blue-6);
+  border-radius: 0 var(--mantine-radius-sm) var(--mantine-radius-sm) 0;
+  padding: var(--mantine-spacing-sm);
+  overflow-y: auto;
+
+  @mixin light {
+    background: var(--mantine-color-gray-0);
+    border-top: 1px solid var(--mantine-color-gray-2);
+    border-right: 1px solid var(--mantine-color-gray-2);
+    border-bottom: 1px solid var(--mantine-color-gray-2);
+  }
+  @mixin dark {
+    background: var(--mantine-color-dark-6);
+    border-top: 1px solid var(--mantine-color-dark-4);
+    border-right: 1px solid var(--mantine-color-dark-4);
+    border-bottom: 1px solid var(--mantine-color-dark-4);
+  }
+}
+
+/* Filter section */
+.filterSection {
+  margin-bottom: var(--mantine-spacing-sm);
+  padding-bottom: var(--mantine-spacing-sm);
+  border-bottom: 1px solid;
+
+  @mixin light { border-color: var(--mantine-color-gray-2); }
+  @mixin dark { border-color: var(--mantine-color-dark-4); }
+}
+
+.filterSection:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* System row */
+.systemRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+
+  @mixin dark { background: var(--mantine-color-dark-7); }
+  @mixin light { background: var(--mantine-color-white); }
+}
+
+.systemRow:hover {
+  @mixin dark {
+    background: var(--mantine-color-dark-6);
+    border-color: var(--mantine-color-dark-4);
+  }
+  @mixin light {
+    background: var(--mantine-color-gray-0);
+    border-color: var(--mantine-color-gray-3);
+  }
+}
+
+.systemRow:focus {
+  outline: none;
+  border-color: var(--mantine-color-blue-6);
+}
+
+.systemRow.inUse {
+  opacity: 0.5;
+}
+
+/* Trait dot */
+.traitDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.traitDot.cultural { background: var(--mantine-color-blue-5); }
+.traitDot.hazardous { background: var(--mantine-color-red-5); }
+.traitDot.industrial { background: var(--mantine-color-green-5); }
+.traitDot.neutral { background: var(--mantine-color-gray-5); }
+
+/* Planet divider */
+.planetDivider {
+  width: 1px;
+  height: 12px;
+  margin: 0 2px;
+
+  @mixin dark { background: var(--mantine-color-dark-4); }
+  @mixin light { background: var(--mantine-color-gray-4); }
+}
+
+/* Active filters bar - just needs background colors for theming */
+.activeFiltersBar {
+  border-radius: var(--mantine-radius-sm);
+
+  @mixin dark { background: var(--mantine-color-dark-6); }
+  @mixin light { background: var(--mantine-color-gray-1); }
+}
