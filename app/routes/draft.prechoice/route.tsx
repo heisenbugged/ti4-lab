@@ -6,7 +6,6 @@ import {
   Flex,
   Grid,
   Group,
-  Paper,
   SimpleGrid,
   Stack,
   Tabs,
@@ -49,6 +48,7 @@ import { SavedStateModal } from "./components/SavedStateModal";
 import { MapStyleSelector } from "./components/MapStyleSelector";
 import { SeededMapBanner } from "./components/SeededMapBanner";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
+import { DraftFormatDescription } from "./components/DraftFormatDescription";
 import buttonClasses from "~/ui/buttons.module.css";
 
 export default function DraftPrechoice() {
@@ -335,9 +335,11 @@ export default function DraftPrechoice() {
                   />
                 )}
               </Box>
-              <Paper shadow="md" withBorder px="md" py="sm">
-                <Text size="md">{MAPS[mapType].description}</Text>
-              </Paper>
+              <DraftFormatDescription
+                mapType={mapType}
+                data={MAPS[mapType].descriptionData}
+                title={MAPS[mapType].title}
+              />
             </Box>
           </Group>
         </Flex>

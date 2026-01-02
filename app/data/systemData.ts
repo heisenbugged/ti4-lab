@@ -8,6 +8,37 @@ import {
 import { rawSystems } from "./rawSystemData";
 import { factions } from "./factionData";
 
+export type SystemGameSet = "base" | "pok" | "te" | "ds" | "us";
+
+export const systemGameSetLabels: Record<SystemGameSet, string> = {
+  base: "Base",
+  pok: "PoK",
+  te: "TE",
+  ds: "DS",
+  us: "US",
+};
+
+export function getSystemGameSet(systemId: string): SystemGameSet | undefined {
+  const id = Number(systemId);
+  if (isNaN(id)) return undefined;
+
+  // Base game: 19-50
+  if (id >= 19 && id <= 50) return "base";
+  // Prophecy of Kings: 59-82
+  if (id >= 59 && id <= 82) return "pok";
+  // Thunder's Edge: 92-149 (includes 91A, 91B handled separately)
+  if (id >= 92 && id < 150) return "te";
+  // Discordant Stars: tiles in the 4000+ range
+  if (id >= 4000 && id < 5000) return "ds";
+  // Uncharted Stars: 150+
+  if (id >= 150 && id < 4000) return "us";
+
+  // Handle special string IDs
+  if (systemId.startsWith("91")) return "te"; // 91A, 91B
+
+  return undefined;
+}
+
 export const systemData: Record<SystemId, System> = Object.entries(
   rawSystems,
 ).reduce(
@@ -105,7 +136,7 @@ export const searchableSystemData = Object.values(systemData).reduce(
       );
       nameParts.push("anomaly");
     }
-    if (system.wormholes) {
+    if (system.wormholes.length > 0) {
       system.wormholes.forEach((wormhole) =>
         nameParts.push(wormhole.toLowerCase()),
       );
@@ -137,10 +168,39 @@ export const searchableSystemData = Object.values(systemData).reduce(
 
       nameParts.push(`${planet.resources} resources`);
       nameParts.push(`${planet.influence} influence`);
+
+      if (planet.legendary) {
+        nameParts.push("legendary");
+      }
+      if (planet.tradeStation) {
+        nameParts.push("space station");
+        nameParts.push("station");
+      }
+    }
+
+    // Planet count tags
+    if (system.planets.length >= 1) {
+      nameParts.push(`${system.planets.length} planet`);
+    }
+    if (system.planets.length >= 2) {
+      nameParts.push("multiplanet");
     }
 
     if (system.faction) {
       nameParts.push(factions[system.faction].name.toLowerCase());
+    }
+
+    // Game set tags
+    const gameSet = getSystemGameSet(system.id);
+    if (gameSet) {
+      const gameSetSearchTerms: Record<SystemGameSet, string[]> = {
+        base: ["base", "base game"],
+        pok: ["pok", "prophecy of kings"],
+        te: ["te", "thunders edge", "thunder's edge"],
+        ds: ["ds", "discordant stars"],
+        us: ["us", "uncharted stars"],
+      };
+      gameSetSearchTerms[gameSet].forEach((term) => nameParts.push(term));
     }
 
     acc.push([nameParts.join(" "), system.id] as const);

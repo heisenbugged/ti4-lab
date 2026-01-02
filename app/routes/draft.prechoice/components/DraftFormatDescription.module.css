@@ -1,0 +1,123 @@
+.container {
+    border-radius: 4px;
+    background: var(--mantine-color-default);
+    border: 1px solid var(--mantine-color-default-border);
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-xs);
+    padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+    border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.formatTitle {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mantine-color-dimmed);
+}
+
+.content {
+    padding: var(--mantine-spacing-sm);
+}
+
+.description {
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    margin-bottom: var(--mantine-spacing-sm);
+    color: var(--mantine-color-text);
+}
+
+.featuresGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.featureItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    background: var(--mantine-color-default-hover);
+    color: var(--mantine-color-dimmed);
+}
+
+.featureIcon {
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+/* Header gradient variants - the one distinctive element */
+.milty .header {
+    background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--mantine-color-blue-6) 15%, transparent),
+        transparent 60%
+    );
+}
+
+.milty .formatTitle {
+    color: var(--mantine-color-blue-4);
+}
+
+.milty .featureIcon {
+    color: var(--mantine-color-blue-5);
+}
+
+.miltyeq .header {
+    background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--mantine-color-teal-6) 15%, transparent),
+        transparent 60%
+    );
+}
+
+.miltyeq .formatTitle {
+    color: var(--mantine-color-teal-4);
+}
+
+.miltyeq .featureIcon {
+    color: var(--mantine-color-teal-5);
+}
+
+.nucleus .header {
+    background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--mantine-color-violet-6) 15%, transparent),
+        transparent 60%
+    );
+}
+
+.nucleus .formatTitle {
+    color: var(--mantine-color-violet-4);
+}
+
+.nucleus .featureIcon {
+    color: var(--mantine-color-violet-5);
+}
+
+.small .header {
+    background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--mantine-color-orange-6) 15%, transparent),
+        transparent 60%
+    );
+}
+
+.small .formatTitle {
+    color: var(--mantine-color-orange-4);
+}
+
+.small .featureIcon {
+    color: var(--mantine-color-orange-5);
+}

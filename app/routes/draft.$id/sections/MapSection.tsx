@@ -10,8 +10,13 @@ import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraft } from "~/draftStore";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useCoreSliceValues } from "~/hooks/useCoreSliceValues";
+import { ReactNode } from "react";
 
-export function MapSection() {
+type Props = {
+  titleChildren?: ReactNode;
+};
+
+export function MapSection({ titleChildren }: Props) {
   const { adminMode } = useSafeOutletContext();
   const { ref, width } = useDimensions<HTMLDivElement>();
   const { height: windowHeight } = useWindowDimensions();
@@ -36,7 +41,7 @@ export function MapSection() {
 
   return (
     <div style={{ position: "sticky", width: "auto", top: 60 }}>
-      <SectionTitle title="Full Map" />
+      <SectionTitle title="Full Map">{titleChildren}</SectionTitle>
       <Box
         ref={ref}
         style={{

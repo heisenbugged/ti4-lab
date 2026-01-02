@@ -123,8 +123,6 @@ export function MainAppShell({ children, headerRightSection }: Props) {
         label="Soundboard"
         isActive={isSoundboardActive}
         onClick={handleSoundboardClick}
-        badge="NEW"
-        badgeColor="orange"
         mobile={mobile}
       />
     </>

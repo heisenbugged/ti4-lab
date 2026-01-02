@@ -455,6 +455,16 @@ export const draftStore = createStore<DraftV2State>()(
               state.draft.settings.requiredFactions,
               state.draft.settings.factionStratification,
             );
+
+            // Regenerate player faction bags from new availableFactions
+            const numPreassigned = state.draft.settings.numPreassignedFactions;
+            if (state.draft.playerFactionPool && numPreassigned !== undefined) {
+              const available = shuffle([...state.draft.availableFactions]);
+              state.draft.players.forEach((player) => {
+                const bag = available.splice(0, numPreassigned);
+                state.draft.playerFactionPool![player.id] = bag;
+              });
+            }
           }
         }),
     },
