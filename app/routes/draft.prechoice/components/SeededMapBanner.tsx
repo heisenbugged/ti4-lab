@@ -1,6 +1,6 @@
 import { Alert, Text } from "@mantine/core";
 import { IconMap } from "@tabler/icons-react";
-import { useNavigate, useSearchParams } from "@remix-run/react";
+import { useNavigate, useSearchParams } from "react-router";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
 import { useDraftSetup } from "../store";
 

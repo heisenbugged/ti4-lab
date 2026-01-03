@@ -1,7 +1,7 @@
 import { Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, type JSX } from "react";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";

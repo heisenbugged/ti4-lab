@@ -10,14 +10,14 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, data, LoaderFunctionArgs } from "react-router";
 import {
   Form,
   Link,
   useLoaderData,
   useSearchParams,
   useSubmit,
-} from "@remix-run/react";
+} from "react-router";
 import { findDrafts } from "~/drizzle/draft.server";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
@@ -354,7 +354,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const body = await request.formData();
   const id = body.get("id")!;
   await db.delete(drafts).where(eq(drafts.id, id.toString()));
-  return json({ ok: true });
+  return data({ ok: true });
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -380,5 +380,5 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     createdBefore,
   });
 
-  return json(draftsData);
+  return data(draftsData);
 };

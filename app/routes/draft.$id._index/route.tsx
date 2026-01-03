@@ -1,12 +1,11 @@
 import { Button, Grid, Stack, Text } from "@mantine/core";
 import {
   ActionFunctionArgs,
-  json,
+  data,
   redirect,
   MetaFunction,
-} from "@remix-run/node";
-import type { SerializeFrom } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+} from "react-router";
+import { useLoaderData } from "react-router";
 import { eq } from "drizzle-orm";
 import { useEffect } from "react";
 import { useDraft } from "~/draftStore";
@@ -334,7 +333,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (serverSelections.length !== draft.selections.length) {
     const notifyResult = await notifyPick(id, existingDraft.urlName!, draft);
     if (!notifyResult.success) {
-      return json({
+      return data({
         success: true,
         discordError: "error" in notifyResult ? notifyResult.error : undefined,
         discordMessage:
@@ -389,14 +388,22 @@ export const loader = async ({ params }: { params: { id: string } }) => {
     throw new Response("Draft not found", { status: 404 });
   }
 
-  return json({
+  return data({
     ...result,
     data: JSON.parse(result.data as string) as Draft,
   });
 };
 
-export const meta: MetaFunction = ({ data }) => {
-  const typed = data as SerializeFrom<typeof loader> | undefined;
+type LoaderData = {
+  data: Draft;
+  id: string;
+  urlName: string | null;
+  imageUrl: string | null;
+  incompleteImageUrl: string | null;
+};
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const typed = data as LoaderData | undefined;
   if (!typed) return [];
 
   const draft = typed.data;

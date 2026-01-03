@@ -9,7 +9,7 @@ import {
   Scripts,
   ScrollRestoration,
   useRouteLoaderData,
-} from "@remix-run/react";
+} from "react-router";
 import {
   Button,
   ColorSchemeScript,
@@ -21,7 +21,7 @@ import { useEffect, useState } from "react";
 import type { Socket } from "socket.io-client";
 import io from "socket.io-client";
 import { SocketProvider } from "./socketContext";
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { LoaderFunctionArgs, redirect } from "react-router";
 import { Notifications } from "@mantine/notifications";
 
 const mantineTheme = createTheme({

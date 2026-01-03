@@ -1,5 +1,5 @@
 import express from "express";
-import { createRequestHandler } from "@remix-run/express";
+import { createRequestHandler } from "@react-router/express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { startDiscordBot } from "~/discord/bot.server.js";
@@ -23,11 +23,11 @@ app.use(
 );
 
 const build = viteDevServer
-  ? () => viteDevServer.ssrLoadModule("virtual:remix/server-build")
+  ? () => viteDevServer.ssrLoadModule("virtual:react-router/server-build")
   : await import("./build/server/index.js");
 
-// @ts-ignore
-app.all("*", createRequestHandler({ build }));
+// @ts-expect-error - Vite dev server is not typed
+app.all("/{*splat}", createRequestHandler({ build }));
 
 // Connect socket.io
 const httpServer = createServer(app);

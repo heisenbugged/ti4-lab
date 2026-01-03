@@ -1,0 +1,38 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--mantine-spacing-md);
+  margin-top: var(--mantine-spacing-lg);
+}
+
+.col12 {
+  grid-column: span 12;
+}
+
+.colLeft {
+  grid-column: span 12;
+}
+
+.colRight {
+  grid-column: span 12;
+}
+
+@media (min-width: 62em) {
+  .colLeft {
+    grid-column: span 7;
+  }
+
+  .colRight {
+    grid-column: span 5;
+  }
+}
+
+.hiddenFromXs {
+  display: block;
+}
+
+@media (min-width: 36em) {
+  .hiddenFromXs {
+    display: none;
+  }
+}

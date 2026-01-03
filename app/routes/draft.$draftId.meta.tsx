@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, json } from "@remix-run/node";
+import { LoaderFunctionArgs, data } from "react-router";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 
@@ -25,7 +25,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   // Image URL (either from CDN or the .png route that will generate it)
   const imageUrl = result.imageUrl || `https://tidraft.com/draft/${draftId}.png`;
 
-  return json({
+  return data({
     title: `${draftId} - TI4 Lab`,
     description: `${draftTypeDisplay} on TI4 Lab`,
     image: imageUrl,

@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+import { LoaderFunctionArgs } from "react-router";
 import { generateMapGeneratorImageBuffer } from "~/skiaRendering/mapGeneratorImage.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

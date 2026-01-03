@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { data, type LoaderFunctionArgs } from "react-router";
 import { draftById, draftByPrettyUrl } from "~/drizzle/draft.server";
 
 export async function loader({ params }: LoaderFunctionArgs) {

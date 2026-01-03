@@ -1,5 +1,5 @@
 import { Container, Group, Text, Stack, Button } from "@mantine/core";
-import { useParams } from "@remix-run/react";
+import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factionAudios, LineType } from "~/data/factionAudios";

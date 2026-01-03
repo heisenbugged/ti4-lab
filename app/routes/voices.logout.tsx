@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { LoaderFunctionArgs, redirect } from "react-router";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const response = redirect("/voices");

@@ -1,9 +1,8 @@
-import { Button, Group, Switch, useMantineColorScheme } from "@mantine/core";
-import { MetaFunction } from "@remix-run/node";
-import { Outlet } from "@remix-run/react";
-import { IconMoon, IconSun } from "@tabler/icons-react";
+import { MetaFunction } from "react-router";
+import { Outlet } from "react-router";
 import { useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
+import { HeaderControls } from "~/components/HeaderControls";
 
 export type DraftOrderContext = {
   adminMode: boolean;
@@ -21,38 +20,14 @@ export default function SoundboardShell() {
   const [accessibleColors, setAccessibleColors] = useState(false);
   const [adminMode, setAdminMode] = useState(false);
   const [pickForAnyone, setPickForAnyone] = useState(false);
-  const { setColorScheme } = useMantineColorScheme();
 
   return (
     <MainAppShell
       headerRightSection={
-        <Group>
-          <Button
-            variant="light"
-            color="gray"
-            onMouseDown={() => setColorScheme("dark")}
-            size="compact-xs"
-            darkHidden
-          >
-            <IconMoon />
-          </Button>
-          <Button
-            variant="light"
-            color="gray"
-            onMouseDown={() => setColorScheme("light")}
-            lightHidden
-            size="compact-xs"
-          >
-            <IconSun />
-          </Button>
-          <Switch
-            label="A11Y"
-            checked={accessibleColors}
-            onChange={(e) => {
-              setAccessibleColors(e.currentTarget.checked);
-            }}
-          />
-        </Group>
+        <HeaderControls
+          accessibleColors={accessibleColors}
+          onAccessibleColorsChange={setAccessibleColors}
+        />
       }
     >
       <Outlet

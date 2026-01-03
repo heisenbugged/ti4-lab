@@ -1,4 +1,4 @@
-import { Outlet } from "@remix-run/react";
+import { Outlet } from "react-router";
 import { MainAppShell } from "~/components/MainAppShell";
 
 export default function AdminLayout() {

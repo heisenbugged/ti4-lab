@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams, useSubmit } from "@remix-run/react";
+import { useNavigate, useSearchParams, useSubmit } from "react-router";
 import type { DraftSettings, DiscordData } from "~/types";
 import type {
   SliceGenerationSettings,

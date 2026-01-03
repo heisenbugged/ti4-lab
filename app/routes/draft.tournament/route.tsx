@@ -1,4 +1,4 @@
-import { useSearchParams } from "@remix-run/react";
+import { useSearchParams } from "react-router";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import { useState } from "react";
 import { Player } from "~/types";

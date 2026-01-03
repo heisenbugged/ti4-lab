@@ -8,27 +8,23 @@
   @mixin dark { color: white;}
 }
 
-.fade-enter {
+.fade-item {
+  transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
+}
+
+.fade-entering {
   opacity: 0;
   transform: translateX(100%);
 }
 
-.fade-enter-active {
-  opacity: 1;
-  transform: translateX(0);
-  /* transition: opacity 500ms ease-in-out, transform 500ms ease-in-out; */
-  transition: opacity 500ms ease-in-out 500ms, transform 500ms ease-in-out 500ms;
-}
-
-.fade-exit {
+.fade-active {
   opacity: 1;
   transform: translateX(0);
 }
 
-.fade-exit-active {
+.fade-exiting {
   position: absolute;
   top: 0;
   opacity: 0;
   transform: translateX(-100%);
-  transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
 }

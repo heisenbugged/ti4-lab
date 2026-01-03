@@ -9,7 +9,7 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useState } from "react";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
 import { notifications } from "@mantine/notifications";
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import {
   IconPlayerPlay,
   IconShare,

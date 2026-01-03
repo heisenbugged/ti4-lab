@@ -1,6 +1,6 @@
 import { Group, SimpleGrid, Stack, Text } from "@mantine/core";
-import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { LoaderFunctionArgs, data } from "react-router";
+import { useLoaderData } from "react-router";
 import { SectionTitle } from "~/components/Section";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { multiDraftByPrettyUrl } from "~/drizzle/multiDraft.server";
@@ -25,7 +25,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   const drafts = await Promise.all(draftPromises);
 
-  return json({ multidraft, drafts });
+  return data({ multidraft, drafts });
 }
 
 export default function MultidraftRoute() {

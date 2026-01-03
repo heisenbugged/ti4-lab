@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs, data } from "react-router";
 import { draftById, updateDraft } from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
@@ -6,7 +6,7 @@ import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
 export async function action({ request, params }: ActionFunctionArgs) {
   const { id } = params;
   if (!id) {
-    return json(
+    return data(
       { success: false, error: "Draft ID is required" },
       { status: 400 },
     );
@@ -16,7 +16,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   const existingDraft = await draftById(id);
   if (!existingDraft) {
-    return json({ success: false, error: "Draft not found" }, { status: 404 });
+    return data({ success: false, error: "Draft not found" }, { status: 404 });
   }
 
   const draft = JSON.parse(existingDraft.data as string) as Draft;
@@ -25,7 +25,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     body.expectedSelectionCount !== undefined &&
     body.expectedSelectionCount !== draft.selections.length
   ) {
-    return json(
+    return data(
       {
         success: false,
         error: "out_of_sync",
@@ -39,7 +39,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   if (draft.selections.length === 0) {
-    return json(
+    return data(
       { success: false, error: "No selections to undo" },
       { status: 400 },
     );
@@ -50,7 +50,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   await updateDraft(id, draft);
   await broadcastDraftUpdate(id, draft);
 
-  return json({
+  return data({
     success: true,
     removedSelection,
     draft,

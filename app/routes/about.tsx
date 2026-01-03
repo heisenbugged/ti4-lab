@@ -1,58 +1,31 @@
 import {
   Button,
-  Group,
-  Switch,
-  useMantineColorScheme,
   Container,
   Grid,
   Text,
   Stack,
   Image,
+  Group,
 } from "@mantine/core";
 import {
-  IconMoon,
-  IconSun,
   IconBrandGithub,
   IconMail,
   IconBrandDiscordFilled,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
+import { HeaderControls } from "~/components/HeaderControls";
 
 function About() {
   const [accessibleColors, setAccessibleColors] = useState(false);
-  const { setColorScheme } = useMantineColorScheme();
 
   return (
     <MainAppShell
       headerRightSection={
-        <Group>
-          <Button
-            variant="light"
-            color="gray"
-            onMouseDown={() => setColorScheme("dark")}
-            size="compact-xs"
-            darkHidden
-          >
-            <IconMoon />
-          </Button>
-          <Button
-            variant="light"
-            color="gray"
-            onMouseDown={() => setColorScheme("light")}
-            lightHidden
-            size="compact-xs"
-          >
-            <IconSun />
-          </Button>
-          <Switch
-            label="A11Y"
-            checked={accessibleColors}
-            onChange={(e) => {
-              setAccessibleColors(e.currentTarget.checked);
-            }}
-          />
-        </Group>
+        <HeaderControls
+          accessibleColors={accessibleColors}
+          onAccessibleColorsChange={setAccessibleColors}
+        />
       }
     >
       <Container size="lg" py="xl">

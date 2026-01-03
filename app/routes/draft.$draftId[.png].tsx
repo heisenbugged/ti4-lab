@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { LoaderFunctionArgs, redirect } from "react-router";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 import { generateDraftImageBuffer } from "~/skiaRendering/imageGenerator.server";

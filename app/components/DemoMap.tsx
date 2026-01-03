@@ -73,7 +73,7 @@ export function DemoMapTile({
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
 
-  let Tile: JSX.Element | null;
+  let Tile: React.ReactNode | null;
   if (tile.type === "PLAYER_DEMO") {
     Tile = (
       <PlayerDemoTile

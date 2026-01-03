@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, json } from "@remix-run/node";
+import { ActionFunctionArgs, data } from "react-router";
 import {
   draftById,
   addStagingPick,
@@ -17,7 +17,7 @@ import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
 export async function action({ request, params }: ActionFunctionArgs) {
   const { id } = params;
   if (!id) {
-    return json(
+    return data(
       { success: false, error: "Draft ID is required" },
       { status: 400 },
     );
@@ -29,7 +29,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   };
 
   if (playerId === undefined || !factionId) {
-    return json(
+    return data(
       { success: false, error: "Player ID and Faction ID are required" },
       { status: 400 },
     );
@@ -40,7 +40,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   const currentPick = draft.pickOrder[draft.selections.length];
   if (currentPick !== PRIORITY_PHASE) {
-    return json(
+    return data(
       { success: false, error: "Not in priority value selection phase" },
       { status: 400 },
     );
@@ -78,7 +78,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   await broadcastDraftUpdate(id, latestDraftData);
 
-  return json({
+  return data({
     success: true,
     allPlayersReady: !!allPlayersReady,
     draft: latestDraftData,

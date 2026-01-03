@@ -1,6 +1,6 @@
 import { Grid, Stack, Text } from "@mantine/core";
-import { json, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { data, redirect } from "react-router";
+import { useLoaderData } from "react-router";
 import { useEffect } from "react";
 import { useDraft } from "~/draftStore";
 import { Draft } from "~/types";
@@ -120,7 +120,7 @@ export const loader = async ({ params }: { params: { id: string } }) => {
   }
 
   const result = await draftByPrettyUrl(draftId);
-  return json({
+  return data({
     ...result,
     data: JSON.parse(result.data as string) as Draft,
   });

@@ -36,7 +36,7 @@ import {
   IconPhoto,
   IconWand,
 } from "@tabler/icons-react";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate } from "react-router";
 import { draftConfig } from "~/draft/draftConfig";
 import {
   mapConfigToCompatibleDraftTypes,
@@ -110,10 +110,8 @@ function MapGeneratorContent() {
     useDisclosure(false);
   const [shareOpened, { open: openShare, close: closeShare }] =
     useDisclosure(false);
-  const [
-    draftTypeOpened,
-    { open: openDraftType, close: closeDraftType },
-  ] = useDisclosure(false);
+  const [draftTypeOpened, { open: openDraftType, close: closeDraftType }] =
+    useDisclosure(false);
   const [compatibleDraftTypes, setCompatibleDraftTypes] = useState<DraftType[]>(
     [],
   );
@@ -274,7 +272,9 @@ function MapGeneratorContent() {
 
     const encoded = encodeSeededMapData(seededData);
     // Include the selected draft type in the URL so prechoice uses it
-    navigate(`/draft/prechoice?mapSlices=${encoded}&draftType=${selectedDraftType}`);
+    navigate(
+      `/draft/prechoice?mapSlices=${encoded}&draftType=${selectedDraftType}`,
+    );
   };
 
   const handleDraftTypeSelect = (draftType: DraftType) => {

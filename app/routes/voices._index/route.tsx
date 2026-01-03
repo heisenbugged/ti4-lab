@@ -28,8 +28,8 @@ import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
 import { factionAudios, LineType, announcerAudios } from "~/data/factionAudios";
 import { VoiceLineButton } from "../soundboard._index/components/VoiceLineButton";
-import { ActionFunctionArgs, json, redirect } from "@remix-run/server-runtime";
-import { Form, useSearchParams, useLoaderData } from "@remix-run/react";
+import { ActionFunctionArgs, data, redirect } from "react-router";
+import { Form, useSearchParams, useLoaderData } from "react-router";
 import { useAudioPlayer } from "../soundboard._index/useAudioPlayer";
 import { useSocketConnection } from "~/useSocketConnection";
 import QRCode from "react-qr-code";
@@ -1657,7 +1657,7 @@ export const loader = async () => {
     throw new Error("Missing Spotify credentials in environment variables");
   }
 
-  return json({
+  return data({
     spotifyClientId: clientId,
     spotifyCallbackUrl: redirectUrl.toString(),
   });

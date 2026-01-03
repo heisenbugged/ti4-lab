@@ -1,4 +1,4 @@
-import { useOutletContext } from "@remix-run/react";
+import { useOutletContext } from "react-router";
 import { DraftOrderContext } from "./routes/draft/route";
 
 export function useSafeOutletContext(): DraftOrderContext {

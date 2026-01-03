@@ -1,10 +1,8 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
 import {
   Alert,
   Box,
   Button,
   Flex,
-  Grid,
   Group,
   SimpleGrid,
   Stack,
@@ -21,7 +19,8 @@ import {
   useLocation,
   useNavigate,
   useSearchParams,
-} from "@remix-run/react";
+  LoaderFunctionArgs,
+} from "react-router";
 import {
   IconBrandDiscordFilled,
   IconFile,
@@ -50,6 +49,7 @@ import { SeededMapBanner } from "./components/SeededMapBanner";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
 import { DraftFormatDescription } from "./components/DraftFormatDescription";
 import buttonClasses from "~/ui/buttons.module.css";
+import classes from "./prechoice.module.css";
 
 export default function DraftPrechoice() {
   const location = useLocation();
@@ -258,7 +258,7 @@ export default function DraftPrechoice() {
   };
 
   return (
-    <Grid mt="lg">
+    <>
       <SliceSettingsModal
         opened={sliceSettingsOpened}
         formatType={activeSettingsFormat}
@@ -290,30 +290,32 @@ export default function DraftPrechoice() {
         discordOauthUrl={discordOauthUrl}
         onClose={closeDiscord}
       />
-      {mapSlicesString && (
-        <Grid.Col span={12}>
-          <SeededMapBanner />
-        </Grid.Col>
-      )}
-      {discordData && (
-        <Grid.Col span={12}>
-          <DiscordBanner />
-        </Grid.Col>
-      )}
-      {location.state?.invalidDraftParameters && (
-        <Grid.Col span={12}>
-          <Alert
-            variant="light"
-            color="red"
-            title="Invalid Draft Parameters"
-            icon={<IconInfoCircle />}
-          >
-            Could not generate a draft with the given parameters. Please try
-            different minimal/total optimal values.
-          </Alert>
-        </Grid.Col>
-      )}
-      <Grid.Col span={{ base: 12, md: 7 }}>
+
+      <div className={classes.grid}>
+        {mapSlicesString && (
+          <div className={classes.col12}>
+            <SeededMapBanner />
+          </div>
+        )}
+        {discordData && (
+          <div className={classes.col12}>
+            <DiscordBanner />
+          </div>
+        )}
+        {location.state?.invalidDraftParameters && (
+          <div className={classes.col12}>
+            <Alert
+              variant="light"
+              color="red"
+              title="Invalid Draft Parameters"
+              icon={<IconInfoCircle />}
+            >
+              Could not generate a draft with the given parameters. Please try
+              different minimal/total optimal values.
+            </Alert>
+          </div>
+        )}
+        <div className={classes.colLeft}>
         <Flex align="center" direction="column">
           <Box w="100%">
             <SectionTitle title="Draft style" />
@@ -352,21 +354,22 @@ export default function DraftPrechoice() {
             </Box>
           </Group>
         </Flex>
-      </Grid.Col>
+        </div>
 
-      <Grid.Col span={12} hiddenFrom="xs">
-        <Box flex={1} pos="relative" mah="1000px" mt="lg">
-          {mapType && (
-            <DemoMap
-              id="prechoice-map"
-              map={MAPS[mapType].map}
-              titles={MAPS[mapType].titles}
-              padding={0}
-            />
-          )}
-        </Box>
-      </Grid.Col>
-      <Grid.Col span={{ base: 12, md: 5 }}>
+        <div className={`${classes.col12} ${classes.hiddenFromXs}`}>
+          <Box flex={1} pos="relative" mah="1000px" mt="lg">
+            {mapType && (
+              <DemoMap
+                id="prechoice-map"
+                map={MAPS[mapType].map}
+                titles={MAPS[mapType].titles}
+                padding={0}
+              />
+            )}
+          </Box>
+        </div>
+
+        <div className={classes.colRight}>
         <Stack>
           <PlayerInputSection
             players={player.players}
@@ -395,10 +398,15 @@ export default function DraftPrechoice() {
 
               <Tabs.Panel value="twilightFalls">
                 <Stack gap="sm">
-                  <Alert color="blue" title="Simplified Configuration" variant="light">
+                  <Alert
+                    color="blue"
+                    title="Simplified Configuration"
+                    variant="light"
+                  >
                     <Text size="xs">
-                      Players pick a &quot;reference card pack&quot; during the snake draft.
-                      After drafting, choose home system, faction, and priority from your pack.
+                      Players pick a &quot;reference card pack&quot; during the
+                      snake draft. After drafting, choose home system, faction,
+                      and priority from your pack.
                     </Text>
                   </Alert>
 
@@ -443,8 +451,9 @@ export default function DraftPrechoice() {
             )}
           </Group>
         </Stack>
-      </Grid.Col>
-    </Grid>
+        </div>
+      </div>
+    </>
   );
 }
 

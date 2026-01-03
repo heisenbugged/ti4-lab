@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { data, LoaderFunctionArgs, redirect } from "react-router";
 import { spotifyApi } from "~/vendors/spotifyApi";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -25,7 +25,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       `spotifyAccessToken=${accessToken}; Path=/; Max-Age=${expiresIn}; SameSite=Lax`,
     );
 
-    return json(
+    return data(
       { success: true, accessToken },
       {
         headers,
@@ -43,7 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       "spotifyRefreshToken=; Path=/; Max-Age=0; SameSite=Lax",
     );
 
-    return json(
+    return data(
       { success: false },
       {
         headers,

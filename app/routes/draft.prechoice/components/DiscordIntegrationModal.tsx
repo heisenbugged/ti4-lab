@@ -1,5 +1,5 @@
 import { Button, Group, Image, Modal, Stack, Stepper, Text } from "@mantine/core";
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
 
 type Props = {

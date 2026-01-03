@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
 
-import { Link, useLocation, useNavigate } from "@remix-run/react";
+import { Link, useLocation, useNavigate } from "react-router";
 
 const DISCORD_INVITE_URL = "https://discord.gg/mVbAm4sS";
 import { useState } from "react";

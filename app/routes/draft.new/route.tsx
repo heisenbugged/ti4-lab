@@ -9,8 +9,8 @@ import {
   Stack,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import type { ActionFunctionArgs } from "@remix-run/node";
-import { redirect, useLocation, useNavigate } from "@remix-run/react";
+import type { ActionFunctionArgs } from "react-router";
+import { redirect, useLocation, useNavigate } from "react-router";
 import { useEffect } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { draftStore, useDraft } from "~/draftStore";
@@ -55,7 +55,10 @@ export default function DraftNew() {
     Object.keys(config.presetTiles).length > 0;
 
   useEffect(() => {
-    if (location.state == null) return navigate("/draft/prechoice");
+    if (location.state == null) {
+      navigate("/draft/prechoice");
+      return;
+    }
 
     if (location.state.savedDraftState) {
       const savedState = location.state.savedDraftState;
@@ -67,9 +70,10 @@ export default function DraftNew() {
     actions.initializeDraft(draftSettings, players, { discord: discordData });
 
     if (draftStore.getState().draft.slices.length === 0) {
-      return navigate("/draft/prechoice", {
+      navigate("/draft/prechoice", {
         state: { invalidDraftParameters: true },
       });
+      return;
     }
 
     // a bit hacky, but once we 'consume' the state, we remove it from the history

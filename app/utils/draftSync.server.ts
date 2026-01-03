@@ -1,9 +1,9 @@
-import { json } from "@remix-run/node";
+import { data } from "react-router";
 import { DraftSelection } from "~/types";
 
 type SyncValidationResult =
   | { valid: true }
-  | { valid: false; response: ReturnType<typeof json> };
+  | { valid: false; response: ReturnType<typeof data> };
 
 export function validateDraftSync(
   serverSelections: DraftSelection[],
@@ -15,7 +15,7 @@ export function validateDraftSync(
   if (pickDiff < 0 || pickDiff > 1) {
     return {
       valid: false,
-      response: json(
+      response: data(
         {
           success: false,
           error: "out_of_sync",
@@ -36,7 +36,7 @@ export function validateDraftSync(
     ) {
       return {
         valid: false,
-        response: json(
+        response: data(
           {
             success: false,
             error: "out_of_sync",

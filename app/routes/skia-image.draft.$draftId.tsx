@@ -1,5 +1,5 @@
-import { json, LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { data, LoaderFunctionArgs } from "react-router";
+import { useLoaderData } from "react-router";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 import { generateDraftImage } from "~/skiaRendering/imageGenerator.server";
@@ -30,5 +30,5 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
   const imageDataUrl = await generateDraftImage(draft, draftId);
 
-  return json({ imageDataUrl });
+  return data({ imageDataUrl });
 };

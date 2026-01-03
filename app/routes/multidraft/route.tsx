@@ -1,6 +1,6 @@
 import { Button, Group, useMantineColorScheme } from "@mantine/core";
-import { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Outlet, redirect } from "@remix-run/react";
+import { ActionFunctionArgs, MetaFunction } from "react-router";
+import { Outlet, redirect } from "react-router";
 import { IconMoon, IconSun } from "@tabler/icons-react";
 import { MainAppShell } from "~/components/MainAppShell";
 import {

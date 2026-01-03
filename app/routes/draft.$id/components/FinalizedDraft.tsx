@@ -21,7 +21,7 @@ import { Section, SectionTitle } from "~/components/Section";
 import { SummaryRow } from "./SummaryRow";
 import { useMemo } from "react";
 import { SummaryCard } from "./MidDraftSummary";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate } from "react-router";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import {
   hydratedMapStringAtom,

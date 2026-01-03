@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, type JSX } from "react";
 import { hexSides, hexVertices } from "./hexUtils";
 import { AnomalyBorder } from "./AnomalyBorder";
 import { HexBorder } from "./HexBorder";
