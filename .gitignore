@@ -9,3 +9,4 @@ generated/*.png
 .wrangler
 .voice-sync-cache.json
 .react-router/
+deployment/
