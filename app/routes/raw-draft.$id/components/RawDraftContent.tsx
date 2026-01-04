@@ -1,4 +1,4 @@
-import { AppShell, Box, Text } from "@mantine/core";
+import { AppShell, Box, Text, Group } from "@mantine/core";
 import { useState, useMemo } from "react";
 import { Map } from "~/components/Map";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
@@ -16,22 +16,44 @@ import { useRawDraft } from "~/rawDraftStore";
 import { PlayerTilesSidebar } from "./PlayerTilesSidebar";
 import { RawCurrentPickBanner } from "./RawCurrentPickBanner";
 import { RawDraftOrderWrapper } from "./RawDraftOrderWrapper";
-import { systemData } from "~/data/systemData";
 import { RawDraftProvider } from "~/contexts/RawDraftContext";
+import { useRawDraftPlayerId } from "~/hooks/useRawDraftPlayerId";
+import { MapStatsOverlay } from "~/mapgen/components/MapStatsOverlay";
+import { calculateMapStats } from "~/mapgen/utils/mapStats";
+import {
+  getAllSliceValues,
+  calculateBalanceGap,
+} from "~/mapgen/utils/sliceScoring";
+import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 
-export function RawDraftContent() {
-  const map = useRawDraft((state) => state.getMap());
-  const players = useRawDraft((state) => state.state.players);
-  const pickOrder = useRawDraft((state) => state.state.pickOrder);
-  const currentPickNumber = useRawDraft((state) =>
-    state.getCurrentPickNumber(),
+type RawDraftContentProps = {
+  onTilePlaced?: () => void;
+};
+
+export function RawDraftContent({ onTilePlaced }: RawDraftContentProps) {
+  const draftId = useRawDraft((store) => store.draftId);
+  const map = useRawDraft((store) => store.getMap());
+  const players = useRawDraft((store) => store.state.players);
+  const pickOrder = useRawDraft((store) => store.state.pickOrder);
+  const currentPickNumber = useRawDraft((store) =>
+    store.getCurrentPickNumber(),
   );
-  const activePlayer = useRawDraft((state) => state.getActivePlayer());
-  const selectedPlayer = useRawDraft((state) => state.state.selectedPlayer);
-  const currentRing = useRawDraft((state) => state.getCurrentPlaceableRing());
-  const { placeTile } = useRawDraft((state) => state.actions);
+  const activePlayer = useRawDraft((store) => store.getActivePlayer());
+  const [playerId] = useRawDraftPlayerId(draftId);
+  const currentRing = useRawDraft((store) => store.getCurrentPlaceableRing());
+  const { placeTile } = useRawDraft((store) => store.actions);
+  const showStatsDisplay = useRawDraft(
+    (store) => store.state.showStatsDisplay ?? true,
+  );
 
   const [activeSystemId, setActiveSystemId] = useState<string | null>(null);
+
+  // Check if the current user can place tiles (must be the current turn player, not a spectator)
+  const canPlaceTiles =
+    playerId !== undefined &&
+    playerId !== -1 &&
+    activePlayer !== undefined &&
+    playerId === activePlayer.id;
 
   const ringNames = {
     1: "Inner Ring",
@@ -51,6 +73,12 @@ export function RawDraftContent() {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
+    // Prevent dragging if it's not the current user's turn
+    if (!canPlaceTiles) {
+      console.warn("Cannot drag tiles - it's not your turn");
+      return;
+    }
+
     const activeId = event.active.id as string;
     if (activeId.startsWith("sidebar-")) {
       const systemId = event.active.data.current?.systemId;
@@ -97,7 +125,17 @@ export function RawDraftContent() {
         return;
       }
 
-      placeTile(destTile.idx, systemId);
+      console.log("[Client] Placing tile:", {
+        mapIdx: destTile.idx,
+        systemId,
+        activePlayer: activePlayer?.id,
+      });
+      if (playerId !== undefined) {
+        placeTile(destTile.idx, systemId, playerId);
+      }
+      // Sync state to DB and broadcast to other players
+      console.log("[Client] Tile placed, calling onTilePlaced callback");
+      onTilePlaced?.();
     }
   };
 
@@ -113,13 +151,33 @@ export function RawDraftContent() {
   const getPlaceableTileIndices = useRawDraft(
     (state) => state.getPlaceableTileIndices,
   );
-  const modifiableMapTiles = useMemo(
-    () => getPlaceableTileIndices(activeSystemId || undefined),
-    [getPlaceableTileIndices, activeSystemId],
+  const modifiableMapTiles = useMemo(() => {
+    if (!canPlaceTiles) {
+      return [];
+    }
+    return getPlaceableTileIndices(activeSystemId || undefined);
+  }, [getPlaceableTileIndices, activeSystemId, canPlaceTiles]);
+
+  const stats = useMemo(() => calculateMapStats(map), [map]);
+
+  // Calculate slice values and balance gap
+  const sliceValues = useMemo(() => getAllSliceValues(map), [map]);
+  const balanceGap = useMemo(
+    () => calculateBalanceGap(sliceValues),
+    [sliceValues],
   );
 
+  const playerColorAssignments = useRawDraft(
+    (store) => store.state.playerColorAssignments,
+  );
+  const playerFactions = useRawDraft((store) => store.state.playerFactions);
+
   return (
-    <RawDraftProvider players={players}>
+    <RawDraftProvider
+      players={players}
+      playerColorAssignments={playerColorAssignments}
+      playerFactions={playerFactions}
+    >
       <DndContext
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -160,9 +218,17 @@ export function RawDraftContent() {
                 mb="xs"
                 style={{ display: "flex", justifyContent: "center" }}
               >
-                <Text size="sm" fw={600} c="blue.4">
-                  Placing: {ringNames[currentRing as 1 | 2 | 3]}
-                </Text>
+                <Group gap="md" justify="center" align="center">
+                  <Text size="sm" fw={600} c="blue.4">
+                    Placing: {ringNames[currentRing as 1 | 2 | 3]}
+                  </Text>
+                  {showStatsDisplay && balanceGap > 0 && (
+                    <Text size="sm" fw={500} c="gray.0">
+                      Balance Gap: {balanceGap.toFixed(1)}
+                    </Text>
+                  )}
+                  <OriginalArtToggle />
+                </Group>
               </Box>
               <RawDraftOrderWrapper
                 pickOrder={pickOrder}
@@ -181,6 +247,11 @@ export function RawDraftContent() {
                 maxWidth: "100%",
               }}
             >
+              {showStatsDisplay && stats && (
+                <Box visibleFrom="sm">
+                  <MapStatsOverlay stats={stats} />
+                </Box>
+              )}
               <Map
                 id="raw-draft-map"
                 modifiableMapTiles={modifiableMapTiles}

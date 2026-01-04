@@ -222,7 +222,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   if (url.hostname === "ti4-lab.fly.dev") {
     // Construct the new URL, preserving the path and query parameters
-    const newUrl = new URL(url.pathname + url.search, "https://tidraft.com");
+    const { getBaseUrl } = await import("~/env.server");
+    const baseUrl = getBaseUrl();
+    const newUrl = new URL(url.pathname + url.search, baseUrl);
     return redirect(newUrl.toString(), 301);
   }
 

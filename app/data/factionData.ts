@@ -15,6 +15,10 @@ export const factions: Record<FactionId, Faction> = {
       pds: 1,
       infantry: 5,
     },
+    colorAffinity: {
+      red: 0.9,
+      black: 1.0,
+    },
   },
   arborec: {
     id: "arborec",
@@ -30,6 +34,12 @@ export const factions: Record<FactionId, Faction> = {
       infantry: 4,
       spacedock: 1,
       pds: 1,
+    },
+    colorAffinity: {
+      green: 1.6,
+      blue: 0.1,
+      yellow: 0.1,
+      black: 0.1,
     },
   },
   barony: {
@@ -47,6 +57,11 @@ export const factions: Record<FactionId, Faction> = {
       destroyer: 1,
       spacedock: 1,
     },
+    colorAffinity: {
+      blue: 0.15,
+      red: 0.95,
+      black: 0.8,
+    },
   },
   saar: {
     id: "saar",
@@ -62,6 +77,11 @@ export const factions: Record<FactionId, Faction> = {
       spacedock: 1,
       fighter: 2,
     },
+    colorAffinity: {
+      green: 0.5,
+      yellow: 0.55,
+      orange: 0.85,
+    },
   },
   muaat: {
     id: "muaat",
@@ -75,6 +95,10 @@ export const factions: Record<FactionId, Faction> = {
       infantry: 4,
       fighter: 2,
       spacedock: 1,
+    },
+    colorAffinity: {
+      red: 1.25,
+      orange: 0.65,
     },
   },
   hacan: {
@@ -91,6 +115,10 @@ export const factions: Record<FactionId, Faction> = {
       infantry: 4,
       spacedock: 1,
     },
+    colorAffinity: {
+      yellow: 1.2,
+      orange: 0.7,
+    },
   },
   sol: {
     id: "sol",
@@ -106,6 +134,10 @@ export const factions: Record<FactionId, Faction> = {
       spacedock: 1,
       fighter: 3,
     },
+    colorAffinity: {
+      blue: 1.15,
+      yellow: 0.75,
+    },
   },
   creuss: {
     id: "creuss",
@@ -120,6 +152,11 @@ export const factions: Record<FactionId, Faction> = {
       destroyer: 2,
       spacedock: 1,
       fighter: 2,
+    },
+    colorAffinity: {
+      blue: 1.7,
+      purple: 0.1,
+      black: 0.1,
     },
   },
   l1z1x: {
@@ -137,6 +174,11 @@ export const factions: Record<FactionId, Faction> = {
       fighter: 3,
       pds: 1,
     },
+    colorAffinity: {
+      blue: 0.6,
+      red: 0.6,
+      black: 0.7,
+    },
   },
   mentak: {
     id: "mentak",
@@ -152,6 +194,11 @@ export const factions: Record<FactionId, Faction> = {
       spacedock: 1,
       fighter: 3,
       pds: 1,
+    },
+    colorAffinity: {
+      yellow: 0.45,
+      black: 0.5,
+      orange: 0.95,
     },
   },
   naalu: {
@@ -170,6 +217,11 @@ export const factions: Record<FactionId, Faction> = {
       destroyer: 1,
       spacedock: 1,
     },
+    colorAffinity: {
+      green: 1.15,
+      yellow: 0.45,
+      orange: 0.3,
+    },
   },
   nekro: {
     id: "nekro",
@@ -185,6 +237,10 @@ export const factions: Record<FactionId, Faction> = {
       infantry: 2,
       cruiser: 1,
       spacedock: 1,
+    },
+    colorAffinity: {
+      red: 1.75,
+      black: 0.15,
     },
   },
   jolnar: {
@@ -202,6 +258,10 @@ export const factions: Record<FactionId, Faction> = {
       fighter: 1,
       pds: 1,
     },
+    colorAffinity: {
+      blue: 1.6,
+      purple: 0.3,
+    },
   },
   winnu: {
     id: "winnu",
@@ -217,6 +277,11 @@ export const factions: Record<FactionId, Faction> = {
       spacedock: 1,
       fighter: 2,
       pds: 1,
+    },
+    colorAffinity: {
+      yellow: 0.55,
+      purple: 0.6,
+      orange: 0.75,
     },
   },
   xxcha: {
@@ -234,6 +299,10 @@ export const factions: Record<FactionId, Faction> = {
       fighter: 3,
       pds: 1,
     },
+    colorAffinity: {
+      green: 1.1,
+      blue: 0.8,
+    },
   },
   yin: {
     id: "yin",
@@ -248,6 +317,11 @@ export const factions: Record<FactionId, Faction> = {
       destroyer: 1,
       spacedock: 1,
       fighter: 4,
+    },
+    colorAffinity: {
+      yellow: 0.25,
+      purple: 1.05,
+      black: 0.6,
     },
   },
   yssaril: {
@@ -265,6 +339,12 @@ export const factions: Record<FactionId, Faction> = {
       fighter: 2,
       pds: 1,
     },
+    colorAffinity: {
+      green: 0.925,
+      yellow: 0.625,
+      red: 0.25,
+      black: 0.1,
+    },
   },
   argent: {
     id: "argent",
@@ -281,6 +361,11 @@ export const factions: Record<FactionId, Faction> = {
       fighter: 2,
       pds: 1,
     },
+    colorAffinity: {
+      green: 0.15,
+      blue: 0.15,
+      orange: 1.6,
+    },
   },
   empyrean: {
     id: "empyrean",
@@ -295,6 +380,11 @@ export const factions: Record<FactionId, Faction> = {
       destroyer: 1,
       spacedock: 1,
       fighter: 2,
+    },
+    colorAffinity: {
+      red: 0.15,
+      purple: 1.6,
+      pink: 0.15,
     },
   },
   mahact: {
@@ -312,6 +402,10 @@ export const factions: Record<FactionId, Faction> = {
       cruiser: 1,
       spacedock: 1,
     },
+    colorAffinity: {
+      yellow: 1.6,
+      purple: 0.3,
+    },
   },
   naazrokha: {
     id: "naazrokha",
@@ -327,6 +421,10 @@ export const factions: Record<FactionId, Faction> = {
       fighter: 2,
       spacedock: 1,
       mech: 1,
+    },
+    colorAffinity: {
+      green: 1.6,
+      yellow: 0.3,
     },
   },
   nomad: {
@@ -344,6 +442,10 @@ export const factions: Record<FactionId, Faction> = {
       destroyer: 1,
       spacedock: 1,
     },
+    colorAffinity: {
+      blue: 1.25,
+      purple: 0.65,
+    },
   },
   titans: {
     id: "titans",
@@ -358,6 +460,9 @@ export const factions: Record<FactionId, Faction> = {
       cruiser: 2,
       spacedock: 1,
       fighter: 2,
+    },
+    colorAffinity: {
+      pink: 1.9,
     },
   },
   vulraith: {
@@ -375,6 +480,11 @@ export const factions: Record<FactionId, Faction> = {
       cruiser: 1,
       spacedock: 1,
     },
+    colorAffinity: {
+      red: 1.35,
+      black: 0.4,
+      pink: 0.15,
+    },
   },
   keleres: {
     id: "keleres",
@@ -382,6 +492,12 @@ export const factions: Record<FactionId, Faction> = {
     name: "Council Keleres",
     set: "pok",
     wiki: "https://twilight-imperium.fandom.com/wiki/Council_Keleres",
+    colorAffinity: {
+      blue: 0.5,
+      yellow: 0.35,
+      purple: 0.7,
+      orange: 0.35,
+    },
   },
   // Thunder's Edge
   bastion: {

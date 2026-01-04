@@ -78,13 +78,27 @@ io.on("connection", (socket) => {
     console.log(socket.id, "synced draft", draftId);
     socket.to("draft:" + draftId).emit("syncDraft", data);
   });
+
+  socket.on("joinRawDraft", (draftId) => {
+    console.log("[Server] Socket", socket.id, "joined raw draft:", draftId);
+    socket.join("raw-draft:" + draftId);
+  });
+
+  socket.on("syncRawDraft", async (draftId, data) => {
+    const room = "raw-draft:" + draftId;
+    socket.to(room).emit("syncRawDraft", data);
+  });
 });
 
 httpServer.listen(3000, () => {
   console.log(`Express server listening on port 3000`);
 });
 
-startDiscordBot();
+if (process.env.DISCORD_DISABLED === "true") {
+  console.log("Discord bot disabled");
+} else {
+  startDiscordBot();
+}
 
 // Graceful shutdown handling
 const shutdown = async (signal: string) => {

@@ -10,6 +10,7 @@ type Props = {
   hiddenFrom?: MantineSize;
   /** Use compact mode for very tight spaces - clips text without ellipsis */
   compact?: boolean;
+  color?: string;
 };
 
 export function PlayerChip({
@@ -18,8 +19,9 @@ export function PlayerChip({
   visibleFrom,
   hiddenFrom,
   compact = false,
+  color,
 }: Props) {
-  const color = playerColors[player.id];
+  const playerColor = color || playerColors[player.id];
 
   // Compact mode: show clipped text without ellipsis, allows slight overflow
   if (compact) {
@@ -28,10 +30,10 @@ export function PlayerChip({
         className={classes.compactChip}
         visibleFrom={visibleFrom}
         hiddenFrom={hiddenFrom}
-        data-color={color}
+        data-color={playerColor}
         style={{
-          ["--chip-color" as string]: `var(--mantine-color-${color}-filled)`,
-          ["--chip-color-light" as string]: `var(--mantine-color-${color}-light)`,
+          ["--chip-color" as string]: `var(--mantine-color-${playerColor}-filled)`,
+          ["--chip-color-light" as string]: `var(--mantine-color-${playerColor}-light)`,
         }}
       >
         <span className={classes.compactText}>{player.name}</span>
@@ -41,7 +43,7 @@ export function PlayerChip({
 
   return (
     <Badge
-      color={color}
+      color={playerColor}
       size={size}
       visibleFrom={visibleFrom}
       hiddenFrom={hiddenFrom}

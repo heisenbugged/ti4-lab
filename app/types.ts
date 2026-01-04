@@ -147,6 +147,17 @@ export type FactionId =
   | "blackKing"
   | "greenKing";
 
+export type ColorAffinity = {
+  green?: number;
+  blue?: number;
+  yellow?: number;
+  red?: number;
+  purple?: number;
+  black?: number;
+  orange?: number;
+  pink?: number;
+};
+
 export type Faction = {
   id: FactionId;
   iconPath: string;
@@ -155,6 +166,7 @@ export type Faction = {
   set: GameSet;
   priorityOrder?: number;
   fleetComposition?: FleetComposition;
+  colorAffinity?: ColorAffinity;
 };
 
 export type FleetComposition = {

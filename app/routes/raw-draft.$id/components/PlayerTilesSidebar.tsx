@@ -2,8 +2,11 @@ import { Box, ScrollArea, Stack, Text } from "@mantine/core";
 import { useRawDraft } from "~/rawDraftStore";
 import { systemsFromIds } from "~/utils/system";
 import { DraggableSidebarTile } from "~/mapgen/components/DraggableSidebarTile";
+import { useRawDraftPlayerId } from "~/hooks/useRawDraftPlayerId";
 
 export function PlayerTilesSidebar() {
+  const draftId = useRawDraft((state) => state.draftId);
+  const [selectedPlayerId] = useRawDraftPlayerId(draftId);
   const getPlayerTiles = useRawDraft((state) => state.getPlayerTiles);
   const activePlayer = useRawDraft((state) => state.getActivePlayer());
 
@@ -33,7 +36,7 @@ export function PlayerTilesSidebar() {
         style={{ zIndex: 9 }}
       >
         <Text size="sm" fw={700} mb="xs">
-          {activePlayer.name}
+          {selectedPlayerId !== undefined ? `${selectedPlayerId} (you)` : "-"}
         </Text>
         <Text size="xs" fw={600} tt="uppercase" c="gray.4" mb="xs">
           Available Tiles ({systems.length}/5)

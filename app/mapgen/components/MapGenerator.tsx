@@ -80,7 +80,7 @@ function inferGameSetsFromTiles(systemIds: SystemId[]): GameSet[] {
   return Array.from(sets);
 }
 
-function MapGeneratorContent() {
+function MapGeneratorContent({ baseUrl }: { baseUrl: string }) {
   const navigate = useNavigate();
   const map = useMapBuilder((state) => state.state.map);
   const systemPool = useMapBuilder((state) => state.state.systemPool);
@@ -110,10 +110,8 @@ function MapGeneratorContent() {
     useDisclosure(false);
   const [shareOpened, { open: openShare, close: closeShare }] =
     useDisclosure(false);
-  const [
-    draftTypeOpened,
-    { open: openDraftType, close: closeDraftType },
-  ] = useDisclosure(false);
+  const [draftTypeOpened, { open: openDraftType, close: closeDraftType }] =
+    useDisclosure(false);
   const [compatibleDraftTypes, setCompatibleDraftTypes] = useState<DraftType[]>(
     [],
   );
@@ -136,7 +134,7 @@ function MapGeneratorContent() {
       .map((tile) => (tile.type === "SYSTEM" ? tile.systemId : ""))
       .filter(Boolean)
       .join(",");
-    const baseUrl = "https://tidraft.com/map-generator";
+    const mapGeneratorBaseUrl = `${baseUrl}/map-generator`;
     const params = new URLSearchParams();
     if (systemIds) {
       params.set("mapSystemIds", systemIds);
@@ -145,8 +143,10 @@ function MapGeneratorContent() {
       params.set("mapConfig", mapConfigId);
     }
     const queryString = params.toString();
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
-  }, [map, mapConfigId]);
+    return queryString
+      ? `${mapGeneratorBaseUrl}?${queryString}`
+      : mapGeneratorBaseUrl;
+  }, [map, mapConfigId, baseUrl]);
 
   const imageUrl = useMemo(() => {
     const systemIds = map
@@ -154,7 +154,7 @@ function MapGeneratorContent() {
       .map((tile) => (tile.type === "SYSTEM" ? tile.systemId : ""))
       .filter(Boolean)
       .join(",");
-    const baseUrl = "https://tidraft.com/map-generator.png";
+    const mapGeneratorImageBaseUrl = `${baseUrl}/map-generator.png`;
     const params = new URLSearchParams();
     if (systemIds) {
       params.set("mapSystemIds", systemIds);
@@ -163,8 +163,10 @@ function MapGeneratorContent() {
       params.set("mapConfig", mapConfigId);
     }
     const queryString = params.toString();
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
-  }, [map, mapConfigId]);
+    return queryString
+      ? `${mapGeneratorImageBaseUrl}?${queryString}`
+      : mapGeneratorImageBaseUrl;
+  }, [map, mapConfigId, baseUrl]);
 
   // Check if map is complete (no OPEN tiles, excluding CLOSED tiles)
   const isMapComplete = useMemo(() => {
@@ -274,7 +276,9 @@ function MapGeneratorContent() {
 
     const encoded = encodeSeededMapData(seededData);
     // Include the selected draft type in the URL so prechoice uses it
-    navigate(`/draft/prechoice?mapSlices=${encoded}&draftType=${selectedDraftType}`);
+    navigate(
+      `/draft/prechoice?mapSlices=${encoded}&draftType=${selectedDraftType}`,
+    );
   };
 
   const handleDraftTypeSelect = (draftType: DraftType) => {
@@ -605,11 +609,11 @@ function MapGeneratorContent() {
   );
 }
 
-export default function MapGenerator() {
+export default function MapGenerator({ baseUrl }: { baseUrl: string }) {
   return (
     <MainAppShell>
       <ClientOnly fallback={<Box w="100%" h="calc(100vh - 60px)" />}>
-        {() => <MapGeneratorContent />}
+        {() => <MapGeneratorContent baseUrl={baseUrl} />}
       </ClientOnly>
     </MainAppShell>
   );

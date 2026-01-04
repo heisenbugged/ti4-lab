@@ -1,5 +1,5 @@
-import { ActionIcon, Group, Text } from "@mantine/core";
-import { IconMinus, IconPlus } from "@tabler/icons-react";
+import { Button, Group, Text, Tooltip } from "@mantine/core";
+import { IconPlus } from "@tabler/icons-react";
 
 type Props = {
   value?: number;
@@ -7,6 +7,8 @@ type Props = {
   increase: (e: React.MouseEvent<HTMLButtonElement>) => void;
   decreaseDisabled: boolean;
   increaseDisabled: boolean;
+  forcedValue?: number;
+  disabledTooltip?: string;
 };
 
 export function NumberStepper({
@@ -15,32 +17,42 @@ export function NumberStepper({
   increase,
   decreaseDisabled,
   increaseDisabled,
+  forcedValue,
+  disabledTooltip,
 }: Props) {
-  return (
-    <Group gap={4}>
-      <ActionIcon
-        size="sm"
-        variant="subtle"
-        color="gray"
+  const val = forcedValue ?? value;
+
+  const content = (
+    <Group gap={val !== undefined ? "sm" : 2}>
+      <Button
+        size="compact-md"
+        color="red"
+        variant="filled"
         disabled={decreaseDisabled}
         onMouseDown={decrease}
       >
-        <IconMinus size={14} />
-      </ActionIcon>
-      {value !== undefined && (
-        <Text size="sm" fw={600} miw={20} ta="center" c="purple.3">
-          {value}
-        </Text>
-      )}
-      <ActionIcon
-        size="sm"
-        variant="subtle"
-        color="gray"
+        -
+      </Button>
+      {val !== undefined ? <Text>{val}</Text> : undefined}
+      <Button
+        size="compact-md"
+        color="green"
+        variant="filled"
         disabled={increaseDisabled}
         onMouseDown={increase}
       >
         <IconPlus size={14} />
-      </ActionIcon>
+      </Button>
     </Group>
   );
+
+  if (disabledTooltip) {
+    return (
+      <Tooltip label={disabledTooltip} withArrow>
+        <div>{content}</div>
+      </Tooltip>
+    );
+  }
+
+  return content;
 }

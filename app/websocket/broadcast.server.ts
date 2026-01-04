@@ -1,5 +1,6 @@
 import type { Server } from "socket.io";
 import { Draft } from "~/types";
+import { RawDraftState } from "~/rawDraftStore";
 
 interface SocketState {
   instance: Server | null;
@@ -58,5 +59,41 @@ export async function broadcastDraftUpdate(
     console.log(`Broadcasted draft update to draft:${draftId}`);
   } catch (error) {
     console.error("Error broadcasting draft update:", error);
+  }
+}
+
+export async function broadcastRawDraftUpdate(
+  draftId: string,
+  rawDraft: RawDraftState,
+): Promise<void> {
+  const io = getSocketIO();
+
+  if (!io) {
+    console.warn(
+      "[Server] Socket.IO instance not available, skipping WebSocket broadcast. " +
+        "Clients will receive updates via API responses instead.",
+    );
+    return;
+  }
+
+  try {
+    const room = `raw-draft:${draftId}`;
+    const data = JSON.stringify(rawDraft);
+    const socketsInRoom = await io.in(room).fetchSockets();
+
+    console.log("[Server] Broadcasting raw draft update:", {
+      draftId,
+      room,
+      socketsInRoom: socketsInRoom.length,
+      eventsCount: rawDraft.events.length,
+      dataLength: data.length,
+    });
+
+    io.to(room).emit("syncRawDraft", data);
+    console.log(
+      `[Server] Broadcasted raw draft update to ${socketsInRoom.length} clients in room: ${room}`,
+    );
+  } catch (error) {
+    console.error("[Server] Error broadcasting raw draft update:", error);
   }
 }

@@ -7,6 +7,13 @@ import {
   FactionStratification,
   MinorFactionsMode,
 } from "~/types";
+
+type RawDraftConfig = {
+  playerFactions: Record<number, FactionId | null>;
+  tileSets: Record<GameSet, boolean>;
+  showStatsDisplay?: boolean;
+  autoAssignColors?: boolean;
+};
 import { getFactionCount } from "~/data/factionData";
 import { MAPS, type ChoosableDraftType } from "./maps";
 import { getFactionPool } from "~/utils/factions";
@@ -151,6 +158,14 @@ type DraftSetupStore = {
       usedByMinor: number;
       remaining: number;
     };
+  };
+  rawDraft: {
+    config: RawDraftConfig | undefined;
+    setPlayerFaction: (playerId: number, factionId: FactionId | null) => void;
+    setTileSet: (gameSet: GameSet, selected: boolean) => void;
+    setShowStatsDisplay: (show: boolean) => void;
+    setAutoAssignColors: (auto: boolean) => void;
+    getSelectedGameSets: () => GameSet[];
   };
 };
 
@@ -799,6 +814,98 @@ export const useDraftSetup = create<DraftSetupStore>()(
             state.faction.requiredFactions = required;
             state.faction.stratifiedConfig = stratified;
           });
+        },
+      },
+
+      rawDraft: {
+        config: undefined,
+
+        setPlayerFaction: (playerId: number, factionId: FactionId | null) =>
+          set((state) => {
+            if (!state.rawDraft.config) {
+              state.rawDraft.config = {
+                playerFactions: {},
+                tileSets: {
+                  base: true,
+                  pok: true,
+                  te: true,
+                  discordant: false,
+                  discordantexp: false,
+                  unchartedstars: false,
+                  drahn: false,
+                  twilightsFall: false,
+                },
+              };
+            }
+            state.rawDraft.config.playerFactions[playerId] = factionId;
+          }),
+
+        setTileSet: (gameSet: GameSet, selected: boolean) =>
+          set((state) => {
+            if (!state.rawDraft.config) {
+              state.rawDraft.config = {
+                playerFactions: {},
+                tileSets: {
+                  base: true,
+                  pok: true,
+                  te: true,
+                  discordant: false,
+                  discordantexp: false,
+                  unchartedstars: false,
+                  drahn: false,
+                  twilightsFall: false,
+                },
+              };
+            }
+            state.rawDraft.config.tileSets[gameSet] = selected;
+          }),
+
+        setShowStatsDisplay: (show: boolean) =>
+          set((state) => {
+            if (!state.rawDraft.config) {
+              state.rawDraft.config = {
+                playerFactions: {},
+                tileSets: {
+                  base: true,
+                  pok: true,
+                  te: true,
+                  discordant: false,
+                  discordantexp: false,
+                  unchartedstars: false,
+                  drahn: false,
+                  twilightsFall: false,
+                },
+              };
+            }
+            state.rawDraft.config.showStatsDisplay = show;
+          }),
+
+        setAutoAssignColors: (auto: boolean) =>
+          set((state) => {
+            if (!state.rawDraft.config) {
+              state.rawDraft.config = {
+                playerFactions: {},
+                tileSets: {
+                  base: true,
+                  pok: true,
+                  te: true,
+                  discordant: false,
+                  discordantexp: false,
+                  unchartedstars: false,
+                  drahn: false,
+                  twilightsFall: false,
+                },
+              };
+            }
+            state.rawDraft.config.autoAssignColors = auto;
+          }),
+
+        getSelectedGameSets: () => {
+          const config = get().rawDraft.config;
+          if (!config) return ["base", "pok", "te"];
+          return Object.entries(config.tileSets)
+            .filter(([, selected]) => selected)
+            .map(([gameSet]) => gameSet as GameSet);
         },
       },
     };

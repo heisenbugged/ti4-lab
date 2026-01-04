@@ -199,6 +199,14 @@ export const MAPS: Record<ChoosableDraftType, PrechoiceMap> = {
     titles: ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"],
     playerCount: 8,
   },
+  raw: {
+    title: "RAW",
+    description:
+      "Draft according to the Rules As Written, where players take turns placing tiles onto the map.",
+    map: hydrateDemoMap(draftConfig.milty),
+    titles: ["P1", "P2", "P3", "P4", "P5", "P6"],
+    playerCount: 6,
+  },
 };
 
 export const isMiltyVariant = (mapType: ChoosableDraftType) =>

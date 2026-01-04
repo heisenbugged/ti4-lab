@@ -19,6 +19,8 @@ type Props = {
   onChangeName: (playerIdx: number, name: string) => void;
   onIncreasePlayers?: () => void;
   onDecreasePlayers?: () => void;
+  forcePlayerCount?: number;
+  disabledTooltip?: string;
 };
 
 const placeholderName = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
@@ -30,6 +32,8 @@ export function PlayerInputSection({
   onIncreasePlayers,
   onDecreasePlayers,
   onChangeName,
+  forcePlayerCount,
+  disabledTooltip,
 }: Props) {
   const { colors } = useMantineTheme();
 

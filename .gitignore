@@ -8,3 +8,5 @@ sqlite.db
 generated/*.png
 .wrangler
 .voice-sync-cache.json
+# contains deployment-specific files
+deployment/

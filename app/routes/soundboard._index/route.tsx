@@ -7,13 +7,10 @@ import {
   Group,
   Slider,
   Stack,
-  TextInput,
   Image,
   Box,
   Paper,
   Select,
-  Modal,
-  List,
   Alert,
   Badge,
   Popover,
@@ -48,10 +45,6 @@ import {
   IconSquare,
   IconVolume,
   IconVolumeOff,
-  IconDeviceDesktop,
-  IconDeviceMobile,
-  IconDeviceSpeaker,
-  IconDeviceUnknown,
   IconPlayerSkipForward,
   IconTrash,
   IconX,
@@ -324,7 +317,7 @@ const DEFAULT_FACTION_SLOTS: FactionId[] = [
 ];
 
 export default function SoundboardMaster() {
-  const { spotifyClientId, spotifyCallbackUrl } =
+  const { spotifyClientId, spotifyCallbackUrl, baseUrl } =
     useLoaderData<typeof loader>();
   const [playlistId, setPlaylistId] = useState<string | undefined>(undefined);
   const [searchParams] = useSearchParams();
@@ -542,6 +535,7 @@ export default function SoundboardMaster() {
             </Group>
           )}
         </Stack>
+      </div>
 
         {/* Session Info */}
         {sessionId && (
@@ -942,9 +936,11 @@ export const loader = async () => {
   const u = new URL(envRedirect);
   u.pathname = "/voices/callback";
 
+  const { getBaseUrl } = await import("~/env.server");
   return json({
     spotifyClientId: clientId,
     spotifyCallbackUrl: u.toString(),
+    baseUrl: getBaseUrl(),
   });
 };
 
