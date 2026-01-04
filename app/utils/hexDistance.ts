@@ -1,5 +1,21 @@
-import { Map as TiMap, SystemTile } from "~/types";
+import { Map as TiMap, SystemTile, Anomaly } from "~/types";
 import { systemData } from "~/data/systemData";
+
+/** Anomalies that we want to avoid when choosing between equal-length paths */
+const AVOIDABLE_ANOMALIES: Anomaly[] = ["SUPERNOVA", "NEBULA", "ASTEROID_FIELD", "GRAVITY_RIFT"];
+
+/**
+ * Check if a tile contains any avoidable anomaly.
+ */
+function hasAvoidableAnomaly(map: TiMap, position: number): boolean {
+  const tile = map[position];
+  if (!tile || tile.type !== "SYSTEM") return false;
+
+  const system = systemData[(tile as SystemTile).systemId];
+  if (!system) return false;
+
+  return system.anomalies.some(a => AVOIDABLE_ANOMALIES.includes(a));
+}
 
 /**
  * Hex graph for pathfinding with hyperlane support.
@@ -296,22 +312,30 @@ export function getGraphDistance(
  * Get the shortest path between two positions using 0-1 BFS.
  * Returns array of tile indices from start to end (inclusive).
  * Returns empty array if unreachable.
+ *
+ * When multiple shortest paths exist, prioritizes paths with fewer anomalies
+ * if a map is provided for anomaly checking.
  */
 export function getGraphPath(
   graph: HexGraph,
   from: number,
-  to: number
+  to: number,
+  map?: TiMap
 ): number[] {
   if (from === to) return [from];
 
+  // Track distance and anomaly count for tie-breaking
   const dist = new Map<number, number>();
+  const anomalyCount = new Map<number, number>();
   const parent = new Map<number, number>();
   const deque: number[] = [from];
   dist.set(from, 0);
+  anomalyCount.set(from, 0);
 
   while (deque.length > 0) {
     const current = deque.shift()!;
     const currentDist = dist.get(current)!;
+    const currentAnomalies = anomalyCount.get(current)!;
 
     if (current === to) {
       // Reconstruct path from parent pointers
@@ -331,8 +355,19 @@ export function getGraphPath(
       const newDist = currentDist + cost;
       const existingDist = dist.get(neighbor);
 
-      if (existingDist === undefined || newDist < existingDist) {
+      // Count anomalies on this path (only if map provided)
+      const neighborHasAnomaly = map ? hasAvoidableAnomaly(map, neighbor) : false;
+      const newAnomalyCount = currentAnomalies + (neighborHasAnomaly ? 1 : 0);
+      const existingAnomalyCount = anomalyCount.get(neighbor) ?? Infinity;
+
+      // Update if: shorter distance, OR same distance but fewer anomalies
+      const isBetter = existingDist === undefined ||
+        newDist < existingDist ||
+        (newDist === existingDist && newAnomalyCount < existingAnomalyCount);
+
+      if (isBetter) {
         dist.set(neighbor, newDist);
+        anomalyCount.set(neighbor, newAnomalyCount);
         parent.set(neighbor, current);
         // 0-1 BFS: push 0-cost edges to front, 1-cost edges to back
         if (cost === 0) {

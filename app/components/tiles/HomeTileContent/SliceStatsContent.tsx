@@ -25,15 +25,15 @@ export function SliceStatsContent({
   fontSize,
 }: Props) {
   return (
-    <Stack align="center" gap={1} style={{ fontSize }}>
+    <Stack align="center" gap={0} style={{ fontSize }}>
       {seat !== undefined && (
-        <Text fz={{ base: "xs", xs: "md" }} c="white">
+        <Text fz={{ base: "xs", xs: "md" }} c="white" lh={1.1}>
           {seatLabel[seat]}
         </Text>
       )}
       {sliceValue !== undefined && (
         <Group gap={4} align="center">
-          <Text fz={{ base: "sm", xs: "lg" }} fw="bold" c="yellow.5">
+          <Text fz={{ base: "sm", xs: "lg" }} fw="bold" c="yellow.5" lh={1.1}>
             {sliceValue.toFixed(1)}
           </Text>
           {coreSliceData && (
@@ -51,7 +51,7 @@ export function SliceStatsContent({
           fw="bolder"
           c="white"
           ta="center"
-          lh={1.2}
+          lh={1.1}
         >
           {Math.round(sliceStats.optimalResources * 10) / 10}/
           {Math.round(sliceStats.optimalInfluence * 10) / 10}
@@ -62,7 +62,7 @@ export function SliceStatsContent({
             fw="bolder"
             c="white"
             ta="center"
-            lh={1.2}
+            lh={1.1}
           >
             {sliceStats.techs}
           </Text>

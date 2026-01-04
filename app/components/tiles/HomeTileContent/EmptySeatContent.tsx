@@ -29,15 +29,15 @@ export function EmptySeatContent({
   const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
 
   return (
-    <Stack align="center" gap={2}>
+    <Stack align="center" gap={0}>
       {!draftSpeaker && hydrated && seat !== undefined && (
-        <Text size="xl" fw="bold" className={classes.seatLabel}>
+        <Text size="xl" fw="bold" className={classes.seatLabel} lh={1.1}>
           {seatLabel[seat]}
         </Text>
       )}
       {coreSliceData && (
         <Group gap={4} align="center">
-          <Text fz={{ base: "sm", xs: "lg" }} fw="bold" c="yellow.5">
+          <Text fz={{ base: "sm", xs: "lg" }} fw="bold" c="yellow.5" lh={1.1}>
             {coreSliceData.value.toFixed(1)}
           </Text>
           <SliceValuePopover

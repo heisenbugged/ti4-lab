@@ -22,6 +22,15 @@ export function ContributionBadge({ percentage }: Props) {
         pointerEvents: "none",
         textTransform: "none",
         fontWeight: 700,
+        minWidth: "fit-content",
+        overflow: "visible",
+      }}
+      styles={{
+        label: {
+          overflow: "visible",
+          textOverflow: "clip",
+          whiteSpace: "nowrap",
+        },
       }}
     >
       {percentText}

@@ -59,7 +59,8 @@ export function EquidistantLines({
     const graph = buildHexGraphWithExclusions(map, otherHomeIndices);
 
     // Get path from hovered home to Mecatol (index 0)
-    return getGraphPath(graph, hoveredHomeIdx, 0);
+    // Pass map for anomaly-aware tie-breaking when multiple shortest paths exist
+    return getGraphPath(graph, hoveredHomeIdx, 0, map);
   }, [map, hoveredHomeIdx]);
 
   // Only render when hovering a home

@@ -21,7 +21,7 @@ export function PlayerContent({ player, radius }: Props) {
   return (
     <Stack
       align="center"
-      gap={1}
+      gap={0}
       w={radius * 1.25}
       justify="center"
       style={{ zIndex: 1 }}
