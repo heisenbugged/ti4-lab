@@ -11,6 +11,7 @@ import {
   generateHexRings,
   getTileCount,
   getRingForIndex,
+  getRingIndices,
   findClosestOnRing,
   findAvailableOnRing,
 } from "~/utils/hexCoordinates";
@@ -49,6 +50,8 @@ type MapBuilderActions = {
   selectSystemForPlanetFinder: (systemId: SystemId) => void;
   toggleCloseTileMode: () => void;
   toggleTileClosed: (idx: number) => void;
+  addHomeSystem: () => void;
+  removeHomeSystem: () => void;
 };
 
 type MapBuilderStore = {
@@ -474,6 +477,139 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
               },
             };
           }
+        });
+      },
+
+      addHomeSystem: () => {
+        set((store) => {
+          const currentMap = store.state.map;
+          const ringCount = store.state.ringCount;
+          const closedTiles = store.state.closedTiles;
+
+          // Find current home systems and get next seat number
+          const homeTiles = currentMap.filter((tile) => tile.type === "HOME") as HomeTile[];
+          const nextSeat = homeTiles.length;
+
+          // Find candidate tiles to convert to home (prioritize OPEN, then SYSTEM)
+          // Prefer tiles on the outer ring
+          const outerRingIndices = getRingIndices(ringCount);
+
+          // First, try to find an OPEN tile on the outer ring
+          let targetIdx = -1;
+          const outerOpenTiles = outerRingIndices.filter(
+            (idx) =>
+              currentMap[idx].type === "OPEN" &&
+              !closedTiles.includes(idx)
+          );
+
+          if (outerOpenTiles.length > 0) {
+            targetIdx = outerOpenTiles[Math.floor(Math.random() * outerOpenTiles.length)];
+          } else {
+            // Try any OPEN tile (excluding Mecatol Rex and closed tiles)
+            const allOpenTiles = currentMap
+              .map((tile, idx) => ({ tile, idx }))
+              .filter(
+                ({ tile, idx }) =>
+                  tile.type === "OPEN" &&
+                  idx !== 0 &&
+                  !closedTiles.includes(idx)
+              )
+              .map(({ idx }) => idx);
+
+            if (allOpenTiles.length > 0) {
+              targetIdx = allOpenTiles[Math.floor(Math.random() * allOpenTiles.length)];
+            } else {
+              // Last resort: pick a random SYSTEM tile on outer ring (not Mecatol)
+              const outerSystemTiles = outerRingIndices.filter(
+                (idx) =>
+                  currentMap[idx].type === "SYSTEM" &&
+                  idx !== 0 &&
+                  !closedTiles.includes(idx) &&
+                  (currentMap[idx] as SystemTile).systemId !== "18"
+              );
+
+              if (outerSystemTiles.length > 0) {
+                targetIdx = outerSystemTiles[Math.floor(Math.random() * outerSystemTiles.length)];
+              } else {
+                // Try any SYSTEM tile
+                const allSystemTiles = currentMap
+                  .map((tile, idx) => ({ tile, idx }))
+                  .filter(
+                    ({ tile, idx }) =>
+                      tile.type === "SYSTEM" &&
+                      idx !== 0 &&
+                      !closedTiles.includes(idx) &&
+                      (tile as SystemTile).systemId !== "18"
+                  )
+                  .map(({ idx }) => idx);
+
+                if (allSystemTiles.length > 0) {
+                  targetIdx = allSystemTiles[Math.floor(Math.random() * allSystemTiles.length)];
+                }
+              }
+            }
+          }
+
+          if (targetIdx === -1) {
+            // No available tile to convert
+            return store;
+          }
+
+          const newMap = [...currentMap];
+          const targetTile = newMap[targetIdx];
+
+          const homeTile: HomeTile = {
+            idx: targetIdx,
+            type: "HOME",
+            seat: nextSeat,
+            position: targetTile.position,
+          };
+          newMap[targetIdx] = homeTile;
+
+          return {
+            ...store,
+            state: {
+              ...store.state,
+              map: newMap,
+            },
+          };
+        });
+      },
+
+      removeHomeSystem: () => {
+        set((store) => {
+          const currentMap = store.state.map;
+
+          // Find home systems
+          const homeTiles = currentMap
+            .map((tile, idx) => ({ tile, idx }))
+            .filter(({ tile }) => tile.type === "HOME") as { tile: HomeTile; idx: number }[];
+
+          if (homeTiles.length <= 1) {
+            // Don't remove if only 1 or 0 homes remain
+            return store;
+          }
+
+          // Find the home with the highest seat number
+          const homeToRemove = homeTiles.reduce((max, current) =>
+            (current.tile.seat ?? 0) > (max.tile.seat ?? 0) ? current : max
+          );
+
+          const newMap = [...currentMap];
+          const openTile: OpenTile = {
+            idx: homeToRemove.idx,
+            type: "OPEN",
+            position: homeToRemove.tile.position,
+          };
+          newMap[homeToRemove.idx] = openTile;
+
+          return {
+            ...store,
+            state: {
+              ...store.state,
+              map: newMap,
+            },
+          };
         });
       },
     },

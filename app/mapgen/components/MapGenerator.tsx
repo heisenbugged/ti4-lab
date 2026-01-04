@@ -108,8 +108,16 @@ function MapGeneratorContent() {
     setHoveredHomeIdx,
     toggleCloseTileMode,
     toggleTileClosed,
+    addHomeSystem,
+    removeHomeSystem,
   } = useMapBuilder((state) => state.actions);
   const stats = useMapStats();
+
+  // Calculate player count from HOME tiles
+  const playerCount = useMemo(
+    () => map.filter((tile) => tile.type === "HOME").length,
+    [map],
+  );
 
   // Calculate slice values, stats, breakdowns, tile contributions, and balance gap
   const sliceValues = useMemo(
@@ -469,169 +477,98 @@ function MapGeneratorContent() {
             <TileSidebar />
           </AppShell.Navbar>
           <AppShell.Main p={0} h="calc(100vh - 60px)" mih="calc(100vh - 60px)">
-            <Box bg="dark.7" p="sm">
-              <Group justify="space-between">
-                <Group>
-                  <Select
-                    data={Object.values(mapConfigs).map((config) => ({
-                      value: config.id,
-                      label: config.name,
-                    }))}
-                    value={mapConfigId}
-                    onChange={(value) => {
-                      if (value && mapConfigs[value]) {
-                        setMapConfig(value);
-                      }
-                    }}
-                    size="xs"
-                    w={150}
-                    styles={{
-                      input: {
-                        backgroundColor: "var(--mantine-color-dark-6)",
-                        borderColor: "var(--mantine-color-dark-4)",
-                        color: "var(--mantine-color-gray-0)",
-                      },
-                    }}
-                  />
-                  <MultiSelect
-                    data={[
-                      { value: "base", label: "Base" },
-                      { value: "pok", label: "PoK" },
-                      { value: "te", label: "Thunder's Edge" },
-                      { value: "unchartedstars", label: "Uncharted Stars" },
-                    ]}
-                    value={gameSets}
-                    onChange={(value) => setGameSets(value as GameSet[])}
-                    placeholder="Game Sets"
-                    size="xs"
-                    w={180}
-                    checkIconPosition="right"
-                    clearable
-                    maxValues={4}
-                    styles={{
-                      input: {
-                        backgroundColor: "var(--mantine-color-dark-6)",
-                        borderColor: "var(--mantine-color-dark-4)",
-                        color: "var(--mantine-color-gray-0)",
-                        overflow: "hidden",
-                      },
-                      pill: {
-                        display: "none",
-                      },
-                    }}
-                  />
-                  <Group gap={4}>
-                    <ActionIcon
-                      variant="filled"
-                      color="dark"
-                      size="sm"
-                      onClick={() => setRingCount(ringCount - 1)}
-                      disabled={ringCount <= 2}
-                    >
-                      <IconMinus size={14} />
-                    </ActionIcon>
-                    <Text size="xs" c="gray.0" w={55} ta="center">
-                      {ringCount} rings
-                    </Text>
-                    <ActionIcon
-                      variant="filled"
-                      color="dark"
-                      size="sm"
-                      onClick={() => setRingCount(ringCount + 1)}
-                      disabled={ringCount >= 5}
-                    >
-                      <IconPlus size={14} />
-                    </ActionIcon>
-                  </Group>
-                  <ActionIcon
-                    variant={closeTileMode ? "filled" : "default"}
-                    color={closeTileMode ? "red" : "dark"}
-                    size="lg"
-                    onClick={toggleCloseTileMode}
-                    aria-label="Close tile tool"
-                    title="Close tile tool"
-                  >
-                    <IconHexagonOff size={18} />
+            <Box bg="dark.7" px="sm" py={8}>
+              <Group gap="sm" wrap="wrap">
+                <Select
+                  data={Object.values(mapConfigs).map((config) => ({
+                    value: config.id,
+                    label: config.name,
+                  }))}
+                  value={mapConfigId}
+                  onChange={(value) => {
+                    if (value && mapConfigs[value]) {
+                      setMapConfig(value);
+                    }
+                  }}
+                  size="xs"
+                  w={140}
+                />
+                <MultiSelect
+                  data={[
+                    { value: "base", label: "Base" },
+                    { value: "pok", label: "PoK" },
+                    { value: "te", label: "Thunder's Edge" },
+                    { value: "unchartedstars", label: "Uncharted Stars" },
+                  ]}
+                  value={gameSets}
+                  onChange={(value) => setGameSets(value as GameSet[])}
+                  placeholder="Game Sets"
+                  size="xs"
+                  w={160}
+                  checkIconPosition="right"
+                  styles={{ pill: { display: "none" } }}
+                />
+                <Group gap={4}>
+                  <ActionIcon variant="subtle" color="gray" size="sm" onClick={() => setRingCount(ringCount - 1)} disabled={ringCount <= 2}>
+                    <IconMinus size={14} />
                   </ActionIcon>
-                  <Button
-                    leftSection={<IconRefresh size={16} />}
-                    variant="filled"
-                    color="dark"
-                    onClick={handleRandomize}
-                    size="xs"
-                  >
-                    Randomize
-                  </Button>
-                  <Button
-                    leftSection={<IconArrowsShuffle size={16} />}
-                    variant="filled"
-                    color="blue"
-                    onClick={handleImproveBalance}
-                    size="xs"
-                    disabled={balanceGap === 0}
-                  >
-                    Improve Balance
-                  </Button>
-                  <Button
-                    leftSection={<IconTrash size={16} />}
-                    variant="filled"
-                    color="red"
-                    onClick={clearMap}
-                    size="xs"
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    leftSection={<IconShare size={16} />}
-                    variant="filled"
-                    color="green"
-                    onClick={openShare}
-                    size="xs"
-                  >
-                    Share
-                  </Button>
-                  <Button
-                    leftSection={<IconPhoto size={16} />}
-                    variant="filled"
-                    color="purple"
-                    onClick={() => window.open(imageUrl, "_blank")}
-                    size="xs"
-                    disabled={!isMapComplete}
-                  >
-                    Share Image
-                  </Button>
-                  <Button
-                    leftSection={<IconWand size={16} />}
-                    variant="filled"
-                    color="teal"
-                    onClick={handleCreateDraft}
-                    size="xs"
-                    disabled={!isMapComplete}
-                  >
-                    Create Draft
-                  </Button>
+                  <Text size="xs" c="dimmed" w={50} ta="center">{ringCount} rings</Text>
+                  <ActionIcon variant="subtle" color="gray" size="sm" onClick={() => setRingCount(ringCount + 1)} disabled={ringCount >= 5}>
+                    <IconPlus size={14} />
+                  </ActionIcon>
                 </Group>
+                <Group gap={4}>
+                  <ActionIcon variant="subtle" color="gray" size="sm" onClick={removeHomeSystem} disabled={playerCount <= 1}>
+                    <IconMinus size={14} />
+                  </ActionIcon>
+                  <Text size="xs" c="dimmed" w={55} ta="center">{playerCount} players</Text>
+                  <ActionIcon variant="subtle" color="gray" size="sm" onClick={addHomeSystem}>
+                    <IconPlus size={14} />
+                  </ActionIcon>
+                </Group>
+                <ActionIcon
+                  variant={closeTileMode ? "filled" : "subtle"}
+                  color={closeTileMode ? "red" : "gray"}
+                  size="sm"
+                  onClick={toggleCloseTileMode}
+                  title="Close tile tool"
+                >
+                  <IconHexagonOff size={16} />
+                </ActionIcon>
+                <Button leftSection={<IconRefresh size={14} />} variant="subtle" color="gray" size="xs" onClick={handleRandomize}>
+                  Randomize
+                </Button>
+                <Button leftSection={<IconArrowsShuffle size={14} />} variant="subtle" color="gray" size="xs" onClick={handleImproveBalance} disabled={balanceGap === 0}>
+                  Balance
+                </Button>
+                <Button leftSection={<IconTrash size={14} />} variant="subtle" color="gray" size="xs" onClick={clearMap}>
+                  Reset
+                </Button>
                 {balanceGap > 0 && (
-                  <Group gap="xs">
-                    <Text size="sm" fw={500} c="gray.0">
-                      Balance Gap: {balanceGap.toFixed(1)}
-                    </Text>
-                    <ActionIcon
-                      variant="light"
-                      color="blue"
-                      size="md"
-                      onClick={openInfo}
-                      aria-label="Info about slice scoring"
-                    >
-                      <IconInfoCircle size={18} />
-                    </ActionIcon>
+                  <Group gap={4} onClick={openInfo} style={{ cursor: "pointer" }}>
+                    <Text size="xs" c="dimmed">Gap:</Text>
+                    <Text size="xs" fw={600} c="yellow.5">{balanceGap.toFixed(1)}</Text>
                   </Group>
                 )}
+                <Box style={{ marginLeft: "auto" }}>
+                  <Group gap="xs">
+                    <Button leftSection={<IconShare size={14} />} variant="subtle" color="gray" size="xs" onClick={openShare}>
+                      Share
+                    </Button>
+                    <Button leftSection={<IconPhoto size={14} />} variant="subtle" color="gray" size="xs" onClick={() => window.open(imageUrl, "_blank")} disabled={!isMapComplete}>
+                      Image
+                    </Button>
+                    <Button leftSection={<IconWand size={14} />} variant="filled" color="blue" size="xs" onClick={handleCreateDraft} disabled={!isMapComplete}>
+                      Create Draft
+                    </Button>
+                  </Group>
+                </Box>
               </Group>
             </Box>
             <Box
               w="100%"
               pos="relative"
+              p="md"
               style={{
                 aspectRatio: "740 / 800",
                 maxHeight: "calc(100vh - 140px)",

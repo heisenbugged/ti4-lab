@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1
-ARG NODE_VERSION=20.11.0
-FROM --platform=linux/amd64 node:${NODE_VERSION}-slim as base
+ARG NODE_VERSION=22.12.0
+FROM --platform=linux/amd64 node:${NODE_VERSION}-slim AS base
 LABEL fly_launch_runtime="Remix"
 
 # Install google-chrome-stable
@@ -20,7 +20,7 @@ ARG YARN_VERSION=1.22.19
 RUN npm install -g yarn@$YARN_VERSION --force
 
 # Throw-away build stage to reduce size of final image
-FROM base as build
+FROM base AS build
 
 # Install packages needed to build node modules
 RUN apt-get update -qq && \

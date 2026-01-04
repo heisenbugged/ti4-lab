@@ -37,107 +37,43 @@ export function TileSidebar() {
   );
 
   return (
-    <Box h="calc(100vh - 60px)" pos="relative">
-      <Box
-        pos="sticky"
-        top={0}
-        bg="dark.8"
-        px="md"
-        pt="sm"
-        pb="xs"
-        style={{ zIndex: 9 }}
-      >
-        <Text size="xs" fw={600} tt="uppercase" c="gray.4" mb="xs">
-          Available Tiles ({availableSystems.length})
+    <Box h="calc(100vh - 60px)" bg="dark.7">
+      <Box px="sm" pt="xs" pb="xs">
+        <Text
+          size="xs"
+          fw={600}
+          tt="uppercase"
+          c="dimmed"
+          mb={6}
+          style={{ letterSpacing: "0.05em", fontFamily: "Orbitron" }}
+        >
+          Tiles ({availableSystems.length})
         </Text>
         <SegmentedControl
           value={filter}
           onChange={(value) => setFilter(value as TileFilter)}
           size="xs"
-          radius="sm"
+          fullWidth
           data={[
-            {
-              value: "all",
-              label: (
-                <Box
-                  h={20}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text size="10px" fw={500}>
-                    All
-                  </Text>
-                </Box>
-              ),
-            },
+            { value: "all", label: "All" },
             {
               value: "blue",
-              label: (
-                <Box
-                  h={20}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <MiniHex color="#4dabf7" />
-                </Box>
-              ),
+              label: <MiniHex color="#4dabf7" />,
             },
             {
               value: "red",
-              label: (
-                <Box
-                  h={20}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <MiniHex color="#ff6b6b" />
-                </Box>
-              ),
+              label: <MiniHex color="#ff6b6b" />,
             },
             {
               value: "wormhole",
-              label: (
-                <Box
-                  h={20}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <MiniWormhole />
-                </Box>
-              ),
+              label: <MiniWormhole />,
             },
           ]}
-          styles={{
-            root: {
-              backgroundColor: "var(--mantine-color-dark-6)",
-            },
-            indicator: {
-              backgroundColor: "var(--mantine-color-dark-4)",
-            },
-            label: {
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "6px 10px",
-            },
-          }}
         />
       </Box>
 
-      <ScrollArea h="calc(100vh - 60px - 80px)" type="scroll">
-        <Stack gap="sm" p="md" pb={usedSystems.length > 0 ? 0 : "md"}>
+      <ScrollArea h="calc(100vh - 60px - 70px)" type="scroll">
+        <Stack gap="xs" px="sm" pb="sm">
           {availableSystems.map((system) => (
             <DraggableSidebarTile key={system.id} systemId={system.id} />
           ))}
@@ -146,23 +82,22 @@ export function TileSidebar() {
         {usedSystems.length > 0 && (
           <>
             <Box
-              pos="sticky"
-              top={0}
-              bg="dark.8"
-              p="sm"
-              px="md"
-              mt="md"
-              style={{
-                borderTop: "1px solid var(--mantine-color-dark-5)",
-                borderBottom: "1px solid var(--mantine-color-dark-5)",
-                zIndex: 10,
-              }}
+              px="sm"
+              py={6}
+              bg="dark.6"
+              style={{ borderTop: "1px solid var(--mantine-color-dark-5)" }}
             >
-              <Text size="xs" fw={600} tt="uppercase" c="gray.5">
-                Used Tiles ({usedSystems.length})
+              <Text
+                size="xs"
+                fw={600}
+                tt="uppercase"
+                c="dimmed"
+                style={{ letterSpacing: "0.05em", fontFamily: "Orbitron" }}
+              >
+                Used ({usedSystems.length})
               </Text>
             </Box>
-            <Stack gap="sm" p="md">
+            <Stack gap="xs" px="sm" py="sm">
               {usedSystems.map((system) => (
                 <DraggableSidebarTile key={system.id} systemId={system.id} />
               ))}

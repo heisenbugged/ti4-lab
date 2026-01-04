@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Group,
-  SimpleGrid,
   Stack,
   Text,
   TextInput,
@@ -73,7 +72,13 @@ export function PlayerInputSection({
       </Group>
 
       {/* Player Grid */}
-      <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="xs" verticalSpacing={6}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "6px 10px",
+        }}
+      >
         {players.map((player, idx) => {
           const discordPlayer = discordData?.players.find(
             (dp) => dp.playerId === idx,
@@ -120,7 +125,7 @@ export function PlayerInputSection({
             </Group>
           );
         })}
-      </SimpleGrid>
+      </div>
     </Stack>
   );
 }
