@@ -1,35 +1,37 @@
-import type { HomeTile, Map, Tile } from "~/types";
+import type { HomeTile, Map as TiMap, Tile } from "~/types";
 import {
   calculateConcentricCircles,
   calculateMaxHexRadius,
 } from "~/utils/positioning";
 import { MapTile } from "./MapTile";
+import { EquidistantLines } from "./EquidistantLines";
 import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
 import { MapContext } from "~/contexts/MapContext";
 import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
-
-type SliceStats = {
-  resources: number;
-  influence: number;
-  techs: string;
-  traits: string;
-};
+import type { SliceValueBreakdown } from "~/hooks/useSliceValueBreakdown";
+import type { TileContribution, SliceStats } from "~/mapgen/utils/sliceScoring";
 
 type Props = {
   id: string;
   modifiableMapTiles: number[];
-  map: Map;
+  map: TiMap;
   editable: boolean;
   disabled?: boolean;
   droppable?: boolean; // Enable drop zones without click/hover UI
   onSelectSystemTile?: (tile: Tile) => void;
   onDeleteSystemTile?: (tile: Tile) => void;
   onSelectHomeTile?: (tile: HomeTile) => void;
-  showHomeStats?: boolean;
   sliceValues?: Record<number, number>;
   sliceStats?: Record<number, SliceStats>;
+  sliceBreakdowns?: Record<number, SliceValueBreakdown>; // Indexed by tile idx
   coreSliceData?: CoreSliceData[]; // Indexed by seat number
+  tileContributions?: Record<number, Map<number, TileContribution>>; // homeIdx -> tileIdx -> contribution
+  hoveredHomeIdx?: number | null;
+  onHomeHover?: (idx: number | null) => void;
+  closeTileMode?: boolean;
+  closedTiles?: number[];
+  onToggleTileClosed?: (idx: number) => void;
 };
 
 export function Map({
@@ -42,10 +44,16 @@ export function Map({
   onSelectSystemTile,
   onDeleteSystemTile,
   onSelectHomeTile,
-  showHomeStats = false,
   sliceValues = {},
   sliceStats = {},
+  sliceBreakdowns = {},
   coreSliceData,
+  tileContributions,
+  hoveredHomeIdx,
+  onHomeHover,
+  closeTileMode = false,
+  closedTiles = [],
+  onToggleTileClosed,
 }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = calculateConcentricCircles(map.length);
@@ -64,7 +72,7 @@ export function Map({
         disabled,
       }}
     >
-      <Box ref={ref} w="100%" h="100%">
+      <Box ref={ref} w="100%" h="100%" style={{ position: "relative" }}>
         {map
           .filter((t) => !!t.position)
           .map((tile, idx) => (
@@ -73,9 +81,13 @@ export function Map({
               key={`${tile.position.x}-${tile.position.y}`}
               tile={tile}
               onSelect={() => {
-                if (tile.type === "SYSTEM" || tile.type === "OPEN")
-                  onSelectSystemTile?.(tile);
-                if (tile.type === "HOME") onSelectHomeTile?.(tile);
+                if (closeTileMode && onToggleTileClosed) {
+                  onToggleTileClosed(tile.idx);
+                } else {
+                  if (tile.type === "SYSTEM" || tile.type === "OPEN")
+                    onSelectSystemTile?.(tile);
+                  if (tile.type === "HOME") onSelectHomeTile?.(tile);
+                }
               }}
               onDelete={() => {
                 if (tile.type === "SYSTEM") onDeleteSystemTile?.(tile);
@@ -83,16 +95,31 @@ export function Map({
               modifiable={editable && modifiableMapTiles.includes(idx)}
               droppable={droppable && modifiableMapTiles.includes(idx)}
               homeSelectable={!!onSelectHomeTile}
-              showHomeStats={showHomeStats}
               sliceValue={sliceValues[tile.idx]}
               sliceStats={sliceStats[tile.idx]}
+              sliceBreakdown={sliceBreakdowns[tile.idx]}
               coreSliceData={
                 tile.type === "HOME" && tile.seat !== undefined && coreSliceData
                   ? coreSliceData[tile.seat]
                   : undefined
               }
+              tileContribution={
+                hoveredHomeIdx !== null && hoveredHomeIdx !== undefined && tileContributions
+                  ? tileContributions[hoveredHomeIdx]?.get(tile.idx)
+                  : undefined
+              }
+              isHomeHovered={tile.type === "HOME" && tile.idx === hoveredHomeIdx}
+              hoveredHomeIdx={hoveredHomeIdx}
+              onHomeHover={tile.type === "HOME" ? onHomeHover : undefined}
+              closeTileMode={closeTileMode}
+              isClosed={closedTiles.includes(tile.idx)}
             />
           ))}
+        <EquidistantLines
+          map={map}
+          hoveredHomeIdx={hoveredHomeIdx ?? null}
+          tileContributions={tileContributions}
+        />
       </Box>
     </MapContext.Provider>
   );
@@ -105,7 +132,7 @@ export function RawMap({
   height,
 }: {
   mapId: string;
-  map: Map;
+  map: TiMap;
   width: number;
   height: number;
 }) {

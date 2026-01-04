@@ -1,57 +1,49 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
-import { Button, Group, Stack, Text } from "@mantine/core";
 import type { HomeTile, SystemTile, FactionId, Player } from "~/types";
 import { MapContext } from "~/contexts/MapContext";
-import { FactionIcon } from "../icons/FactionIcon";
 import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
 import { calcScale } from "./calcScale";
 import { SystemId } from "../SystemId";
 import { factionSystems } from "~/data/systemData";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
-import { useDraft } from "~/draftStore";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { OriginalArtTile } from "./OriginalArtTile";
 import { useRawDraftContext } from "~/contexts/RawDraftContext";
 import classes from "./Tiles.module.css";
 import { SystemTile as SystemTileComponent } from "./SystemTile";
-import { CoreSliceData } from "~/hooks/useCoreSliceValues";
-import { SliceValuePopover } from "../Slice/SliceValuePopover";
+import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
+import {
+  EmptySeatContent,
+  SliceStatsContent,
+  PlayerContent,
+} from "./HomeTileContent";
 
-type SliceStats = {
-  resources: number;
-  influence: number;
-  techs: string;
-  traits: string;
-};
+import type { SliceStats } from "~/mapgen/utils/sliceScoring";
 
 type Props = {
   mapId: string;
   tile: HomeTile;
   selectable?: boolean;
   onSelect?: () => void;
-  showStats?: boolean;
   sliceValue?: number;
   sliceStats?: SliceStats;
   coreSliceData?: CoreSliceData;
+  onHomeHover?: (idx: number | null) => void;
 };
-
-const seatLabel = ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
 export function HomeTile({
   mapId,
   tile,
   onSelect,
   selectable = false,
-  showStats = false,
   sliceValue,
   sliceStats,
   coreSliceData,
+  onHomeHover,
 }: Props) {
   const { originalArt } = useSafeOutletContext();
   const { radius, disabled } = useContext(MapContext);
-  const hydrated = useDraft((state) => state.hydrated);
-  const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
   const { hydratedPlayers } = useHydratedDraft();
   const rawDraftContext = useRawDraftContext();
 
@@ -67,6 +59,10 @@ export function HomeTile({
   const systemIdSize = radius >= 53 ? "10px" : "8px";
   const fontSize = radius >= 60 ? "xs" : "10px";
 
+  const handleMouseEnter = () => onHomeHover?.(tile.idx);
+  const handleMouseLeave = () => onHomeHover?.(null);
+
+  // Original art mode with faction - render as faction home system
   if (
     originalArt &&
     player &&
@@ -74,29 +70,36 @@ export function HomeTile({
     factionSystems[player.faction]
   ) {
     return (
-      <OriginalArtTile
-        mapId={mapId}
-        tile={
-          {
-            ...tile,
-            systemId: factionSystems[player.faction].id,
-            type: "SYSTEM",
-          } as SystemTile
-        }
-      >
-        <PlayerChip player={player} size="lg" visibleFrom="lg" />
-        <PlayerChip player={player} size="md" hiddenFrom="lg" />
-      </OriginalArtTile>
+      <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <OriginalArtTile
+          mapId={mapId}
+          tile={
+            {
+              ...tile,
+              systemId: factionSystems[player.faction].id,
+              type: "SYSTEM",
+            } as SystemTile
+          }
+        >
+          <PlayerChip player={player} size="lg" visibleFrom="lg" />
+          <PlayerChip player={player} size="md" hiddenFrom="lg" />
+        </OriginalArtTile>
+      </div>
     );
   }
 
+  // Player with home system faction - render as system tile with player overlay
   if (
     player &&
     hasHomeSystemFactionId(player) &&
     factionSystems[player.homeSystemFactionId]
   ) {
     return (
-      <div style={{ position: "relative" }}>
+      <div
+        style={{ position: "relative" }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <SystemTileComponent
           mapId={mapId}
           tile={
@@ -123,93 +126,42 @@ export function HomeTile({
     );
   }
 
+  // Default hex rendering with content based on state
   return (
-    <Hex id={`${mapId}-home`} radius={radius} colorClass={classes.home}>
-      {player && hasFaction(player) && factionSystems[player.faction] && (
-        <SystemId
-          id={factionSystems[player.faction].id}
-          radius={radius}
-          size={systemIdSize}
-          scale={scale}
-        />
-      )}
-      {!player && !showStats && (
-        <Stack align="center" gap={2}>
-          {!draftSpeaker && hydrated && tile.seat !== undefined && (
-            <Text size="xl" fw="bold" className={classes.seatLabel}>
-              {seatLabel[tile.seat]}
-            </Text>
-          )}
-          {coreSliceData && (
-            <Group gap={4} align="center">
-              <Text fz={{ base: "sm", xs: "lg" }} fw="bold" c="yellow.5">
-                {coreSliceData.value.toFixed(1)}
-              </Text>
-              <SliceValuePopover
-                breakdown={coreSliceData.breakdown}
-                title="Seat Value"
-                variant="dark"
-              />
-            </Group>
-          )}
-          {selectable && (
-            <Button
-              ta="center"
-              lh={1}
-              size="xs"
-              onMouseDown={onSelect}
-              disabled={disabled}
-              style={{ zIndex: 1 }}
-            >
-              Select Seat
-            </Button>
-          )}
-        </Stack>
-      )}
-      {!player && showStats && (
-        <Stack align="center" gap={1} style={{ fontSize }}>
-          {tile.seat !== undefined && (
-            <Text fz={{ base: "xs", xs: "md" }} c="white">
-              {seatLabel[tile.seat]}
-            </Text>
-          )}
-          {sliceValue !== undefined && (
-            <Text fz={{ base: "sm", xs: "lg" }} fw="bold" c="yellow.5">
-              {sliceValue.toFixed(1)}
-            </Text>
-          )}
-          {sliceStats && (
-            <Text
-              fz={{ base: "xs", xs: "md" }}
-              fw="bolder"
-              c="white"
-              ta="center"
-              lh={1.2}
-            >
-              {sliceStats.resources}/{sliceStats.influence} {sliceStats.techs}
-            </Text>
-          )}
-        </Stack>
-      )}
-      {player && (
-        <Stack
-          align="center"
-          gap={1}
-          w={radius * 1.25}
-          justify="center"
-          style={{ zIndex: 1 }}
-        >
-          {hasFaction(player) && (
-            <FactionIcon
-              // visibleFrom="xs"
-              faction={player.faction}
-              style={{ maxWidth: radius * 0.6, maxHeight: radius * 0.6 }}
-            />
-          )}
-          <PlayerChip player={player} compact />
-        </Stack>
-      )}
-    </Hex>
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <Hex id={`${mapId}-home`} radius={radius} colorClass={classes.home}>
+        {/* Show faction system ID if player has faction */}
+        {player && hasFaction(player) && factionSystems[player.faction] && (
+          <SystemId
+            id={factionSystems[player.faction].id}
+            radius={radius}
+            size={systemIdSize}
+            scale={scale}
+          />
+        )}
+
+        {/* Content based on state: player, stats mode, or empty seat */}
+        {player ? (
+          <PlayerContent player={player} radius={radius} />
+        ) : sliceStats ? (
+          <SliceStatsContent
+            seat={tile.seat}
+            sliceValue={sliceValue}
+            sliceStats={sliceStats}
+            coreSliceData={coreSliceData}
+            fontSize={fontSize}
+          />
+        ) : (
+          <EmptySeatContent
+            seat={tile.seat}
+            coreSliceData={coreSliceData}
+            selectable={selectable}
+            onSelect={onSelect}
+            disabled={disabled}
+          />
+        )}
+      </Hex>
+    </div>
   );
 }
 

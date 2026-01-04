@@ -6,9 +6,9 @@ import {
   calculateSliceValue,
   getSliceValueConfig,
   SliceValueModifiers,
+  DEFAULT_SLICE_VALUE_MODIFIERS,
 } from "~/stats";
 import { SliceValueBreakdown } from "./useSliceValueBreakdown";
-import { DEFAULT_SLICE_VALUE_MODIFIERS } from "~/stats";
 
 export type CoreSliceData = {
   value: number;
@@ -71,7 +71,7 @@ function calculateCoreSliceBreakdown(
 
       if (planet.legendary) {
         let legendaryValue = cfg.otherLegendaryValue;
-        let legendaryLabel = planet.name;
+        const legendaryLabel = planet.name;
 
         if (planet.name === "Hope's End") {
           legendaryValue = cfg.hopesEndValue;
@@ -175,7 +175,10 @@ export function useCoreSliceValues(
       );
 
       const value = calculateSliceValue(systems, config);
-      const breakdown = calculateCoreSliceBreakdown(systems, sliceValueModifiers);
+      const breakdown = calculateCoreSliceBreakdown(
+        systems,
+        sliceValueModifiers,
+      );
 
       return {
         value,

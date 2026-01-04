@@ -146,9 +146,14 @@ export const searchableSystemData = Object.values(systemData).reduce(
     if (
       system.anomalies.length === 0 &&
       system.wormholes.length === 0 &&
-      system.planets.length === 0
+      system.planets.length === 0 &&
+      !system.hyperlanes
     ) {
       nameParts.push("empty");
+    }
+
+    if (system.hyperlanes) {
+      nameParts.push("hyperlane");
     }
 
     for (const planet of system.planets) {

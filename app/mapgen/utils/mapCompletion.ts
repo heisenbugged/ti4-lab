@@ -1,346 +1,241 @@
-import { Map, SystemId, Tile } from "~/types";
+import { Map, SystemId } from "~/types";
 import { systemData } from "~/data/systemData";
-import { mapStringOrder } from "~/data/mapStringOrder";
-
-const MAX_ATTEMPTS = 10000;
-
-type CompletionOptions = {
-  minAlphaWormholes?: number;
-  minBetaWormholes?: number;
-  targetBlueRatio?: number | null; // null means random
-  minRedTiles?: number;
-};
-
-type MapState = {
-  map: Map;
-  availableSystemIds: SystemId[];
-};
+import { shuffle } from "~/draft/helpers/randomization";
+import { isPlacementLegal, buildAdjacencyMap } from "./mapLegality";
 
 /**
- * Checks if a tile placement would violate map legality rules:
- * - Same wormholes cannot be adjacent
- * - Anomalies cannot be adjacent to other anomalies
+ * Pre-select systems to fill the map based on constraints.
+ * This avoids backtracking by determining the pool upfront.
  */
-function isPlacementLegal(
-  map: Map,
-  tileIdx: number,
-  systemId: SystemId
-): boolean {
-  const system = systemData[systemId];
-  if (!system) return false;
-
-  // Get adjacent tile indices
-  const adjacentIndices = getAdjacentTileIndices(tileIdx, map.length);
-
-  for (const adjIdx of adjacentIndices) {
-    const adjTile = map[adjIdx];
-    if (adjTile.type !== "SYSTEM") continue;
-
-    const adjSystem = systemData[adjTile.systemId];
-
-    // Check wormhole rule: same wormholes cannot be adjacent
-    if (system.wormholes.length > 0 && adjSystem.wormholes.length > 0) {
-      const hasMatchingWormhole = system.wormholes.some((wh) =>
-        adjSystem.wormholes.includes(wh)
-      );
-      if (hasMatchingWormhole) return false;
-    }
-
-    // Check anomaly rule: anomalies cannot be adjacent
-    if (system.anomalies.length > 0 && adjSystem.anomalies.length > 0) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
- * Returns adjacent tile indices for a given tile index on the map.
- * Uses the hex grid coordinate system.
- */
-function getAdjacentTileIndices(tileIdx: number, mapSize: number): number[] {
-  if (tileIdx >= mapStringOrder.length) return [];
-
-  const pos = mapStringOrder[tileIdx];
-  const { x, y } = pos;
-
-  // Hex grid adjacent positions
-  const adjacentPositions = [
-    { x: x + 1, y: y - 1 },
-    { x: x + 1, y: y },
-    { x: x - 1, y: y + 1 },
-    { x: x, y: y + 1 },
-    { x: x - 1, y: y },
-    { x: x, y: y - 1 },
-  ];
-
-  const adjacentIndices: number[] = [];
-  for (let i = 0; i < Math.min(mapSize, mapStringOrder.length); i++) {
-    const tilePos = mapStringOrder[i];
-    if (
-      adjacentPositions.some((adj) => adj.x === tilePos.x && adj.y === tilePos.y)
-    ) {
-      adjacentIndices.push(i);
-    }
-  }
-
-  return adjacentIndices;
-}
-
-/**
- * Filters available systems based on options like wormhole requirements.
- */
-function filterAvailableSystems(
+function selectSystemPool(
   availableSystemIds: SystemId[],
-  openSpaces: number,
-  currentBlueCount: number,
-  currentRedCount: number,
-  currentAlphaCount: number,
-  currentBetaCount: number,
-  options: CompletionOptions
+  slotsToFill: number,
+  minAlpha: number,
+  minBeta: number,
+  minRed: number
 ): SystemId[] {
-  let filtered = [...availableSystemIds];
+  const selected: SystemId[] = [];
+  const remaining = new Set(availableSystemIds);
 
-  // Get wormhole counts in available systems
-  const availableSystems = filtered.map((id) => systemData[id]);
-  const availableAlphaCount = availableSystems.filter((sys) =>
-    sys.wormholes.includes("ALPHA")
-  ).length;
-  const availableBetaCount = availableSystems.filter((sys) =>
-    sys.wormholes.includes("BETA")
-  ).length;
+  // Categorize systems
+  const alphaWormholes: SystemId[] = [];
+  const betaWormholes: SystemId[] = [];
+  const redTiles: SystemId[] = [];
+  const blueTiles: SystemId[] = [];
 
-  // Minimum alpha wormholes requirement
-  if (options.minAlphaWormholes !== undefined) {
-    const maxPossibleAlpha = currentAlphaCount + availableAlphaCount;
-    if (currentAlphaCount < options.minAlphaWormholes && maxPossibleAlpha >= options.minAlphaWormholes) {
-      // Need more alpha wormholes to meet minimum
-      if (currentAlphaCount + openSpaces >= options.minAlphaWormholes) {
-        const alphaFiltered = filtered.filter(
-          (id) => systemData[id].wormholes.includes("ALPHA")
-        );
-        if (alphaFiltered.length > 0) filtered = alphaFiltered;
-      }
+  for (const id of availableSystemIds) {
+    const system = systemData[id];
+    if (!system) continue;
+
+    // Skip hyperlanes - they're placed by templates
+    if (system.type === "HYPERLANE") continue;
+
+    // Track alpha/beta wormholes separately for minimum requirements
+    if (system.wormholes.includes("ALPHA")) {
+      alphaWormholes.push(id);
+    } else if (system.wormholes.includes("BETA")) {
+      betaWormholes.push(id);
+    }
+
+    // Categorize by tile type (including wormhole tiles)
+    if (system.type === "RED") {
+      redTiles.push(id);
+    } else if (system.type === "BLUE") {
+      blueTiles.push(id);
     }
   }
 
-  // Minimum beta wormholes requirement
-  if (options.minBetaWormholes !== undefined) {
-    const maxPossibleBeta = currentBetaCount + availableBetaCount;
-    if (currentBetaCount < options.minBetaWormholes && maxPossibleBeta >= options.minBetaWormholes) {
-      // Need more beta wormholes to meet minimum
-      if (currentBetaCount + openSpaces >= options.minBetaWormholes) {
-        const betaFiltered = filtered.filter(
-          (id) => systemData[id].wormholes.includes("BETA")
-        );
-        if (betaFiltered.length > 0) filtered = betaFiltered;
-      }
+  // Shuffle each category
+  const shuffledAlpha = shuffle(alphaWormholes);
+  const shuffledBeta = shuffle(betaWormholes);
+  const shuffledRed = shuffle(redTiles);
+  const shuffledBlue = shuffle(blueTiles);
+
+  // 1. Pick required alpha wormholes
+  const alphaCount = Math.min(minAlpha, shuffledAlpha.length);
+  for (let i = 0; i < alphaCount && selected.length < slotsToFill; i++) {
+    selected.push(shuffledAlpha[i]);
+    remaining.delete(shuffledAlpha[i]);
+  }
+
+  // 2. Pick required beta wormholes
+  const betaCount = Math.min(minBeta, shuffledBeta.length);
+  for (let i = 0; i < betaCount && selected.length < slotsToFill; i++) {
+    selected.push(shuffledBeta[i]);
+    remaining.delete(shuffledBeta[i]);
+  }
+
+  // 3. Count red tiles already selected (wormholes can be red)
+  let currentRedCount = selected.filter((id) => {
+    const sys = systemData[id];
+    return sys?.type === "RED";
+  }).length;
+
+  // 4. Pick red tiles to meet minimum (with some extra chance for variety)
+  const redNeeded = Math.max(0, minRed - currentRedCount);
+  let extraReds = 0;
+  while (Math.random() < 0.5 * Math.pow(0.7, extraReds) && extraReds < 5) {
+    extraReds++;
+  }
+  const redToSelect = redNeeded + extraReds;
+
+  let redsAdded = 0;
+  for (const id of shuffledRed) {
+    if (redsAdded >= redToSelect || selected.length >= slotsToFill) break;
+    if (remaining.has(id)) {
+      selected.push(id);
+      remaining.delete(id);
+      redsAdded++;
     }
   }
 
-  // Minimum red tiles requirement
-  if (options.minRedTiles !== undefined) {
-    const totalSystems = currentBlueCount + currentRedCount + openSpaces;
-    const maxPossibleRed = currentRedCount + openSpaces;
-
-    if (currentRedCount < options.minRedTiles && maxPossibleRed >= options.minRedTiles) {
-      // Need more red tiles to meet minimum
-      const redFiltered = filtered.filter(
-        (id) => systemData[id].type === "RED"
-      );
-      if (redFiltered.length > 0) filtered = redFiltered;
+  // 5. Fill remaining slots with blue tiles
+  for (const id of shuffledBlue) {
+    if (selected.length >= slotsToFill) break;
+    if (remaining.has(id)) {
+      selected.push(id);
+      remaining.delete(id);
     }
   }
 
-  // Blue/red ratio targeting
-  if (options.targetBlueRatio !== null && options.targetBlueRatio !== undefined) {
-    const totalSystems = currentBlueCount + currentRedCount + openSpaces;
-    const targetBlue = options.targetBlueRatio;
-    const targetRed = totalSystems - targetBlue;
-    const currentRatio = currentRedCount > 0 ? currentBlueCount / currentRedCount : Infinity;
-    const targetRatio = targetRed > 0 ? targetBlue / targetRed : Infinity;
-
-    if (targetRatio < currentRatio) {
-      // Need more red tiles
-      const redFiltered = filtered.filter(
-        (id) => systemData[id].type === "RED"
-      );
-      if (redFiltered.length > 0) filtered = redFiltered;
-    } else if (targetRatio > currentRatio) {
-      // Need more blue tiles
-      const blueFiltered = filtered.filter(
-        (id) => systemData[id].type === "BLUE"
-      );
-      if (blueFiltered.length > 0) filtered = blueFiltered;
+  // 6. If still need more, add any remaining tiles
+  for (const id of remaining) {
+    if (selected.length >= slotsToFill) break;
+    const system = systemData[id];
+    if (system && system.type !== "HYPERLANE") {
+      selected.push(id);
     }
   }
 
-  return filtered;
+  return shuffle(selected);
 }
 
 /**
- * Attempts to add one system to the map, returning a new state or false if impossible.
- * Skips HOME and CLOSED tiles.
+ * Find a legal placement for a system among open tile indices.
+ * Returns the tile index or -1 if no legal placement exists.
  */
-function addOneSystem(
-  state: MapState,
-  options: CompletionOptions
-): MapState | false {
-  const openTileIndices = state.map
-    .map((tile, idx) => (tile.type === "OPEN" ? idx : -1))
-    .filter((idx) => idx !== -1);
+function findLegalPlacement(
+  map: Map,
+  openIndices: number[],
+  systemId: SystemId,
+  adjacencyMap: globalThis.Map<number, number[]>
+): number {
+  // Shuffle to randomize placement
+  const shuffledIndices = shuffle([...openIndices]);
 
-  if (openTileIndices.length === 0) return false;
-
-  // Count current blue/red and wormholes
-  let currentBlue = 0;
-  let currentRed = 0;
-  let currentAlphaCount = 0;
-  let currentBetaCount = 0;
-
-  for (const tile of state.map) {
-    if (tile.type === "SYSTEM") {
-      const system = systemData[tile.systemId];
-      if (system) {
-        if (system.type === "BLUE") currentBlue++;
-        if (system.type === "RED") currentRed++;
-        if (system.wormholes.includes("ALPHA")) currentAlphaCount++;
-        if (system.wormholes.includes("BETA")) currentBetaCount++;
-      }
+  for (const idx of shuffledIndices) {
+    if (isPlacementLegal(map, idx, systemId, adjacencyMap)) {
+      return idx;
     }
   }
 
-  // Filter available systems based on options
-  const filteredSystems = filterAvailableSystems(
-    state.availableSystemIds,
-    openTileIndices.length,
-    currentBlue,
-    currentRed,
-    currentAlphaCount,
-    currentBetaCount,
-    options
-  );
-
-  if (filteredSystems.length === 0) return false;
-
-  // Build list of legal (system, tile) pairs BEFORE picking randomly
-  const legalPlacements: Array<{ systemId: SystemId; tileIdx: number }> = [];
-
-  for (const systemId of filteredSystems) {
-    for (const tileIdx of openTileIndices) {
-      if (isPlacementLegal(state.map, tileIdx, systemId)) {
-        legalPlacements.push({ systemId, tileIdx });
-      }
-    }
-  }
-
-  if (legalPlacements.length === 0) return false;
-
-  // Pick randomly from legal placements only
-  const chosen = legalPlacements[Math.floor(Math.random() * legalPlacements.length)];
-  const chosenSystemId = chosen.systemId;
-  const chosenTileIdx = chosen.tileIdx;
-
-  // Create new state
-  const newMap = state.map.map((tile, idx) => {
-    if (idx === chosenTileIdx) {
-      return {
-        ...tile,
-        type: "SYSTEM" as const,
-        systemId: chosenSystemId,
-      };
-    }
-    return tile;
-  });
-
-  const newAvailableSystemIds = state.availableSystemIds.filter(
-    (id) => id !== chosenSystemId
-  );
-
-  return {
-    map: newMap,
-    availableSystemIds: newAvailableSystemIds,
-  };
-}
-
-/**
- * Recursively attempts to complete the map with backtracking.
- */
-function autoCompleteSteps(
-  history: MapState[],
-  stepsForward: number,
-  currentAttempts: number,
-  backtrackLimit: number
-): MapState[] | false {
-  const startingLength = history.length;
-
-  for (let attempts = currentAttempts; attempts < MAX_ATTEMPTS; attempts++) {
-    const newState = addOneSystem(
-      history[history.length - 1],
-      {
-        minAlphaWormholes: 2,
-        minBetaWormholes: 2,
-        targetBlueRatio: null,
-        minRedTiles: 11,
-      }
-    );
-
-    if (newState !== false) {
-      history.push(newState);
-
-      if (history.length >= startingLength + stepsForward) {
-        return history;
-      } else {
-        return autoCompleteSteps(
-          history,
-          stepsForward - 1,
-          attempts,
-          backtrackLimit
-        );
-      }
-    }
-  }
-
-  // Backtrack: pop at least one state to try a different path
-  if (history.length <= 1) {
-    return false; // Can't backtrack further
-  }
-
-  history.pop(); // Remove the failing state
-
-  return autoCompleteSteps(history, 1, 0, history.length);
+  return -1;
 }
 
 /**
  * Main function to auto-complete a partially filled map.
- * Returns a completed map or null if unable to complete.
+ * Uses pre-selection algorithm - no backtracking needed.
+ * @param closedTiles - Optional array of tile indices that are closed (from store, not tile.type)
  */
 export function autoCompleteMap(
   currentMap: Map,
-  availableSystemIds: SystemId[]
+  availableSystemIds: SystemId[],
+  closedTiles: number[] = []
 ): Map | null {
-  const openCount = currentMap.filter((tile) => tile.type === "OPEN").length;
-
-  if (openCount === 0) return currentMap; // Already complete
-
-  const initialState: MapState = {
-    map: currentMap.map((tile) => ({ ...tile })),
-    availableSystemIds: [...availableSystemIds],
-  };
-
-  let history: MapState[] = [initialState];
-
-  // Keep adding systems until map is complete
-  while (history[history.length - 1].map.some((tile) => tile.type === "OPEN")) {
-    const result = autoCompleteSteps(history, 1, 0, history.length);
-
-    if (result === false) {
-      return null; // Unable to complete
+  const closedSet = new Set(closedTiles);
+  const openIndices: number[] = [];
+  currentMap.forEach((tile, idx) => {
+    // Skip tiles in closedTiles array
+    if (closedSet.has(idx)) return;
+    // Include OPEN tiles and CLOSED tiles that were reopened (not in closedTiles)
+    if (tile.type === "OPEN" || tile.type === "CLOSED") {
+      openIndices.push(idx);
     }
+  });
 
-    history = result;
+  if (openIndices.length === 0) return currentMap;
+
+  // Scale red tile requirement based on map size (baseline: 11 red for 30 tiles)
+  const redTileRatio = 11 / 30;
+  const minRedTiles = Math.round(openIndices.length * redTileRatio);
+
+  const adjacencyMap = buildAdjacencyMap(currentMap);
+
+  const selectedSystems = selectSystemPool(
+    availableSystemIds,
+    openIndices.length,
+    2,
+    2,
+    minRedTiles
+  );
+
+  const result: Map = currentMap.map((tile) => ({ ...tile }));
+  const remainingOpenIndices = [...openIndices];
+  const placedSystems = new Set<SystemId>();
+
+  // First pass: place pre-selected systems
+  for (const systemId of selectedSystems) {
+    if (remainingOpenIndices.length === 0) break;
+
+    const legalIdx = findLegalPlacement(result, remainingOpenIndices, systemId, adjacencyMap);
+
+    if (legalIdx !== -1) {
+      result[legalIdx] = {
+        ...result[legalIdx],
+        type: "SYSTEM",
+        systemId,
+      };
+      remainingOpenIndices.splice(remainingOpenIndices.indexOf(legalIdx), 1);
+      placedSystems.add(systemId);
+    }
   }
 
-  return history[history.length - 1].map;
+  // Second pass: fill any remaining slots with random available systems
+  if (remainingOpenIndices.length > 0) {
+    const unusedSystems = availableSystemIds.filter((id) => {
+      if (placedSystems.has(id)) return false;
+      const system = systemData[id];
+      return system && system.type !== "HYPERLANE";
+    });
+
+    for (const systemId of shuffle(unusedSystems)) {
+      if (remainingOpenIndices.length === 0) break;
+
+      const legalIdx = findLegalPlacement(result, remainingOpenIndices, systemId, adjacencyMap);
+
+      if (legalIdx !== -1) {
+        result[legalIdx] = {
+          ...result[legalIdx],
+          type: "SYSTEM",
+          systemId,
+        };
+        remainingOpenIndices.splice(remainingOpenIndices.indexOf(legalIdx), 1);
+        placedSystems.add(systemId);
+      }
+    }
+  }
+
+  // Third pass: if still have open slots, fill with any remaining systems ignoring legality
+  // This ensures the map is always completely filled
+  if (remainingOpenIndices.length > 0) {
+    const stillUnused = availableSystemIds.filter((id) => {
+      if (placedSystems.has(id)) return false;
+      const system = systemData[id];
+      return system && system.type !== "HYPERLANE";
+    });
+
+    for (const systemId of shuffle(stillUnused)) {
+      if (remainingOpenIndices.length === 0) break;
+
+      const idx = remainingOpenIndices.shift()!;
+      result[idx] = {
+        ...result[idx],
+        type: "SYSTEM",
+        systemId,
+      };
+      placedSystems.add(systemId);
+    }
+  }
+
+  return result;
 }

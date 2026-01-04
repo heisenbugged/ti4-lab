@@ -35,6 +35,9 @@ import {
   IconShare,
   IconPhoto,
   IconWand,
+  IconMinus,
+  IconPlus,
+  IconHexagonOff,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router";
 import { draftConfig } from "~/draft/draftConfig";
@@ -50,7 +53,9 @@ import { useMapStats } from "../utils/mapStats";
 import {
   getAllSliceValues,
   getAllSliceStats,
+  getAllSliceBreakdowns,
   calculateBalanceGap,
+  getAllTileContributions,
 } from "../utils/sliceScoring";
 import { improveBalance } from "../utils/improveBalance";
 import { TileSidebar } from "./TileSidebar";
@@ -86,21 +91,37 @@ function MapGeneratorContent() {
   const systemPool = useMapBuilder((state) => state.state.systemPool);
   const mapConfigId = useMapBuilder((state) => state.state.mapConfigId);
   const gameSets = useMapBuilder((state) => state.state.gameSets);
+  const ringCount = useMapBuilder((state) => state.state.ringCount);
+  const hoveredHomeIdx = useMapBuilder((state) => state.state.hoveredHomeIdx);
+  const closeTileMode = useMapBuilder((state) => state.state.closeTileMode);
+  const closedTiles = useMapBuilder((state) => state.state.closedTiles);
   const {
     addSystemToMap,
     removeSystemFromMap,
+    swapTiles,
     openPlanetFinderForMap,
-    selectSystemForPlanetFinder,
     clearMap,
     setMap,
     setGameSets,
     setMapConfig,
+    setRingCount,
+    setHoveredHomeIdx,
+    toggleCloseTileMode,
+    toggleTileClosed,
   } = useMapBuilder((state) => state.actions);
   const stats = useMapStats();
 
-  // Calculate slice values and balance gap
-  const sliceValues = useMemo(() => getAllSliceValues(map), [map]);
+  // Calculate slice values, stats, breakdowns, tile contributions, and balance gap
+  const sliceValues = useMemo(
+    () => getAllSliceValues(map, undefined, undefined, ringCount),
+    [map, ringCount],
+  );
   const sliceStats = useMemo(() => getAllSliceStats(map), [map]);
+  const sliceBreakdowns = useMemo(
+    () => getAllSliceBreakdowns(map, undefined, ringCount),
+    [map, ringCount],
+  );
+  const tileContributions = useMemo(() => getAllTileContributions(map), [map]);
   const balanceGap = useMemo(
     () => calculateBalanceGap(sliceValues),
     [sliceValues],
@@ -164,41 +185,60 @@ function MapGeneratorContent() {
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
   }, [map, mapConfigId]);
 
-  // Check if map is complete (no OPEN tiles, excluding CLOSED tiles)
+  // Check if map is complete (no OPEN tiles, excluding closed tiles)
   const isMapComplete = useMemo(() => {
-    return !map.some((tile) => tile.type === "OPEN");
-  }, [map]);
+    return !map.some((tile, idx) => {
+      // Skip tiles that are in closedTiles
+      if (closedTiles.includes(idx)) return false;
+      return tile.type === "OPEN" || tile.type === "CLOSED";
+    });
+  }, [map, closedTiles]);
 
-  // Make all tiles except Mecatol Rex (index 0) and HOME tiles modifiable
+  // Make all tiles except Mecatol Rex (index 0) and closed tiles modifiable
+  // Use closedTiles array as source of truth, not tile.type
   const modifiableMapTiles = Array.from(
     { length: map.length },
     (_, i) => i,
   ).filter((i) => {
-    const tile = map[i];
-    return tile.type !== "HOME" && i !== 0;
+    return i !== 0 && !closedTiles.includes(i);
   });
 
   const handleRandomize = () => {
-    clearMap();
-    const clearedMap = useMapBuilder.getState().state.map;
-    const currentConfigId = useMapBuilder.getState().state.mapConfigId;
-    const config = mapConfigs[currentConfigId];
+    // Get current map state - preserve hyperlanes and home systems
+    const currentMap = useMapBuilder.getState().state.map;
 
-    // Get preset tile indices (hyperlanes) that should not be overwritten
-    const presetTileIndices = new Set(
-      Object.keys(config.presetTiles).map(Number),
-    );
+    // Identify indices to preserve (hyperlanes and home systems)
+    const preserveIndices = new Set<number>();
+    preserveIndices.add(0); // Always preserve Mecatol Rex
 
-    const completedMap = autoCompleteMap(clearedMap, systemPool);
+    currentMap.forEach((tile, idx) => {
+      if (tile.type === "HOME") {
+        preserveIndices.add(idx);
+      } else if (tile.type === "SYSTEM") {
+        const system = systemData[tile.systemId];
+        if (system?.type === "HYPERLANE") {
+          preserveIndices.add(idx);
+        }
+      }
+    });
+
+    // Clear non-preserved system tiles
+    currentMap.forEach((tile, idx) => {
+      if (tile.type === "SYSTEM" && !preserveIndices.has(idx)) {
+        removeSystemFromMap(idx);
+      }
+    });
+
+    // Get the partially cleared map and current closed tiles
+    const partialMap = useMapBuilder.getState().state.map;
+    const currentClosedTiles = useMapBuilder.getState().state.closedTiles;
+
+    const completedMap = autoCompleteMap(partialMap, systemPool, currentClosedTiles);
 
     if (completedMap) {
       completedMap.forEach((tile, idx) => {
-        // Skip Mecatol Rex (index 0), HOME tiles, and preset tiles (hyperlanes)
-        if (
-          tile.type === "SYSTEM" &&
-          idx !== 0 &&
-          !presetTileIndices.has(idx)
-        ) {
+        // Only add to non-preserved positions
+        if (tile.type === "SYSTEM" && !preserveIndices.has(idx)) {
           addSystemToMap(idx, tile.systemId);
         }
       });
@@ -212,10 +252,12 @@ function MapGeneratorContent() {
       });
 
       const shuffledSystems = [...systemPool].sort(() => Math.random() - 0.5);
-      modifiableMapTiles.forEach((tileIdx, i) => {
-        // Skip preset tiles (hyperlanes) in fallback too
-        if (!presetTileIndices.has(tileIdx) && i < shuffledSystems.length) {
-          addSystemToMap(tileIdx, shuffledSystems[i]);
+      let systemIdx = 0;
+      modifiableMapTiles.forEach((tileIdx) => {
+        // Skip preserved tiles (hyperlanes, homes)
+        if (!preserveIndices.has(tileIdx) && systemIdx < shuffledSystems.length) {
+          addSystemToMap(tileIdx, shuffledSystems[systemIdx]);
+          systemIdx++;
         }
       });
     }
@@ -353,28 +395,37 @@ function MapGeneratorContent() {
       const systemId = event.active.data.current?.systemId;
       if (!systemId || !destTile) return;
 
-      if (destTile.type !== "OPEN" && destTile.type !== "SYSTEM") return;
+      // Sidebar tiles can drop on OPEN, SYSTEM, or HOME tiles
+      if (
+        destTile.type !== "OPEN" &&
+        destTile.type !== "SYSTEM" &&
+        destTile.type !== "HOME"
+      )
+        return;
       if (destTile.type === "SYSTEM" && destTile.systemId === "18") return;
 
       addSystemToMap(destTile.idx, systemId);
       return;
     }
 
-    // Tile-to-tile swap
+    // Tile-to-tile swap (map tiles only)
     if (!originTile || !destTile) return;
-    if (destTile.type !== "SYSTEM" || originTile.type !== "SYSTEM") return;
-    if (destTile.systemId === "18") return; // Don't allow moving Mecatol Rex
 
-    const originSystem = systemData[originTile.systemId];
-    const destSystem = systemData[destTile.systemId];
+    // Protect Mecatol Rex (index 0)
+    if (originTile.idx === 0 || destTile.idx === 0) return;
 
-    if (!originSystem || !destSystem) return;
+    // Only allow swapping draggable types (SYSTEM, HOME) with valid drop targets (SYSTEM, HOME, OPEN)
+    const draggableTypes = ["SYSTEM", "HOME"];
+    const droppableTypes = ["SYSTEM", "HOME", "OPEN"];
 
-    // Swap the tiles
-    removeSystemFromMap(originTile.idx);
-    removeSystemFromMap(destTile.idx);
-    addSystemToMap(destTile.idx, originSystem.id);
-    addSystemToMap(originTile.idx, destSystem.id);
+    if (!draggableTypes.includes(originTile.type)) return;
+    if (!droppableTypes.includes(destTile.type)) return;
+
+    // Don't allow dropping on Mecatol Rex
+    if (destTile.type === "SYSTEM" && destTile.systemId === "18") return;
+
+    // Use swapTiles for all tile-to-tile swaps
+    swapTiles(originTile.idx, destTile.idx);
   };
 
   const delayedPointerSensor = useSensor(PointerSensor, {
@@ -400,11 +451,7 @@ function MapGeneratorContent() {
         onSelect={handleDraftTypeSelect}
       />
 
-      <MapBuilderPlanetFinder
-        onSystemSelected={(system) => {
-          selectSystemForPlanetFinder(system.id);
-        }}
-      />
+      <MapBuilderPlanetFinder />
       <DndContext
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -473,6 +520,39 @@ function MapGeneratorContent() {
                       },
                     }}
                   />
+                  <Group gap={4}>
+                    <ActionIcon
+                      variant="filled"
+                      color="dark"
+                      size="sm"
+                      onClick={() => setRingCount(ringCount - 1)}
+                      disabled={ringCount <= 2}
+                    >
+                      <IconMinus size={14} />
+                    </ActionIcon>
+                    <Text size="xs" c="gray.0" w={55} ta="center">
+                      {ringCount} rings
+                    </Text>
+                    <ActionIcon
+                      variant="filled"
+                      color="dark"
+                      size="sm"
+                      onClick={() => setRingCount(ringCount + 1)}
+                      disabled={ringCount >= 5}
+                    >
+                      <IconPlus size={14} />
+                    </ActionIcon>
+                  </Group>
+                  <ActionIcon
+                    variant={closeTileMode ? "filled" : "default"}
+                    color={closeTileMode ? "red" : "dark"}
+                    size="lg"
+                    onClick={toggleCloseTileMode}
+                    aria-label="Close tile tool"
+                    title="Close tile tool"
+                  >
+                    <IconHexagonOff size={18} />
+                  </ActionIcon>
                   <Button
                     leftSection={<IconRefresh size={16} />}
                     variant="filled"
@@ -572,9 +652,15 @@ function MapGeneratorContent() {
                 disabled={false}
                 onSelectSystemTile={(tile) => openPlanetFinderForMap(tile.idx)}
                 onDeleteSystemTile={(tile) => removeSystemFromMap(tile.idx)}
-                showHomeStats={true}
                 sliceValues={sliceValues}
                 sliceStats={sliceStats}
+                sliceBreakdowns={sliceBreakdowns}
+                tileContributions={tileContributions}
+                hoveredHomeIdx={hoveredHomeIdx}
+                onHomeHover={setHoveredHomeIdx}
+                closeTileMode={closeTileMode}
+                closedTiles={closedTiles}
+                onToggleTileClosed={toggleTileClosed}
               />
             </Box>
 

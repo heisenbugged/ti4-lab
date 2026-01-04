@@ -152,6 +152,11 @@ export function SliceValuePopover({ slice, breakdown: providedBreakdown, title =
                           {" "}({mod.count})
                         </Text>
                       )}
+                      {mod.equidistantShared && (
+                        <Text component="span" c="orange.5" size="xs">
+                          {" "}÷{mod.equidistantShared}
+                        </Text>
+                      )}
                     </Text>
                     <Text size="xs" fw={600} ff="monospace" c="green.5">
                       {formatValue(mod.value, true)}
@@ -182,7 +187,10 @@ export function SliceValuePopover({ slice, breakdown: providedBreakdown, title =
                 {hasEquidistant && (
                   <Group justify="space-between" gap="xs">
                     <Text size="xs">
-                      Equidistant ({Math.round((1 - breakdown.equidistantMultiplier) * 100)}%)
+                      {/* Show percentage only if using fixed multiplier system (multiplier != 1) */}
+                      {breakdown.equidistantMultiplier !== 1
+                        ? `Equidistant (${Math.round((1 - breakdown.equidistantMultiplier) * 100)}%)`
+                        : "Equidistant"}
                     </Text>
                     <Text size="xs" fw={600} ff="monospace" c="red.4">
                       {formatValue(-breakdown.equidistantPenalty!, true)}

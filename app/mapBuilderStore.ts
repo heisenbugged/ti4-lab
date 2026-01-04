@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { FactionId, GameSet, Map, SystemId } from "~/types";
+import { FactionId, GameSet, Map, SystemId, HomeTile, OpenTile, SystemTile } from "~/types";
 import { systemData } from "~/data/systemData";
 import { getSystemPool } from "~/utils/system";
 import {
@@ -7,6 +7,13 @@ import {
   defaultMapConfigId,
   generateMapFromConfig,
 } from "~/mapgen/mapConfigs";
+import {
+  generateHexRings,
+  getTileCount,
+  getRingForIndex,
+  findClosestOnRing,
+  findAvailableOnRing,
+} from "~/utils/hexCoordinates";
 
 type PlanetFinderModal = {
   mode: "map";
@@ -21,18 +28,27 @@ type MapBuilderState = {
   factionPool: FactionId[];
   allowHomePlanetSearch: boolean;
   mapConfigId: string;
+  ringCount: number;
+  hoveredHomeIdx: number | null;
+  closeTileMode: boolean;
+  closedTiles: number[];
 };
 
 type MapBuilderActions = {
-  addSystemToMap: (tileIdx: number, systemId: SystemId) => void;
+  addSystemToMap: (tileIdx: number, systemId: SystemId, rotation?: number) => void;
   removeSystemFromMap: (tileIdx: number) => void;
+  swapTiles: (originIdx: number, destIdx: number) => void;
   clearMap: () => void;
   setMap: (map: Map) => void;
   setGameSets: (gameSets: GameSet[]) => void;
   setMapConfig: (configId: string) => void;
+  setRingCount: (count: number) => void;
+  setHoveredHomeIdx: (idx: number | null) => void;
   openPlanetFinderForMap: (tileIdx: number) => void;
   closePlanetFinder: () => void;
   selectSystemForPlanetFinder: (systemId: SystemId) => void;
+  toggleCloseTileMode: () => void;
+  toggleTileClosed: (idx: number) => void;
 };
 
 type MapBuilderStore = {
@@ -54,6 +70,7 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
   const systemPool = getSystemPool(initialGameSets);
   const initialMapConfigId = defaultMapConfigId;
   const initialMap = generateMapFromConfig(mapConfigs[initialMapConfigId]);
+  const initialRingCount = mapConfigs[initialMapConfigId].mapSize;
 
   return {
     state: {
@@ -64,6 +81,10 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
       factionPool: [],
       allowHomePlanetSearch: false,
       mapConfigId: initialMapConfigId,
+      ringCount: initialRingCount,
+      hoveredHomeIdx: null,
+      closeTileMode: false,
+      closedTiles: [...mapConfigs[initialMapConfigId].closedMapTiles],
     },
 
     // Expose for PlanetFinder compatibility
@@ -77,26 +98,19 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
     },
 
     actions: {
-      addSystemToMap: (tileIdx: number, systemId: SystemId) => {
+      addSystemToMap: (tileIdx: number, systemId: SystemId, rotation?: number) => {
         set((store) => {
           const newMap = [...store.state.map];
           const system = systemData[systemId];
 
           if (!system) return store;
 
-          const config = mapConfigs[store.state.mapConfigId];
-          const presetTileIndices = new Set(
-            Object.keys(config.presetTiles).map(Number),
-          );
-
           // Remove any existing instance of this system from the map
-          // BUT preserve preset tiles (hyperlanes)
           for (let i = 0; i < newMap.length; i++) {
             const tile = newMap[i];
             if (
               tile.type === "SYSTEM" &&
               tile.systemId === systemId &&
-              !presetTileIndices.has(i) &&
               i !== 0 // Never remove Mecatol Rex
             ) {
               newMap[i] = {
@@ -106,16 +120,12 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
             }
           }
 
-          // Don't add to preset tile positions
-          if (presetTileIndices.has(tileIdx)) {
-            return store;
-          }
-
           // Add the system to the new location
           newMap[tileIdx] = {
             ...newMap[tileIdx],
             type: "SYSTEM",
             systemId: systemId,
+            rotation: rotation,
           };
 
           return {
@@ -130,13 +140,8 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
 
       removeSystemFromMap: (tileIdx: number) => {
         set((store) => {
-          const config = mapConfigs[store.state.mapConfigId];
-          const presetTileIndices = new Set(
-            Object.keys(config.presetTiles).map(Number),
-          );
-
-          // Don't remove preset tiles (hyperlanes) or Mecatol Rex
-          if (presetTileIndices.has(tileIdx) || tileIdx === 0) {
+          // Don't remove Mecatol Rex
+          if (tileIdx === 0) {
             return store;
           }
 
@@ -146,6 +151,39 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
           newMap[tileIdx] = {
             ...newMap[tileIdx],
             type: "OPEN",
+          };
+
+          return {
+            ...store,
+            state: {
+              ...store.state,
+              map: newMap,
+            },
+          };
+        });
+      },
+
+      swapTiles: (originIdx: number, destIdx: number) => {
+        set((store) => {
+          // Protect Mecatol Rex (index 0)
+          if (originIdx === 0 || destIdx === 0) {
+            return store;
+          }
+
+          const newMap = [...store.state.map];
+          const originTile = newMap[originIdx];
+          const destTile = newMap[destIdx];
+
+          // Swap tiles, preserving idx and position
+          newMap[originIdx] = {
+            ...destTile,
+            idx: originIdx,
+            position: originTile.position,
+          };
+          newMap[destIdx] = {
+            ...originTile,
+            idx: destIdx,
+            position: destTile.position,
           };
 
           return {
@@ -184,8 +222,108 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
               ...store.state,
               mapConfigId: configId,
               map: newMap,
+              ringCount: config.mapSize,
+              closedTiles: [...config.closedMapTiles],
             },
           };
+        });
+      },
+
+      setRingCount: (newRingCount: number) => {
+        set((store) => {
+          const currentRingCount = store.state.ringCount;
+          if (newRingCount === currentRingCount) return store;
+          if (newRingCount < 2 || newRingCount > 5) return store;
+
+          const currentMap = store.state.map;
+          const newTileCount = getTileCount(newRingCount);
+          const coords = generateHexRings(newRingCount);
+
+          if (newRingCount > currentRingCount) {
+            // Expanding: add new OPEN tiles
+            const newMap: Map = [...currentMap];
+            for (let idx = currentMap.length; idx < newTileCount; idx++) {
+              const openTile: OpenTile = {
+                idx,
+                type: "OPEN",
+                position: coords[idx],
+              };
+              newMap.push(openTile);
+            }
+            const config = mapConfigs[store.state.mapConfigId];
+            return {
+              ...store,
+              state: {
+                ...store.state,
+                ringCount: newRingCount,
+                map: newMap,
+                closedTiles: [...config.closedMapTiles],
+              },
+            };
+          } else {
+            // Shrinking: find displaced homes and snap them to new outer ring
+            const newMap: Map = [];
+            const displacedHomes: { seat: number; oldIdx: number }[] = [];
+
+            // First pass: copy tiles within new bounds, collect displaced homes
+            for (let idx = 0; idx < newTileCount; idx++) {
+              const tile = currentMap[idx];
+              newMap.push({
+                ...tile,
+                idx,
+                position: coords[idx],
+              });
+            }
+
+            // Find homes beyond new boundary
+            for (let idx = newTileCount; idx < currentMap.length; idx++) {
+              const tile = currentMap[idx];
+              if (tile.type === "HOME" && tile.seat !== undefined) {
+                displacedHomes.push({ seat: tile.seat, oldIdx: idx });
+              }
+            }
+
+            // Snap displaced homes to new outer ring
+            const occupiedIndices = new Set<number>();
+            newMap.forEach((tile, idx) => {
+              if (tile.type === "HOME" || tile.type === "SYSTEM") {
+                occupiedIndices.add(idx);
+              }
+            });
+
+            // Get old coordinates for finding closest positions
+            const oldCoords = generateHexRings(currentRingCount);
+
+            for (const { seat, oldIdx } of displacedHomes) {
+              const oldCoord = oldCoords[oldIdx];
+              const closestIdx = findClosestOnRing(oldCoord, newRingCount, coords);
+              const availableIdx = findAvailableOnRing(closestIdx, newRingCount, occupiedIndices);
+
+              if (availableIdx !== -1) {
+                // Convert the target position to a HOME tile
+                const homeTile: HomeTile = {
+                  idx: availableIdx,
+                  type: "HOME",
+                  seat,
+                  position: coords[availableIdx],
+                };
+                newMap[availableIdx] = homeTile;
+                occupiedIndices.add(availableIdx);
+              }
+              // If no available position, the home is lost (shouldn't happen with reasonable ring counts)
+            }
+
+            const config = mapConfigs[store.state.mapConfigId];
+            return {
+              ...store,
+              state: {
+                ...store.state,
+                ringCount: newRingCount,
+                map: newMap,
+                closedTiles: [...config.closedMapTiles],
+              },
+            };
+          }
         });
       },
 
@@ -195,6 +333,16 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
           state: {
             ...store.state,
             map,
+          },
+        }));
+      },
+
+      setHoveredHomeIdx: (idx: number | null) => {
+        set((store) => ({
+          ...store,
+          state: {
+            ...store.state,
+            hoveredHomeIdx: idx,
           },
         }));
       },
@@ -272,6 +420,61 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
         }
 
         store.actions.closePlanetFinder();
+      },
+
+      toggleCloseTileMode: () => {
+        set((store) => ({
+          ...store,
+          state: {
+            ...store.state,
+            closeTileMode: !store.state.closeTileMode,
+          },
+        }));
+      },
+
+      toggleTileClosed: (idx: number) => {
+        set((store) => {
+          // Cannot close Mecatol Rex (idx 0)
+          if (idx === 0) return store;
+
+          // Cannot close HOME tiles
+          const tile = store.state.map[idx];
+          if (tile.type === "HOME") return store;
+
+          const isCurrentlyClosed = store.state.closedTiles.includes(idx);
+
+          if (isCurrentlyClosed) {
+            // Reopen the tile - remove from closedTiles
+            return {
+              ...store,
+              state: {
+                ...store.state,
+                closedTiles: store.state.closedTiles.filter((i) => i !== idx),
+              },
+            };
+          } else {
+            // Close the tile
+            let newMap = store.state.map;
+
+            // If it's a SYSTEM tile, convert to OPEN (system returns to pool automatically)
+            if (tile.type === "SYSTEM") {
+              newMap = [...store.state.map];
+              newMap[idx] = {
+                ...newMap[idx],
+                type: "OPEN",
+              };
+            }
+
+            return {
+              ...store,
+              state: {
+                ...store.state,
+                map: newMap,
+                closedTiles: [...store.state.closedTiles, idx],
+              },
+            };
+          }
+        });
       },
     },
   };

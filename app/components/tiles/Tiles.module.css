@@ -167,3 +167,23 @@
     transition: stroke 0.2s ease;
   }
 }
+
+.closedTile {
+  @mixin dark {
+    fill: var(--mantine-color-dark-5);
+    opacity: 0.6;
+  }
+  @mixin light {
+    fill: var(--mantine-color-gray-4);
+    opacity: 0.6;
+  }
+}
+
+.closedTileClickable {
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.closedTileClickable:hover {
+  filter: brightness(1.3);
+}

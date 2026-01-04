@@ -10,6 +10,8 @@ export type SliceValueModifier = {
   label: string;
   value: number;
   count?: number;
+  /** If this modifier is reduced due to equidistant sharing */
+  equidistantShared?: number; // Number of homes sharing this system
 };
 
 export type SliceValueBreakdown = {
