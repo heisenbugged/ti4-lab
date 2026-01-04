@@ -7,6 +7,7 @@ import {
   ActionIcon,
   Select,
   MultiSelect,
+  TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -110,18 +111,14 @@ function MapGeneratorContent() {
     useDisclosure(false);
   const [shareOpened, { open: openShare, close: closeShare }] =
     useDisclosure(false);
-  const [
-    draftTypeOpened,
-    { open: openDraftType, close: closeDraftType },
-  ] = useDisclosure(false);
+  const [draftTypeOpened, { open: openDraftType, close: closeDraftType }] =
+    useDisclosure(false);
   const [compatibleDraftTypes, setCompatibleDraftTypes] = useState<DraftType[]>(
     [],
   );
-
-  // Generate map string and share URL
   const mapString = useMemo(() => {
     return map
-      .slice(1) // Skip Mecatol Rex at index 0
+      .slice(1)
       .map((tile) => {
         if (tile.type === "HOME") return "0";
         if (tile.type === "SYSTEM") return tile.systemId;
@@ -129,6 +126,19 @@ function MapGeneratorContent() {
       })
       .join(" ");
   }, [map]);
+
+  const hasSystems = useMemo(() => {
+    return map.some((tile) => tile.type === "SYSTEM" && tile.idx !== 0);
+  }, [map]);
+
+  const [ttsString, setTtsString] = useState("");
+  const [isEditingTts, setIsEditingTts] = useState(false);
+
+  useEffect(() => {
+    if (!isEditingTts) {
+      setTtsString(hasSystems ? mapString : "");
+    }
+  }, [mapString, isEditingTts, hasSystems]);
 
   const shareUrl = useMemo(() => {
     const systemIds = map
@@ -230,6 +240,103 @@ function MapGeneratorContent() {
     }
   };
 
+  const handleImportTtsString = () => {
+    if (!ttsString.trim()) {
+      notifications.show({
+        title: "Invalid input",
+        message: "Please enter a TTS string",
+        color: "red",
+      });
+      return;
+    }
+
+    const systemIds = ttsString
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean) as SystemId[];
+
+    if (systemIds.length === 0) {
+      notifications.show({
+        title: "Invalid input",
+        message: "TTS string contains no system IDs",
+        color: "red",
+      });
+      return;
+    }
+
+    const config = mapConfigs[mapConfigId];
+    const presetTileIndices = new Set(
+      Object.keys(config.presetTiles).map(Number),
+    );
+
+    clearMap();
+
+    const clearedMap = useMapBuilder.getState().state.map;
+    const actualSystemIds = systemIds.filter((id) => id !== "0" && id !== "-1");
+    const placeableCount = clearedMap.filter(
+      (tile, idx) =>
+        idx !== 0 &&
+        tile.type === "OPEN" &&
+        !config.homeIdxInMapString.includes(idx) &&
+        !config.closedMapTiles.includes(idx) &&
+        !presetTileIndices.has(idx),
+    ).length;
+
+    if (actualSystemIds.length > placeableCount) {
+      notifications.show({
+        title: "Too many systems",
+        message: `TTS string contains ${actualSystemIds.length} systems, but only ${placeableCount} placeable positions available`,
+        color: "yellow",
+      });
+    }
+
+    const inferredSets = inferGameSetsFromTiles(systemIds);
+    setGameSets(inferredSets);
+
+    systemIds.forEach((systemId, ttsPosition) => {
+      const mapIdx = ttsPosition + 1;
+
+      if (mapIdx >= clearedMap.length) {
+        return;
+      }
+
+      if (systemId === "0" || systemId === "-1") {
+        return;
+      }
+
+      if (
+        mapIdx === 0 ||
+        config.homeIdxInMapString.includes(mapIdx) ||
+        config.closedMapTiles.includes(mapIdx) ||
+        presetTileIndices.has(mapIdx)
+      ) {
+        return;
+      }
+
+      if (systemData[systemId]) {
+        addSystemToMap(mapIdx, systemId);
+      } else {
+        notifications.show({
+          title: "Invalid system ID",
+          message: `System ID "${systemId}" not found`,
+          color: "yellow",
+        });
+      }
+    });
+
+    const systemsPlaced = systemIds.filter(
+      (id) => id !== "0" && id !== "-1" && systemData[id],
+    ).length;
+
+    notifications.show({
+      title: "Map imported",
+      message: `Imported ${systemsPlaced} systems from TTS string`,
+      color: "green",
+    });
+
+    setIsEditingTts(false);
+  };
+
   const handleCreateDraft = () => {
     const compatibleTypes = mapConfigToCompatibleDraftTypes[mapConfigId];
     if (!compatibleTypes || compatibleTypes.length === 0) {
@@ -274,7 +381,9 @@ function MapGeneratorContent() {
 
     const encoded = encodeSeededMapData(seededData);
     // Include the selected draft type in the URL so prechoice uses it
-    navigate(`/draft/prechoice?mapSlices=${encoded}&draftType=${selectedDraftType}`);
+    navigate(
+      `/draft/prechoice?mapSlices=${encoded}&draftType=${selectedDraftType}`,
+    );
   };
 
   const handleDraftTypeSelect = (draftType: DraftType) => {
@@ -424,7 +533,7 @@ function MapGeneratorContent() {
           <AppShell.Main p={0} h="calc(100vh - 60px)" mih="calc(100vh - 60px)">
             <Box bg="dark.7" p="sm">
               <Group justify="space-between">
-                <Group>
+                <Group wrap="nowrap">
                   <Select
                     data={Object.values(mapConfigs).map((config) => ({
                       value: config.id,
@@ -520,6 +629,28 @@ function MapGeneratorContent() {
                   >
                     Share Image
                   </Button>
+                  <TextInput
+                    placeholder="Import from TTS string"
+                    value={ttsString}
+                    onChange={(e) => setTtsString(e.currentTarget.value)}
+                    onFocus={() => setIsEditingTts(true)}
+                    onBlur={() => setIsEditingTts(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleImportTtsString();
+                        setIsEditingTts(false);
+                      }
+                    }}
+                    size="xs"
+                    w={180}
+                    styles={{
+                      input: {
+                        backgroundColor: "var(--mantine-color-dark-6)",
+                        borderColor: "var(--mantine-color-dark-4)",
+                        color: "var(--mantine-color-gray-0)",
+                      },
+                    }}
+                  />
                   <Button
                     leftSection={<IconWand size={16} />}
                     variant="filled"
