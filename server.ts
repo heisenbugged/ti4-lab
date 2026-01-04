@@ -84,7 +84,9 @@ httpServer.listen(3000, () => {
   console.log(`Express server listening on port 3000`);
 });
 
-startDiscordBot();
+if (process.env.DISCORD_DISABLED !== "true") {
+  startDiscordBot();
+}
 
 // Graceful shutdown handling
 const shutdown = async (signal: string) => {
