@@ -90,3 +90,38 @@ test("Milty-EQ generates with discordant stars", () => {
     }
   }
 });
+
+test("Milty-EQ 6p works with base game", () => {
+  const settings: DraftSettings = {
+    factionGameSets: ["base"],
+    tileGameSets: ["base"],
+    ...defaultTestSettings,
+    numSlices: 6,
+    numFactions: 6,
+  };
+
+  const systemPool = getSystemPool(["base"]);
+  console.log(
+    `Testing Milty EQ 6p with base game only. System pool size: ${systemPool.length}`,
+  );
+
+  const iterations = 100;
+  for (let i = 0; i < iterations; i++) {
+    try {
+      const result = generateMap(settings, [...systemPool]);
+      expect(result, `Failed on iteration ${i + 1}`).toBeDefined();
+      expect(result?.valid, `Map was invalid on iteration ${i + 1}`).toBe(true);
+
+      if (result?.slices) {
+        expect(result.slices.length).toBe(6);
+
+        result.slices.forEach((slice, index) => {
+          expect(slice.length, `Slice ${index} should have 4 systems`).toBe(4);
+        });
+      }
+    } catch (e) {
+      console.log(`Failed on iteration ${i + 1}`);
+      throw e;
+    }
+  }
+});

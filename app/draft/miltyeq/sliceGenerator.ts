@@ -10,14 +10,16 @@ import {
   isLegendary,
 } from "../helpers/sliceGeneration";
 import { systemData } from "~/data/systemData";
-import { generateEmptyMap } from "~/utils/map";
-import { calculateSliceValue, getSliceValueConfig } from "~/stats";
+import { generateEmptyMap, optimalStatsForSystems } from "~/utils/map";
 import {
   coreGenerateMap,
   coreGenerateSlices,
   postProcessSlices,
 } from "../common/sliceGenerator";
-import { DEFAULT_SLICE_SETTINGS } from "~/components/SliceSettingsModal";
+import {
+  getMiltyEqSettings,
+  type MiltyEqConstraints,
+} from "~/components/MiltyEqSettingsModal";
 import { draftConfig } from "../draftConfig";
 import { getFactionPool } from "~/utils/factions";
 import { mapStringOrder } from "~/data/mapStringOrder";
@@ -43,7 +45,54 @@ const MINOR_FACTION_SLICE_CHOICES: SliceChoice[] = [
   { weight: 1, value: ["red", "red", "med", "med"] }, // 4
 ];
 
-const DEFAULT_CONFIG = DEFAULT_SLICE_SETTINGS.miltyeq;
+const getDefaultConfig = (availableSystems: SystemId[]) => {
+  // Compute constraints from the available system pool
+  const systems = availableSystems.map((id) => systemData[id]);
+
+  const alphaCount = systems.filter((system) =>
+    system.wormholes.includes("ALPHA"),
+  ).length;
+
+  const betaCount = systems.filter((system) =>
+    system.wormholes.includes("BETA"),
+  ).length;
+
+  const legendaryCount = systems.filter((system) =>
+    system.planets.some((planet) => planet.legendary),
+  ).length;
+
+  // Calculate optimal constraints for miltyeq (4 systems per slice)
+  const optimalValues = systems.map((system) => {
+    const optimal = optimalStatsForSystems([system]);
+    return optimal.resources + optimal.influence + optimal.flex;
+  });
+
+  optimalValues.sort((a, b) => a - b);
+
+  const miltyEqSystemsPerSlice = 4;
+  const miltyEqMinOptimal = optimalValues
+    .slice(0, miltyEqSystemsPerSlice)
+    .reduce((sum, val) => sum + val, 0);
+  const miltyEqMaxOptimal = optimalValues
+    .slice(-miltyEqSystemsPerSlice)
+    .reduce((sum, val) => sum + val, 0);
+
+  // Add buffer for more realistic ranges
+  const buffer = Math.max(
+    1,
+    Math.floor((miltyEqMaxOptimal - miltyEqMinOptimal) * 0.1),
+  );
+
+  const constraints: MiltyEqConstraints = {
+    maxAlphaWormholes: alphaCount,
+    maxBetaWormholes: betaCount,
+    maxLegendaries: legendaryCount,
+    minOptimal: Math.max(0, miltyEqMinOptimal - buffer),
+    maxOptimal: miltyEqMaxOptimal + buffer,
+  };
+
+  return getMiltyEqSettings(constraints);
+};
 
 export const generateMap = (
   settings: DraftSettings,
@@ -111,58 +160,19 @@ export const generateMap = (
   return coreGenerateMap(settings, systemPool, attempts, generateSlices);
 };
 
-const validateSlice = (slice: SystemIds, config: SliceGenerationConfig) => {
-  const systems = slice.map((systemId: SystemId) => systemData[systemId]);
-  // can't have two alphas, two betas, or two legendaries
-  const validSpecialTiles =
-    systems.filter(isAlpha).length <= 1 &&
-    systems.filter(isBeta).length <= 1 &&
-    systems.filter(isLegendary).length <= 1;
-  if (!validSpecialTiles) return false;
-
-  const totalOptimal = calculateSliceValue(
-    systems,
-    getSliceValueConfig(
-      config.sliceValueModifiers,
-      [],
-      config.mecatolPathSystemIndices!,
-    ),
-  );
-
-  const minSliceValue = config.minSliceValue ?? DEFAULT_CONFIG.minSliceValue;
-  const maxSliceValue = config.maxSliceValue ?? DEFAULT_CONFIG.maxSliceValue;
-  const rawOptimal = systems.reduce(
-    (acc, s) => ({
-      resources: acc.resources + s.optimalSpend.resources,
-      influence: acc.influence + s.optimalSpend.influence,
-      flex: acc.flex + s.optimalSpend.flex,
-    }),
-    { resources: 0, influence: 0, flex: 0 },
-  );
-  const infOptimal = rawOptimal.influence + rawOptimal.flex;
-  const resOptimal = rawOptimal.resources + rawOptimal.flex;
-
-  if (config.minOptimalInfluence && infOptimal < config.minOptimalInfluence)
-    return false;
-  if (config.minOptimalResources && resOptimal < config.minOptimalResources)
-    return false;
-  if (maxSliceValue !== undefined && totalOptimal > maxSliceValue) return false;
-  if (minSliceValue !== undefined && totalOptimal < minSliceValue) return false;
-
-  return true;
-};
-
 export const generateSlices = (
   sliceCount: number,
   availableSystems: SystemId[],
   config?: SliceGenerationConfig,
-) =>
-  coreGenerateSlices({
-    mecatolPath: config!.mecatolPathSystemIndices!,
-    centerTile: 1,
+) => {
+  const defaultConfig = getDefaultConfig(availableSystems);
+  const finalConfig = { ...defaultConfig, ...config };
+
+  return coreGenerateSlices({
+    mecatolPath: [1, 3],
     sliceCount,
     availableSystems,
-    config: config ?? DEFAULT_CONFIG,
+    config: finalConfig,
     sliceShape: SLICE_SHAPES.milty_eq,
     systemTiers: miltySystemTiers,
     getSliceTiers: () => {
@@ -171,31 +181,42 @@ export const generateSlices = (
 
       return shuffle(weightedChoice(SLICE_CHOICES));
     },
-    validateSystems: (
-      systems: TieredSystems,
-      config: SliceGenerationConfig,
-    ) => {
+    validateSystems: (systems: TieredSystems) => {
       const alphas = filterTieredSystems(systems, isAlpha).length;
       const betas = filterTieredSystems(systems, isBeta).length;
       const legendaries = filterTieredSystems(systems, isLegendary).length;
 
-      const minAlphas = config.numAlphas ?? DEFAULT_CONFIG.minAlphaWormholes;
-      const minBetas = config.numBetas ?? DEFAULT_CONFIG.minBetaWormholes;
-      const minLegendaries =
-        config.minLegendaries ?? DEFAULT_CONFIG.minLegendaries;
-      const maxLegendaries = config.maxLegendaries;
-
-      const meetsMinLegendaries = legendaries >= minLegendaries;
-      const meetsMaxLegendaries =
-        maxLegendaries === undefined || legendaries <= maxLegendaries;
-
       return (
-        alphas >= minAlphas &&
-        betas >= minBetas &&
-        meetsMinLegendaries &&
-        meetsMaxLegendaries
+        alphas >= finalConfig.minAlphaWormholes &&
+        betas >= finalConfig.minBetaWormholes &&
+        legendaries >= finalConfig.minLegendaries
       );
     },
-    validateSlice,
+    validateSlice: (slice: SystemIds) => {
+      const systems = slice.map((systemId: SystemId) => systemData[systemId]);
+      // can't have two alphas, two betas, or two legendaries
+      const validSpecialTiles =
+        systems.filter(isAlpha).length <= 1 &&
+        systems.filter(isBeta).length <= 1 &&
+        systems.filter(isLegendary).length <= 1;
+      if (!validSpecialTiles) return false;
+
+      const optimal = optimalStatsForSystems(systems);
+      const totalOptimal = optimal.resources + optimal.influence + optimal.flex;
+
+      if (
+        finalConfig.maxOptimal !== undefined &&
+        totalOptimal > finalConfig.maxOptimal
+      )
+        return false;
+      if (
+        finalConfig.minOptimal !== undefined &&
+        totalOptimal < finalConfig.minOptimal
+      )
+        return false;
+
+      return true;
+    },
     postProcessSlices,
   });
+};
