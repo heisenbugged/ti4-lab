@@ -11,7 +11,6 @@ import {
   draftByPrettyUrl,
   generateUniquePrettyUrl,
 } from "~/drizzle/draft.server";
-import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import {
   SlicesSection,
   SpeakerOrderSection,
@@ -56,7 +55,7 @@ export default function DraftReplay() {
       <Grid gutter="xl">
         <Grid.Col span={12} order={{ base: 0 }}>
           <Text size="md" ta="right" c="dimmed">
-            https://tidraft.com/draft/{result.urlName}
+            {result.baseUrl}/draft/{result.urlName}
           </Text>
         </Grid.Col>
 
@@ -120,8 +119,10 @@ export const loader = async ({ params }: { params: { id: string } }) => {
   }
 
   const result = await draftByPrettyUrl(draftId);
+  const { getBaseUrl } = await import("~/env.server");
   return json({
     ...result,
     data: JSON.parse(result.data as string) as Draft,
+    baseUrl: getBaseUrl(),
   });
 };

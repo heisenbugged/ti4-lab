@@ -14,11 +14,19 @@ const localEnv = {
 };
 
 const prodEnv = {
-  baseUrl: "https://tidraft.com",
+  baseUrl: process.env.BASE_URL || "https://tidraft.com",
   discordOauthUrl:
     "https://discord.com/oauth2/authorize?client_id=1247915595551477850&permissions=2048&integration_type=0&scope=bot",
 };
 
 export function initEnv() {
   global.env = process.env.NODE_ENV === "production" ? prodEnv : localEnv;
+}
+
+export function getBaseUrl(): string {
+  // Auto-initialize if not already done (for development scenarios)
+  if (!global.env) {
+    initEnv();
+  }
+  return global.env.baseUrl;
 }

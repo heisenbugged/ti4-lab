@@ -231,7 +231,7 @@ export default function RunningDraft() {
       <Grid gutter="xl">
         <Grid.Col span={12} order={{ base: 0 }}>
           <Text size="md" ta="right" c="dimmed">
-            https://tidraft.com/draft/{result.urlName}
+            {result.baseUrl}/draft/{result.urlName}
           </Text>
         </Grid.Col>
 
@@ -389,9 +389,11 @@ export const loader = async ({ params }: { params: { id: string } }) => {
     throw new Response("Draft not found", { status: 404 });
   }
 
+  const { getBaseUrl } = await import("~/env.server");
   return json({
     ...result,
     data: JSON.parse(result.data as string) as Draft,
+    baseUrl: getBaseUrl(),
   });
 };
 
@@ -408,13 +410,13 @@ export const meta: MetaFunction = ({ data }) => {
   const title = `${draftId} - TI4 Lab`;
   const description = `${draftTypeDisplay} on TI4 Lab`;
 
+  const baseUrl = typed.baseUrl;
   // Use appropriate image URL based on completion status
   const isComplete = draft.selections?.length === draft.pickOrder?.length;
   const existingImageUrl = isComplete
     ? (typed.imageUrl ?? undefined)
     : (typed.incompleteImageUrl ?? undefined);
-  const imageUrl =
-    existingImageUrl || `https://tidraft.com/draft/${draftId}.png`;
+  const imageUrl = existingImageUrl || `${baseUrl}/draft/${draftId}.png`;
 
   return [
     { title },
@@ -422,7 +424,7 @@ export const meta: MetaFunction = ({ data }) => {
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:image", content: imageUrl },
-    { property: "og:url", content: `https://tidraft.com/draft/${draftId}` },
+    { property: "og:url", content: `${baseUrl}/draft/${draftId}` },
     { property: "og:type", content: "website" },
     { property: "og:site_name", content: "TI4 Lab" },
     { name: "twitter:card", content: "summary_large_image" },

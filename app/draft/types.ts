@@ -37,7 +37,8 @@ export type DraftType =
   | "miltyeq4p"
   | "miltyeq7p"
   | "miltyeq7plarge"
-  | "std4p";
+  | "std4p"
+  | "raw";
 
 export type MapSize = 3 | 4;
 

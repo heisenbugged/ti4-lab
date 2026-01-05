@@ -5,10 +5,7 @@ import {
   computePlayerSelections,
 } from "~/hooks/useHydratedDraft";
 import { draftConfig } from "~/draft";
-import {
-  initializeFonts,
-  loadAllAssets,
-} from "./cache.server";
+import { initializeFonts, loadAllAssets } from "./cache.server";
 import {
   calculateCanvasDimensions,
   drawBackground,
@@ -16,6 +13,7 @@ import {
   drawMap,
   createCanvas,
 } from "./canvasUtils.server";
+import { getBaseUrl } from "~/env.server";
 
 export async function generateDraftImage(
   draft: Draft,
@@ -55,8 +53,9 @@ export async function generateDraftImageBuffer(
   // Draw all layers
   drawBackground(ctx, dimensions.width, dimensions.height);
   drawMap(ctx, hydratedMap, hydratedPlayers, dimensions);
+  const baseUrl = getBaseUrl();
   drawBranding(ctx, dimensions.width, dimensions.height, {
-    urlText: `tidraft.com/draft/${draftId}`,
+    urlText: `${baseUrl}/draft/${draftId}`,
   });
 
   // Return PNG buffer

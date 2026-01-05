@@ -3,24 +3,19 @@ import {
   Text,
   Container,
   Button,
-  Table,
   Group,
   Slider,
   Stack,
-  TextInput,
   Image,
   Box,
   Paper,
   Select,
-  Modal,
-  List,
   Alert,
   Badge,
   Popover,
   ScrollArea,
   ActionIcon,
   Tooltip,
-  Anchor,
 } from "@mantine/core";
 import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -48,15 +43,10 @@ import {
   IconSquare,
   IconVolume,
   IconVolumeOff,
-  IconDeviceDesktop,
-  IconDeviceMobile,
-  IconDeviceSpeaker,
-  IconDeviceUnknown,
   IconPlayerSkipForward,
   IconTrash,
   IconX,
   IconList,
-  IconInfoCircle,
   IconMicrophone2,
 } from "@tabler/icons-react";
 import styles from "./styles.module.css";
@@ -324,7 +314,7 @@ const DEFAULT_FACTION_SLOTS: FactionId[] = [
 ];
 
 export default function SoundboardMaster() {
-  const { spotifyClientId, spotifyCallbackUrl } =
+  const { spotifyClientId, spotifyCallbackUrl, baseUrl } =
     useLoaderData<typeof loader>();
   const [playlistId, setPlaylistId] = useState<string | undefined>(undefined);
   const [searchParams] = useSearchParams();
@@ -535,119 +525,121 @@ export default function SoundboardMaster() {
                 size="sm"
                 color="red"
                 variant="light"
-                onClick={() => (window.location.href = window.location.pathname)}
+                onClick={() =>
+                  (window.location.href = window.location.pathname)
+                }
               >
                 End Session
               </Button>
             </Group>
           )}
         </Stack>
+      </div>
 
-        {/* Session Info */}
-        {sessionId && (
-          <div className={styles.sessionPanel}>
-            <Group gap="lg" align="flex-start">
-              <Stack gap="xs">
-                <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-                  Session Code
-                </Text>
-                <Text className={styles.sessionCode}>{sessionId}</Text>
-                <Text size="sm" c="dimmed">
-                  tidraft.com/voices/{sessionId}
-                </Text>
-              </Stack>
-              <Stack align="center" gap={4}>
-                <div className={styles.qrContainer}>
-                  <QRCode
-                    value={`https://tidraft.com/voices/${sessionId}`}
-                    size={100}
-                  />
-                </div>
-                <Text size="xs" c="dimmed">
-                  Scan to join
-                </Text>
-              </Stack>
-            </Group>
-          </div>
-        )}
-
-        {/* Spotify Panel */}
-        <div className={styles.spotifyPanel}>
-          <Stack gap="sm">
-            <Group justify="space-between" align="center">
-              <Image
-                src="/spotifylogo.svg"
-                alt="Spotify"
-                style={{ width: 80, height: 24 }}
-              />
-              {accessToken ? (
-                <Button
-                  variant="subtle"
-                  color="red"
-                  size="compact-xs"
-                  component="a"
-                  href="/voices/logout"
-                >
-                  Logout
-                </Button>
-              ) : (
-                <SpotifyLoginButton
-                  accessToken={accessToken}
-                  spotifyCallbackUrl={spotifyCallbackUrl}
-                  spotifyClientId={spotifyClientId}
-                />
-              )}
-            </Group>
-
-            {!accessToken ? (
-              <Text size="xs" c="dimmed">
-                Connect Spotify to control background music. Battle music plays
-                automatically during combat.
+      {/* Session Info */}
+      {sessionId && (
+        <div className={styles.sessionPanel}>
+          <Group gap="lg" align="flex-start">
+            <Stack gap="xs">
+              <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+                Session Code
               </Text>
-            ) : playbackRestrictions ? (
-              <Alert color="yellow" variant="light" p="xs">
-                <Text size="xs">
-                  Spotify Premium required for playback control.
-                </Text>
-              </Alert>
+              <Text className={styles.sessionCode}>{sessionId}</Text>
+              <Text size="sm" c="dimmed">
+                tidraft.com/voices/{sessionId}
+              </Text>
+            </Stack>
+            <Stack align="center" gap={4}>
+              <div className={styles.qrContainer}>
+                <QRCode
+                  value={`https://tidraft.com/voices/${sessionId}`}
+                  size={100}
+                />
+              </div>
+              <Text size="xs" c="dimmed">
+                Scan to join
+              </Text>
+            </Stack>
+          </Group>
+        </div>
+      )}
+
+      {/* Spotify Panel */}
+      <div className={styles.spotifyPanel}>
+        <Stack gap="sm">
+          <Group justify="space-between" align="center">
+            <Image
+              src="/spotifylogo.svg"
+              alt="Spotify"
+              style={{ width: 80, height: 24 }}
+            />
+            {accessToken ? (
+              <Button
+                variant="subtle"
+                color="red"
+                size="compact-xs"
+                component="a"
+                href="/voices/logout"
+              >
+                Logout
+              </Button>
             ) : (
-              <>
-                {currentPlayback && (
-                  <div className={styles.playbackCard}>
-                    <Image
-                      src={currentPlayback.albumImage.url}
-                      alt="Album"
-                      w={40}
-                      h={40}
-                      radius="sm"
-                    />
-                    <div className={styles.playbackInfo}>
-                      <a
-                        href={currentPlayback.track.external_urls.spotify}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={styles.trackName}
-                      >
-                        {currentPlayback.track.name}
-                      </a>
-                      <div className={styles.artistName}>
-                        {currentPlayback.artists
-                          .map((a: { name: string }) => a.name)
-                          .join(", ")}
-                      </div>
+              <SpotifyLoginButton
+                accessToken={accessToken}
+                spotifyCallbackUrl={spotifyCallbackUrl}
+                spotifyClientId={spotifyClientId}
+              />
+            )}
+          </Group>
+
+          {!accessToken ? (
+            <Text size="xs" c="dimmed">
+              Connect Spotify to control background music. Battle music plays
+              automatically during combat.
+            </Text>
+          ) : playbackRestrictions ? (
+            <Alert color="yellow" variant="light" p="xs">
+              <Text size="xs">
+                Spotify Premium required for playback control.
+              </Text>
+            </Alert>
+          ) : (
+            <>
+              {currentPlayback && (
+                <div className={styles.playbackCard}>
+                  <Image
+                    src={currentPlayback.albumImage.url}
+                    alt="Album"
+                    w={40}
+                    h={40}
+                    radius="sm"
+                  />
+                  <div className={styles.playbackInfo}>
+                    <a
+                      href={currentPlayback.track.external_urls.spotify}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.trackName}
+                    >
+                      {currentPlayback.track.name}
+                    </a>
+                    <div className={styles.artistName}>
+                      {currentPlayback.artists
+                        .map((a: { name: string }) => a.name)
+                        .join(", ")}
                     </div>
                   </div>
-                )}
-                <SpotifyPlaylistUI
-                  playlistId={playlistId}
-                  setPlaylistId={setPlaylistId}
-                  isWarMode={isWarMode}
-                  endWar={endWar}
-                />
-              </>
-            )}
-          </Stack>
-        </div>
+                </div>
+              )}
+              <SpotifyPlaylistUI
+                playlistId={playlistId}
+                setPlaylistId={setPlaylistId}
+                isWarMode={isWarMode}
+                endWar={endWar}
+              />
+            </>
+          )}
+        </Stack>
       </div>
 
       {/* Factions Section */}
@@ -755,7 +747,9 @@ export default function SoundboardMaster() {
                   {factionAudios[faction]?.special && (
                     <VoiceLineButton
                       faction={faction}
-                      label={factionAudios[faction]?.special?.title ?? "Special"}
+                      label={
+                        factionAudios[faction]?.special?.title ?? "Special"
+                      }
                       type="special"
                       loadingAudio={loadingAudio}
                       onPlay={() => handlePlayAudio(faction, "special")}
@@ -766,7 +760,9 @@ export default function SoundboardMaster() {
                   {factionAudios[faction]?.special2 && (
                     <VoiceLineButton
                       faction={faction}
-                      label={factionAudios[faction]?.special2?.title ?? "Special 2"}
+                      label={
+                        factionAudios[faction]?.special2?.title ?? "Special 2"
+                      }
                       type="special2"
                       loadingAudio={loadingAudio}
                       onPlay={() => handlePlayAudio(faction, "special2")}
@@ -942,9 +938,11 @@ export const loader = async () => {
   const u = new URL(envRedirect);
   u.pathname = "/voices/callback";
 
+  const { getBaseUrl } = await import("~/env.server");
   return json({
     spotifyClientId: clientId,
     spotifyCallbackUrl: u.toString(),
+    baseUrl: getBaseUrl(),
   });
 };
 

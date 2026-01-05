@@ -1,4 +1,4 @@
-import { Draft, Slice, Tile, System } from "~/types";
+import { Draft, Slice, Tile, System, Wormhole, TechSpecialty } from "~/types";
 import { calcHexHeight } from "~/utils/positioning";
 import {
   initializeFonts,
@@ -14,10 +14,9 @@ import {
   createCanvas,
 } from "./canvasUtils.server";
 import { systemData } from "~/data/systemData";
-import { Wormhole, TechSpecialty } from "~/types";
-import { drawWormhole } from "./renderers/wormholeRenderer.server";
 import { factions } from "~/data/factionData";
 import { calculateSliceValue } from "~/stats";
+import { getBaseUrl } from "~/env.server";
 
 export async function generateDraftSlicesImage(
   draft: Draft,
@@ -45,6 +44,7 @@ export async function generateDraftSlicesImage(
 
   const { canvas, ctx } = createCanvas(canvasWidth, canvasHeight);
 
+  const baseUrl = getBaseUrl();
   // Draw background
   drawBackground(ctx, canvasWidth, canvasHeight, {
     withGradient: true,
@@ -53,7 +53,7 @@ export async function generateDraftSlicesImage(
 
   // Draw branding
   drawBranding(ctx, canvasWidth, canvasHeight, {
-    urlText: `tidraft.com/draft/${draftId}`,
+    urlText: `${baseUrl}/draft/${draftId}`,
     urlPosition: "inline",
     logoX: 20,
     logoY: 20,
@@ -184,7 +184,6 @@ function drawFactionList(
     }
   });
 }
-
 
 function drawSlice(
   ctx: CanvasRenderingContext2D,

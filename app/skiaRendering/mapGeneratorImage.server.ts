@@ -1,7 +1,4 @@
-import {
-  initializeFonts,
-  loadAllAssets,
-} from "./cache.server";
+import { initializeFonts, loadAllAssets } from "./cache.server";
 import {
   calculateCanvasDimensions,
   drawBackground,
@@ -11,6 +8,7 @@ import {
 } from "./canvasUtils.server";
 import { mapConfigs, generateMapFromConfig } from "~/mapgen/mapConfigs";
 import { systemData } from "~/data/systemData";
+import { getBaseUrl } from "~/env.server";
 
 /**
  * Generate a map image buffer from map generator parameters
@@ -57,8 +55,9 @@ export async function generateMapGeneratorImageBuffer(
   // Draw all layers
   drawBackground(ctx, dimensions.width, dimensions.height);
   drawMap(ctx, map, [], dimensions);
+  const baseUrl = getBaseUrl();
   drawBranding(ctx, dimensions.width, dimensions.height, {
-    urlText: "tidraft.com/map-generator",
+    urlText: `${baseUrl}/map-generator`,
   });
 
   // Return PNG buffer

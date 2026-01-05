@@ -1,4 +1,9 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+import {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  json,
+  redirect,
+} from "@remix-run/node";
 import {
   Alert,
   Box,
@@ -11,7 +16,14 @@ import {
   Tabs,
   Text,
 } from "@mantine/core";
-import { DiscordData, Draft, DraftSettings } from "~/types";
+import {
+  DiscordData,
+  Draft,
+  DraftSettings,
+  Player,
+  FactionId,
+  GameSet,
+} from "~/types";
 import { useEffect, useRef, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
@@ -21,6 +33,7 @@ import {
   useLocation,
   useNavigate,
   useSearchParams,
+  useFetcher,
 } from "@remix-run/react";
 import {
   IconBrandDiscordFilled,
@@ -30,6 +43,7 @@ import {
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { useDisclosure } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import {
   SliceSettingsModal,
   DEFAULT_SLICE_SETTINGS,
@@ -41,6 +55,11 @@ import { MAPS, ChoosableDraftType } from "./maps";
 import { ReferenceCardPacksConfigurationSection } from "./components/ReferenceCardPacksConfigurationSection";
 import { SlicesConfigurationSection } from "./components/SlicesConfigurationSection";
 import { DraftConfigurationPanel } from "./components/DraftConfigurationPanel";
+import { MultidraftSection } from "./components/MultidraftSection";
+import { MinorFactionsSection } from "./components/MinorFactionsSection";
+import { ContentPacksSection } from "./components/ContentPacksSection";
+import { AdvancedSettingsSection } from "./components/AdvancedSettingsSection";
+import { RawDraftConfigurationSection } from "./components/RawDraftConfigurationSection";
 import { useDraftSettingsBuilder, useDraftNavigation } from "./hooks";
 import { DiscordIntegrationModal } from "./components/DiscordIntegrationModal";
 import { MinorFactionsInfoModal } from "./components/MinorFactionsInfoModal";
@@ -50,10 +69,15 @@ import { SeededMapBanner } from "./components/SeededMapBanner";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
 import { DraftFormatDescription } from "./components/DraftFormatDescription";
 import buttonClasses from "~/ui/buttons.module.css";
+import { createRawDraft } from "~/drizzle/rawDraft.server";
+import { RawDraftState } from "~/rawDraftStore";
+import { getSystemPool } from "~/utils/system";
+import { generateSlices } from "~/draft/milty/sliceGenerator";
 
 export default function DraftPrechoice() {
   const location = useLocation();
   const navigate = useNavigate();
+  const fetcher = useFetcher();
   const [searchParams, setSearchParams] = useSearchParams();
   const { discordData, discordOauthUrl, mapSlicesString, selectedDraftType } =
     useLoaderData<typeof loader>();
@@ -68,7 +92,6 @@ export default function DraftPrechoice() {
   const draftMode = useDraftSetup((state) => state.draftMode);
   const setDraftMode = useDraftSetup((state) => state.setDraftMode);
   const referenceCardPacks = useDraftSetup((state) => state.referenceCardPacks);
-  const content = useDraftSetup((state) => state.content);
 
   const [sliceSettings, setSliceSettings] = useState<
     Record<SliceSettingsFormatType, SliceGenerationSettings>
@@ -155,7 +178,56 @@ export default function DraftPrechoice() {
     map.setSelectedMapType(mapType);
   };
 
+  const rawDraft = useDraftSetup((state) => state.rawDraft);
+
   const handleContinue = () => {
+    if (map.selectedMapType === "raw") {
+      const playerFactions = rawDraft.config?.playerFactions || {};
+      const players = player.players;
+
+      const missingFactions = players.filter(
+        (player) =>
+          !playerFactions[player.id] || playerFactions[player.id] === null,
+      );
+
+      if (missingFactions.length > 0) {
+        notifications.show({
+          title: "Missing Faction Selections",
+          message: `Please select a faction for all players. Missing: ${missingFactions.map((p) => p.name || `Player ${String.fromCharCode(65 + p.id)}`).join(", ")}`,
+          color: "red",
+        });
+        return;
+      }
+
+      const selectedFactions = Object.values(playerFactions).filter(
+        (f) => f !== null,
+      ) as string[];
+      const uniqueFactions = new Set(selectedFactions);
+
+      if (selectedFactions.length !== uniqueFactions.size) {
+        notifications.show({
+          title: "Duplicate Factions",
+          message: "Each player must have a unique faction selected.",
+          color: "red",
+        });
+        return;
+      }
+
+      const selectedGameSets = rawDraft.getSelectedGameSets();
+      const showStatsDisplay = rawDraft.config?.showStatsDisplay ?? true;
+      const autoAssignColors = rawDraft.config?.autoAssignColors ?? true;
+      const formData = new FormData();
+      formData.append("intent", "createRawDraft");
+      formData.append("players", JSON.stringify(player.players));
+      formData.append("playerFactions", JSON.stringify(playerFactions));
+      formData.append("tileGameSets", JSON.stringify(selectedGameSets));
+      formData.append("showStatsDisplay", JSON.stringify(showStatsDisplay));
+      formData.append("autoAssignColors", JSON.stringify(autoAssignColors));
+
+      fetcher.submit(formData, { method: "POST" });
+      return;
+    }
+
     if (draftMode === "twilightFalls") {
       const playerCount = player.players.length;
       const miltyVariantMap: Record<number, ChoosableDraftType> = {
@@ -374,20 +446,32 @@ export default function DraftPrechoice() {
             onChangeName={handleChangeName}
             onIncreasePlayers={player.add}
             onDecreasePlayers={player.remove}
+            forcePlayerCount={map.selectedMapType === "raw" ? 6 : undefined}
+            disabledTooltip={
+              map.selectedMapType === "raw"
+                ? "RAW only supported for 6 players"
+                : undefined
+            }
           />
           <Stack>
             <SectionTitle title="Configuration" />
-            <Tabs
-              value={draftMode}
-              onChange={(value) =>
-                setDraftMode(value as "base" | "twilightFalls")
-              }
-              variant="pills"
-            >
-              <Tabs.List mb="md">
-                <Tabs.Tab value="base">Base Draft</Tabs.Tab>
-                <Tabs.Tab value="twilightFalls">Twilight&apos;s Fall</Tabs.Tab>
-              </Tabs.List>
+            {map.selectedMapType === "raw" ? (
+              <RawDraftConfigurationSection />
+            ) : (
+              <>
+                <Tabs
+                  value={draftMode}
+                  onChange={(value) =>
+                    setDraftMode(value as "base" | "twilightFalls")
+                  }
+                  variant="pills"
+                >
+                  <Tabs.List mb="md">
+                    <Tabs.Tab value="base">Base Draft</Tabs.Tab>
+                    <Tabs.Tab value="twilightFalls">
+                      Twilight&apos;s Fall
+                    </Tabs.Tab>
+                  </Tabs.List>
 
               <Tabs.Panel value="base">
                 <DraftConfigurationPanel />
@@ -409,6 +493,8 @@ export default function DraftPrechoice() {
                 </Stack>
               </Tabs.Panel>
             </Tabs>
+              </>
+            )}
           </Stack>
 
           <Button
@@ -472,4 +558,120 @@ export const loader = async (args: LoaderFunctionArgs) => {
     mapSlicesString,
     selectedDraftType,
   };
+};
+
+// Generate snake draft pick order for 6 players, 5 rounds (30 picks total)
+function generateSnakeOrder(numPlayers: number, numRounds: number): number[] {
+  const order: number[] = [];
+  for (let round = 0; round < numRounds; round++) {
+    if (round % 2 === 0) {
+      // Forward: 0, 1, 2, 3, 4, 5
+      for (let i = 0; i < numPlayers; i++) {
+        order.push(i);
+      }
+    } else {
+      // Backward: 5, 4, 3, 2, 1, 0
+      for (let i = numPlayers - 1; i >= 0; i--) {
+        order.push(i);
+      }
+    }
+  }
+  return order;
+}
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent !== "createRawDraft") {
+    return json({ error: "Invalid intent" }, { status: 400 });
+  }
+
+  const playersJson = formData.get("players");
+  const playerFactionsJson = formData.get("playerFactions");
+  const tileGameSetsJson = formData.get("tileGameSets");
+  const showStatsDisplayJson = formData.get("showStatsDisplay");
+  const autoAssignColorsJson = formData.get("autoAssignColors");
+
+  if (!playersJson || !playerFactionsJson || !tileGameSetsJson) {
+    return json({ error: "Missing required data" }, { status: 400 });
+  }
+
+  const players = JSON.parse(playersJson as string) as Player[];
+  const playerFactions = JSON.parse(playerFactionsJson as string) as Record<
+    number,
+    FactionId
+  >;
+  const tileGameSets = JSON.parse(tileGameSetsJson as string) as GameSet[];
+  const showStatsDisplay =
+    showStatsDisplayJson !== null
+      ? (JSON.parse(showStatsDisplayJson as string) as boolean)
+      : true;
+  const autoAssignColors =
+    autoAssignColorsJson !== null
+      ? (JSON.parse(autoAssignColorsJson as string) as boolean)
+      : true;
+
+  const systemPool = getSystemPool(tileGameSets);
+  const slices = generateSlices(6, systemPool, {
+    numAlphas: 2,
+    numBetas: 2,
+    minLegendaries: 1,
+  });
+
+  if (!slices) {
+    return json({ error: "Failed to generate slices" }, { status: 500 });
+  }
+
+  const rawDraftPlayers = slices.map((slice, idx) => ({
+    id: idx,
+    name: players[idx]?.name || `Player ${String.fromCharCode(65 + idx)}`,
+    tiles: slice,
+  }));
+
+  const pickOrder = generateSnakeOrder(6, 5);
+
+  let playerColorAssignments: Record<number, string> | undefined = undefined;
+  if (autoAssignColors) {
+    const { assignColorsToFactions } = await import(
+      "~/utils/factionColorAssignment"
+    );
+
+    const factionIds = rawDraftPlayers
+      .map((player) => playerFactions[player.id])
+      .filter((factionId): factionId is FactionId => factionId !== null);
+
+    if (factionIds.length === rawDraftPlayers.length) {
+      const colorAssignments = assignColorsToFactions(factionIds);
+
+      const assignments: Record<number, string> = {};
+      rawDraftPlayers.forEach((player) => {
+        const factionId = playerFactions[player.id];
+        if (factionId && colorAssignments.has(factionId)) {
+          const assignedColor = colorAssignments.get(factionId);
+          if (assignedColor) {
+            assignments[player.id] = assignedColor;
+          }
+        }
+      });
+      if (Object.keys(assignments).length > 0) {
+        playerColorAssignments = assignments;
+      }
+    }
+  }
+
+  const rawDraftState: RawDraftState = {
+    initialized: true,
+    players: rawDraftPlayers,
+    pickOrder,
+    events: [],
+    gameSets: tileGameSets,
+    showStatsDisplay,
+    playerColorAssignments,
+    playerFactions,
+  };
+
+  const { prettyUrl } = await createRawDraft(rawDraftState);
+
+  return redirect(`/raw-draft/${prettyUrl}`);
 };
