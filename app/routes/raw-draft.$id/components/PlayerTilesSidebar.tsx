@@ -8,13 +8,12 @@ export function PlayerTilesSidebar() {
   const draftId = useRawDraft((state) => state.draftId);
   const [selectedPlayerId] = useRawDraftPlayerId(draftId);
   const getPlayerTiles = useRawDraft((state) => state.getPlayerTiles);
-  const activePlayer = useRawDraft((state) => state.getActivePlayer());
 
-  if (!activePlayer) {
+  if (selectedPlayerId === undefined || selectedPlayerId === -1) {
     return null;
   }
 
-  const playerTiles = getPlayerTiles(activePlayer.id);
+  const playerTiles = getPlayerTiles(selectedPlayerId);
   const systems = systemsFromIds(playerTiles).sort((a, b) => {
     // Primary sort: BLUE systems first, then RED systems
     if (a.type !== b.type) {
