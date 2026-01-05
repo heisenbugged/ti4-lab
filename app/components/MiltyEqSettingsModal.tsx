@@ -23,19 +23,48 @@ export const DEFAULT_MILTYEQ_SETTINGS: MiltyEqDraftSettings = {
   minLegendaries: 1,
 };
 
-export const getMiltyEqSettings = (hasPok: boolean): MiltyEqDraftSettings => {
-  if (hasPok) {
-    return DEFAULT_MILTYEQ_SETTINGS;
+export interface MiltyEqConstraints {
+  maxAlphaWormholes?: number;
+  maxBetaWormholes?: number;
+  maxLegendaries?: number;
+  minOptimal?: number;
+  maxOptimal?: number;
+}
+
+export const getMiltyEqSettings = (
+  constraints?: MiltyEqConstraints,
+): MiltyEqDraftSettings => {
+  const settings = { ...DEFAULT_MILTYEQ_SETTINGS };
+
+  // Apply constraints by capping values to available maximums
+  if (constraints) {
+    if (constraints.maxAlphaWormholes !== undefined) {
+      settings.minAlphaWormholes = Math.min(
+        settings.minAlphaWormholes,
+        constraints.maxAlphaWormholes,
+      );
+    }
+    if (constraints.maxBetaWormholes !== undefined) {
+      settings.minBetaWormholes = Math.min(
+        settings.minBetaWormholes,
+        constraints.maxBetaWormholes,
+      );
+    }
+    if (constraints.maxLegendaries !== undefined) {
+      settings.minLegendaries = Math.min(
+        settings.minLegendaries,
+        constraints.maxLegendaries,
+      );
+    }
+    if (constraints.minOptimal !== undefined) {
+      settings.minOptimal = constraints.minOptimal;
+    }
+    if (constraints.maxOptimal !== undefined) {
+      settings.maxOptimal = constraints.maxOptimal;
+    }
   }
-  
-  return {
-    ...DEFAULT_MILTYEQ_SETTINGS,
-    minOptimal: 0,
-    maxOptimal: 24,
-    minAlphaWormholes: 2,
-    minBetaWormholes: 2, 
-    minLegendaries: 0,
-  };
+
+  return settings;
 };
 
 type Props = {
@@ -43,11 +72,7 @@ type Props = {
   settings: MiltyEqDraftSettings;
   onClose: () => void;
   onSave: (newSettings: MiltyEqDraftSettings) => void;
-  constraints?: {
-    maxAlphaWormholes: number;
-    maxBetaWormholes: number;
-    maxLegendaries: number;
-  };
+  constraints?: MiltyEqConstraints;
 };
 
 export function MiltyEqSettingsModal({
@@ -64,9 +89,15 @@ export function MiltyEqSettingsModal({
     if (constraints) {
       setLocalSettings(prev => ({
         ...prev,
-        minAlphaWormholes: Math.min(prev.minAlphaWormholes, constraints.maxAlphaWormholes),
-        minBetaWormholes: Math.min(prev.minBetaWormholes, constraints.maxBetaWormholes),
-        minLegendaries: Math.min(prev.minLegendaries, constraints.maxLegendaries),
+        ...(constraints.maxAlphaWormholes !== undefined && {
+          minAlphaWormholes: Math.min(prev.minAlphaWormholes, constraints.maxAlphaWormholes),
+        }),
+        ...(constraints.maxBetaWormholes !== undefined && {
+          minBetaWormholes: Math.min(prev.minBetaWormholes, constraints.maxBetaWormholes),
+        }),
+        ...(constraints.maxLegendaries !== undefined && {
+          minLegendaries: Math.min(prev.minLegendaries, constraints.maxLegendaries),
+        }),
       }));
     }
   }, [constraints]);

@@ -38,7 +38,6 @@ Assuming all the prerequisites are met, you can run the following commands to in
 ```shell
 npm install --global yarn
 yarn install
-yarn build
 yarn run dev
 ```
 
