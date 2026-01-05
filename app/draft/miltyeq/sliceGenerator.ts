@@ -16,7 +16,10 @@ import {
   coreGenerateSlices,
   postProcessSlices,
 } from "../common/sliceGenerator";
-import { getMiltyEqSettings } from "~/components/MiltyEqSettingsModal";
+import {
+  getMiltyEqSettings,
+  type MiltyEqConstraints,
+} from "~/components/MiltyEqSettingsModal";
 import { draftConfig } from "../draftConfig";
 import { getFactionPool } from "~/utils/factions";
 import { mapStringOrder } from "~/data/mapStringOrder";
@@ -43,11 +46,52 @@ const MINOR_FACTION_SLICE_CHOICES: SliceChoice[] = [
 ];
 
 const getDefaultConfig = (availableSystems: SystemId[]) => {
-  const hasPOKsystems = availableSystems.some((id) => {
-    return parseInt(id) > 50;
+  // Compute constraints from the available system pool
+  const systems = availableSystems.map((id) => systemData[id]);
+
+  const alphaCount = systems.filter((system) =>
+    system.wormholes.includes("ALPHA"),
+  ).length;
+
+  const betaCount = systems.filter((system) =>
+    system.wormholes.includes("BETA"),
+  ).length;
+
+  const legendaryCount = systems.filter((system) =>
+    system.planets.some((planet) => planet.legendary),
+  ).length;
+
+  // Calculate optimal constraints for miltyeq (4 systems per slice)
+  const optimalValues = systems.map((system) => {
+    const optimal = optimalStatsForSystems([system]);
+    return optimal.resources + optimal.influence + optimal.flex;
   });
 
-  return getMiltyEqSettings(hasPOKsystems);
+  optimalValues.sort((a, b) => a - b);
+
+  const miltyEqSystemsPerSlice = 4;
+  const miltyEqMinOptimal = optimalValues
+    .slice(0, miltyEqSystemsPerSlice)
+    .reduce((sum, val) => sum + val, 0);
+  const miltyEqMaxOptimal = optimalValues
+    .slice(-miltyEqSystemsPerSlice)
+    .reduce((sum, val) => sum + val, 0);
+
+  // Add buffer for more realistic ranges
+  const buffer = Math.max(
+    1,
+    Math.floor((miltyEqMaxOptimal - miltyEqMinOptimal) * 0.1),
+  );
+
+  const constraints: MiltyEqConstraints = {
+    maxAlphaWormholes: alphaCount,
+    maxBetaWormholes: betaCount,
+    maxLegendaries: legendaryCount,
+    minOptimal: Math.max(0, miltyEqMinOptimal - buffer),
+    maxOptimal: miltyEqMaxOptimal + buffer,
+  };
+
+  return getMiltyEqSettings(constraints);
 };
 
 export const generateMap = (
