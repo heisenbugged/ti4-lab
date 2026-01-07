@@ -2,6 +2,7 @@ import { rotateSlice } from "~/utils/hexagonal";
 import { DraftConfig } from "../types";
 import { generateSlices } from "./sliceGenerator";
 import { coreGenerateMap } from "../common/sliceGenerator";
+import { STANDARD_6P_HOME_POSITIONS } from "~/utils/mapGenerator";
 
 const slice: [number, number][] = [
   [1, 0],
@@ -18,7 +19,7 @@ export const milty: DraftConfig = {
   mecatolPathSystemIndices: [1, 4],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
-  homeIdxInMapString: [19, 22, 25, 28, 31, 34],
+  homeIdxInMapString: STANDARD_6P_HOME_POSITIONS,
   modifiableMapTiles: [],
   presetTiles: {},
   closedMapTiles: [],

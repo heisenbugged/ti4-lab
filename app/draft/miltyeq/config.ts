@@ -1,5 +1,6 @@
 import { DraftConfig } from "../types";
 import { generateMap, generateSlices } from "./sliceGenerator";
+import { STANDARD_6P_HOME_POSITIONS } from "~/utils/mapGenerator";
 
 export const miltyeq: DraftConfig = {
   numPlayers: 6,
@@ -9,7 +10,7 @@ export const miltyeq: DraftConfig = {
   mecatolPathSystemIndices: [1, 3],
   sliceHeight: 3,
   sliceConcentricCircles: 1,
-  homeIdxInMapString: [19, 22, 25, 28, 31, 34],
+  homeIdxInMapString: STANDARD_6P_HOME_POSITIONS,
   modifiableMapTiles: [8, 10, 12, 14, 16, 18],
   presetTiles: {},
   closedMapTiles: [],
