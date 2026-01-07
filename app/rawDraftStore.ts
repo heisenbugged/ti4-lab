@@ -1,6 +1,9 @@
 import { create } from "zustand";
-import { GameSet, Map, SystemId, Tile } from "~/types";
-import { generateStandard6pMap } from "~/utils/mapGenerator";
+import { GameSet, Map, SystemId } from "~/types";
+import {
+  generateStandard6pMap,
+  STANDARD_6P_HOME_POSITIONS as HOME_POSITIONS,
+} from "~/utils/mapGenerator";
 import { getSystemPool } from "~/utils/system";
 import { generateSlices } from "~/draft/milty/sliceGenerator";
 import { getAdjacentPositions } from "~/draft/common/sliceGenerator";
@@ -81,18 +84,16 @@ const RING_INDICES = {
   3: [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36], // Outer ring (18 tiles)
 } as const;
 
-const HOME_POSITIONS = [19, 22, 25, 28, 31, 34];
-
 // Determine which ring should be placeable based on map state
 function getCurrentPlaceableRing(map: Map): number {
   // Ring 1 (inner): Always place here first
   const ring1Tiles = RING_INDICES[1];
-  const ring1Filled = ring1Tiles.every(idx => map[idx].type === "SYSTEM");
+  const ring1Filled = ring1Tiles.every((idx) => map[idx].type === "SYSTEM");
   if (!ring1Filled) return 1;
 
   // Ring 2 (middle): Place after ring 1 is full
   const ring2Tiles = RING_INDICES[2];
-  const ring2Filled = ring2Tiles.every(idx => map[idx].type === "SYSTEM");
+  const ring2Filled = ring2Tiles.every((idx) => map[idx].type === "SYSTEM");
   if (!ring2Filled) return 2;
 
   // Ring 3 (outer): Place after ring 2 is full
@@ -167,10 +168,14 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
 
         // Check if the target index is in the current placeable ring
         const ringKey = placeableRing as keyof typeof RING_INDICES;
-        const ringIndices = RING_INDICES[ringKey] as readonly number[] | undefined;
+        const ringIndices = RING_INDICES[ringKey] as
+          | readonly number[]
+          | undefined;
         const isInPlaceableRing = ringIndices?.includes(mapIdx);
         if (!isInPlaceableRing) {
-          console.error(`Can only place tiles in ring ${placeableRing} right now`);
+          console.error(
+            `Can only place tiles in ring ${placeableRing} right now`,
+          );
           return;
         }
 
@@ -189,18 +194,24 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
 
         if (isAnomaly) {
           const hasNonAnomalyOption = playerTiles.some(
-            tileId => systemData[tileId]?.anomalies.length === 0
+            (tileId) => systemData[tileId]?.anomalies.length === 0,
           );
 
           if (hasNonAnomalyOption) {
             const adjacentPositions = getAdjacentPositions(mapIdx);
-            const hasAdjacentAnomaly = adjacentPositions.some(adjIdx => {
+            const hasAdjacentAnomaly = adjacentPositions.some((adjIdx) => {
               const adjTile = currentMap[adjIdx];
               // Only check tiles that exist and are SYSTEM tiles (not CLOSED, HOME, or OPEN)
-              return adjTile && adjTile.type === "SYSTEM" && systemData[adjTile.systemId]?.anomalies.length > 0;
+              return (
+                adjTile &&
+                adjTile.type === "SYSTEM" &&
+                systemData[adjTile.systemId]?.anomalies.length > 0
+              );
             });
             if (hasAdjacentAnomaly) {
-              console.error("Cannot place anomaly adjacent to another anomaly (you have non-anomaly tiles available)");
+              console.error(
+                "Cannot place anomaly adjacent to another anomaly (you have non-anomaly tiles available)",
+              );
               return;
             }
           }
@@ -209,20 +220,26 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
         // Check wormhole adjacency rule
         // Exception: Allow if player has no tiles without that wormhole type
         for (const wormholeType of wormholes) {
-          const hasAlternative = playerTiles.some(tileId => {
+          const hasAlternative = playerTiles.some((tileId) => {
             const system = systemData[tileId];
             return !system.wormholes.includes(wormholeType);
           });
 
           if (hasAlternative) {
             const adjacentPositions = getAdjacentPositions(mapIdx);
-            const hasAdjacentSameWormhole = adjacentPositions.some(adjIdx => {
+            const hasAdjacentSameWormhole = adjacentPositions.some((adjIdx) => {
               const adjTile = currentMap[adjIdx];
               // Only check tiles that exist and are SYSTEM tiles (not CLOSED, HOME, or OPEN)
-              return adjTile && adjTile.type === "SYSTEM" && systemData[adjTile.systemId]?.wormholes.includes(wormholeType);
+              return (
+                adjTile &&
+                adjTile.type === "SYSTEM" &&
+                systemData[adjTile.systemId]?.wormholes.includes(wormholeType)
+              );
             });
             if (hasAdjacentSameWormhole) {
-              console.error(`Cannot place ${wormholeType} wormhole adjacent to another ${wormholeType} wormhole (you have tiles without ${wormholeType} available)`);
+              console.error(
+                `Cannot place ${wormholeType} wormhole adjacent to another ${wormholeType} wormhole (you have tiles without ${wormholeType} available)`,
+              );
               return;
             }
           }
@@ -337,7 +354,7 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
 
       if (!draggedSystemId) {
         // No restrictions when not dragging
-        return ringIndices.filter(idx => {
+        return ringIndices.filter((idx) => {
           const tile = map[idx];
           return tile.type === "OPEN" && !HOME_POSITIONS.includes(idx);
         });
@@ -351,7 +368,10 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
       const anomalyPositions: number[] = [];
       if (isAnomalyBeingDragged) {
         map.forEach((tile, idx) => {
-          if (tile.type === "SYSTEM" && systemData[tile.systemId]?.anomalies.length > 0) {
+          if (
+            tile.type === "SYSTEM" &&
+            systemData[tile.systemId]?.anomalies.length > 0
+          ) {
             anomalyPositions.push(idx);
           }
         });
@@ -362,9 +382,12 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
         ALPHA: [],
         BETA: [],
       };
-      draggedWormholes.forEach(wormholeType => {
+      draggedWormholes.forEach((wormholeType) => {
         map.forEach((tile, idx) => {
-          if (tile.type === "SYSTEM" && systemData[tile.systemId]?.wormholes.includes(wormholeType)) {
+          if (
+            tile.type === "SYSTEM" &&
+            systemData[tile.systemId]?.wormholes.includes(wormholeType)
+          ) {
             wormholePositionsByType[wormholeType].push(idx);
           }
         });
@@ -372,23 +395,27 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
 
       // Check if active player has alternative tiles
       const activePlayer = get().getActivePlayer();
-      const playerTiles = activePlayer ? get().getPlayerTiles(activePlayer.id) : [];
+      const playerTiles = activePlayer
+        ? get().getPlayerTiles(activePlayer.id)
+        : [];
 
       const hasNonAnomalyOption = playerTiles.some(
-        tileId => systemData[tileId]?.anomalies.length === 0
+        (tileId) => systemData[tileId]?.anomalies.length === 0,
       );
 
       const hasAlternativeForWormholes: Record<string, boolean> = {};
-      draggedWormholes.forEach(wormholeType => {
-        hasAlternativeForWormholes[wormholeType] = playerTiles.some(tileId => {
-          const system = systemData[tileId];
-          return !system.wormholes.includes(wormholeType);
-        });
+      draggedWormholes.forEach((wormholeType) => {
+        hasAlternativeForWormholes[wormholeType] = playerTiles.some(
+          (tileId) => {
+            const system = systemData[tileId];
+            return !system.wormholes.includes(wormholeType);
+          },
+        );
       });
 
       // Return only indices that are OPEN tiles (not already filled or home positions)
       // and enforce adjacency rules unless player has no alternatives
-      return ringIndices.filter(idx => {
+      return ringIndices.filter((idx) => {
         const tile = map[idx];
         if (tile.type !== "OPEN" || HOME_POSITIONS.includes(idx)) {
           return false;
@@ -398,7 +425,7 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
 
         // If dragging an anomaly and player has non-anomaly options, enforce adjacency rule
         if (isAnomalyBeingDragged && hasNonAnomalyOption) {
-          const hasAdjacentAnomaly = adjacentPositions.some(adjIdx => {
+          const hasAdjacentAnomaly = adjacentPositions.some((adjIdx) => {
             // Only check valid adjacent positions (filter out -1 and out of bounds)
             if (adjIdx < 0 || adjIdx >= map.length) return false;
             return anomalyPositions.includes(adjIdx);
@@ -409,7 +436,7 @@ export const useRawDraft = create<RawDraftStore>((set, get) => {
         // If dragging a wormhole and player has alternatives, enforce adjacency rule
         for (const wormholeType of draggedWormholes) {
           if (hasAlternativeForWormholes[wormholeType]) {
-            const hasAdjacentSameWormhole = adjacentPositions.some(adjIdx => {
+            const hasAdjacentSameWormhole = adjacentPositions.some((adjIdx) => {
               // Only check valid adjacent positions (filter out -1 and out of bounds)
               if (adjIdx < 0 || adjIdx >= map.length) return false;
               return wormholePositionsByType[wormholeType].includes(adjIdx);

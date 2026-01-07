@@ -1,5 +1,6 @@
 import { DraftConfig } from "../types";
 import { generateMap, generateSlices } from "./generateMap";
+import { STANDARD_6P_HOME_POSITIONS } from "~/utils/mapGenerator";
 
 export const heisen: DraftConfig = {
   numPlayers: 6,
@@ -7,7 +8,7 @@ export const heisen: DraftConfig = {
   numSystemsInSlice: 3,
   sliceHeight: 2,
   sliceConcentricCircles: 1,
-  homeIdxInMapString: [19, 22, 25, 28, 31, 34],
+  homeIdxInMapString: STANDARD_6P_HOME_POSITIONS,
   modifiableMapTiles: [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18],
   presetTiles: {},
   closedMapTiles: [],
