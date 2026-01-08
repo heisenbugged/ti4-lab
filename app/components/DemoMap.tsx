@@ -31,7 +31,7 @@ export function DemoMap({ id, map, padding, titles }: Props) {
   const gap = 6;
   const initRadius = calculateMaxHexWidthRadius(n, width, gap);
   const initHeight = calcHexHeight(initRadius) * 7 + 6 * gap;
-  const clampedHeight = Math.min(initHeight, 1000);
+  const clampedHeight = Math.min(initHeight, 600);
   const radius = calculateMaxHexRadius(n, width, clampedHeight, gap);
 
   return (

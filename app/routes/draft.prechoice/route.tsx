@@ -333,7 +333,7 @@ export default function DraftPrechoice() {
               <Box
                 flex={1}
                 pos="relative"
-                mah="1000px"
+                mah="600px"
                 mb="lg"
                 visibleFrom="xs"
               >
@@ -357,7 +357,7 @@ export default function DraftPrechoice() {
         </div>
 
         <div className={`${classes.col12} ${classes.hiddenFromXs}`}>
-          <Box flex={1} pos="relative" mah="1000px" mt="lg">
+          <Box flex={1} pos="relative" mah="600px" mt="lg">
             {mapType && (
               <DemoMap
                 id="prechoice-map"
