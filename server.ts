@@ -18,6 +18,12 @@ const viteDevServer =
       );
 
 const app = express();
+
+// Health check endpoint - must be before other middleware
+app.get("/health", (_req, res) => {
+  res.status(200).send("OK");
+});
+
 app.use(
   viteDevServer ? viteDevServer.middlewares : express.static("build/client"),
 );
@@ -80,29 +86,31 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(3000, () => {
+httpServer.listen(3000, "0.0.0.0", () => {
   console.log(`Express server listening on port 3000`);
 });
 
 startDiscordBot();
 
 // Graceful shutdown handling
-const shutdown = async (signal: string) => {
-  console.log(`${signal} received, shutting down gracefully...`);
+let isShuttingDown = false;
 
-  const { shutdownQueue } = await import("~/utils/imageJobQueue.server.js");
-  await shutdownQueue();
+const shutdown = (signal: string) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
+  console.log(`${signal} received, shutting down gracefully...`);
 
   httpServer.close(() => {
     console.log("HTTP server closed");
     process.exit(0);
   });
 
-  // Force exit after 35 seconds
+  // Force exit after 10 seconds
   setTimeout(() => {
     console.error("Forced shutdown after timeout");
     process.exit(1);
-  }, 35000);
+  }, 10000);
 };
 
 process.on("SIGTERM", () => shutdown("SIGTERM"));
