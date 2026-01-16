@@ -157,16 +157,7 @@ export default function DraftPrechoice() {
 
   const handleContinue = () => {
     if (draftMode === "twilightFalls") {
-      const playerCount = player.players.length;
-      const miltyVariantMap: Record<number, ChoosableDraftType> = {
-        4: "milty4p",
-        5: "milty5p",
-        6: "milty",
-        7: "milty7p",
-        8: "milty8p",
-      };
-
-      const draftType: ChoosableDraftType = miltyVariantMap[playerCount]!;
+      const draftType = map.selectedMapType;
 
       const twilightsFallSettings: DraftSettings = {
         type: draftType,
