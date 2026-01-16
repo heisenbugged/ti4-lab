@@ -20,6 +20,7 @@ export type SeededMapData = {
  */
 export const mapConfigToCompatibleDraftTypes: Record<string, DraftType[]> = {
   milty6p: ["milty", "miltyeq", "heisen"],
+  milty4p: ["milty4p", "miltyeq4p"],
   hyperlane4p: ["milty4p", "miltyeq4p"],
   std4p: ["std4p"],
   hyperlane5p: ["milty5p", "miltyeq5p"],

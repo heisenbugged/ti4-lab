@@ -1,6 +1,11 @@
 import { SystemId, Map, SystemTile, HomeTile, OpenTile } from "~/types";
 import { MapSize } from "~/draft/types";
 import { mapStringOrder } from "~/data/mapStringOrder";
+import {
+  STANDARD_6P_HOME_POSITIONS,
+  STANDARD_5P_HOME_POSITIONS,
+  STANDARD_4P_HOME_POSITIONS,
+} from "~/utils/mapGenerator";
 
 /**
  * Simplified map configuration for the map generator.
@@ -35,7 +40,27 @@ export const mapConfigs: Record<string, MapConfig> = {
     description: "Standard 6-player map layout",
     mapSize: 3,
     numPlayers: 6,
-    homeIdxInMapString: [19, 22, 25, 28, 31, 34],
+    homeIdxInMapString: STANDARD_6P_HOME_POSITIONS,
+    presetTiles: {},
+    closedMapTiles: [],
+  },
+  milty5p: {
+    id: "milty5p",
+    name: "Standard 5p",
+    description: "Standard 5-player map layout",
+    mapSize: 3,
+    numPlayers: 5,
+    homeIdxInMapString: STANDARD_5P_HOME_POSITIONS,
+    presetTiles: {},
+    closedMapTiles: [],
+  },
+  milty4p: {
+    id: "milty4p",
+    name: "Standard 4p",
+    description: "Standard 4-player map layout",
+    mapSize: 3,
+    numPlayers: 4,
+    homeIdxInMapString: STANDARD_4P_HOME_POSITIONS,
     presetTiles: {},
     closedMapTiles: [],
   },
