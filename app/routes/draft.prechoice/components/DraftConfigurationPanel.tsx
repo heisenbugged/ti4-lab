@@ -17,6 +17,7 @@ import { HoverRadioCard } from "~/components/HoverRadioCard";
 import { IconDice, IconUser, IconUsersGroup } from "@tabler/icons-react";
 import { NumberStepper } from "~/components/NumberStepper";
 import { ContentPacksSection } from "./ContentPacksSection";
+import classes from "../prechoice.module.css";
 
 export function DraftConfigurationPanel() {
   const faction = useDraftSetup((state) => state.faction);
@@ -71,7 +72,7 @@ export function DraftConfigurationPanel() {
 
       <Stack gap="sm">
         {/* Core Draft Settings - Factions & Slices side by side */}
-        <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+        <div className={classes.twoColGrid}>
           <ConfigSection title="Factions" icon={<IconAlienFilled size={12} />}>
             <Box py={6} style={{ borderBottom: "1px dashed var(--mantine-color-default-border)" }}>
               <Group justify="space-between" wrap="nowrap" gap="xs">
@@ -154,7 +155,7 @@ export function DraftConfigurationPanel() {
               </Group>
             </Box>
           </ConfigSection>
-        </SimpleGrid>
+        </div>
 
         {/* Content Packs */}
         <ContentPacksSection />

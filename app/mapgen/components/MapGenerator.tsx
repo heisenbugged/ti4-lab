@@ -15,7 +15,7 @@ import { Map } from "~/components/Map";
 import { MainAppShell } from "~/components/MainAppShell";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { useState, useMemo, useEffect } from "react";
-import { Tile, SystemId, GameSet } from "~/types";
+import { Tile, GameSet } from "~/types";
 import {
   DndContext,
   DragEndEvent,
@@ -31,7 +31,6 @@ import {
   IconRefresh,
   IconTrash,
   IconArrowsShuffle,
-  IconInfoCircle,
   IconShare,
   IconPhoto,
   IconWand,
@@ -50,6 +49,7 @@ import {
 } from "../utils/mapToDraft";
 import { autoCompleteMap } from "../utils/mapCompletion";
 import { useMapStats } from "../utils/mapStats";
+import { encodeMapString, decodeMapString } from "../utils/mapStringCodec";
 import {
   getAllSliceValues,
   getAllSliceStats,
@@ -66,24 +66,6 @@ import { ShareMapModal } from "./ShareMapModal";
 import { mapConfigs } from "~/mapgen/mapConfigs";
 import { DraftTypeSelectionModal } from "./DraftTypeSelectionModal";
 import { DraftType } from "~/draft/types";
-
-// Infer which game sets are used based on tile IDs
-function inferGameSetsFromTiles(systemIds: SystemId[]): GameSet[] {
-  const sets: Set<GameSet> = new Set(["base"]); // Always include base
-
-  systemIds.forEach((id) => {
-    const numId = Number(id);
-    if (numId >= 51 && numId <= 91) {
-      sets.add("pok");
-    } else if (numId >= 92 && numId <= 149) {
-      sets.add("te");
-    } else if (numId >= 150) {
-      sets.add("unchartedstars");
-    }
-  });
-
-  return Array.from(sets);
-}
 
 function MapGeneratorContent() {
   const navigate = useNavigate();
@@ -110,6 +92,7 @@ function MapGeneratorContent() {
     toggleTileClosed,
     addHomeSystem,
     removeHomeSystem,
+    loadDecodedMap,
   } = useMapBuilder((state) => state.actions);
   const stats = useMapStats();
 
@@ -147,51 +130,18 @@ function MapGeneratorContent() {
 
   // Generate map string and share URL
   const mapString = useMemo(() => {
-    return map
-      .slice(1) // Skip Mecatol Rex at index 0
-      .map((tile) => {
-        if (tile.type === "HOME") return "0";
-        if (tile.type === "SYSTEM") return tile.systemId;
-        return "-1";
-      })
-      .join(" ");
+    return encodeMapString(map);
   }, [map]);
 
   const shareUrl = useMemo(() => {
-    const systemIds = map
-      .filter((tile) => tile.type === "SYSTEM" && tile.idx !== 0)
-      .map((tile) => (tile.type === "SYSTEM" ? tile.systemId : ""))
-      .filter(Boolean)
-      .join(",");
-    const baseUrl = "https://tidraft.com/map-generator";
-    const params = new URLSearchParams();
-    if (systemIds) {
-      params.set("mapSystemIds", systemIds);
-    }
-    if (mapConfigId !== "milty6p") {
-      params.set("mapConfig", mapConfigId);
-    }
-    const queryString = params.toString();
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
-  }, [map, mapConfigId]);
+    const encoded = encodeMapString(map);
+    return `https://tidraft.com/map-generator?map=${encodeURIComponent(encoded)}`;
+  }, [map]);
 
   const imageUrl = useMemo(() => {
-    const systemIds = map
-      .filter((tile) => tile.type === "SYSTEM" && tile.idx !== 0)
-      .map((tile) => (tile.type === "SYSTEM" ? tile.systemId : ""))
-      .filter(Boolean)
-      .join(",");
-    const baseUrl = "https://tidraft.com/map-generator.png";
-    const params = new URLSearchParams();
-    if (systemIds) {
-      params.set("mapSystemIds", systemIds);
-    }
-    if (mapConfigId !== "milty6p") {
-      params.set("mapConfig", mapConfigId);
-    }
-    const queryString = params.toString();
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
-  }, [map, mapConfigId]);
+    const encoded = encodeMapString(map);
+    return `https://tidraft.com/map-generator.png?map=${encodeURIComponent(encoded)}`;
+  }, [map]);
 
   // Check if map is complete (no OPEN tiles, excluding closed tiles)
   const isMapComplete = useMemo(() => {
@@ -339,43 +289,13 @@ function MapGeneratorContent() {
     if (typeof window === "undefined") return;
 
     const params = new URLSearchParams(window.location.search);
-    const mapSystemIds = params.get("mapSystemIds");
-    const configId = params.get("mapConfig");
+    const mapParam = params.get("map");
 
-    // Set map config first if specified (this will clear the map)
-    if (configId && mapConfigs[configId]) {
-      const currentConfigId = useMapBuilder.getState().state.mapConfigId;
-      if (configId !== currentConfigId) {
-        setMapConfig(configId);
-      }
-    }
-
-    if (mapSystemIds) {
-      const systemIds = mapSystemIds.split(",").filter(Boolean) as SystemId[];
-
-      if (systemIds.length > 0) {
-        // Infer and set game sets based on tile IDs
-        const inferredSets = inferGameSetsFromTiles(systemIds);
-        setGameSets(inferredSets);
-
-        // Wait for map config to be applied if needed, then add systems
-        const clearedMap = useMapBuilder.getState().state.map;
-        let tileIndex = 0;
-
-        systemIds.forEach((systemId) => {
-          // Find next available OPEN tile (skip Mecatol Rex at index 0)
-          while (
-            tileIndex < clearedMap.length &&
-            (clearedMap[tileIndex].type !== "OPEN" || tileIndex === 0)
-          ) {
-            tileIndex++;
-          }
-
-          if (tileIndex < clearedMap.length && systemData[systemId]) {
-            addSystemToMap(tileIndex, systemId);
-            tileIndex++;
-          }
-        });
+    if (mapParam) {
+      // New format: single `map` parameter with complete map encoding
+      const decoded = decodeMapString(mapParam);
+      if (decoded) {
+        loadDecodedMap(decoded.map, decoded.ringCount, decoded.gameSets, decoded.closedTiles);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

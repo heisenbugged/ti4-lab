@@ -9,54 +9,39 @@ import {
   drawMap,
   createCanvas,
 } from "./canvasUtils.server";
-import { mapConfigs, generateMapFromConfig } from "~/mapgen/mapConfigs";
-import { systemData } from "~/data/systemData";
+import { Map, ClosedTile } from "~/types";
 
 /**
- * Generate a map image buffer from map generator parameters
+ * Generate a map image buffer from a decoded map
  */
 export async function generateMapGeneratorImageBuffer(
-  mapSystemIds: string[],
-  mapConfigId: string,
+  map: Map,
+  closedTiles: number[] = [],
 ): Promise<Buffer> {
   // Initialize fonts and load all assets
   initializeFonts();
   await loadAllAssets();
 
-  // Get map config
-  const config = mapConfigs[mapConfigId] || mapConfigs["milty6p"];
-
-  // Generate the map from config
-  const map = generateMapFromConfig(config);
-
-  // Apply systems from parameters
-  let tileIndex = 0;
-  mapSystemIds.forEach((systemId) => {
-    // Find next available OPEN tile (skip Mecatol Rex at index 0)
-    while (
-      tileIndex < map.length &&
-      (map[tileIndex].type !== "OPEN" || tileIndex === 0)
-    ) {
-      tileIndex++;
-    }
-
-    if (tileIndex < map.length && systemData[systemId as any]) {
-      map[tileIndex] = {
-        ...map[tileIndex],
-        type: "SYSTEM",
-        systemId: systemId as any,
+  // Convert closedTiles indices to CLOSED tile types for rendering
+  const renderMap: Map = map.map((tile, idx) => {
+    if (closedTiles.includes(idx)) {
+      const closedTile: ClosedTile = {
+        idx: tile.idx,
+        type: "CLOSED",
+        position: tile.position,
       };
-      tileIndex++;
+      return closedTile;
     }
+    return tile;
   });
 
   // Calculate canvas dimensions based on map size
-  const dimensions = calculateCanvasDimensions(map);
+  const dimensions = calculateCanvasDimensions(renderMap);
   const { canvas, ctx } = createCanvas(dimensions.width, dimensions.height);
 
   // Draw all layers
   drawBackground(ctx, dimensions.width, dimensions.height);
-  drawMap(ctx, map, [], dimensions);
+  drawMap(ctx, renderMap, [], dimensions);
   drawBranding(ctx, dimensions.width, dimensions.height, {
     urlText: "tidraft.com/map-generator",
   });

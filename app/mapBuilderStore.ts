@@ -52,6 +52,7 @@ type MapBuilderActions = {
   toggleTileClosed: (idx: number) => void;
   addHomeSystem: () => void;
   removeHomeSystem: () => void;
+  loadDecodedMap: (map: Map, ringCount: number, gameSets: GameSet[], closedTiles: number[]) => void;
 };
 
 type MapBuilderStore = {
@@ -69,7 +70,7 @@ type MapBuilderStore = {
 };
 
 export const useMapBuilder = create<MapBuilderStore>((set, get) => {
-  const initialGameSets: GameSet[] = ["base", "pok"];
+  const initialGameSets: GameSet[] = ["base", "pok", "te"];
   const systemPool = getSystemPool(initialGameSets);
   const initialMapConfigId = defaultMapConfigId;
   const initialMap = generateMapFromConfig(mapConfigs[initialMapConfigId]);
@@ -609,6 +610,26 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
               ...store.state,
               map: newMap,
             },
+          };
+        });
+      },
+
+      loadDecodedMap: (map: Map, ringCount: number, gameSets: GameSet[], closedTiles: number[]) => {
+        set((store) => {
+          const newSystemPool = getSystemPool(gameSets);
+          return {
+            ...store,
+            state: {
+              ...store.state,
+              map,
+              ringCount,
+              gameSets,
+              closedTiles,
+              systemPool: newSystemPool,
+              // Reset to default mapConfigId since we're loading a custom map
+              mapConfigId: defaultMapConfigId,
+            },
+            systemPool: newSystemPool,
           };
         });
       },

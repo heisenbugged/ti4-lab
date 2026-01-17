@@ -1,21 +1,24 @@
 import { LoaderFunctionArgs } from "react-router";
 import { generateMapGeneratorImageBuffer } from "~/skiaRendering/mapGeneratorImage.server";
+import { decodeMapString } from "~/mapgen/utils/mapStringCodec";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
-  const mapSystemIds = url.searchParams.get("mapSystemIds");
-  const mapConfig = url.searchParams.get("mapConfig") || "milty6p";
+  const mapParam = url.searchParams.get("map");
 
-  if (!mapSystemIds) {
-    throw new Response("mapSystemIds parameter required", { status: 400 });
+  if (!mapParam) {
+    throw new Response("map parameter required", { status: 400 });
   }
 
-  const systemIds = mapSystemIds.split(",").filter(Boolean);
+  const decoded = decodeMapString(mapParam);
+  if (!decoded) {
+    throw new Response("Invalid map string format", { status: 400 });
+  }
 
   // Generate image buffer
   const imageBuffer = await generateMapGeneratorImageBuffer(
-    systemIds,
-    mapConfig,
+    decoded.map,
+    decoded.closedTiles,
   );
 
   // Return image directly
