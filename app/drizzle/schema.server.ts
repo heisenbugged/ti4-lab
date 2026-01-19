@@ -53,6 +53,36 @@ export const draftDiscordMessages = sqliteTable(
   }),
 );
 
+export const draftStagedSelections = sqliteTable(
+  "draftStagedSelections",
+  {
+    id: text("id").primaryKey(),
+    draftId: text("draftId")
+      .notNull()
+      .references(() => drafts.id),
+    phase: text("phase").notNull(),
+    playerId: integer("playerId").notNull(),
+    value: text("value").notNull(),
+    createdAt: text("createdAt")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    draftIdIdx: index("draft_staged_selections_draft_id_index").on(
+      table.draftId,
+    ),
+    draftPhaseIdx: index("draft_staged_selections_phase_index").on(
+      table.draftId,
+      table.phase,
+    ),
+    draftPhasePlayerUnique: unique("draft_phase_player_unique").on(
+      table.draftId,
+      table.phase,
+      table.playerId,
+    ),
+  }),
+);
+
 export const multiDrafts = sqliteTable(
   "multiDrafts",
   {

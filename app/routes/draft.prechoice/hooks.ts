@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams, useSubmit } from "react-router";
-import type { DraftSettings, DiscordData } from "~/types";
+import type { DraftSettings, DiscordData, Player } from "~/types";
 import type {
   SliceGenerationSettings,
   SliceSettingsFormatType,
@@ -7,6 +7,7 @@ import type {
 import { useDraftSetup } from "./store";
 import { buildSliceGenerationConfig } from "./utils";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
+import { buildTexasDraft } from "~/draft/texas/buildTexasDraft";
 
 export const useDraftSettingsBuilder = (
   sliceSettings: Record<SliceSettingsFormatType, SliceGenerationSettings>,

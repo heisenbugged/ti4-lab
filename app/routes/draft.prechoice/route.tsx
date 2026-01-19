@@ -4,8 +4,10 @@ import {
   Button,
   Flex,
   Group,
+  NumberInput,
   SimpleGrid,
   Stack,
+  Switch,
   Tabs,
   Text,
 } from "@mantine/core";
@@ -19,6 +21,7 @@ import {
   useLocation,
   useNavigate,
   useSearchParams,
+  useSubmit,
   LoaderFunctionArgs,
 } from "react-router";
 import {
@@ -41,6 +44,7 @@ import { ReferenceCardPacksConfigurationSection } from "./components/ReferenceCa
 import { SlicesConfigurationSection } from "./components/SlicesConfigurationSection";
 import { DraftConfigurationPanel } from "./components/DraftConfigurationPanel";
 import { useDraftSettingsBuilder, useDraftNavigation } from "./hooks";
+import { buildTexasDraft } from "~/draft/texas/buildTexasDraft";
 import { DiscordIntegrationModal } from "./components/DiscordIntegrationModal";
 import { MinorFactionsInfoModal } from "./components/MinorFactionsInfoModal";
 import { SavedStateModal } from "./components/SavedStateModal";
@@ -54,6 +58,7 @@ import classes from "./prechoice.module.css";
 export default function DraftPrechoice() {
   const location = useLocation();
   const navigate = useNavigate();
+  const submit = useSubmit();
   const [searchParams, setSearchParams] = useSearchParams();
   const { discordData, discordOauthUrl, mapSlicesString, selectedDraftType } =
     useLoaderData<typeof loader>();
@@ -69,6 +74,7 @@ export default function DraftPrechoice() {
   const setDraftMode = useDraftSetup((state) => state.setDraftMode);
   const referenceCardPacks = useDraftSetup((state) => state.referenceCardPacks);
   const content = useDraftSetup((state) => state.content);
+  const texas = useDraftSetup((state) => state.texas);
 
   const [sliceSettings, setSliceSettings] = useState<
     Record<SliceSettingsFormatType, SliceGenerationSettings>
@@ -182,6 +188,34 @@ export default function DraftPrechoice() {
           players: player.players,
           discordData,
         },
+      });
+    } else if (draftMode === "texasStyle") {
+      const baseSettings = buildDraftSettings();
+      const texasSettings: DraftSettings = {
+        ...baseSettings,
+        draftGameMode: "texasStyle",
+        draftSpeaker: false,
+        draftPlayerColors: false,
+        allowHomePlanetSearch: false,
+        allowEmptyTiles: false,
+        modifiers: { banFactions: { numFactions: 1 } },
+        texasFactionHandSize: texas.factionHandSize,
+        texasAllowFactionRedraw: texas.allowRedraw,
+        randomizeMap: false,
+        randomizeSlices: false,
+      };
+
+      // Build the full draft object and submit directly to bypass /draft/new page
+      const draft = buildTexasDraft({
+        settings: texasSettings,
+        players: player.players,
+        integrations: { discord: discordData },
+      });
+
+      submit(draft, {
+        method: "POST",
+        encType: "application/json",
+        action: "/draft/new",
       });
     } else {
       // Base draft mode - use normal settings
@@ -374,13 +408,14 @@ export default function DraftPrechoice() {
             <Tabs
               value={draftMode}
               onChange={(value) =>
-                setDraftMode(value as "base" | "twilightFalls")
+                setDraftMode(value as "base" | "twilightFalls" | "texasStyle")
               }
               variant="pills"
             >
               <Tabs.List mb="md">
                 <Tabs.Tab value="base">Base Draft</Tabs.Tab>
                 <Tabs.Tab value="twilightFalls">Twilight&apos;s Fall</Tabs.Tab>
+                <Tabs.Tab value="texasStyle">Texas Style</Tabs.Tab>
               </Tabs.List>
 
               <Tabs.Panel value="base">
@@ -405,6 +440,31 @@ export default function DraftPrechoice() {
                     <SlicesConfigurationSection />
                     <ReferenceCardPacksConfigurationSection />
                   </SimpleGrid>
+                </Stack>
+              </Tabs.Panel>
+
+              <Tabs.Panel value="texasStyle">
+                <Stack gap="sm">
+                  <Alert
+                    color="blue"
+                    title="Texas Style Draft"
+                    variant="light"
+                  >
+                    <Text size="xs">
+                      Randomized seating and speaker, faction bans, simultaneous
+                      faction selection, and a pass-based tile draft before the
+                      galaxy build.
+                    </Text>
+                  </Alert>
+
+                  <div className={classes.twoColGrid}>
+                    <TexasStyleSettings
+                      factionHandSize={texas.factionHandSize}
+                      allowRedraw={texas.allowRedraw}
+                      onChangeHandSize={texas.setFactionHandSize}
+                      onToggleRedraw={texas.setAllowRedraw}
+                    />
+                  </div>
                 </Stack>
               </Tabs.Panel>
             </Tabs>
@@ -473,3 +533,36 @@ export const loader = async (args: LoaderFunctionArgs) => {
     selectedDraftType,
   };
 };
+
+type TexasStyleSettingsProps = {
+  factionHandSize: number;
+  allowRedraw: boolean;
+  onChangeHandSize: (num: number) => void;
+  onToggleRedraw: (v: boolean) => void;
+};
+
+function TexasStyleSettings({
+  factionHandSize,
+  allowRedraw,
+  onChangeHandSize,
+  onToggleRedraw,
+}: TexasStyleSettingsProps) {
+  return (
+    <Stack gap="sm">
+      <NumberInput
+        label="Factions dealt per player"
+        description="Deal 2 or 3 factions to each player before selection."
+        min={2}
+        max={3}
+        value={factionHandSize}
+        onChange={(value) => onChangeHandSize(Number(value) || 2)}
+      />
+      <Switch
+        label="Allow redraw"
+        description="Players can toss both factions and draw one they must play."
+        checked={allowRedraw}
+        onChange={(event) => onToggleRedraw(event.currentTarget.checked)}
+      />
+    </Stack>
+  );
+}

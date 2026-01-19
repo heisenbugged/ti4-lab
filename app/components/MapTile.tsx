@@ -24,6 +24,7 @@ type Props = {
   tile: Tile;
   modifiable?: boolean;
   droppable?: boolean;
+  ringHighlight?: boolean;
   homeSelectable?: boolean;
   onSelect?: () => void;
   onDelete?: () => void;
@@ -101,6 +102,7 @@ function AbstractArtMapTile(props: Props) {
     tile: { position },
     modifiable = false,
     droppable = false,
+    ringHighlight = false,
     onSelect,
     onDelete,
     tileContribution,
@@ -203,12 +205,12 @@ function AbstractArtMapTile(props: Props) {
         Tile = <SystemTile {...props} tile={tile} disablePopover={isDragging} />;
         break;
       case "OPEN":
-        Tile = <EmptyTile {...props} tile={tile} isOver={isOver} />;
+        Tile = <EmptyTile {...props} tile={tile} isOver={isOver} ringHighlight={ringHighlight} />;
         break;
       case "CLOSED":
         // If tile.type is CLOSED but not in closedTiles, render as OPEN
         // This happens when user reopens a preset closed tile
-        Tile = <EmptyTile {...props} tile={{ ...tile, type: "OPEN" }} isOver={isOver} />;
+        Tile = <EmptyTile {...props} tile={{ ...tile, type: "OPEN" }} isOver={isOver} ringHighlight={ringHighlight} />;
         break;
     }
 
@@ -251,7 +253,9 @@ function AbstractArtMapTile(props: Props) {
     <>
       <div
         ref={setNodeRef}
-        className={shouldDim ? "tile-dimmed" : undefined}
+        className={[shouldDim ? "tile-dimmed" : undefined, "map-tile-button"]
+          .filter(Boolean)
+          .join(" ")}
         style={{
           position: "absolute",
           left: x + wOffset,

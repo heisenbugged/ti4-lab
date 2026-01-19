@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import { useDraft } from "~/draftStore";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
-import { Draft, PRIORITY_PHASE, HOME_PHASE } from "~/types";
+import { Draft } from "~/types";
 import { CurrentPickBanner } from "../draft.$id/components/CurrentPickBanner";
 import { PlayerSelectionScreen } from "../draft.$id/components/PlayerSelectionScreen";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
@@ -21,6 +21,7 @@ import {
   draftByPrettyUrl,
   generateUniquePrettyUrl,
   updateDraft,
+  getDraftStagedSelections,
 } from "~/drizzle/draft.server";
 import { notifyPick } from "~/discord/bot.server";
 import { validateDraftSync } from "~/utils/draftSync.server";
@@ -48,6 +49,9 @@ import { AudioAlertConsentModal } from "../draft.$id/components/AudioAlertConsen
 import { DraftableReferenceCardPacksSection } from "../draft.$id/sections/DraftableReferenceCardPacksSection";
 import { PriorityValueSelectionPhase } from "../draft.$id/sections/PriorityValueSelectionPhase";
 import { HomeSystemSelectionPhase } from "../draft.$id/sections/HomeSystemSelectionPhase";
+import { TexasFactionSelectionPhase } from "../draft.$id/sections/TexasFactionSelectionPhase";
+import { TexasTileDraftPhase } from "../draft.$id/sections/TexasTileDraftPhase";
+import { TexasMapBuildPhase } from "../draft.$id/sections/TexasMapBuildPhase";
 
 export default function RunningDraft() {
   const { adminMode } = useSafeOutletContext();
@@ -58,6 +62,7 @@ export default function RunningDraft() {
     syncing,
     stagePriorityValue,
     stageHomeSystem,
+    stageSimultaneousPick,
     undoLastPick,
   } = useSyncDraftFetcher();
   const draftStore = useDraft();
@@ -104,6 +109,7 @@ export default function RunningDraft() {
           syncing,
           stagePriorityValue,
           stageHomeSystem,
+          stageSimultaneousPick,
           undoLastPick,
         }}
       >
@@ -145,6 +151,7 @@ export default function RunningDraft() {
           syncing,
           stagePriorityValue,
           stageHomeSystem,
+          stageSimultaneousPick,
           undoLastPick,
         }}
       >
@@ -154,24 +161,126 @@ export default function RunningDraft() {
   }
 
   const currentPick = draft.pickOrder[draft.selections.length];
+  if (typeof currentPick === "object" && currentPick?.kind === "simultaneous") {
+    if (currentPick.phase === "priorityValue") {
+      return (
+        <SyncDraftContext.Provider
+          value={{
+            syncDraft,
+            syncing,
+            stagePriorityValue,
+            stageHomeSystem,
+            stageSimultaneousPick,
+            undoLastPick,
+          }}
+        >
+          <PriorityValueSelectionPhase />
+        </SyncDraftContext.Provider>
+      );
+    }
 
-  if (currentPick === PRIORITY_PHASE) {
-    return (
-      <SyncDraftContext.Provider
-        value={{
-          syncDraft,
-          syncing,
-          stagePriorityValue,
-          stageHomeSystem,
-          undoLastPick,
-        }}
-      >
-        <PriorityValueSelectionPhase />
-      </SyncDraftContext.Provider>
-    );
+    if (currentPick.phase === "homeSystem") {
+      return (
+        <SyncDraftContext.Provider
+          value={{
+            syncDraft,
+            syncing,
+            stagePriorityValue,
+            stageHomeSystem,
+            stageSimultaneousPick,
+            undoLastPick,
+          }}
+        >
+          <HomeSystemSelectionPhase />
+        </SyncDraftContext.Provider>
+      );
+    }
+
+    if (currentPick.phase === "texasFaction") {
+      return (
+        <SyncDraftContext.Provider
+          value={{
+            syncDraft,
+            syncing,
+            stagePriorityValue,
+            stageHomeSystem,
+            stageSimultaneousPick,
+            undoLastPick,
+          }}
+        >
+          <TexasFactionSelectionPhase />
+        </SyncDraftContext.Provider>
+      );
+    }
+
+    if (currentPick.phase === "texasBlueKeep1") {
+      return (
+        <SyncDraftContext.Provider
+          value={{
+            syncDraft,
+            syncing,
+            stagePriorityValue,
+            stageHomeSystem,
+            stageSimultaneousPick,
+            undoLastPick,
+          }}
+        >
+          <TexasTileDraftPhase
+            phase="texasBlueKeep1"
+            title="Blue Tile Draft — Round 1"
+            description="Keep one blue tile and pass the rest left."
+            color="blue"
+          />
+        </SyncDraftContext.Provider>
+      );
+    }
+
+    if (currentPick.phase === "texasBlueKeep2") {
+      return (
+        <SyncDraftContext.Provider
+          value={{
+            syncDraft,
+            syncing,
+            stagePriorityValue,
+            stageHomeSystem,
+            stageSimultaneousPick,
+            undoLastPick,
+          }}
+        >
+          <TexasTileDraftPhase
+            phase="texasBlueKeep2"
+            title="Blue Tile Draft — Round 2"
+            description="Keep one blue tile from the pass."
+            color="blue"
+          />
+        </SyncDraftContext.Provider>
+      );
+    }
+
+    if (currentPick.phase === "texasRedKeep") {
+      return (
+        <SyncDraftContext.Provider
+          value={{
+            syncDraft,
+            syncing,
+            stagePriorityValue,
+            stageHomeSystem,
+            stageSimultaneousPick,
+            undoLastPick,
+          }}
+        >
+          <TexasTileDraftPhase
+            phase="texasRedKeep"
+            title="Red Tile Draft"
+            description="Keep one red tile and pass the other left."
+            color="red"
+          />
+        </SyncDraftContext.Provider>
+      );
+    }
   }
 
-  if (currentPick === HOME_PHASE) {
+  if (settings.draftGameMode === "texasStyle") {
     return (
       <SyncDraftContext.Provider
         value={{
@@ -179,10 +288,11 @@ export default function RunningDraft() {
           syncing,
           stagePriorityValue,
           stageHomeSystem,
+          stageSimultaneousPick,
           undoLastPick,
         }}
       >
-        <HomeSystemSelectionPhase />
+        <TexasMapBuildPhase />
       </SyncDraftContext.Provider>
     );
   }
@@ -388,9 +498,15 @@ export const loader = async ({ params }: { params: { id: string } }) => {
     throw new Response("Draft not found", { status: 404 });
   }
 
+  const stagedSelections = await getDraftStagedSelections(result.id);
+  const parsedDraft = JSON.parse(result.data as string) as Draft;
+
   return data({
     ...result,
-    data: JSON.parse(result.data as string) as Draft,
+    data: {
+      ...parsedDraft,
+      stagedSelections,
+    },
   });
 };
 

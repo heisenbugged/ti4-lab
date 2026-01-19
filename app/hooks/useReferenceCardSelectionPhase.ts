@@ -7,14 +7,14 @@ import { Draft, FactionId } from "~/types";
 
 export type ReferenceCardSelectionConfig = {
   label: string;
-  selectStagingValues: (draft: Draft) => Record<number, FactionId> | undefined;
+  phase: "priorityValue" | "homeSystem";
   stageAction: (playerId: number, factionId: FactionId) => Promise<void>;
   showPriorityValueAsDisabled?: boolean;
 };
 
 export function useReferenceCardSelectionPhase({
   label,
-  selectStagingValues,
+  phase,
   stageAction,
   showPriorityValueAsDisabled = false,
 }: ReferenceCardSelectionConfig) {
@@ -25,7 +25,15 @@ export function useReferenceCardSelectionPhase({
   const [hoveredPlayerId, setHoveredPlayerId] = useState<number | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
 
-  const stagingValues = selectStagingValues(draft);
+  const legacyStaging =
+    phase === "priorityValue"
+      ? (draft as Draft & { stagingPriorityValues?: Record<number, FactionId> })
+          .stagingPriorityValues
+      : (draft as Draft & { stagingHomeSystemValues?: Record<number, FactionId> })
+          .stagingHomeSystemValues;
+  const stagingValues =
+    (draft.stagedSelections?.[phase] as Record<number, FactionId> | undefined) ??
+    legacyStaging;
 
   const defaultPlayerId = hydratedPlayers.find(
     (p) => stagingValues?.[p.id] === undefined,

@@ -37,6 +37,7 @@ import { trackButtonClick } from "~/lib/analytics.client";
 import { LabArtToggleButton } from "~/components/LabArtToggleButton";
 import { StartingUnitsTable } from "~/components/StartingUnitsTable";
 import { FactionIcon } from "~/components/icons/FactionIcon";
+import { PlayerChip } from "./PlayerChip";
 import { factions as allFactions } from "~/data/factionData";
 
 export function FinalizedDraft() {
@@ -53,6 +54,8 @@ export function FinalizedDraft() {
     players,
     settings: { draftSpeaker, draftPlayerColors, draftGameMode },
   } = draft;
+  const showSeat = draftSpeaker || draftGameMode === "texasStyle";
+  const showSliceSummary = draftGameMode !== "texasStyle";
   const usingMinorFactions = useDraft(
     (state) =>
       state.draft.settings.minorFactionsInSharedPool ||
@@ -157,37 +160,84 @@ export function FinalizedDraft() {
                   slice={
                     p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined
                   }
-                  showSeat={draftSpeaker}
+                  showSeat={showSeat}
                   showPlayerColor={!!draftPlayerColors}
                   showMinorFaction={usingMinorFactions}
                 />
               ))}
             </Stack>
-            <Table visibleFrom="sm">
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Name</Table.Th>
-                  <Table.Th>Faction</Table.Th>
-                  <Table.Th>Speaker Order</Table.Th>
-                  {draftSpeaker && <Table.Th>Seat</Table.Th>}
-                  <Table.Th>SV</Table.Th>
-                  <Table.Th>Optimal</Table.Th>
-                  <Table.Th>Features</Table.Th>
-                  {draftPlayerColors && <Table.Th>Color</Table.Th>}
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {sortedPlayers.map((p) => (
-                  <SummaryRow
-                    key={p.id}
-                    player={p}
-                    slice={slices[p.sliceIdx!]}
-                    draftSpeaker={draftSpeaker}
-                    showPlayerColor={!!draftPlayerColors}
-                  />
-                ))}
-              </Table.Tbody>
-            </Table>
+            {showSliceSummary ? (
+              <Table visibleFrom="sm">
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Faction</Table.Th>
+                    <Table.Th>Speaker Order</Table.Th>
+                    {showSeat && <Table.Th>Seat</Table.Th>}
+                    <Table.Th>SV</Table.Th>
+                    <Table.Th>Optimal</Table.Th>
+                    <Table.Th>Features</Table.Th>
+                    {draftPlayerColors && <Table.Th>Color</Table.Th>}
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {sortedPlayers.map((p) => (
+                    <SummaryRow
+                      key={p.id}
+                      player={p}
+                      slice={slices[p.sliceIdx!]}
+                      draftSpeaker={showSeat}
+                      showPlayerColor={!!draftPlayerColors}
+                    />
+                  ))}
+                </Table.Tbody>
+              </Table>
+            ) : (
+              <Table visibleFrom="sm">
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Faction</Table.Th>
+                    <Table.Th>Speaker Order</Table.Th>
+                    {showSeat && <Table.Th>Seat</Table.Th>}
+                    {draftPlayerColors && <Table.Th>Color</Table.Th>}
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {sortedPlayers.map((player) => {
+                    const faction =
+                      player.faction !== undefined
+                        ? allFactions[player.faction]
+                        : undefined;
+                    return (
+                      <Table.Tr key={player.id}>
+                        <Table.Td>
+                          <PlayerChip player={player} />
+                        </Table.Td>
+                        <Table.Td>
+                          {faction ? faction.name : "Not chosen"}
+                        </Table.Td>
+                        <Table.Td>
+                          {player.speakerOrder !== undefined
+                            ? player.speakerOrder + 1
+                            : "-"}
+                        </Table.Td>
+                        {showSeat && (
+                          <Table.Td>
+                            {player.seatIdx !== undefined
+                              ? player.seatIdx + 1
+                              : "-"}
+                          </Table.Td>
+                        )}
+                        {draftPlayerColors && (
+                          <Table.Td>{player.factionColor}</Table.Td>
+                        )}
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            )}
           </Section>
           {draftGameMode === "twilightsFall" && (
             <Section>

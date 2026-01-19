@@ -5,9 +5,11 @@ import { systemData } from "~/data/systemData";
 
 type Props = {
   systemId: string;
+  selected?: boolean;
+  onSelect?: (systemId: string) => void;
 };
 
-export function DraggableSidebarTile({ systemId }: Props) {
+export function DraggableSidebarTile({ systemId, selected = false, onSelect }: Props) {
   const tileRadius = 60;
   const tileWidth = tileRadius * 2;
   const tileHeight = tileRadius * 2;
@@ -30,7 +32,12 @@ export function DraggableSidebarTile({ systemId }: Props) {
         opacity: isDragging ? 0.5 : 1,
         backgroundColor: isRedSystem ? alpha("var(--mantine-color-red-8)", 0.15) : undefined,
         borderColor: isRedSystem ? alpha("var(--mantine-color-red-8)", 0.3) : undefined,
+        borderWidth: selected ? 3 : undefined,
+        borderStyle: selected ? "solid" : undefined,
+        borderColor: selected ? "var(--mantine-color-green-6)" : undefined,
+        cursor: onSelect ? "pointer" : undefined,
       }}
+      onClick={onSelect ? () => onSelect(systemId) : undefined}
     >
       <Box
         ref={setNodeRef}

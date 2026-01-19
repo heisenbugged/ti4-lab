@@ -3,12 +3,26 @@ import { createContext, useContext, useEffect } from "react";
 import { draftStore } from "~/draftStore";
 import { useSocket } from "~/socketContext";
 import { notifications } from "@mantine/notifications";
-import { FactionId, PlayerId } from "~/types";
+import { FactionId, PlayerId, SimultaneousPickType } from "~/types";
 
 export function useSyncDraft() {
-  const { syncDraft, syncing, stagePriorityValue, stageHomeSystem, undoLastPick } =
+  const {
+    syncDraft,
+    syncing,
+    stagePriorityValue,
+    stageHomeSystem,
+    stageSimultaneousPick,
+    undoLastPick,
+  } =
     useContext(SyncDraftContext);
-  return { syncDraft, syncing, stagePriorityValue, stageHomeSystem, undoLastPick };
+  return {
+    syncDraft,
+    syncing,
+    stagePriorityValue,
+    stageHomeSystem,
+    stageSimultaneousPick,
+    undoLastPick,
+  };
 }
 
 export function useSyncDraftFetcher() {
@@ -57,6 +71,39 @@ export function useSyncDraftFetcher() {
     }
   }, [fetcher.data]);
 
+  const stageSimultaneousPick = async (
+    phase: SimultaneousPickType,
+    playerId: PlayerId,
+    value: string,
+  ) => {
+    const { draftId, draftActions } = draftStore.getState();
+    if (!draftId) return;
+
+    draftActions.stageSimultaneousPick(phase, playerId, value);
+
+    const response = await fetch(`/api/draft/${draftId}/stage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId, value, phase }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Failed to stage pick:", error);
+      notifications.show({
+        title: "Error",
+        message: error.error || "Failed to stage selection",
+        color: "red",
+      });
+      return;
+    }
+
+    const data = await response.json();
+    if (data.success && data.draft) {
+      draftActions.update(draftId, data.draft);
+    }
+  };
+
   return {
     syncDraft: async () => {
       const { draft, draftId } = draftStore.getState();
@@ -69,61 +116,12 @@ export function useSyncDraftFetcher() {
       socket?.emit("syncDraft", draftId, JSON.stringify(draft));
     },
     stagePriorityValue: async (playerId: PlayerId, factionId: FactionId) => {
-      const { draftId, draftActions } = draftStore.getState();
-      if (!draftId) return;
-
-      draftActions.stagePriorityValue(playerId, factionId);
-
-      const response = await fetch(`/api/draft/${draftId}/stage-priority`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, factionId }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("Failed to stage priority value:", error);
-        notifications.show({
-          title: "Error",
-          message: error.error || "Failed to stage priority value",
-          color: "red",
-        });
-        return;
-      }
-
-      const data = await response.json();
-      if (data.success && data.draft) {
-        draftActions.update(draftId, data.draft);
-      }
+      await stageSimultaneousPick("priorityValue", playerId, factionId);
     },
     stageHomeSystem: async (playerId: PlayerId, factionId: FactionId) => {
-      const { draftId, draftActions } = draftStore.getState();
-      if (!draftId) return;
-
-      draftActions.stageHomeSystem(playerId, factionId);
-
-      const response = await fetch(`/api/draft/${draftId}/stage-home`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, factionId }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("Failed to stage home system:", error);
-        notifications.show({
-          title: "Error",
-          message: error.error || "Failed to stage home system",
-          color: "red",
-        });
-        return;
-      }
-
-      const data = await response.json();
-      if (data.success && data.draft) {
-        draftActions.update(draftId, data.draft);
-      }
+      await stageSimultaneousPick("homeSystem", playerId, factionId);
     },
+    stageSimultaneousPick,
     undoLastPick: async () => {
       const { draftId, draft, draftActions } = draftStore.getState();
       if (!draftId || !draft) return { success: false };
@@ -182,6 +180,12 @@ export const SyncDraftContext = createContext({
   stagePriorityValue: async (_: PlayerId, __: FactionId) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   stageHomeSystem: async (_: PlayerId, __: FactionId) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  stageSimultaneousPick: async (
+    _: SimultaneousPickType,
+    __: PlayerId,
+    ___: string,
+  ) => {},
   undoLastPick: async () => ({ success: false } as { success: boolean; removedSelection?: unknown }),
   syncing: false,
 });

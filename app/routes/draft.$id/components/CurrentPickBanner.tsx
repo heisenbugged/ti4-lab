@@ -11,6 +11,7 @@ type Props = {
 
 export function CurrentPickBanner({ title }: Props) {
   const { activePlayer, lastEvent } = useHydratedDraft();
+  if (!activePlayer) return null;
   const playerColor = playerColors[activePlayer.id];
   return (
     <Stack

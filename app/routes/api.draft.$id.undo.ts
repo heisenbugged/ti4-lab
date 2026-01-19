@@ -2,6 +2,7 @@ import { ActionFunctionArgs, data } from "react-router";
 import { draftById, updateDraft } from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
+import { rebuildTexasDraftState } from "~/draft/texas/texasDraft";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const { id } = params;
@@ -46,6 +47,34 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   const removedSelection = draft.selections.pop();
+
+  if (draft.settings.draftGameMode === "texasStyle" && removedSelection) {
+    if (removedSelection.type === "PLACE_TILE" && draft.texasDraft?.playerTiles) {
+      const mapTile = draft.presetMap[removedSelection.mapIdx];
+      if (mapTile) {
+        draft.presetMap[removedSelection.mapIdx] = {
+          idx: mapTile.idx,
+          position: mapTile.position,
+          type: "OPEN",
+        };
+      }
+      draft.texasDraft.playerTiles[removedSelection.playerId] = [
+        ...(draft.texasDraft.playerTiles[removedSelection.playerId] ?? []),
+        removedSelection.systemId,
+      ];
+    }
+
+    if (removedSelection.type === "COMMIT_SIMULTANEOUS") {
+      if (
+        removedSelection.phase === "texasBlueKeep1" ||
+        removedSelection.phase === "texasBlueKeep2" ||
+        removedSelection.phase === "texasRedKeep" ||
+        removedSelection.phase === "texasFaction"
+      ) {
+        rebuildTexasDraftState(draft);
+      }
+    }
+  }
 
   await updateDraft(id, draft);
   await broadcastDraftUpdate(id, draft);

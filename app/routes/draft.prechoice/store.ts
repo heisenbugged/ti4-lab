@@ -53,7 +53,7 @@ const showFactionNotifications = (notifs: FactionNotification[]) => {
   });
 };
 
-export type DraftMode = "base" | "twilightFalls";
+export type DraftMode = "base" | "twilightFalls" | "texasStyle";
 
 type DraftSetupStore = {
   draftMode: DraftMode;
@@ -77,6 +77,12 @@ type DraftSetupStore = {
   referenceCardPacks: {
     numReferenceCardPacks: number;
     setNumReferenceCardPacks: (num: number) => void;
+  };
+  texas: {
+    factionHandSize: number;
+    allowRedraw: boolean;
+    setFactionHandSize: (num: number) => void;
+    setAllowRedraw: (v: boolean) => void;
   };
   content: {
     flags: ContentFlags;
@@ -337,6 +343,23 @@ export const useDraftSetup = create<DraftSetupStore>()(
               playerCount,
               Math.min(10, num),
             );
+          });
+        },
+      },
+
+      texas: {
+        factionHandSize: 2,
+        allowRedraw: true,
+
+        setFactionHandSize: (num: number) => {
+          set((state) => {
+            state.texas.factionHandSize = Math.max(2, Math.min(3, num));
+          });
+        },
+
+        setAllowRedraw: (v: boolean) => {
+          set((state) => {
+            state.texas.allowRedraw = v;
           });
         },
       },

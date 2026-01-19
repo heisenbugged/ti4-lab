@@ -32,5 +32,30 @@ export function draftSelectionToMessage(
     return `${playerName} banned faction: ${selection.factionId}`;
   }
 
+  if (selection.type === "COMMIT_SIMULTANEOUS") {
+    if (selection.phase === "priorityValue") {
+      return "Priority value selection complete";
+    }
+    if (selection.phase === "homeSystem") {
+      return "Home system selection complete";
+    }
+    if (selection.phase === "texasFaction") {
+      return "Texas Style faction selection complete";
+    }
+    if (selection.phase === "texasBlueKeep1") {
+      return "Texas Style blue keep (round 1) complete";
+    }
+    if (selection.phase === "texasBlueKeep2") {
+      return "Texas Style blue keep (round 2) complete";
+    }
+    if (selection.phase === "texasRedKeep") {
+      return "Texas Style red keep complete";
+    }
+  }
+
+  if (selection.type === "PLACE_TILE") {
+    return `${playerName} placed tile ${selection.systemId}`;
+  }
+
   return "";
 }

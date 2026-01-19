@@ -15,6 +15,7 @@ import type { TileContribution, SliceStats } from "~/mapgen/utils/sliceScoring";
 type Props = {
   id: string;
   modifiableMapTiles: number[];
+  ringHighlightTiles?: number[];
   map: TiMap;
   editable: boolean;
   disabled?: boolean;
@@ -37,6 +38,7 @@ type Props = {
 export function Map({
   id,
   modifiableMapTiles,
+  ringHighlightTiles = [],
   map,
   editable = false,
   disabled = false,
@@ -94,6 +96,7 @@ export function Map({
               }}
               modifiable={editable && modifiableMapTiles.includes(idx)}
               droppable={droppable && modifiableMapTiles.includes(idx)}
+              ringHighlight={ringHighlightTiles.includes(tile.idx)}
               homeSelectable={!!onSelectHomeTile}
               sliceValue={sliceValues[tile.idx]}
               sliceStats={sliceStats[tile.idx]}

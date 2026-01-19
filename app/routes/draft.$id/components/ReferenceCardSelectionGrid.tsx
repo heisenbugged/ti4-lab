@@ -1,16 +1,8 @@
-import {
-  Stack,
-  Text,
-  SimpleGrid,
-  Box,
-  Badge,
-  Button,
-  Center,
-} from "@mantine/core";
-import { IconCheck } from "@tabler/icons-react";
+import { Stack, Text, Box, Button } from "@mantine/core";
 import { useState } from "react";
-import { factions as allFactions } from "~/data/factionData";
+import { SelectionOverlay } from "~/components/SelectionOverlay";
 import { FactionId } from "~/types";
+import { ReferenceCardGrid } from "~/components/ReferenceCardGrid";
 import { NewDraftReferenceCard } from "~/routes/draft.new/components/NewDraftReferenceCard";
 
 interface ReferenceCardSelectionGridProps {
@@ -36,14 +28,6 @@ export function ReferenceCardSelectionGrid({
 }: ReferenceCardSelectionGridProps) {
   const [hoveredCard, setHoveredCard] = useState<FactionId | null>(null);
 
-  const sortedPack = [...pack].sort((a, b) => {
-    const factionA = allFactions[a];
-    const factionB = allFactions[b];
-    const priorityA = factionA.priorityOrder ?? 999;
-    const priorityB = factionB.priorityOrder ?? 999;
-    return priorityA - priorityB;
-  });
-
   const canShowSelectedOverlay = !spectatorMode || pickForAnyone;
 
   return (
@@ -52,9 +36,11 @@ export function ReferenceCardSelectionGrid({
         {title}
       </Text>
 
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="xl">
-        {sortedPack.map((factionId: FactionId) => {
-          const faction = allFactions[factionId];
+      <ReferenceCardGrid
+        pack={pack}
+        cols={{ base: 1, sm: 2, md: 3 }}
+        spacing="xl"
+        renderCard={(factionId, faction) => {
           const isSelected =
             selectedCard === factionId && canShowSelectedOverlay;
           const isHovered = hoveredCard === factionId;
@@ -63,7 +49,6 @@ export function ReferenceCardSelectionGrid({
 
           return (
             <Box
-              key={factionId}
               onMouseEnter={() => isClickable && setHoveredCard(factionId)}
               onMouseLeave={() => setHoveredCard(null)}
               style={{
@@ -95,7 +80,6 @@ export function ReferenceCardSelectionGrid({
                 <NewDraftReferenceCard faction={faction} />
               </Box>
 
-              {/* Select button */}
               {isClickable && (
                 <Box
                   pos="absolute"
@@ -115,47 +99,14 @@ export function ReferenceCardSelectionGrid({
                 </Box>
               )}
 
-              {/* Selected overlay */}
-              {isSelected && canShowSelectedOverlay && (
-                <>
-                  <Center
-                    pos="absolute"
-                    top={0}
-                    left={0}
-                    right={0}
-                    bottom={0}
-                    bg="rgba(64, 192, 87, 0.15)"
-                    style={{ borderRadius: 8, pointerEvents: "none" }}
-                  >
-                    <Box
-                      bg="green.6"
-                      p="md"
-                      style={{
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <IconCheck size={48} color="white" />
-                    </Box>
-                  </Center>
-                  <Box
-                    pos="absolute"
-                    top={-15}
-                    right={-10}
-                    style={{ zIndex: 10 }}
-                  >
-                    <Badge size="lg" color="green" variant="filled">
-                      Selected
-                    </Badge>
-                  </Box>
-                </>
-              )}
+              <SelectionOverlay
+                visible={isSelected && canShowSelectedOverlay}
+                size="lg"
+              />
             </Box>
           );
-        })}
-      </SimpleGrid>
+        }}
+      />
     </Stack>
   );
 }

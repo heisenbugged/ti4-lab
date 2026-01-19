@@ -1,11 +1,13 @@
 import { draftStoreAtom, useDraft } from "~/draftStore";
 import {
   Player,
+  Draft,
   DraftSelection,
   HydratedPlayer,
   DiscordPlayer,
   PlayerId,
   FactionReferenceCardPack,
+  FactionId,
 } from "~/types";
 import { hydrateMap } from "~/utils/map";
 import { atom } from "jotai/vanilla";
@@ -26,6 +28,7 @@ export function hydratePlayers(
   draftSpeaker: boolean = false,
   discordPlayers: DiscordPlayer[] = [],
   availableReferenceCardPacks?: FactionReferenceCardPack[],
+  texasDraft?: Draft["texasDraft"],
 ): HydratedPlayer[] {
   const hydratedPlayers = players.map((p) => {
     const discordPlayer = discordPlayers.find((dp) => dp.playerId === p.id);
@@ -44,6 +47,19 @@ export function hydratePlayers(
       hasDiscord: discordPlayer?.type === "identified",
     } as HydratedPlayer;
   });
+
+  if (texasDraft?.seatAssignments) {
+    Object.entries(texasDraft.seatAssignments).forEach(([playerId, seatIdx]) => {
+      const idx = hydratedPlayers.findIndex((p) => p.id === Number(playerId));
+      if (idx !== -1) {
+        hydratedPlayers[idx] = {
+          ...hydratedPlayers[idx],
+          seatIdx,
+          speakerOrder: seatIdx,
+        };
+      }
+    });
+  }
 
   return selections.reduce(
     (acc, selection) => {
@@ -129,6 +145,82 @@ export function hydratePlayers(
         });
       }
 
+      if (selection.type === "COMMIT_SIMULTANEOUS") {
+        if (selection.phase === "priorityValue") {
+          selection.selections.forEach(({ playerId, value }) => {
+            const idx = acc.findIndex((p) => p.id === playerId);
+            if (idx !== -1) {
+              acc[idx] = {
+                ...acc[idx],
+                priorityValueFactionId: value as FactionId,
+              };
+            }
+          });
+
+          const sortedByPriority = [...selection.selections].sort((a, b) => {
+            const factionA = allFactions[a.value as FactionId];
+            const factionB = allFactions[b.value as FactionId];
+            const priorityA = factionA?.priorityOrder ?? 999;
+            const priorityB = factionB?.priorityOrder ?? 999;
+            return priorityA - priorityB;
+          });
+
+          sortedByPriority.forEach(({ playerId }, seatIdx) => {
+            const idx = acc.findIndex((p) => p.id === playerId);
+            if (idx !== -1) {
+              acc[idx] = {
+                ...acc[idx],
+                seatIdx,
+                speakerOrder: seatIdx,
+              };
+            }
+          });
+        }
+
+        if (selection.phase === "homeSystem") {
+          selection.selections.forEach(({ playerId, value }) => {
+            const idx = acc.findIndex((p) => p.id === playerId);
+            if (idx !== -1) {
+              acc[idx] = {
+                ...acc[idx],
+                homeSystemFactionId: value as FactionId,
+              };
+
+              if (
+                acc[idx].referenceCardPackIdx !== undefined &&
+                availableReferenceCardPacks
+              ) {
+                const pack =
+                  availableReferenceCardPacks[acc[idx].referenceCardPackIdx!]!;
+                const startingUnitsCard = pack.find(
+                  (cardId) =>
+                    cardId !== acc[idx].priorityValueFactionId &&
+                    cardId !== acc[idx].homeSystemFactionId,
+                );
+                if (startingUnitsCard) {
+                  acc[idx] = {
+                    ...acc[idx],
+                    startingUnitsFactionId: startingUnitsCard,
+                  };
+                }
+              }
+            }
+          });
+        }
+
+        if (selection.phase === "texasFaction") {
+          selection.selections.forEach(({ playerId, value }) => {
+            const idx = acc.findIndex((p) => p.id === playerId);
+            if (idx !== -1) {
+              acc[idx] = {
+                ...acc[idx],
+                faction: value as FactionId,
+              };
+            }
+          });
+        }
+      }
+
       if (selection.type === "COMMIT_HOME_SYSTEMS") {
         selection.selections.forEach(({ playerId, homeSystemFactionId }) => {
           const idx = acc.findIndex((p) => p.id === playerId);
@@ -201,6 +293,7 @@ export const hydratedPlayersAtom = atom((get) => {
     draft.settings.draftSpeaker,
     draft.integrations.discord?.players,
     draft.availableReferenceCardPacks,
+    draft.texasDraft,
   );
 });
 
@@ -249,8 +342,13 @@ export function useHydratedDraft() {
   const [hydratedMap] = useAtom(hydratedMapAtom);
 
   const currentPick = selections.length;
-  const activePlayerId = pickOrder[currentPick];
-  const activePlayer = hydratedPlayers.find((p) => p.id === activePlayerId)!;
+  const currentPickEntry = pickOrder[currentPick];
+  const activePlayerId =
+    typeof currentPickEntry === "number" ? currentPickEntry : undefined;
+  const activePlayer =
+    activePlayerId !== undefined
+      ? hydratedPlayers.find((p) => p.id === activePlayerId)
+      : undefined;
   const draftFinished = hydrated && currentPick >= pickOrder.length;
 
   return {
@@ -259,7 +357,9 @@ export function useHydratedDraft() {
     activePlayer,
     currentPick,
     lastEvent: "",
-    currentlyPicking: activePlayerId === selectedPlayer || pickForAnyone,
+    currentlyPicking:
+      activePlayerId !== undefined &&
+      (activePlayerId === selectedPlayer || pickForAnyone),
     draftFinished,
   };
 }

@@ -12,6 +12,8 @@ type Props = {
   player?: HydratedPlayer;
   disabled?: boolean;
   selectTitle?: string;
+  selectedOverride?: boolean;
+  selectedColorOverride?: PlayerColor;
   onSelect?: () => void;
   onSelectMinor?: () => void;
 };
@@ -21,6 +23,8 @@ export function DraftableFaction({
   faction,
   player,
   disabled = false,
+  selectedOverride,
+  selectedColorOverride,
   onSelect,
   onSelectMinor,
 }: Props) {
@@ -30,13 +34,13 @@ export function DraftableFaction({
       : undefined;
 
   const hasRegularSelectOnly = onSelect && !onSelectMinor;
-  const isAlreadySelected = !!player;
+  const isAlreadySelected = selectedOverride ?? !!player;
+  const selectedColor = selectedColorOverride ?? playerColor;
 
   return (
     <SelectableCard
       selected={isAlreadySelected}
-      selectedColor={playerColor}
-      hoverable={hasRegularSelectOnly && !isAlreadySelected}
+      selectedColor={selectedColor}
       disabled={disabled}
       onSelect={
         hasRegularSelectOnly && !isAlreadySelected ? onSelect : undefined

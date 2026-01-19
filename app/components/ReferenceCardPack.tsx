@@ -1,8 +1,8 @@
-import { Badge, Button, Group, SimpleGrid, Stack, Text } from "@mantine/core";
-import { factions as allFactions, playerColors } from "~/data/factionData";
+import { Badge, Button, Group, Stack, Text } from "@mantine/core";
+import { playerColors } from "~/data/factionData";
 import { FactionId, HydratedPlayer } from "~/types";
 import { PlayerColor, Surface } from "~/ui";
-import { NewDraftReferenceCard } from "~/routes/draft.new/components/NewDraftReferenceCard";
+import { ReferenceCardGrid } from "./ReferenceCardGrid";
 
 type Props = {
   pack: FactionId[];
@@ -12,14 +12,6 @@ type Props = {
 };
 
 export function ReferenceCardPack({ pack, packIdx, player, onSelect }: Props) {
-  const sortedPack = [...pack].sort((a, b) => {
-    const factionA = allFactions[a];
-    const factionB = allFactions[b];
-    const priorityA = factionA.priorityOrder ?? 999;
-    const priorityB = factionB.priorityOrder ?? 999;
-    return priorityA - priorityB;
-  });
-
   const playerColor = player
     ? (playerColors[player.id] as PlayerColor)
     : undefined;
@@ -60,12 +52,7 @@ export function ReferenceCardPack({ pack, packIdx, player, onSelect }: Props) {
             </Badge>
           )}
         </Group>
-        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xs">
-          {sortedPack.map((factionId) => {
-            const faction = allFactions[factionId];
-            return <NewDraftReferenceCard key={factionId} faction={faction} />;
-          })}
-        </SimpleGrid>
+        <ReferenceCardGrid pack={pack} cols={{ base: 1, sm: 3 }} spacing="xs" />
       </Stack>
     </Surface>
   );

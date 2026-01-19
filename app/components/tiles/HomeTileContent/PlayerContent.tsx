@@ -1,7 +1,8 @@
-import { Stack } from "@mantine/core";
+import { Box, Stack, Text } from "@mantine/core";
 import type { FactionId, Player } from "~/types";
 import { FactionIcon } from "../../icons/FactionIcon";
-import { PlayerChip } from "~/routes/draft.$id/components/PlayerChip";
+import { playerColors } from "~/data/factionData";
+import classes from "../Tiles.module.css";
 
 type PlayerWithFaction = { faction: FactionId } & Player;
 
@@ -18,6 +19,9 @@ export function PlayerContent({ player, radius }: Props) {
   const hasFaction = (p: Player): p is PlayerWithFaction =>
     p != null && "faction" in p && typeof p.faction === "string";
 
+  const playerColor = playerColors[player.id] ?? "gray";
+  const nameSize = radius >= 60 ? "xs" : "10px";
+
   return (
     <Stack
       align="center"
@@ -32,7 +36,25 @@ export function PlayerContent({ player, radius }: Props) {
           style={{ maxWidth: radius * 0.6, maxHeight: radius * 0.6 }}
         />
       )}
-      <PlayerChip player={player} compact />
+      <Box
+        className={classes.playerNameBadge}
+        px={6}
+        py={3}
+        style={{
+          borderRadius: 6,
+          maxWidth: radius * 1.15,
+        }}
+      >
+        <Text
+          size={nameSize}
+          fw={700}
+          ta="center"
+          c={playerColor}
+          lineClamp={2}
+        >
+          {player.name}
+        </Text>
+      </Box>
     </Stack>
   );
 }

@@ -9,6 +9,7 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useState } from "react";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
 import { notifications } from "@mantine/notifications";
+import { useAdminControls } from "../components/useAdminControls";
 import { Link } from "react-router";
 import {
   IconPlayerPlay,
@@ -24,10 +25,18 @@ import {
 } from "~/utils/audioAlert";
 
 export function DraftOrderSection() {
-  const { adminMode, pickForAnyone, setAdminMode, setPickForAnyone, originalArt, setOriginalArt } =
-    useSafeOutletContext();
-
-  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const { originalArt, setOriginalArt } = useSafeOutletContext();
+  const {
+    adminMode,
+    pickForAnyone,
+    setPickForAnyone,
+    showPickForAnyoneControl,
+    showUndoLastSelection,
+    passwordModalOpen,
+    setPasswordModalOpen,
+    handleAdminPasswordSubmit,
+    handleAdminToggle,
+  } = useAdminControls();
 
   const replayMode = useDraft((state) => state.replayMode);
   const draftUrl = useDraft((state) => state.draftUrl);
@@ -35,25 +44,6 @@ export function DraftOrderSection() {
   const { hydratedPlayers, currentPick } = useHydratedDraft();
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const selections = useDraft((state) => state.draft.selections);
-  const adminPassword = useDraft((state) => state.draft.settings.adminPassword);
-  const hasAdminPassword = adminPassword !== undefined;
-
-  const handleAdminPasswordSubmit = (password: string) => {
-    if (password === adminPassword) {
-      setAdminMode(true);
-    } else {
-      notifications.show({
-        title: "Incorrect password",
-        message: "Please try again",
-        color: "red",
-      });
-    }
-    setPasswordModalOpen(false);
-  };
-
-  const showPickForAnyoneControl = !hasAdminPassword || adminMode;
-  const showUndoLastSelection = !hasAdminPassword || adminMode;
-
   const [audioAlertEnabled, setAudioAlertEnabledState] = useState(
     isAudioAlertEnabled(),
   );
@@ -69,18 +59,6 @@ export function DraftOrderSection() {
         : "You won't hear sounds when it's your turn",
       color: newValue ? "blue" : "gray",
     });
-  };
-
-  const handleAdminToggle = () => {
-    if (adminMode) {
-      setAdminMode(false);
-      return;
-    }
-    if (hasAdminPassword) {
-      setPasswordModalOpen(true);
-    } else {
-      setAdminMode(true);
-    }
   };
 
   const handleUndo = async () => {

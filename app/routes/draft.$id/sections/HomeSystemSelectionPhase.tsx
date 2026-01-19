@@ -1,38 +1,34 @@
-import {
-  Group,
-  Stack,
-  Switch,
-  Center,
-  Button,
-  Title,
-  Text,
-  Grid,
-} from "@mantine/core";
+import { Box, Center, Grid } from "@mantine/core";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useReferenceCardSelectionPhase } from "~/hooks/useReferenceCardSelectionPhase";
-import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { PlayerSelectionSidebar } from "../components/PlayerSelectionSidebar";
 import { ReferenceCardSelectionGrid } from "../components/ReferenceCardSelectionGrid";
 import { useDraft } from "~/draftStore";
-import { useState } from "react";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
-import { notifications } from "@mantine/notifications";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { SpectatorModeNotice } from "../components/SpectatorModeNotice";
+import { SimultaneousPhaseHeader } from "../components/SimultaneousPhaseHeader";
+import { useAdminControls } from "../components/useAdminControls";
 
 export function HomeSystemSelectionPhase() {
   const { stageHomeSystem, undoLastPick } = useSyncDraft();
-  const { adminMode, setAdminMode } = useSafeOutletContext();
+  const {
+    adminMode,
+    pickForAnyone,
+    setPickForAnyone,
+    showPickForAnyoneControl,
+    showUndoLastSelection,
+    passwordModalOpen,
+    setPasswordModalOpen,
+    handleAdminPasswordSubmit,
+    handleAdminToggle,
+  } = useAdminControls();
   const selections = useDraft((state) => state.draft.selections);
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
-  const adminPassword = useDraft((state) => state.draft.settings.adminPassword);
-  const hasAdminPassword = adminPassword !== undefined;
-
-  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
   const phase = useReferenceCardSelectionPhase({
     label: "Home System",
-    selectStagingValues: (d) => d.stagingHomeSystemValues,
+    phase: "homeSystem",
     stageAction: stageHomeSystem,
     showPriorityValueAsDisabled: true,
   });
@@ -43,82 +39,37 @@ export function HomeSystemSelectionPhase() {
   // Spectator mode: allow browsing when no selected player (not logged in as any player)
   const isSpectatorMode = selectedPlayer === -1;
 
-  const handleAdminPasswordSubmit = (password: string) => {
-    if (password === adminPassword) {
-      setAdminMode(true);
-    } else {
-      notifications.show({
-        title: "Incorrect password",
-        message: "Please try again",
-        color: "red",
-      });
+  const handleUndo = async () => {
+    if (confirm("Are you sure you want to undo the last selection?")) {
+      await undoLastPick();
     }
-    setPasswordModalOpen(false);
   };
 
-  const showPickForAnyoneControl = !hasAdminPassword || adminMode;
-  const showUndoLastSelection = !hasAdminPassword || adminMode;
-
   return (
-    <Stack gap="xl" h="100vh" p="xl">
+    <Box mih="100vh">
       <AdminPasswordModal
         opened={passwordModalOpen}
         onClose={() => setPasswordModalOpen(false)}
         onSubmit={handleAdminPasswordSubmit}
       />
 
-      <Stack gap="xs" align="center">
-        <Title order={1}>Home System Selection</Title>
-        <Text size="md" c="dimmed" ta="center" maw={700}>
-          Select your home system card. This determines which faction&apos;s
-          home system tile you will use. The remaining card in your pack will
-          automatically become your starting fleet.
-        </Text>
-        <SpectatorModeNotice isSpectatorMode={isSpectatorMode} />
-      </Stack>
+      <SimultaneousPhaseHeader
+        phaseName="Home System Selection"
+        phaseColor="green"
+        description="Select your home system card"
+        adminMode={adminMode}
+        onAdminToggle={handleAdminToggle}
+        showPickForAnyoneControl={showPickForAnyoneControl}
+        pickForAnyone={pickForAnyone}
+        onTogglePickForAnyone={() => setPickForAnyone(!pickForAnyone)}
+        showUndo={showUndoLastSelection}
+        onUndo={handleUndo}
+        undoDisabled={selections.length === 0}
+      />
 
-      <Group justify="flex-end">
-        {showUndoLastSelection && (
-          <Button
-            onClick={async () => {
-              if (
-                confirm("Are you sure you want to undo the last selection?")
-              ) {
-                await undoLastPick();
-              }
-            }}
-            disabled={selections.length === 0}
-          >
-            Undo Last Selection
-          </Button>
-        )}
-        {showPickForAnyoneControl && (
-          <Switch
-            label="Pick for anyone"
-            checked={phase.pickForAnyone}
-            onChange={(e) =>
-              phase.onTogglePickForAnyone(e.currentTarget.checked)
-            }
-          />
-        )}
-        <Switch
-          label="Admin mode"
-          checked={adminMode}
-          onChange={(e) => {
-            if (!e.currentTarget.checked) {
-              setAdminMode(false);
-              return;
-            }
-            if (hasAdminPassword) {
-              setPasswordModalOpen(true);
-            } else {
-              setAdminMode(e.currentTarget.checked);
-            }
-          }}
-        />
-      </Group>
+      <SpectatorModeNotice isSpectatorMode={isSpectatorMode} />
 
-      <Center style={{ flex: 1 }}>
+      <Center p="md" pt="lg">
         <Grid
           maw={1600}
           w="100%"
@@ -153,6 +104,6 @@ export function HomeSystemSelectionPhase() {
           </Grid.Col>
         </Grid>
       </Center>
-    </Stack>
+    </Box>
   );
 }

@@ -13,3 +13,13 @@
     opacity: 0.25;
     transition: opacity 150ms ease;
 }
+
+.map-tile-button {
+    outline: none;
+}
+
+.map-tile-button:focus,
+.map-tile-button:focus-visible,
+.map-tile-button:active {
+    outline: none;
+}

@@ -1,0 +1,47 @@
+.fadeLeft {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  z-index: 1;
+  pointer-events: none;
+  @mixin dark {
+    background: linear-gradient(
+      to right,
+      var(--mantine-color-dark-7),
+      transparent
+    );
+  }
+  @mixin light {
+    background: linear-gradient(
+      to right,
+      var(--mantine-color-gray-0),
+      transparent
+    );
+  }
+}
+
+.fadeRight {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  z-index: 1;
+  pointer-events: none;
+  @mixin dark {
+    background: linear-gradient(
+      to left,
+      var(--mantine-color-dark-7),
+      transparent
+    );
+  }
+  @mixin light {
+    background: linear-gradient(
+      to left,
+      var(--mantine-color-gray-0),
+      transparent
+    );
+  }
+}

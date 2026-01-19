@@ -13,9 +13,11 @@ export function useDraftValidationErrors() {
   );
   const slices = useDraft((state) => state.draft.slices);
   const players = useDraft((state) => state.draft.players);
+  const draftGameMode = useDraft((state) => state.draft.settings.draftGameMode);
 
   return useMemo(() => {
     const errors = [];
+    if (draftGameMode === "texasStyle") return errors;
 
     if (numFactions !== undefined && numFactions < players.length) {
       errors.push(

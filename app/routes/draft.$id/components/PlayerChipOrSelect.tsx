@@ -43,7 +43,11 @@ export function PlayerChipOrSelect({
           {onSelectMinor && (
             <Button
               size="compact-xs"
-              onMouseDown={onSelectMinor}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onSelectMinor(event);
+              }}
               disabled={disabled}
               variant="filled"
               color="pink"
@@ -54,7 +58,11 @@ export function PlayerChipOrSelect({
           {onSelect && (
             <Button
               size="compact-xs"
-              onMouseDown={onSelect}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onSelect(event);
+              }}
               disabled={disabled}
             >
               {onSelectMinor ? "Main" : selectText}

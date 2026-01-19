@@ -200,6 +200,21 @@ export type PlayerId = number;
 export const PRIORITY_PHASE = -1;
 export const HOME_PHASE = -2;
 
+export type SimultaneousPickType =
+  | "priorityValue"
+  | "homeSystem"
+  | "texasFaction"
+  | "texasBlueKeep1"
+  | "texasBlueKeep2"
+  | "texasRedKeep";
+
+export type DraftPick =
+  | PlayerId
+  | {
+      kind: "simultaneous";
+      phase: SimultaneousPickType;
+    };
+
 export type FactionStratification = {
   ["base|pok"]?: number;
   ["te"]?: number;
@@ -251,7 +266,9 @@ export type DraftSettings = {
   /** Minor factions variant. */
   minorFactionsMode?: MinorFactionsMode;
 
-  draftGameMode?: "twilightsFall";
+  draftGameMode?: "twilightsFall" | "texasStyle";
+  texasFactionHandSize?: number;
+  texasAllowFactionRedraw?: boolean;
 
   /** Number of reference card packs for Twilight's Fall (defaults to player count, max 10) */
   numReferenceCardPacks?: number;
@@ -383,15 +400,49 @@ export type DraftSelection =
       selections: HomeSystemSelection[];
     }
   | {
+      type: "COMMIT_SIMULTANEOUS";
+      phase: SimultaneousPickType;
+      selections: { playerId: PlayerId; value: string }[];
+    }
+  | {
       type: "SELECT_SEAT";
       playerId: PlayerId;
       seatIdx: number;
+    }
+  | {
+      type: "PLACE_TILE";
+      playerId: PlayerId;
+      systemId: SystemId;
+      mapIdx: number;
     }
   | {
       type: "SELECT_PLAYER_COLOR";
       playerId: PlayerId;
       color: InGameColor;
     };
+
+export type TexasDraftState = {
+  seatOrder: PlayerId[];
+  seatAssignments: Record<PlayerId, number>;
+  speakerId: PlayerId;
+  factionOptions?: Record<PlayerId, FactionId[]>;
+  factionDrawPile?: FactionId[];
+  tileHands?: {
+    blue: Record<PlayerId, SystemId[]>;
+    red: Record<PlayerId, SystemId[]>;
+  };
+  initialTileHands?: {
+    blue: Record<PlayerId, SystemId[]>;
+    red: Record<PlayerId, SystemId[]>;
+  };
+  tileKeeps?: {
+    blue: Record<PlayerId, SystemId[]>;
+    red: Record<PlayerId, SystemId[]>;
+  };
+  initialFactionOptions?: Record<PlayerId, FactionId[]>;
+  initialFactionDrawPile?: FactionId[];
+  playerTiles?: Record<PlayerId, SystemId[]>;
+};
 
 export type Draft = {
   settings: DraftSettings;
@@ -402,13 +453,13 @@ export type Draft = {
   availableFactions: FactionId[];
   availableMinorFactions?: FactionId[];
   availableReferenceCardPacks?: FactionReferenceCardPack[]; // For Twilight's Fall
-  pickOrder: PlayerId[];
+  pickOrder: DraftPick[];
   selections: DraftSelection[];
   playerFactionPool?: Record<PlayerId, FactionId[]>;
   bannedFactions?: Record<PlayerId, FactionId[]>;
 
-  stagingPriorityValues?: Record<PlayerId, FactionId>;
-  stagingHomeSystemValues?: Record<PlayerId, FactionId>;
+  texasDraft?: TexasDraftState;
+  stagedSelections?: Partial<Record<SimultaneousPickType, Record<PlayerId, string>>>;
 };
 
 export type HydratedPlayer = {

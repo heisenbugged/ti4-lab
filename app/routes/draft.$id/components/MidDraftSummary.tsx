@@ -23,16 +23,24 @@ export function MidDraftSummary() {
     (state) => state.draft.settings.draftPlayerColors,
   );
   const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
+  const draftGameMode = useDraft((state) => state.draft.settings.draftGameMode);
   const { hydratedPlayers } = useHydratedDraft();
+  const pickOrder = useDraft((state) => state.draft.pickOrder);
   const usingMinorFactions = useDraft(
     (state) =>
       state.draft.settings.minorFactionsInSharedPool ||
       state.draft.availableMinorFactions !== undefined,
   );
-  const playerOrder = useDraft((state) => state.draft.pickOrder).slice(
-    0,
-    hydratedPlayers.length,
-  );
+  const showSeat = draftSpeaker || draftGameMode === "texasStyle";
+  const showSlice = draftGameMode !== "texasStyle";
+  const playerOrder =
+    draftGameMode === "texasStyle"
+      ? [...hydratedPlayers]
+          .sort((a, b) => (a.speakerOrder ?? 0) - (b.speakerOrder ?? 0))
+          .map((player) => player.id)
+      : pickOrder
+          .filter((entry): entry is number => typeof entry === "number")
+          .slice(0, hydratedPlayers.length);
 
   return (
     <>
@@ -43,7 +51,7 @@ export function MidDraftSummary() {
             key={p.id}
             player={p}
             slice={p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined}
-            showSeat={draftSpeaker}
+            showSeat={showSeat}
             showMinorFaction={usingMinorFactions}
             showPlayerColor={!!draftPlayerColors}
           />
@@ -56,8 +64,8 @@ export function MidDraftSummary() {
             <Table.Th>Faction</Table.Th>
             {usingMinorFactions && <Table.Th>Minor Faction</Table.Th>}
             <Table.Th>Speaker Order</Table.Th>
-            {draftSpeaker && <Table.Th>Seat</Table.Th>}
-            <Table.Th w="260px">Slice</Table.Th>
+            {showSeat && <Table.Th>Seat</Table.Th>}
+            {showSlice && <Table.Th w="260px">Slice</Table.Th>}
             {draftPlayerColors && <Table.Th>Color</Table.Th>}
           </Table.Tr>
         </Table.Thead>
@@ -75,7 +83,8 @@ export function MidDraftSummary() {
                     ? slices[player.sliceIdx]
                     : undefined
                 }
-                showSeat={draftSpeaker}
+                showSeat={showSeat}
+                showSlice={showSlice}
                 showMinorFaction={usingMinorFactions}
                 showPlayerColor={!!draftPlayerColors}
               />
@@ -92,6 +101,7 @@ type Props = {
   player: HydratedPlayer;
   slice?: Slice;
   showSeat: boolean;
+  showSlice?: boolean;
   showMinorFaction: boolean;
   showPlayerColor: boolean;
 };
@@ -210,6 +220,7 @@ function SummaryRow({
   player,
   slice,
   showSeat,
+  showSlice = true,
   showMinorFaction,
   showPlayerColor,
 }: Props) {
@@ -266,29 +277,31 @@ function SummaryRow({
           {player.seatIdx !== undefined && player.seatIdx + 1}
         </Table.Td>
       )}
-      <Table.Td>
-        <Group>
-          {sliceValue !== undefined && (
-            <Text fw={700} c="yellow.5">
-              {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
-            </Text>
-          )}
-          {optimal && (
-            <Group gap={4}>
-              <PlanetStatsPill
-                size="sm"
-                resources={optimal.resources}
-                influence={optimal.influence}
-                flex={optimal.flex}
-              />
-              <Text size="xs" c="dimmed">
-                ({optimal.resources + optimal.influence + optimal.flex})
+      {showSlice && (
+        <Table.Td>
+          <Group>
+            {sliceValue !== undefined && (
+              <Text fw={700} c="yellow.5">
+                {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
               </Text>
-            </Group>
-          )}
-          {slice !== undefined && <SliceFeatures slice={slice} />}
-        </Group>
-      </Table.Td>
+            )}
+            {optimal && (
+              <Group gap={4}>
+                <PlanetStatsPill
+                  size="sm"
+                  resources={optimal.resources}
+                  influence={optimal.influence}
+                  flex={optimal.flex}
+                />
+                <Text size="xs" c="dimmed">
+                  ({optimal.resources + optimal.influence + optimal.flex})
+                </Text>
+              </Group>
+            )}
+            {slice !== undefined && <SliceFeatures slice={slice} />}
+          </Group>
+        </Table.Td>
+      )}
       {showPlayerColor && <Table.Td>{player.factionColor}</Table.Td>}
     </Table.Tr>
   );

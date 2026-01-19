@@ -31,7 +31,6 @@ export function DraftableReferenceCard({
     <SelectableCard
       selected={!!player}
       selectedColor={playerColor}
-      hoverable={!!onSelect}
       disabled={disabled}
       onSelect={onSelect && !disabled ? onSelect : undefined}
       header={

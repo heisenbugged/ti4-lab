@@ -1,38 +1,34 @@
-import {
-  Group,
-  Stack,
-  Switch,
-  Center,
-  Button,
-  Title,
-  Text,
-  Grid,
-} from "@mantine/core";
+import { Box, Center, Grid } from "@mantine/core";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useReferenceCardSelectionPhase } from "~/hooks/useReferenceCardSelectionPhase";
 import { PlayerSelectionSidebar } from "../components/PlayerSelectionSidebar";
 import { ReferenceCardSelectionGrid } from "../components/ReferenceCardSelectionGrid";
-import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useDraft } from "~/draftStore";
-import { useState } from "react";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
-import { notifications } from "@mantine/notifications";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { SpectatorModeNotice } from "../components/SpectatorModeNotice";
+import { SimultaneousPhaseHeader } from "../components/SimultaneousPhaseHeader";
+import { useAdminControls } from "../components/useAdminControls";
 
 export function PriorityValueSelectionPhase() {
   const { stagePriorityValue, undoLastPick } = useSyncDraft();
-  const { adminMode, setAdminMode } = useSafeOutletContext();
+  const {
+    adminMode,
+    pickForAnyone,
+    setPickForAnyone,
+    showPickForAnyoneControl,
+    showUndoLastSelection,
+    passwordModalOpen,
+    setPasswordModalOpen,
+    handleAdminPasswordSubmit,
+    handleAdminToggle,
+  } = useAdminControls();
   const selections = useDraft((state) => state.draft.selections);
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
-  const adminPassword = useDraft((state) => state.draft.settings.adminPassword);
-  const hasAdminPassword = adminPassword !== undefined;
-
-  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
   const phase = useReferenceCardSelectionPhase({
     label: "Priority Value",
-    selectStagingValues: (d) => d.stagingPriorityValues,
+    phase: "priorityValue",
     stageAction: stagePriorityValue,
   });
   if (!phase.pack) return <LoadingOverlay />;
@@ -40,81 +36,37 @@ export function PriorityValueSelectionPhase() {
   // Spectator mode: allow browsing when no selected player (not logged in as any player)
   const isSpectatorMode = selectedPlayer === -1;
 
-  const handleAdminPasswordSubmit = (password: string) => {
-    if (password === adminPassword) {
-      setAdminMode(true);
-    } else {
-      notifications.show({
-        title: "Incorrect password",
-        message: "Please try again",
-        color: "red",
-      });
+  const handleUndo = async () => {
+    if (confirm("Are you sure you want to undo the last selection?")) {
+      await undoLastPick();
     }
-    setPasswordModalOpen(false);
   };
 
-  const showPickForAnyoneControl = !hasAdminPassword || adminMode;
-  const showUndoLastSelection = !hasAdminPassword || adminMode;
-
   return (
-    <Stack gap="xl" h="100vh" p="xl">
+    <Box mih="100vh">
       <AdminPasswordModal
         opened={passwordModalOpen}
         onClose={() => setPasswordModalOpen(false)}
         onSubmit={handleAdminPasswordSubmit}
       />
 
-      <Group justify="flex-end">
-        {showUndoLastSelection && (
-          <Button
-            onClick={async () => {
-              if (
-                confirm("Are you sure you want to undo the last selection?")
-              ) {
-                await undoLastPick();
-              }
-            }}
-            disabled={selections.length === 0}
-          >
-            Undo Last Selection
-          </Button>
-        )}
-        {showPickForAnyoneControl && (
-          <Switch
-            label="Pick for anyone"
-            checked={phase.pickForAnyone}
-            onChange={(e) =>
-              phase.onTogglePickForAnyone(e.currentTarget.checked)
-            }
-          />
-        )}
-        <Switch
-          label="Admin mode"
-          checked={adminMode}
-          onChange={(e) => {
-            if (!e.currentTarget.checked) {
-              setAdminMode(false);
-              return;
-            }
-            if (hasAdminPassword) {
-              setPasswordModalOpen(true);
-            } else {
-              setAdminMode(e.currentTarget.checked);
-            }
-          }}
-        />
-      </Group>
+      <SimultaneousPhaseHeader
+        phaseName="Priority Value Selection"
+        phaseColor="blue"
+        description="Select your priority value card"
+        adminMode={adminMode}
+        onAdminToggle={handleAdminToggle}
+        showPickForAnyoneControl={showPickForAnyoneControl}
+        pickForAnyone={pickForAnyone}
+        onTogglePickForAnyone={() => setPickForAnyone(!pickForAnyone)}
+        showUndo={showUndoLastSelection}
+        onUndo={handleUndo}
+        undoDisabled={selections.length === 0}
+      />
 
-      <Stack gap="xs" align="center">
-        <Title order={1}>Priority Value Selection</Title>
-        <Text size="md" c="dimmed" ta="center" maw={600}>
-          Select your priority value card. The priority order determines speaker
-          order, with lower values getting earlier picks.
-        </Text>
-        <SpectatorModeNotice isSpectatorMode={isSpectatorMode} />
-      </Stack>
+      <SpectatorModeNotice isSpectatorMode={isSpectatorMode} />
 
-      <Center style={{ flex: 1 }}>
+      <Center p="md" pt="lg">
         <Grid
           maw={1600}
           w="100%"
@@ -148,6 +100,6 @@ export function PriorityValueSelectionPhase() {
           </Grid.Col>
         </Grid>
       </Center>
-    </Stack>
+    </Box>
   );
 }

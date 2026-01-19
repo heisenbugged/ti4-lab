@@ -13,6 +13,7 @@ import {
   InGameColor,
   FactionStratification,
   DraftSelection,
+  SimultaneousPickType,
 } from "./types";
 import { generateEmptyMap } from "./utils/map";
 import { draftConfig } from "./draft/draftConfig";
@@ -37,6 +38,11 @@ import { factions } from "./data/factionData";
 import { notifications } from "@mantine/notifications";
 import { coreRerollSlice, coreRerollMap } from "./draft/common/sliceGenerator";
 import { systemData } from "./data/systemData";
+import {
+  createTexasSeatAssignments,
+  dealTexasFactionOptions,
+  dealTexasTiles,
+} from "./draft/texas/texasDraft";
 
 // Define SelectionType type based on the selection types used in the code
 type SelectionType =
@@ -93,11 +99,21 @@ type DraftV2State = {
       referenceFactionId: FactionId,
     ) => void;
     selectReferenceCardPack: (playerId: number, packIdx: number) => void;
+    stageSimultaneousPick: (
+      phase: SimultaneousPickType,
+      playerId: number,
+      value: string,
+    ) => void;
     stagePriorityValue: (playerId: number, factionId: FactionId) => void;
     stageHomeSystem: (playerId: number, factionId: FactionId) => void;
     selectPlayerColor: (playerId: number, color: InGameColor) => void;
     selectSeat: (playerId: number, seatIdx: number) => void;
     banFaction: (playerId: PlayerId, factionId: FactionId) => void;
+    placeTexasTile: (
+      playerId: PlayerId,
+      mapIdx: number,
+      systemId: SystemId,
+    ) => void;
     undoLastSelection: () => void;
   };
   replayActions: {
@@ -401,20 +417,41 @@ export const draftStore = createStore<DraftV2State>()(
           });
         }),
 
+      stageSimultaneousPick: (
+        phase: SimultaneousPickType,
+        playerId: number,
+        value: string,
+      ) =>
+        set((state) => {
+          if (!state.draft.stagedSelections) {
+            state.draft.stagedSelections = {};
+          }
+          if (!state.draft.stagedSelections[phase]) {
+            state.draft.stagedSelections[phase] = {};
+          }
+          state.draft.stagedSelections[phase]![playerId] = value;
+        }),
+
       stagePriorityValue: (playerId: number, factionId: FactionId) =>
         set((state) => {
-          if (!state.draft.stagingPriorityValues) {
-            state.draft.stagingPriorityValues = {};
+          if (!state.draft.stagedSelections) {
+            state.draft.stagedSelections = {};
           }
-          state.draft.stagingPriorityValues[playerId] = factionId;
+          if (!state.draft.stagedSelections.priorityValue) {
+            state.draft.stagedSelections.priorityValue = {};
+          }
+          state.draft.stagedSelections.priorityValue[playerId] = factionId;
         }),
 
       stageHomeSystem: (playerId: number, factionId: FactionId) =>
         set((state) => {
-          if (!state.draft.stagingHomeSystemValues) {
-            state.draft.stagingHomeSystemValues = {};
+          if (!state.draft.stagedSelections) {
+            state.draft.stagedSelections = {};
           }
-          state.draft.stagingHomeSystemValues[playerId] = factionId;
+          if (!state.draft.stagedSelections.homeSystem) {
+            state.draft.stagedSelections.homeSystem = {};
+          }
+          state.draft.stagedSelections.homeSystem[playerId] = factionId;
         }),
 
       selectPlayerColor: (playerId: number, color: InGameColor) =>
@@ -449,23 +486,76 @@ export const draftStore = createStore<DraftV2State>()(
               bannedFactions,
             );
 
-            state.draft.availableFactions = randomizeFactions(
-              state.draft.settings.numFactions,
-              draftableFactions,
-              state.draft.settings.requiredFactions,
-              state.draft.settings.factionStratification,
-            );
+            if (state.draft.settings.draftGameMode === "texasStyle") {
+              const handSize = state.draft.settings.texasFactionHandSize ?? 2;
+              const {
+                factionOptions,
+                factionDrawPile,
+                initialFactionOptions,
+                initialFactionDrawPile,
+              } =
+                dealTexasFactionOptions(
+                  draftableFactions,
+                  state.draft.players,
+                  handSize,
+                );
+              if (!state.draft.texasDraft) {
+                state.draft.texasDraft = {
+                  ...createTexasSeatAssignments(state.draft.players),
+                };
+              }
+              state.draft.texasDraft.factionOptions = factionOptions;
+              state.draft.texasDraft.factionDrawPile = factionDrawPile;
+              state.draft.texasDraft.initialFactionOptions = initialFactionOptions;
+              state.draft.texasDraft.initialFactionDrawPile =
+                initialFactionDrawPile;
+              state.draft.availableFactions = draftableFactions;
+            } else {
+              state.draft.availableFactions = randomizeFactions(
+                state.draft.settings.numFactions,
+                draftableFactions,
+                state.draft.settings.requiredFactions,
+                state.draft.settings.factionStratification,
+              );
 
-            // Regenerate player faction bags from new availableFactions
-            const numPreassigned = state.draft.settings.numPreassignedFactions;
-            if (state.draft.playerFactionPool && numPreassigned !== undefined) {
-              const available = shuffle([...state.draft.availableFactions]);
-              state.draft.players.forEach((player) => {
-                const bag = available.splice(0, numPreassigned);
-                state.draft.playerFactionPool![player.id] = bag;
-              });
+              // Regenerate player faction bags from new availableFactions
+              const numPreassigned = state.draft.settings.numPreassignedFactions;
+              if (state.draft.playerFactionPool && numPreassigned !== undefined) {
+                const available = shuffle([...state.draft.availableFactions]);
+                state.draft.players.forEach((player) => {
+                  const bag = available.splice(0, numPreassigned);
+                  state.draft.playerFactionPool![player.id] = bag;
+                });
+              }
             }
           }
+        }),
+
+      placeTexasTile: (playerId: PlayerId, mapIdx: number, systemId: SystemId) =>
+        set((state) => {
+          const texasDraft = state.draft.texasDraft;
+          if (!texasDraft?.playerTiles) return;
+          const playerTiles = texasDraft.playerTiles[playerId];
+          if (!playerTiles || !playerTiles.includes(systemId)) return;
+          const mapTile = state.draft.presetMap[mapIdx];
+          if (!mapTile || mapTile.type !== "OPEN") return;
+
+          state.draft.presetMap[mapIdx] = {
+            ...mapTile,
+            type: "SYSTEM",
+            systemId,
+          };
+
+          texasDraft.playerTiles[playerId] = playerTiles.filter(
+            (id) => id !== systemId,
+          );
+
+          state.draft.selections.push({
+            type: "PLACE_TILE",
+            playerId,
+            mapIdx,
+            systemId,
+          });
         }),
     },
     replayActions: {
@@ -611,6 +701,34 @@ export const draftStore = createStore<DraftV2State>()(
             draft.availableReferenceCardPacks = generateReferenceCardPacks(
               settings.numReferenceCardPacks ?? players.length,
             );
+          } else if (settings.draftGameMode === "texasStyle") {
+            const draftableFactions = getDraftableFactions(
+              state.factionPool,
+              null,
+              settings.allowedFactions,
+            );
+
+            draft.availableFactions = draftableFactions;
+
+            draft.texasDraft = {
+              ...createTexasSeatAssignments(players),
+              ...dealTexasTiles(state.systemPool, players),
+            };
+
+            const hasBanPhase = !!settings.modifiers?.banFactions;
+            if (!hasBanPhase) {
+              const handSize = settings.texasFactionHandSize ?? 2;
+              const {
+                factionOptions,
+                factionDrawPile,
+                initialFactionOptions,
+                initialFactionDrawPile,
+              } = dealTexasFactionOptions(draftableFactions, players, handSize);
+              draft.texasDraft.factionOptions = factionOptions;
+              draft.texasDraft.factionDrawPile = factionDrawPile;
+              draft.texasDraft.initialFactionOptions = initialFactionOptions;
+              draft.texasDraft.initialFactionDrawPile = initialFactionDrawPile;
+            }
           } else {
             draft.availableFactions = randomizeFactions(
               settings.numFactions,
@@ -669,8 +787,12 @@ export const draftStore = createStore<DraftV2State>()(
             );
           }
 
-          // Set slice names using the utility function
-          draft.slices = setSliceNames(draft.slices);
+          if (settings.draftGameMode === "texasStyle") {
+            draft.slices = [];
+          } else {
+            // Set slice names using the utility function
+            draft.slices = setSliceNames(draft.slices);
+          }
 
           state.draft.settings = settings;
           state.initialized = true;

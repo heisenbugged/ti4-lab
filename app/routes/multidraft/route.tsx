@@ -16,6 +16,11 @@ import { createDraftOrder } from "~/utils/draftOrder.server";
 
 import { getFactionPool } from "~/utils/factions";
 import { getSystemPool } from "~/utils/system";
+import {
+  createTexasSeatAssignments,
+  dealTexasFactionOptions,
+  dealTexasTiles,
+} from "~/draft/texas/texasDraft";
 
 const parseIfDefined = (v: unknown | null | undefined): unknown => {
   if (v === null || v === undefined || v === "") return undefined;
@@ -58,6 +63,28 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!slices) return;
     const presetMap = initializeMap(settings, slices, systemPool);
 
+    let texasDraft = undefined;
+    if (settings.draftGameMode === "texasStyle") {
+      texasDraft = {
+        ...createTexasSeatAssignments(players),
+        ...dealTexasTiles(systemPool, players),
+      };
+
+      if (!settings.modifiers?.banFactions) {
+        const handSize = settings.texasFactionHandSize ?? 2;
+        const {
+          factionOptions,
+          factionDrawPile,
+          initialFactionOptions,
+          initialFactionDrawPile,
+        } = dealTexasFactionOptions(availableFactions, players, handSize);
+        texasDraft.factionOptions = factionOptions;
+        texasDraft.factionDrawPile = factionDrawPile;
+        texasDraft.initialFactionOptions = initialFactionOptions;
+        texasDraft.initialFactionDrawPile = initialFactionDrawPile;
+      }
+    }
+
     const draft: Draft = {
       settings,
       integrations: { discord: discordData },
@@ -65,7 +92,14 @@ export async function action({ request }: ActionFunctionArgs) {
       availableMinorFactions,
       presetMap,
       slices,
-      ...createDraftOrder(players, settings, availableFactions),
+      texasDraft,
+      ...createDraftOrder({
+        players,
+        settings,
+        availableFactions,
+        presetMap,
+        texasDraft,
+      }),
     };
     const { prettyUrl } = await createDraft(draft);
     draftUrlNames.push(prettyUrl);

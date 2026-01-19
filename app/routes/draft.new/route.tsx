@@ -11,7 +11,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs } from "react-router";
 import { redirect, useLocation, useNavigate } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { PlanetFinder } from "~/routes/draft.$id/components/PlanetFinder";
 import { draftStore, useDraft } from "~/draftStore";
 import { Draft } from "~/types";
@@ -53,6 +53,8 @@ export default function DraftNew() {
   const showFullMap =
     config.modifiableMapTiles.length > 0 ||
     Object.keys(config.presetTiles).length > 0;
+  const isTexasStyle = draft.settings.draftGameMode === "texasStyle";
+  const autoCreatedRef = useRef(false);
 
   useEffect(() => {
     if (location.state == null) {
@@ -82,9 +84,17 @@ export default function DraftNew() {
     return () => actions?.reset();
   }, []);
 
+  useEffect(() => {
+    if (!initialized || !isTexasStyle || autoCreatedRef.current) return;
+    if (!draftIsValid) return;
+    autoCreatedRef.current = true;
+    createDraft(draft);
+  }, [initialized, isTexasStyle, draftIsValid, createDraft, draft]);
+
   const handleCreate = () => createDraft(draft);
 
   if (!initialized) return <LoadingOverlay />;
+  if (isTexasStyle) return <LoadingOverlay />;
 
   const advancedOptions = (
     <Stack gap="lg">
@@ -135,14 +145,20 @@ export default function DraftNew() {
       </Box>
 
       <Stack>
-        <AvailableReferenceCardPacksSection />
-        <AvailableFactionsSection />
-        <AvailableMinorFactionsSection />
+        {draft.settings.draftGameMode !== "texasStyle" && (
+          <>
+            <AvailableReferenceCardPacksSection />
+            <AvailableFactionsSection />
+            <AvailableMinorFactionsSection />
+          </>
+        )}
       </Stack>
 
-      <Box mt="lg">
-        <SlicesSection />
-      </Box>
+      {!isTexasStyle && (
+        <Box mt="lg">
+          <SlicesSection />
+        </Box>
+      )}
 
       <Grid style={{ gap: 30 }} mt="50px">
         <Grid.Col
@@ -161,7 +177,7 @@ export default function DraftNew() {
           span={{ base: 12, lg: 6 }}
           order={showFullMap ? { base: 1, lg: 2 } : undefined}
         >
-          {showFullMap && <MapSection />}
+          {showFullMap && !isTexasStyle && <MapSection />}
           {!showFullMap && advancedOptions}
         </Grid.Col>
       </Grid>
@@ -177,7 +193,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const draft: Draft = {
     ...body,
-    ...createDraftOrder(body.players, body.settings, body.availableFactions),
+    ...createDraftOrder({
+      players: body.players,
+      settings: body.settings,
+      availableFactions: body.availableFactions,
+      presetMap: body.presetMap,
+      texasDraft: body.texasDraft,
+    }),
   };
 
   const { prettyUrl, id } = await createDraft(draft, presetUrl);

@@ -7,8 +7,9 @@ import classes from "./SelectableCard.module.css";
 export interface SelectableCardProps {
   selected?: boolean;
   selectedColor?: PlayerColor;
-  hoverable?: boolean;
   disabled?: boolean;
+  layout?: "split" | "unified";
+  interaction?: "none" | "header" | "full";
   onSelect?: () => void;
   header: ReactNode;
   body: ReactNode;
@@ -17,14 +18,41 @@ export interface SelectableCardProps {
 export function SelectableCard({
   selected,
   selectedColor,
-  hoverable,
   disabled,
+  layout = "split",
+  interaction,
   onSelect,
   header,
   body,
 }: SelectableCardProps) {
-  const variant = hoverable && onSelect ? "interactive" : "card";
+  const resolvedInteraction = interaction ?? (onSelect ? "header" : "none");
+  const isInteractive = !!onSelect && resolvedInteraction !== "none";
+  const variant = isInteractive ? "interactive" : "card";
   const color = selected && selectedColor ? selectedColor : undefined;
+
+  if (layout === "unified") {
+    return (
+      <Surface
+        variant={variant}
+        color={color}
+        className={classes.header}
+        onClick={isInteractive ? onSelect : undefined}
+        style={{
+          cursor: isInteractive ? "pointer" : "default",
+          opacity: disabled ? 0.5 : selected ? 0.5 : 1,
+          position: "relative",
+        }}
+      >
+        <Stack gap={0}>
+          {header}
+          <Box className={classes.body}>{body}</Box>
+        </Stack>
+      </Surface>
+    );
+  }
+
+  const headerInteractive = resolvedInteraction !== "none";
+  const bodyInteractive = resolvedInteraction === "full";
 
   return (
     <Stack gap={0}>
@@ -32,9 +60,9 @@ export function SelectableCard({
         variant={variant}
         color={color}
         className={classes.header}
-        onClick={onSelect}
+        onClick={headerInteractive ? onSelect : undefined}
         style={{
-          cursor: onSelect ? "pointer" : "default",
+          cursor: headerInteractive && isInteractive ? "pointer" : "default",
           opacity: disabled ? 0.5 : selected ? 0.5 : 1,
           position: "relative",
         }}
@@ -42,7 +70,13 @@ export function SelectableCard({
         {header}
       </Surface>
       <Box className={classes.body}>
-        <Surface variant="card">{body}</Surface>
+        <Surface
+          variant={bodyInteractive ? variant : "card"}
+          onClick={bodyInteractive ? onSelect : undefined}
+          style={{ cursor: bodyInteractive && isInteractive ? "pointer" : "default" }}
+        >
+          {body}
+        </Surface>
       </Box>
     </Stack>
   );

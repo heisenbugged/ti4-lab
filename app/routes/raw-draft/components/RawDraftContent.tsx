@@ -128,7 +128,7 @@ export function RawDraftContent() {
         <AppShell
           navbar={{
             width: 250,
-            breakpoint: "sm",
+            breakpoint: "md",
             collapsed: { mobile: true },
           }}
           padding={0}

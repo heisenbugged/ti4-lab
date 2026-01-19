@@ -1,10 +1,10 @@
-import { v4 as uuidv4 } from "uuid";
 import { desc, eq, sql } from "drizzle-orm";
 import { db } from "./config.server";
-import { drafts } from "./schema.server";
+import { drafts, draftStagedSelections } from "./schema.server";
 import { generatePrettyUrlName } from "~/data/urlWords.server";
-import { Draft } from "~/types";
+import { Draft, SimultaneousPickType } from "~/types";
 import { enqueueImageJob } from "~/utils/imageJobQueue.server";
+import { v4 as uuidv4 } from "uuid";
 
 export async function draftById(id: string) {
   const results = await db
@@ -14,6 +14,11 @@ export async function draftById(id: string) {
     .limit(1);
 
   return results[0];
+}
+
+function stripEphemeralDraftFields(draft: Draft): Draft {
+  const { stagedSelections, ...persistable } = draft;
+  return persistable;
 }
 
 type SavedDraft = {
@@ -220,7 +225,7 @@ export async function createDraft(draft: Draft, presetUrl?: string) {
     .values({
       id,
       urlName: prettyUrl,
-      data: JSON.stringify(draft),
+      data: JSON.stringify(stripEphemeralDraftFields(draft)),
       type,
       isComplete,
     })
@@ -261,7 +266,7 @@ export async function updateDraft(id: string, draftData: Draft) {
 
   db.update(drafts)
     .set({
-      data: JSON.stringify(draftData),
+      data: JSON.stringify(stripEphemeralDraftFields(draftData)),
       type,
       isComplete: newIsComplete,
     })
@@ -274,61 +279,82 @@ export async function updateDraft(id: string, draftData: Draft) {
   }
 }
 
-export async function addStagingPick(
+export async function upsertStagedSelection(
   draftId: string,
-  stageType: "priority" | "home",
+  phase: SimultaneousPickType,
   playerId: number,
-  factionId: string,
+  value: string,
 ) {
-  const jsonPath =
-    stageType === "priority"
-      ? `$.stagingPriorityValues.${playerId}`
-      : `$.stagingHomeSystemValues.${playerId}`;
-
   await db
-    .update(drafts)
-    .set({
-      data: sql`json_set(${drafts.data}, ${jsonPath}, ${factionId})`,
+    .insert(draftStagedSelections)
+    .values({
+      id: uuidv4().toString(),
+      draftId,
+      phase,
+      playerId,
+      value,
     })
-    .where(eq(drafts.id, draftId))
+    .onConflictDoUpdate({
+      target: [
+        draftStagedSelections.draftId,
+        draftStagedSelections.phase,
+        draftStagedSelections.playerId,
+      ],
+      set: { value },
+    })
     .run();
 }
 
-export async function getStagingState(
+export async function getStagedSelections(
   draftId: string,
-  stageType: "priority" | "home",
-): Promise<Record<number, string> | null> {
-  const jsonPath =
-    stageType === "priority"
-      ? "$.stagingPriorityValues"
-      : "$.stagingHomeSystemValues";
-
+  phase: SimultaneousPickType,
+): Promise<Record<number, string>> {
   const result = await db
     .select({
-      staging: sql<string>`json_extract(${drafts.data}, ${jsonPath})`,
+      playerId: draftStagedSelections.playerId,
+      value: draftStagedSelections.value,
     })
-    .from(drafts)
-    .where(eq(drafts.id, draftId))
-    .limit(1);
+    .from(draftStagedSelections)
+    .where(
+      sql`${draftStagedSelections.draftId} = ${draftId} AND ${draftStagedSelections.phase} = ${phase}`,
+    );
 
-  if (!result[0]?.staging) return null;
-  return JSON.parse(result[0].staging);
+  return result.reduce<Record<number, string>>((acc, row) => {
+    acc[row.playerId] = row.value;
+    return acc;
+  }, {});
 }
 
-export async function clearStaging(
+export async function clearStagedSelections(
   draftId: string,
-  stageType: "priority" | "home",
+  phase: SimultaneousPickType,
 ) {
-  const jsonPath =
-    stageType === "priority"
-      ? "$.stagingPriorityValues"
-      : "$.stagingHomeSystemValues";
-
   await db
-    .update(drafts)
-    .set({
-      data: sql`json_remove(${drafts.data}, ${jsonPath})`,
-    })
-    .where(eq(drafts.id, draftId))
+    .delete(draftStagedSelections)
+    .where(
+      sql`${draftStagedSelections.draftId} = ${draftId} AND ${draftStagedSelections.phase} = ${phase}`,
+    )
     .run();
+}
+
+export async function getDraftStagedSelections(
+  draftId: string,
+): Promise<Partial<Record<SimultaneousPickType, Record<number, string>>>> {
+  const result = await db
+    .select({
+      phase: draftStagedSelections.phase,
+      playerId: draftStagedSelections.playerId,
+      value: draftStagedSelections.value,
+    })
+    .from(draftStagedSelections)
+    .where(eq(draftStagedSelections.draftId, draftId));
+
+  return result.reduce<
+    Partial<Record<SimultaneousPickType, Record<number, string>>>
+  >((acc, row) => {
+    const phase = row.phase as SimultaneousPickType;
+    if (!acc[phase]) acc[phase] = {};
+    acc[phase]![row.playerId] = row.value;
+    return acc;
+  }, {});
 }
