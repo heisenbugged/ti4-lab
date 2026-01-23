@@ -3,6 +3,7 @@ import {
   Player,
   Draft,
   DraftSelection,
+  DraftSettings,
   HydratedPlayer,
   DiscordPlayer,
   PlayerId,
@@ -29,7 +30,13 @@ export function hydratePlayers(
   discordPlayers: DiscordPlayer[] = [],
   availableReferenceCardPacks?: FactionReferenceCardPack[],
   texasDraft?: Draft["texasDraft"],
+  settings?: DraftSettings,
 ): HydratedPlayer[] {
+  // Derive preserveSeatAssignment from settings
+  const preserveSeatAssignment =
+    settings?.draftGameMode === "twilightsFall" &&
+    settings?.nucleusStyle === true;
+
   const hydratedPlayers = players.map((p) => {
     const discordPlayer = discordPlayers.find((dp) => dp.playerId === p.id);
 
@@ -133,14 +140,23 @@ export function hydratePlayers(
           return priorityA - priorityB;
         });
 
-        sortedByPriority.forEach(({ playerId }, seatIdx) => {
+        sortedByPriority.forEach(({ playerId }, speakerOrder) => {
           const idx = acc.findIndex((p) => p.id === playerId);
           if (idx !== -1) {
-            acc[idx] = {
-              ...acc[idx],
-              seatIdx,
-              speakerOrder: seatIdx,
-            };
+            // If preserveSeatAssignment is true and player already has a seat,
+            // only assign speakerOrder, not seatIdx
+            if (preserveSeatAssignment && acc[idx].seatIdx !== undefined) {
+              acc[idx] = {
+                ...acc[idx],
+                speakerOrder,
+              };
+            } else {
+              acc[idx] = {
+                ...acc[idx],
+                seatIdx: speakerOrder,
+                speakerOrder,
+              };
+            }
           }
         });
       }
@@ -165,14 +181,23 @@ export function hydratePlayers(
             return priorityA - priorityB;
           });
 
-          sortedByPriority.forEach(({ playerId }, seatIdx) => {
+          sortedByPriority.forEach(({ playerId }, speakerOrder) => {
             const idx = acc.findIndex((p) => p.id === playerId);
             if (idx !== -1) {
-              acc[idx] = {
-                ...acc[idx],
-                seatIdx,
-                speakerOrder: seatIdx,
-              };
+              // If preserveSeatAssignment is true and player already has a seat,
+              // only assign speakerOrder, not seatIdx
+              if (preserveSeatAssignment && acc[idx].seatIdx !== undefined) {
+                acc[idx] = {
+                  ...acc[idx],
+                  speakerOrder,
+                };
+              } else {
+                acc[idx] = {
+                  ...acc[idx],
+                  seatIdx: speakerOrder,
+                  speakerOrder,
+                };
+              }
             }
           });
         }
@@ -294,6 +319,7 @@ export const hydratedPlayersAtom = atom((get) => {
     draft.integrations.discord?.players,
     draft.availableReferenceCardPacks,
     draft.texasDraft,
+    draft.settings,
   );
 });
 

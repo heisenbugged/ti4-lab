@@ -16,6 +16,9 @@ export function getDraftSummaryMessage(draft: Draft): string {
     draft.selections,
     draft.settings.draftSpeaker,
     draft.integrations.discord?.players,
+    undefined,
+    undefined,
+    draft.settings,
   );
 
   const currentPick = draft.selections.length;

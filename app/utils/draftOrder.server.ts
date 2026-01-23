@@ -58,13 +58,22 @@ export function createDraftOrder({
   const reversedPlayerIds = [...playerIds].reverse();
 
   if (settings.draftGameMode === "twilightsFall") {
+    const isNucleus = settings.nucleusStyle === true;
     const pickOrder: DraftPick[] = [
       ...playerIds,
       ...reversedPlayerIds,
       ...playerIds,
-      { kind: "simultaneous", phase: "priorityValue" },
-      { kind: "simultaneous", phase: "homeSystem" },
     ];
+
+    // For nucleus mode, add speaker order round if draftSpeaker is enabled
+    if (isNucleus && settings.draftSpeaker) {
+      pickOrder.push(...reversedPlayerIds);
+      pickOrder.push(...playerIds);
+      pickOrder.push(...reversedPlayerIds);
+    }
+
+    pickOrder.push({ kind: "simultaneous", phase: "priorityValue" });
+    pickOrder.push({ kind: "simultaneous", phase: "homeSystem" });
 
     return {
       players: players.map((p) => ({
@@ -85,7 +94,7 @@ export function createDraftOrder({
       ...seatOrder.filter((id) => id !== speakerId).reverse(),
     ];
 
-    let pickOrder: DraftPick[] = [];
+    const pickOrder: DraftPick[] = [];
 
     if (settings.modifiers?.banFactions) {
       const modifier = settings.modifiers.banFactions;

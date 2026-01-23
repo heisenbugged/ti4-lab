@@ -1,6 +1,9 @@
-import { getAdjacentPositions } from "~/draft/common/sliceGenerator";
 import { systemData } from "~/data/systemData";
 import { getRingForIndex } from "~/utils/hexCoordinates";
+import {
+  buildHexGraph,
+  getPositionsWithinDistance,
+} from "~/utils/hexDistance";
 import { Map, SystemId } from "~/types";
 
 export function getCurrentPlaceableRing(map: Map): number {
@@ -31,6 +34,10 @@ export function getPlaceableTileIndices(
   const draggedSystem = systemData[draggedSystemId];
   if (!draggedSystem) return baseIndices;
 
+  // Build hex graph with OPEN tiles included for adjacency checking
+  // This is necessary because OPEN tiles need edges to detect hyperlane-connected anomalies
+  const graph = buildHexGraph(map, { includeOpenTiles: true });
+
   let filtered = baseIndices;
 
   if (draggedSystem.anomalies.length > 0) {
@@ -40,15 +47,21 @@ export function getPlaceableTileIndices(
 
     if (hasNonAnomalyOption) {
       filtered = filtered.filter((idx) => {
-        const adjacentPositions = getAdjacentPositions(idx);
-        return !adjacentPositions.some((adjIdx) => {
+        // Get all positions within distance 1 (includes hyperlane shortcuts)
+        const reachablePositions = getPositionsWithinDistance(graph, idx, 1);
+        // Check if any adjacent position (excluding self) has an anomaly
+        for (const [adjIdx] of reachablePositions) {
+          if (adjIdx === idx) continue;
           const adjTile = map[adjIdx];
-          return (
+          if (
             adjTile &&
             adjTile.type === "SYSTEM" &&
             systemData[adjTile.systemId]?.anomalies.length > 0
-          );
-        });
+          ) {
+            return false;
+          }
+        }
+        return true;
       });
     }
   }
@@ -62,15 +75,21 @@ export function getPlaceableTileIndices(
 
       if (hasAlternative) {
         filtered = filtered.filter((idx) => {
-          const adjacentPositions = getAdjacentPositions(idx);
-          return !adjacentPositions.some((adjIdx) => {
+          // Get all positions within distance 1 (includes hyperlane shortcuts)
+          const reachablePositions = getPositionsWithinDistance(graph, idx, 1);
+          // Check if any adjacent position (excluding self) has the same wormhole
+          for (const [adjIdx] of reachablePositions) {
+            if (adjIdx === idx) continue;
             const adjTile = map[adjIdx];
-            return (
+            if (
               adjTile &&
               adjTile.type === "SYSTEM" &&
               systemData[adjTile.systemId]?.wormholes.includes(wormholeType)
-            );
-          });
+            ) {
+              return false;
+            }
+          }
+          return true;
         });
       }
     });

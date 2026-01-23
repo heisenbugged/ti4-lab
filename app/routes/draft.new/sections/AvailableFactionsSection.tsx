@@ -24,17 +24,17 @@ export function AvailableFactionsSection() {
     ),
   );
 
-  const { numFactions, availableFactions } = useDraft((state) => ({
+  const { numFactions, availableFactions, playerCount } = useDraft((state) => ({
     numFactions: state.draft.settings.numFactions,
     availableFactions: state.draft.availableFactions,
+    playerCount: state.draft.players.length,
   }));
 
   const draftGameMode = useDraft(
     (state) => state.draft.settings.draftGameMode,
   );
 
-  // Hide faction section entirely for Twilight's Fall mode
-  if (draftGameMode === "twilightsFall") return null;
+  const isTwilightsFall = draftGameMode === "twilightsFall";
 
   if (hasBanPhase) {
     return (
@@ -65,12 +65,15 @@ export function AvailableFactionsSection() {
     );
   }
 
+  const minFactions = isTwilightsFall ? playerCount : 6;
+  const maxFactions = isTwilightsFall ? 8 : factionPool.length;
+
   return (
     <Section>
-      <SectionTitle title="Faction Pool">
+      <SectionTitle title={isTwilightsFall ? "Kings Pool" : "Faction Pool"}>
         <Group gap="sm">
           <Group gap={4}>
-            <Tooltip label="Randomize factions" withArrow position="top">
+            <Tooltip label={isTwilightsFall ? "Randomize kings" : "Randomize factions"} withArrow position="top">
               <ActionIcon
                 size="sm"
                 variant="subtle"
@@ -81,16 +84,18 @@ export function AvailableFactionsSection() {
               </ActionIcon>
             </Tooltip>
 
-            <Tooltip label="Configure pool" withArrow position="top">
-              <ActionIcon
-                size="sm"
-                variant="subtle"
-                color="gray"
-                onMouseDown={openFactionSettings}
-              >
-                <IconSettings size={16} />
-              </ActionIcon>
-            </Tooltip>
+            {!isTwilightsFall && (
+              <Tooltip label="Configure pool" withArrow position="top">
+                <ActionIcon
+                  size="sm"
+                  variant="subtle"
+                  color="gray"
+                  onMouseDown={openFactionSettings}
+                >
+                  <IconSettings size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
           </Group>
 
           <Group gap={4}>
@@ -104,8 +109,8 @@ export function AvailableFactionsSection() {
           <NumberStepper
             decrease={removeLastFaction}
             increase={addRandomFaction}
-            decreaseDisabled={numFactions <= 6}
-            increaseDisabled={numFactions >= factionPool.length}
+            decreaseDisabled={numFactions <= minFactions}
+            increaseDisabled={numFactions >= maxFactions}
           />
         </Group>
       </SectionTitle>
@@ -118,7 +123,7 @@ export function AvailableFactionsSection() {
             key={`${factionId}-${idx}`}
             faction={factions[factionId]}
             onRemove={() => removeFaction(factionId)}
-            removeEnabled={availableFactions.length > 6}
+            removeEnabled={availableFactions.length > minFactions}
           />
         ))}
       </SimpleGrid>

@@ -375,7 +375,7 @@ export default function RunningDraft() {
         </Grid.Col>
         <Grid.Col
           span={
-            settings.draftGameMode === "twilightsFall"
+            settings.draftGameMode === "twilightsFall" && !settings.nucleusStyle
               ? 12
               : { base: 12, lg: 6 }
           }
@@ -383,7 +383,8 @@ export default function RunningDraft() {
         >
           <SlicesSection />
         </Grid.Col>
-        {settings.draftGameMode !== "twilightsFall" && (
+        {(settings.draftGameMode !== "twilightsFall" ||
+          settings.nucleusStyle) && (
           <Grid.Col
             span={{ base: 12, lg: 6 }}
             order={{ base: 6, sm: 6, lg: 6 }}

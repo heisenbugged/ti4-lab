@@ -39,6 +39,9 @@ export async function generateDraftImageBuffer(
     draft.selections,
     draft.settings.draftSpeaker,
     draft.integrations.discord?.players,
+    undefined,
+    undefined,
+    draft.settings,
   );
 
   const hydratedMap = hydrateMap(

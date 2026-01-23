@@ -273,10 +273,20 @@ export type DraftSettings = {
   /** Number of reference card packs for Twilight's Fall (defaults to player count, max 10) */
   numReferenceCardPacks?: number;
 
+  /** Number of kings (Mahact factions) for Twilight's Fall (defaults to 8, min = player count) */
+  numKings?: number;
+
   /** Pre-seeded slices from map generator (SystemId arrays) */
   presetSlices?: SystemId[][];
   /** Pre-seeded map from map generator (for center tiles/equidistants) */
   presetMap?: Map;
+
+  /**
+   * If true, slices have fixed map positions (nucleus-style layout).
+   * This means picking a slice determines your seat position.
+   * Used in Heisen maps for Twilight's Fall.
+   */
+  nucleusStyle?: boolean;
 
   // Legacy settings
   allowEmptyTiles: boolean;

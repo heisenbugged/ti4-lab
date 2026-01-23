@@ -117,11 +117,14 @@ function getRotatedHyperlanes(
 /**
  * Check if a tile at the given position is passable.
  * SYSTEM (including hyperlanes), and HOME tiles are passable.
- * OPEN tiles are not passable - they represent empty space.
+ * OPEN tiles are not passable by default - they represent empty space.
+ *
+ * @param includeOpen - If true, treat OPEN tiles as passable (useful for adjacency checks during tile placement)
  */
-function isPassableTile(map: TiMap, position: number): boolean {
+function isPassableTile(map: TiMap, position: number, includeOpen = false): boolean {
   const tile = map[position];
   if (!tile) return false;
+  if (includeOpen && tile.type === "OPEN") return true;
   return tile.type === "SYSTEM" || tile.type === "HOME";
 }
 
@@ -192,6 +195,18 @@ function getHyperlaneData(
 }
 
 /**
+ * Options for building the hex graph.
+ */
+type BuildHexGraphOptions = {
+  /**
+   * If true, treat OPEN tiles as traversable.
+   * Useful for adjacency checks during tile placement where we need to check
+   * if OPEN positions are adjacent to anomalies through hyperlanes.
+   */
+  includeOpenTiles?: boolean;
+};
+
+/**
  * Build a hex graph from the map, accounting for hyperlanes.
  *
  * Cost model (destination-based):
@@ -202,8 +217,11 @@ function getHyperlaneData(
  * - Non-hyperlane tiles connect to adjacent non-hyperlane tiles
  * - Non-hyperlane tiles connect to adjacent hyperlanes ONLY via the hyperlane's corridors
  * - Hyperlane tiles connect to neighbors on their corridor sides only
+ *
+ * @param options.includeOpenTiles - If true, OPEN tiles are treated as traversable
  */
-export function buildHexGraph(map: TiMap): HexGraph {
+export function buildHexGraph(map: TiMap, options: BuildHexGraphOptions = {}): HexGraph {
+  const { includeOpenTiles = false } = options;
   const edges = new Map<number, Map<number, number>>();
 
   // Initialize empty edge maps for all positions
@@ -213,7 +231,7 @@ export function buildHexGraph(map: TiMap): HexGraph {
 
   // Process all passable tiles
   for (let position = 0; position < map.length; position++) {
-    if (!isPassableTile(map, position)) continue;
+    if (!isPassableTile(map, position, includeOpenTiles)) continue;
 
     if (isHyperlaneTile(map, position)) {
       // Hyperlane tile: only connect to neighbors on corridor sides
@@ -236,7 +254,7 @@ export function buildHexGraph(map: TiMap): HexGraph {
       for (const side of connectedSides) {
         const neighbor = getNeighborAtDirection(map, position, side);
         if (neighbor === -1 || neighbor >= map.length) continue;
-        if (!isPassableTile(map, neighbor)) continue;
+        if (!isPassableTile(map, neighbor, includeOpenTiles)) continue;
 
         // Cost based on destination type
         const cost = getMovementCost(map, neighbor);
@@ -246,7 +264,7 @@ export function buildHexGraph(map: TiMap): HexGraph {
       // Non-hyperlane tile: connect to adjacent passable tiles
       const neighbors = getAllNeighbors(map, position);
       for (const neighbor of neighbors) {
-        if (!isPassableTile(map, neighbor)) continue;
+        if (!isPassableTile(map, neighbor, includeOpenTiles)) continue;
 
         // If neighbor is a hyperlane, only connect if we're on a corridor side
         if (isHyperlaneTile(map, neighbor)) {

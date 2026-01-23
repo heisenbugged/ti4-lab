@@ -9,6 +9,7 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 export function SlicesSection() {
   const slices = useDraft((state) => state.draft.slices);
   const draftGameMode = useDraft((state) => state.draft.settings.draftGameMode);
+  const nucleusStyle = useDraft((state) => state.draft.settings.nucleusStyle);
 
   const { adminMode } = useSafeOutletContext();
   const { selectSlice } = useDraft((state) => state.draftActions);
@@ -21,8 +22,9 @@ export function SlicesSection() {
 
   const canSelect = currentlyPicking && activePlayer?.sliceIdx === undefined;
 
-  const isTwilightsFall = draftGameMode === "twilightsFall";
-  const gridCols = isTwilightsFall
+  const isTwilightsFallFullWidth =
+    draftGameMode === "twilightsFall" && !nucleusStyle;
+  const gridCols = isTwilightsFallFullWidth
     ? { base: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }
     : { base: 1, sm: 2, md: 3, lg: 2, xxl: 3 };
 

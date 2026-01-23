@@ -697,7 +697,9 @@ export const draftStore = createStore<DraftV2State>()(
           initializePools(state, settings);
 
           if (settings.draftGameMode === "twilightsFall") {
-            draft.availableFactions = state.factionPool;
+            // Select random subset of kings based on numKings setting
+            const numKings = settings.numKings ?? 8;
+            draft.availableFactions = shuffle([...state.factionPool], numKings);
             draft.availableReferenceCardPacks = generateReferenceCardPacks(
               settings.numReferenceCardPacks ?? players.length,
             );

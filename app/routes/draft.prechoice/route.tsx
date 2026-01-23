@@ -5,7 +5,6 @@ import {
   Flex,
   Group,
   NumberInput,
-  SimpleGrid,
   Stack,
   Switch,
   Tabs,
@@ -42,6 +41,7 @@ import { useDraftSetup } from "./store";
 import { MAPS, ChoosableDraftType } from "./maps";
 import { ReferenceCardPacksConfigurationSection } from "./components/ReferenceCardPacksConfigurationSection";
 import { SlicesConfigurationSection } from "./components/SlicesConfigurationSection";
+import { KingsConfigurationSection } from "./components/KingsConfigurationSection";
 import { DraftConfigurationPanel } from "./components/DraftConfigurationPanel";
 import { useDraftSettingsBuilder, useDraftNavigation } from "./hooks";
 import { buildTexasDraft } from "~/draft/texas/buildTexasDraft";
@@ -73,6 +73,7 @@ export default function DraftPrechoice() {
   const draftMode = useDraftSetup((state) => state.draftMode);
   const setDraftMode = useDraftSetup((state) => state.setDraftMode);
   const referenceCardPacks = useDraftSetup((state) => state.referenceCardPacks);
+  const kings = useDraftSetup((state) => state.kings);
   const content = useDraftSetup((state) => state.content);
   const texas = useDraftSetup((state) => state.texas);
 
@@ -167,10 +168,12 @@ export default function DraftPrechoice() {
 
       const twilightsFallSettings: DraftSettings = {
         type: draftType,
-        numFactions: 8, // Always 8 Mahact Kings
+        nucleusStyle: draftType.startsWith("heisen"),
+        numFactions: kings.numKings, // Configurable number of kings
+        numKings: kings.numKings,
         factionGameSets: ["twilightsFall"], // Only Mahact Kings faction set
         tileGameSets: ["base", "pok", "te"],
-        numSlices: Number(slices.numSlices), // Only customizable setting
+        numSlices: Number(slices.numSlices),
         numReferenceCardPacks: referenceCardPacks.numReferenceCardPacks,
         randomizeMap: true,
         randomizeSlices: true,
@@ -436,10 +439,13 @@ export default function DraftPrechoice() {
                     </Text>
                   </Alert>
 
-                  <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+                  <div className={classes.twoColGrid}>
                     <SlicesConfigurationSection />
                     <ReferenceCardPacksConfigurationSection />
-                  </SimpleGrid>
+                  </div>
+                  <div className={classes.twoColGrid}>
+                    <KingsConfigurationSection />
+                  </div>
                 </Stack>
               </Tabs.Panel>
 

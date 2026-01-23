@@ -193,7 +193,7 @@ export const factions: Record<FactionId, Faction> = {
     name: "Universities of Jol-Nar",
     set: "base",
     wiki: "https://twilight-imperium.fandom.com/wiki/Universities_of_Jol-Nar",
-    priorityOrder: 14,
+    priorityOrder: 24,
     fleetComposition: {
       dreadnought: 1,
       infantry: 2,

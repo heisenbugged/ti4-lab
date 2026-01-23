@@ -78,6 +78,10 @@ type DraftSetupStore = {
     numReferenceCardPacks: number;
     setNumReferenceCardPacks: (num: number) => void;
   };
+  kings: {
+    numKings: number;
+    setNumKings: (num: number) => void;
+  };
   texas: {
     factionHandSize: number;
     allowRedraw: boolean;
@@ -209,6 +213,8 @@ export const useDraftSetup = create<DraftSetupStore>()(
           if (mode === "twilightFalls") {
             const playerCount = state.player.players.length;
             state.referenceCardPacks.numReferenceCardPacks = playerCount;
+            // Default to all 8 kings
+            state.kings.numKings = 8;
           }
         }),
 
@@ -227,6 +233,15 @@ export const useDraftSetup = create<DraftSetupStore>()(
           // Ensure it doesn't exceed 10
           if (state.referenceCardPacks.numReferenceCardPacks > 10) {
             state.referenceCardPacks.numReferenceCardPacks = 10;
+          }
+
+          // Update kings to at least player count
+          if (state.kings.numKings < playerCount) {
+            state.kings.numKings = playerCount;
+          }
+          // Ensure it doesn't exceed 8
+          if (state.kings.numKings > 8) {
+            state.kings.numKings = 8;
           }
 
           const currentMap = MAPS[state.map.selectedMapType];
@@ -343,6 +358,18 @@ export const useDraftSetup = create<DraftSetupStore>()(
               playerCount,
               Math.min(10, num),
             );
+          });
+        },
+      },
+
+      kings: {
+        numKings: 8, // Default to all 8 kings
+
+        setNumKings: (num: number) => {
+          set((state) => {
+            // Clamp between player count and 8
+            const playerCount = state.player.players.length;
+            state.kings.numKings = Math.max(playerCount, Math.min(8, num));
           });
         },
       },
