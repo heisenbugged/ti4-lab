@@ -11,7 +11,8 @@ import { SimultaneousPhaseHeader } from "../components/SimultaneousPhaseHeader";
 import { useAdminControls } from "../components/useAdminControls";
 
 export function HomeSystemSelectionPhase() {
-  const { stageHomeSystem, undoLastPick } = useSyncDraft();
+  const { stageHomeSystem, undoStagedPick, undoSimultaneousPhase } =
+    useSyncDraft();
   const {
     adminMode,
     pickForAnyone,
@@ -39,9 +40,26 @@ export function HomeSystemSelectionPhase() {
   // Spectator mode: allow browsing when no selected player (not logged in as any player)
   const isSpectatorMode = selectedPlayer === -1;
 
-  const handleUndo = async () => {
-    if (confirm("Are you sure you want to undo the last selection?")) {
-      await undoLastPick();
+  const hasAnyStagedSelections =
+    !!phase.stagingValues && Object.keys(phase.stagingValues).length > 0;
+  const canUndoPick = phase.currentPlayer
+    ? phase.stagingValues?.[phase.currentPlayer.id] !== undefined
+    : false;
+
+  const handleUndoPick = async () => {
+    if (!phase.currentPlayer) return;
+    if (confirm("Undo the staged pick for this player?")) {
+      await undoStagedPick("homeSystem", phase.currentPlayer.id);
+    }
+  };
+
+  const handleUndoPhase = async () => {
+    if (
+      confirm(
+        "Undo this phase? This clears all staged picks and moves back one step.",
+      )
+    ) {
+      await undoSimultaneousPhase("homeSystem");
     }
   };
 
@@ -63,8 +81,10 @@ export function HomeSystemSelectionPhase() {
         pickForAnyone={pickForAnyone}
         onTogglePickForAnyone={() => setPickForAnyone(!pickForAnyone)}
         showUndo={showUndoLastSelection}
-        onUndo={handleUndo}
-        undoDisabled={selections.length === 0}
+        onUndoPick={handleUndoPick}
+        onUndoPhase={handleUndoPhase}
+        undoPickDisabled={!canUndoPick}
+        undoPhaseDisabled={!hasAnyStagedSelections && selections.length === 0}
       />
 
       <SpectatorModeNotice isSpectatorMode={isSpectatorMode} />

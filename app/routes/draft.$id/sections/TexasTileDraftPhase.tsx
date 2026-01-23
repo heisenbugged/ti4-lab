@@ -35,7 +35,8 @@ export function TexasTileDraftPhase({
   description,
   color,
 }: Props) {
-  const { stageSimultaneousPick, undoLastPick } = useSyncDraft();
+  const { stageSimultaneousPick, undoStagedPick, undoSimultaneousPhase } =
+    useSyncDraft();
   const {
     adminMode,
     pickForAnyone,
@@ -73,9 +74,26 @@ export function TexasTileDraftPhase({
 
   const isSpectatorMode = selectedPlayer === -1;
 
-  const handleUndo = async () => {
-    if (confirm("Are you sure you want to undo the last selection?")) {
-      await undoLastPick();
+  const hasAnyStagedSelections =
+    !!phase.stagingValues && Object.keys(phase.stagingValues).length > 0;
+  const canUndoPick = phase.currentPlayer
+    ? phase.stagingValues?.[phase.currentPlayer.id] !== undefined
+    : false;
+
+  const handleUndoPick = async () => {
+    if (!phase.currentPlayer) return;
+    if (confirm("Undo the staged pick for this player?")) {
+      await undoStagedPick(phaseType, phase.currentPlayer.id);
+    }
+  };
+
+  const handleUndoPhase = async () => {
+    if (
+      confirm(
+        "Undo this phase? This clears all staged picks and moves back one step.",
+      )
+    ) {
+      await undoSimultaneousPhase(phaseType);
     }
   };
 
@@ -105,8 +123,10 @@ export function TexasTileDraftPhase({
         pickForAnyone={pickForAnyone}
         onTogglePickForAnyone={() => setPickForAnyone(!pickForAnyone)}
         showUndo={showUndoLastSelection}
-        onUndo={handleUndo}
-        undoDisabled={selections.length === 0}
+        onUndoPick={handleUndoPick}
+        onUndoPhase={handleUndoPhase}
+        undoPickDisabled={!canUndoPick}
+        undoPhaseDisabled={!hasAnyStagedSelections && selections.length === 0}
         showPickAnyWarning={true}
       />
 

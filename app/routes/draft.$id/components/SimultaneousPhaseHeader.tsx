@@ -11,8 +11,10 @@ type SimultaneousPhaseHeaderProps = {
   pickForAnyone: boolean;
   onTogglePickForAnyone: () => void;
   showUndo: boolean;
-  onUndo: () => void;
-  undoDisabled: boolean;
+  onUndoPick: () => void;
+  onUndoPhase: () => void;
+  undoPickDisabled: boolean;
+  undoPhaseDisabled: boolean;
   showPickAnyWarning?: boolean;
 };
 
@@ -26,8 +28,10 @@ export function SimultaneousPhaseHeader({
   pickForAnyone,
   onTogglePickForAnyone,
   showUndo,
-  onUndo,
-  undoDisabled,
+  onUndoPick,
+  onUndoPhase,
+  undoPickDisabled,
+  undoPhaseDisabled,
   showPickAnyWarning = false,
 }: SimultaneousPhaseHeaderProps) {
   return (
@@ -81,16 +85,28 @@ export function SimultaneousPhaseHeader({
             </Tooltip>
           )}
           {showUndo && (
-            <Button
-              size="compact-xs"
-              variant="subtle"
-              color="red"
-              leftSection={<IconArrowBackUp size={12} />}
-              onClick={onUndo}
-              disabled={undoDisabled}
-            >
-              Undo
-            </Button>
+            <>
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                color="red"
+                leftSection={<IconArrowBackUp size={12} />}
+                onClick={onUndoPick}
+                disabled={undoPickDisabled}
+              >
+                Undo Pick
+              </Button>
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                color="red"
+                leftSection={<IconArrowBackUp size={12} />}
+                onClick={onUndoPhase}
+                disabled={undoPhaseDisabled}
+              >
+                Undo Phase
+              </Button>
+            </>
           )}
         </Group>
       </Group>

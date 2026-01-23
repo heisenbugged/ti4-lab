@@ -1,5 +1,9 @@
 import { ActionFunctionArgs, data } from "react-router";
-import { draftById, updateDraft } from "~/drizzle/draft.server";
+import {
+  draftById,
+  getDraftStagedSelections,
+  updateDraft,
+} from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
 import { rebuildTexasDraftState } from "~/draft/texas/texasDraft";
@@ -77,12 +81,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   await updateDraft(id, draft);
-  await broadcastDraftUpdate(id, draft);
+  const stagedSelections = await getDraftStagedSelections(id);
+  const payload = { ...draft, stagedSelections };
+  await broadcastDraftUpdate(id, payload);
 
   return data({
     success: true,
     removedSelection,
-    draft,
-    newSelectionCount: draft.selections.length,
+    draft: payload,
+    newSelectionCount: payload.selections.length,
   });
 }

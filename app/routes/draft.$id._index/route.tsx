@@ -63,6 +63,8 @@ export default function RunningDraft() {
     stagePriorityValue,
     stageHomeSystem,
     stageSimultaneousPick,
+    undoStagedPick,
+    undoSimultaneousPhase,
     undoLastPick,
   } = useSyncDraftFetcher();
   const draftStore = useDraft();
@@ -110,6 +112,8 @@ export default function RunningDraft() {
           stagePriorityValue,
           stageHomeSystem,
           stageSimultaneousPick,
+          undoStagedPick,
+          undoSimultaneousPhase,
           undoLastPick,
         }}
       >
@@ -152,6 +156,8 @@ export default function RunningDraft() {
           stagePriorityValue,
           stageHomeSystem,
           stageSimultaneousPick,
+          undoStagedPick,
+          undoSimultaneousPhase,
           undoLastPick,
         }}
       >
@@ -171,6 +177,8 @@ export default function RunningDraft() {
             stagePriorityValue,
             stageHomeSystem,
             stageSimultaneousPick,
+            undoStagedPick,
+            undoSimultaneousPhase,
             undoLastPick,
           }}
         >
@@ -188,6 +196,8 @@ export default function RunningDraft() {
             stagePriorityValue,
             stageHomeSystem,
             stageSimultaneousPick,
+            undoStagedPick,
+            undoSimultaneousPhase,
             undoLastPick,
           }}
         >
@@ -205,6 +215,8 @@ export default function RunningDraft() {
             stagePriorityValue,
             stageHomeSystem,
             stageSimultaneousPick,
+            undoStagedPick,
+            undoSimultaneousPhase,
             undoLastPick,
           }}
         >
@@ -222,6 +234,8 @@ export default function RunningDraft() {
             stagePriorityValue,
             stageHomeSystem,
             stageSimultaneousPick,
+            undoStagedPick,
+            undoSimultaneousPhase,
             undoLastPick,
           }}
         >
@@ -244,6 +258,8 @@ export default function RunningDraft() {
             stagePriorityValue,
             stageHomeSystem,
             stageSimultaneousPick,
+            undoStagedPick,
+            undoSimultaneousPhase,
             undoLastPick,
           }}
         >
@@ -266,6 +282,8 @@ export default function RunningDraft() {
             stagePriorityValue,
             stageHomeSystem,
             stageSimultaneousPick,
+            undoStagedPick,
+            undoSimultaneousPhase,
             undoLastPick,
           }}
         >
@@ -289,6 +307,8 @@ export default function RunningDraft() {
           stagePriorityValue,
           stageHomeSystem,
           stageSimultaneousPick,
+          undoStagedPick,
+          undoSimultaneousPhase,
           undoLastPick,
         }}
       >

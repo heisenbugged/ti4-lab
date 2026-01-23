@@ -104,6 +104,11 @@ type DraftV2State = {
       playerId: number,
       value: string,
     ) => void;
+    clearStagedSelection: (
+      phase: SimultaneousPickType,
+      playerId: number,
+    ) => void;
+    clearStagedPhase: (phase: SimultaneousPickType) => void;
     stagePriorityValue: (playerId: number, factionId: FactionId) => void;
     stageHomeSystem: (playerId: number, factionId: FactionId) => void;
     selectPlayerColor: (playerId: number, color: InGameColor) => void;
@@ -430,6 +435,23 @@ export const draftStore = createStore<DraftV2State>()(
             state.draft.stagedSelections[phase] = {};
           }
           state.draft.stagedSelections[phase]![playerId] = value;
+        }),
+      clearStagedSelection: (phase: SimultaneousPickType, playerId: number) =>
+        set((state) => {
+          const stagedSelections = state.draft.stagedSelections?.[phase];
+          if (!stagedSelections) return;
+          delete stagedSelections[playerId];
+          if (Object.keys(stagedSelections).length === 0) {
+            if (state.draft.stagedSelections) {
+              delete state.draft.stagedSelections[phase];
+            }
+          }
+        }),
+      clearStagedPhase: (phase: SimultaneousPickType) =>
+        set((state) => {
+          if (state.draft.stagedSelections?.[phase]) {
+            delete state.draft.stagedSelections[phase];
+          }
         }),
 
       stagePriorityValue: (playerId: number, factionId: FactionId) =>

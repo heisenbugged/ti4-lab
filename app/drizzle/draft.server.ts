@@ -325,6 +325,19 @@ export async function getStagedSelections(
   }, {});
 }
 
+export async function deleteStagedSelection(
+  draftId: string,
+  phase: SimultaneousPickType,
+  playerId: number,
+) {
+  await db
+    .delete(draftStagedSelections)
+    .where(
+      sql`${draftStagedSelections.draftId} = ${draftId} AND ${draftStagedSelections.phase} = ${phase} AND ${draftStagedSelections.playerId} = ${playerId}`,
+    )
+    .run();
+}
+
 export async function clearStagedSelections(
   draftId: string,
   phase: SimultaneousPickType,

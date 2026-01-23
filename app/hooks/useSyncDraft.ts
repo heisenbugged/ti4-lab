@@ -12,6 +12,8 @@ export function useSyncDraft() {
     stagePriorityValue,
     stageHomeSystem,
     stageSimultaneousPick,
+    undoStagedPick,
+    undoSimultaneousPhase,
     undoLastPick,
   } =
     useContext(SyncDraftContext);
@@ -21,6 +23,8 @@ export function useSyncDraft() {
     stagePriorityValue,
     stageHomeSystem,
     stageSimultaneousPick,
+    undoStagedPick,
+    undoSimultaneousPhase,
     undoLastPick,
   };
 }
@@ -122,6 +126,101 @@ export function useSyncDraftFetcher() {
       await stageSimultaneousPick("homeSystem", playerId, factionId);
     },
     stageSimultaneousPick,
+    undoStagedPick: async (
+      phase: SimultaneousPickType,
+      playerId: PlayerId,
+    ) => {
+      const { draftId, draftActions } = draftStore.getState();
+      if (!draftId) return { success: false };
+
+      draftActions.clearStagedSelection(phase, playerId);
+
+      const response = await fetch(
+        `/api/draft/${draftId}/simultaneous-undo-pick`,
+        {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phase, playerId }),
+      },
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Failed to undo staged pick:", error);
+        notifications.show({
+          title: "Error",
+          message: error.error || "Failed to undo staged pick",
+          color: "red",
+        });
+        return { success: false };
+      }
+
+      const data = await response.json();
+      if (data.success && data.draft) {
+        draftActions.update(draftId, data.draft);
+        notifications.show({
+          title: "Pick Undone",
+          message: "The staged pick has been removed.",
+          color: "green",
+          autoClose: 3000,
+        });
+      }
+      return { success: true };
+    },
+    undoSimultaneousPhase: async (phase: SimultaneousPickType) => {
+      const { draftId, draft, draftActions } = draftStore.getState();
+      if (!draftId || !draft) return { success: false };
+
+      const expectedSelectionCount = draft.selections.length;
+
+      const response = await fetch(
+        `/api/draft/${draftId}/simultaneous-undo-phase`,
+        {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phase,
+          expectedSelectionCount,
+        }),
+      },
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Failed to undo phase:", error);
+
+        if (error.error === "out_of_sync") {
+          notifications.show({
+            title: "Cannot Undo - Out of Sync",
+            message: `${error.message} Refreshing...`,
+            color: "orange",
+            autoClose: 3000,
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        } else {
+          notifications.show({
+            title: "Error",
+            message: error.error || "Failed to undo phase",
+            color: "red",
+          });
+        }
+        return { success: false };
+      }
+
+      const data = await response.json();
+      if (data.success && data.draft) {
+        draftActions.update(draftId, data.draft);
+        notifications.show({
+          title: "Phase Undone",
+          message: "The simultaneous phase has been cleared.",
+          color: "green",
+          autoClose: 3000,
+        });
+      }
+      return { success: true, removedSelection: data.removedSelection };
+    },
     undoLastPick: async () => {
       const { draftId, draft, draftActions } = draftStore.getState();
       if (!draftId || !draft) return { success: false };
@@ -186,6 +285,10 @@ export const SyncDraftContext = createContext({
     __: PlayerId,
     ___: string,
   ) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  undoStagedPick: async (_: SimultaneousPickType, __: PlayerId) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  undoSimultaneousPhase: async (_: SimultaneousPickType) => {},
   undoLastPick: async () => ({ success: false } as { success: boolean; removedSelection?: unknown }),
   syncing: false,
 });
