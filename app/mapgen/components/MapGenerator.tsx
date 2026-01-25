@@ -7,6 +7,7 @@ import {
   ActionIcon,
   Select,
   MultiSelect,
+  TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -15,7 +16,7 @@ import { Map } from "~/components/Map";
 import { MainAppShell } from "~/components/MainAppShell";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { useState, useMemo, useEffect } from "react";
-import { Tile, GameSet } from "~/types";
+import { Tile, GameSet, SystemId } from "~/types";
 import {
   DndContext,
   DragEndEvent,
@@ -49,7 +50,7 @@ import {
 } from "../utils/mapToDraft";
 import { autoCompleteMap } from "../utils/mapCompletion";
 import { useMapStats } from "../utils/mapStats";
-import { encodeMapString, decodeMapString } from "../utils/mapStringCodec";
+import { encodeMapString, decodeMapString, inferGameSetsFromTiles } from "../utils/mapStringCodec";
 import {
   getAllSliceValues,
   getAllSliceStats,
@@ -127,11 +128,34 @@ function MapGeneratorContent() {
   const [compatibleDraftTypes, setCompatibleDraftTypes] = useState<DraftType[]>(
     [],
   );
-
-  // Generate map string and share URL
   const mapString = useMemo(() => {
     return encodeMapString(map);
   }, [map]);
+
+  // TTS string for import/export (space-separated system IDs)
+  const ttsMapString = useMemo(() => {
+    return map
+      .slice(1)
+      .map((tile) => {
+        if (tile.type === "HOME") return "0";
+        if (tile.type === "SYSTEM") return tile.systemId;
+        return "-1";
+      })
+      .join(" ");
+  }, [map]);
+
+  const hasSystems = useMemo(() => {
+    return map.some((tile) => tile.type === "SYSTEM" && tile.idx !== 0);
+  }, [map]);
+
+  const [ttsString, setTtsString] = useState("");
+  const [isEditingTts, setIsEditingTts] = useState(false);
+
+  useEffect(() => {
+    if (!isEditingTts) {
+      setTtsString(hasSystems ? ttsMapString : "");
+    }
+  }, [ttsMapString, isEditingTts, hasSystems]);
 
   const shareUrl = useMemo(() => {
     const encoded = encodeMapString(map);
@@ -226,6 +250,103 @@ function MapGeneratorContent() {
     if (improvedMap) {
       setMap(improvedMap);
     }
+  };
+
+  const handleImportTtsString = () => {
+    if (!ttsString.trim()) {
+      notifications.show({
+        title: "Invalid input",
+        message: "Please enter a TTS string",
+        color: "red",
+      });
+      return;
+    }
+
+    const systemIds = ttsString
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean) as SystemId[];
+
+    if (systemIds.length === 0) {
+      notifications.show({
+        title: "Invalid input",
+        message: "TTS string contains no system IDs",
+        color: "red",
+      });
+      return;
+    }
+
+    const config = mapConfigs[mapConfigId];
+    const presetTileIndices = new Set(
+      Object.keys(config.presetTiles).map(Number),
+    );
+
+    clearMap();
+
+    const clearedMap = useMapBuilder.getState().state.map;
+    const actualSystemIds = systemIds.filter((id) => id !== "0" && id !== "-1");
+    const placeableCount = clearedMap.filter(
+      (tile, idx) =>
+        idx !== 0 &&
+        tile.type === "OPEN" &&
+        !config.homeIdxInMapString.includes(idx) &&
+        !config.closedMapTiles.includes(idx) &&
+        !presetTileIndices.has(idx),
+    ).length;
+
+    if (actualSystemIds.length > placeableCount) {
+      notifications.show({
+        title: "Too many systems",
+        message: `TTS string contains ${actualSystemIds.length} systems, but only ${placeableCount} placeable positions available`,
+        color: "yellow",
+      });
+    }
+
+    const inferredSets = inferGameSetsFromTiles(systemIds);
+    setGameSets(inferredSets);
+
+    systemIds.forEach((systemId, ttsPosition) => {
+      const mapIdx = ttsPosition + 1;
+
+      if (mapIdx >= clearedMap.length) {
+        return;
+      }
+
+      if (systemId === "0" || systemId === "-1") {
+        return;
+      }
+
+      if (
+        mapIdx === 0 ||
+        config.homeIdxInMapString.includes(mapIdx) ||
+        config.closedMapTiles.includes(mapIdx) ||
+        presetTileIndices.has(mapIdx)
+      ) {
+        return;
+      }
+
+      if (systemData[systemId]) {
+        addSystemToMap(mapIdx, systemId);
+      } else {
+        notifications.show({
+          title: "Invalid system ID",
+          message: `System ID "${systemId}" not found`,
+          color: "yellow",
+        });
+      }
+    });
+
+    const systemsPlaced = systemIds.filter(
+      (id) => id !== "0" && id !== "-1" && systemData[id],
+    ).length;
+
+    notifications.show({
+      title: "Map imported",
+      message: `Imported ${systemsPlaced} systems from TTS string`,
+      color: "green",
+    });
+
+    setIsEditingTts(false);
   };
 
   const handleCreateDraft = () => {
@@ -437,6 +558,21 @@ function MapGeneratorContent() {
                     <IconPlus size={14} />
                   </ActionIcon>
                 </Group>
+                <TextInput
+                  placeholder="Import from TTS string"
+                  value={ttsString}
+                  onChange={(e) => setTtsString(e.currentTarget.value)}
+                  onFocus={() => setIsEditingTts(true)}
+                  onBlur={() => setIsEditingTts(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleImportTtsString();
+                      setIsEditingTts(false);
+                    }
+                  }}
+                  size="xs"
+                  w={160}
+                />
                 <Group gap={4}>
                   <ActionIcon variant="subtle" color="gray" size="sm" onClick={removeHomeSystem} disabled={playerCount <= 1}>
                     <IconMinus size={14} />

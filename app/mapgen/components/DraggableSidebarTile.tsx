@@ -31,10 +31,9 @@ export function DraggableSidebarTile({ systemId, selected = false, onSelect }: P
       style={{
         opacity: isDragging ? 0.5 : 1,
         backgroundColor: isRedSystem ? alpha("var(--mantine-color-red-8)", 0.15) : undefined,
-        borderColor: isRedSystem ? alpha("var(--mantine-color-red-8)", 0.3) : undefined,
+        borderColor: selected ? "var(--mantine-color-green-6)" : isRedSystem ? alpha("var(--mantine-color-red-8)", 0.3) : undefined,
         borderWidth: selected ? 3 : undefined,
         borderStyle: selected ? "solid" : undefined,
-        borderColor: selected ? "var(--mantine-color-green-6)" : undefined,
         cursor: onSelect ? "pointer" : undefined,
       }}
       onClick={onSelect ? () => onSelect(systemId) : undefined}
