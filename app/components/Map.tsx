@@ -86,7 +86,12 @@ export function Map({
                 if (closeTileMode && onToggleTileClosed) {
                   onToggleTileClosed(tile.idx);
                 } else {
-                  if (tile.type === "SYSTEM" || tile.type === "OPEN")
+                  const isModifiable =
+                    editable && modifiableMapTiles.includes(tile.idx);
+                  // SYSTEM tiles can always be selected (to view details)
+                  // OPEN tiles can only be selected if modifiable (to add a system)
+                  if (tile.type === "SYSTEM") onSelectSystemTile?.(tile);
+                  if (tile.type === "OPEN" && isModifiable)
                     onSelectSystemTile?.(tile);
                   if (tile.type === "HOME") onSelectHomeTile?.(tile);
                 }
