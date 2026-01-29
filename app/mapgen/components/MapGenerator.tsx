@@ -12,7 +12,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { ClientOnly } from "remix-utils/client-only";
-import { Map } from "~/components/Map";
+import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { MainAppShell } from "~/components/MainAppShell";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { useState, useMemo, useEffect } from "react";
@@ -641,8 +641,8 @@ function MapGeneratorContent() {
                 id="map-generator"
                 modifiableMapTiles={modifiableMapTiles}
                 map={map}
-                editable={true}
                 disabled={false}
+                interactions={MAP_INTERACTIONS.mapGenerator}
                 onSelectSystemTile={(tile) => openPlanetFinderForMap(tile.idx)}
                 onDeleteSystemTile={(tile) => removeSystemFromMap(tile.idx)}
                 sliceValues={sliceValues}

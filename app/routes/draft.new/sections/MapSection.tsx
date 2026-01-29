@@ -2,7 +2,7 @@ import { Box, Button, Group, Stack, Text } from "@mantine/core";
 import { useDimensions } from "~/hooks/useDimensions";
 import { getBoundedMapHeight } from "~/utils/positioning";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
-import { Map } from "~/components/Map";
+import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { SectionTitle } from "~/components/Section";
 import { IconDice6Filled } from "@tabler/icons-react";
 import { useDraft } from "~/draftStore";
@@ -15,7 +15,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { PlayerSelection, Tile } from "~/types";
+import { Tile } from "~/types";
 import { systemData } from "~/data/systemData";
 import { hydrateMap } from "~/utils/map";
 import { useCoreSliceValues } from "~/hooks/useCoreSliceValues";
@@ -115,7 +115,7 @@ export function MapSection() {
             id="fullmap"
             map={map}
             modifiableMapTiles={config.modifiableMapTiles}
-            editable
+            interactions={MAP_INTERACTIONS.draftBuild}
             onSelectSystemTile={(t) => openPlanetFinderForMap(t.idx)}
             onDeleteSystemTile={(t) => removeSystemFromMap(t.idx)}
             coreSliceData={isHeisenDraft ? coreSliceData : undefined}

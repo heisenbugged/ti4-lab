@@ -1,5 +1,5 @@
 import { Box, Stack, Title } from "@mantine/core";
-import { Map } from "~/components/Map";
+import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { useRawDraft } from "~/rawDraftStore";
 import { RawDraftProvider } from "~/contexts/RawDraftContext";
 
@@ -26,9 +26,8 @@ export function RawDraftComplete() {
             id="raw-draft-complete-map"
             modifiableMapTiles={[]}
             map={map}
-            editable={false}
             disabled={false}
-            droppable={false}
+            interactions={MAP_INTERACTIONS.readonly}
           />
         </Box>
       </Stack>

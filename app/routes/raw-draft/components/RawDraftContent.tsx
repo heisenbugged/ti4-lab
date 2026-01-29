@@ -1,6 +1,6 @@
 import { AppShell, Box, Text } from "@mantine/core";
 import { useState, useMemo } from "react";
-import { Map } from "~/components/Map";
+import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { Tile } from "~/types";
 import {
@@ -185,9 +185,8 @@ export function RawDraftContent() {
                 id="raw-draft-map"
                 modifiableMapTiles={modifiableMapTiles}
                 map={map}
-                editable={false}
                 disabled={false}
-                droppable={true}
+                interactions={MAP_INTERACTIONS.rawDraft}
               />
             </Box>
           </AppShell.Main>

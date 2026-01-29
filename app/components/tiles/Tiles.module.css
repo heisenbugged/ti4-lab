@@ -153,6 +153,13 @@
   }
 }
 
+.ringHighlightStatic {
+  @mixin dark {
+    fill: var(--mantine-color-dark-4) !important;
+    opacity: 0.6;
+  }
+}
+
 .ringHighlight:hover {
   @mixin dark {
     fill: var(--mantine-color-dark-3) !important;
@@ -165,6 +172,13 @@
     fill: var(--mantine-color-blue-9) !important;
     opacity: 0.4;
     transition: opacity 0.2s ease;
+  }
+}
+
+.droppableStatic {
+  @mixin dark {
+    fill: var(--mantine-color-blue-9) !important;
+    opacity: 0.4;
   }
 }
 

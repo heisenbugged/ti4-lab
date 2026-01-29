@@ -1,6 +1,6 @@
 import { AppShell, Box, Button, Group, Modal, ScrollArea, Stack, Text, Tooltip } from "@mantine/core";
 import { useMemo, useState } from "react";
-import { Map } from "~/components/Map";
+import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { useMediaQuery } from "@mantine/hooks";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
@@ -279,9 +279,8 @@ export function TexasMapBuildPhase() {
               modifiableMapTiles={selectedSystemId ? placeableTileIndices : []}
               ringHighlightTiles={currentRingTiles}
               map={mapForRender}
-              editable={false}
               disabled={!canSelect}
-              droppable={true}
+              interactions={MAP_INTERACTIONS.texasBuild}
               onSelectSystemTile={handleMapTileSelect}
             />
           </Box>

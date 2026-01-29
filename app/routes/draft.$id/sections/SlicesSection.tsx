@@ -17,8 +17,13 @@ export function SlicesSection() {
   const { activePlayer, hydratedPlayers, currentlyPicking } =
     useHydratedDraft();
 
-  const { removeSystemFromSlice, openPlanetFinderForSlice, updateSliceName } =
-    useDraft((state) => state.actions);
+  const {
+    removeSystemFromSlice,
+    openPlanetFinderForSlice,
+    updateSliceName,
+    randomizeSlice,
+    clearSlice,
+  } = useDraft((state) => state.actions);
 
   const canSelect = currentlyPicking && activePlayer?.sliceIdx === undefined;
 
@@ -67,6 +72,9 @@ export function SlicesSection() {
                 ? (tile) => removeSystemFromSlice(idx, tile.idx)
                 : undefined
             }
+            onRandomizeSlice={adminMode ? () => randomizeSlice(idx) : undefined}
+            onClearSlice={adminMode ? () => clearSlice(idx) : undefined}
+            onNameChange={adminMode ? (name) => updateSliceName(idx, name) : undefined}
           />
         ))}
       </SimpleGrid>

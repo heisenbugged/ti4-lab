@@ -2,7 +2,7 @@ import { Box, Button, Group, Modal, Text } from "@mantine/core";
 import { useDimensions } from "~/hooks/useDimensions";
 import { getBoundedMapHeight } from "~/utils/positioning";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
-import { Map } from "~/components/Map";
+import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { SectionTitle } from "~/components/Section";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
@@ -39,6 +39,11 @@ export function MapSection({ titleChildren }: Props) {
   const coreSliceData = useCoreSliceValues(hydratedMap, sliceValueModifiers);
 
   const canSelect = currentlyPicking && activePlayer?.seatIdx === undefined;
+  const canEditMap = adminMode;
+  const mapInteractions = {
+    ...(canEditMap ? MAP_INTERACTIONS.draftBuild : MAP_INTERACTIONS.readonly),
+    allowHomeSelect: canSelect,
+  };
 
   const handleConfirmSeat = () => {
     if (!activePlayer || pendingSeat === null) return;
@@ -89,6 +94,7 @@ export function MapSection({ titleChildren }: Props) {
           modifiableMapTiles={config.modifiableMapTiles}
           id="full-map"
           map={hydratedMap}
+          interactions={mapInteractions}
           onSelectHomeTile={
             canSelect
               ? (tile) => {
@@ -97,13 +103,12 @@ export function MapSection({ titleChildren }: Props) {
                 }
               : undefined
           }
-          onSelectSystemTile={(tile) => {
-            openPlanetFinderForMap(tile.idx);
-          }}
-          onDeleteSystemTile={(tile) => {
-            removeSystemFromMap(tile.idx);
-          }}
-          editable={adminMode}
+          onSelectSystemTile={
+            canEditMap ? (tile) => openPlanetFinderForMap(tile.idx) : undefined
+          }
+          onDeleteSystemTile={
+            canEditMap ? (tile) => removeSystemFromMap(tile.idx) : undefined
+          }
           coreSliceData={isHeisenDraft ? coreSliceData : undefined}
         />
       </Box>

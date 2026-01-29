@@ -24,6 +24,7 @@ type Props = {
   tile: Tile;
   modifiable?: boolean;
   droppable?: boolean;
+  hoverEffects?: boolean;
   ringHighlight?: boolean;
   homeSelectable?: boolean;
   onSelect?: () => void;
@@ -102,6 +103,7 @@ function AbstractArtMapTile(props: Props) {
     tile: { position },
     modifiable = false,
     droppable = false,
+    hoverEffects = true,
     ringHighlight = false,
     onSelect,
     onDelete,
@@ -205,12 +207,28 @@ function AbstractArtMapTile(props: Props) {
         Tile = <SystemTile {...props} tile={tile} disablePopover={isDragging} />;
         break;
       case "OPEN":
-        Tile = <EmptyTile {...props} tile={tile} isOver={isOver} ringHighlight={ringHighlight} />;
+        Tile = (
+          <EmptyTile
+            {...props}
+            tile={tile}
+            isOver={isOver}
+            ringHighlight={ringHighlight}
+            hoverEffects={hoverEffects}
+          />
+        );
         break;
       case "CLOSED":
         // If tile.type is CLOSED but not in closedTiles, render as OPEN
         // This happens when user reopens a preset closed tile
-        Tile = <EmptyTile {...props} tile={{ ...tile, type: "OPEN" }} isOver={isOver} ringHighlight={ringHighlight} />;
+        Tile = (
+          <EmptyTile
+            {...props}
+            tile={{ ...tile, type: "OPEN" }}
+            isOver={isOver}
+            ringHighlight={ringHighlight}
+            hoverEffects={hoverEffects}
+          />
+        );
         break;
     }
 
@@ -224,6 +242,7 @@ function AbstractArtMapTile(props: Props) {
   // Don't show overlay when in close tile mode
   const showOverlay =
     modifiable &&
+    hoverEffects &&
     !closeTileMode &&
     tile.type !== "HOME" &&
     (hovered || tile.type === "OPEN" || isOver);
