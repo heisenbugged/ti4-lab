@@ -52,10 +52,11 @@ function drawTradeStation(
   const tradeStationCache = getTradeStationCache();
   if (!tradeStationCache) return;
 
-  const stationWidth = planetRadius * 3;
-  const stationHeight = planetRadius * 2;
-  const yOffset = planetRadius * 0.16;
-  const centerYWithOffset = centerY - planetRadius - yOffset + stationHeight / 2;
+  const stationWidth = planetRadius * 2.7;
+  const stationHeight = planetRadius * 1.8;
+  const bottomOffset = planetRadius * 0.28;
+  const centerYWithOffset =
+    centerY + planetRadius - bottomOffset - stationHeight / 2;
 
   withContext(ctx, () => {
     ctx.translate(centerX, centerYWithOffset);

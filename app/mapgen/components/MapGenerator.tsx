@@ -4,9 +4,12 @@ import {
   Button,
   Group,
   Text,
+  Modal,
   ActionIcon,
   Select,
   MultiSelect,
+  TextInput,
+  Textarea,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -15,7 +18,7 @@ import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { MainAppShell } from "~/components/MainAppShell";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { useState, useMemo, useEffect } from "react";
-import { Tile, GameSet, SystemId, DraftSettings } from "~/types";
+import { Tile, GameSet, SystemId } from "~/types";
 import {
   DndContext,
   DragEndEvent,
@@ -68,6 +71,7 @@ import { mapConfigs } from "~/mapgen/mapConfigs";
 import { DraftTypeSelectionModal } from "./DraftTypeSelectionModal";
 import { TtsImportExportModal } from "./TtsImportExportModal";
 import { DraftType } from "~/draft/types";
+import { buildPresetDraftState } from "../utils/presetDraft";
 
 function MapGeneratorContent() {
   const navigate = useNavigate();
@@ -128,9 +132,15 @@ function MapGeneratorContent() {
     useDisclosure(false);
   const [ttsOpened, { open: openTts, close: closeTts }] =
     useDisclosure(false);
+  const [publishOpened, { open: openPublish, close: closePublish }] =
+    useDisclosure(false);
   const [compatibleDraftTypes, setCompatibleDraftTypes] = useState<DraftType[]>(
     [],
   );
+  const [publishName, setPublishName] = useState("");
+  const [publishDescription, setPublishDescription] = useState("");
+  const [publishAuthor, setPublishAuthor] = useState("");
+  const [publishing, setPublishing] = useState(false);
   const mapString = useMemo(() => {
     return encodeMapString(map);
   }, [map]);
@@ -364,56 +374,27 @@ function MapGeneratorContent() {
   };
 
   const handleCreatePresetDraft = () => {
-    const compatibleTypes = mapConfigToCompatibleDraftTypes[mapConfigId];
-    if (!compatibleTypes || compatibleTypes.length === 0) {
-      notifications.show({
-        title: "Unsupported",
-        message: "This map type doesn't support draft creation",
-        color: "red",
-      });
-      return;
-    }
+    const result = buildPresetDraftState({
+      map,
+      mapConfigId,
+      gameSets,
+      playerCount,
+    });
 
-    const selectedDraftType = compatibleTypes[0];
-    if (!selectedDraftType) {
+    if (!result.ok) {
+      const isMissingPlayers = result.error.includes("home systems");
       notifications.show({
-        title: "Unsupported",
-        message: "This map type doesn't support draft creation",
-        color: "red",
+        title: isMissingPlayers ? "Missing players" : "Unsupported",
+        message: result.error,
+        color: isMissingPlayers ? "yellow" : "red",
       });
       return;
     }
-
-    if (playerCount <= 0) {
-      notifications.show({
-        title: "Missing players",
-        message: "Add home systems before starting a draft",
-        color: "yellow",
-      });
-      return;
-    }
-    const presetSettings: DraftSettings = {
-      type: selectedDraftType,
-      factionGameSets: gameSets,
-      tileGameSets: gameSets,
-      draftSpeaker: true,
-      allowHomePlanetSearch: false,
-      numFactions: Math.max(6, playerCount),
-      numSlices: playerCount,
-      randomizeMap: false,
-      randomizeSlices: false,
-      draftPlayerColors: false,
-      allowEmptyTiles: false,
-      draftGameMode: "presetMap",
-      presetMap: map,
-    };
 
     navigate("/draft/new", {
       state: {
-        draftSettings: presetSettings,
-        players: Array(playerCount)
-          .fill(null)
-          .map((_, i) => ({ id: i, name: "" })),
+        draftSettings: result.value.settings,
+        players: result.value.players,
         discordData: undefined,
       },
     });
@@ -449,6 +430,60 @@ function MapGeneratorContent() {
   const handleDraftTypeSelect = (draftType: DraftType) => {
     closeDraftType();
     navigateToDraft(draftType);
+  };
+
+  const handlePublish = async () => {
+    if (!isMapComplete) {
+      notifications.show({
+        title: "Map incomplete",
+        message: "Complete the map before publishing.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    const name = publishName.trim();
+    const description = publishDescription.trim();
+    const author = publishAuthor.trim();
+
+    if (!name || !description || !author) {
+      notifications.show({
+        title: "Missing details",
+        message: "Name, description, and author are required.",
+        color: "red",
+      });
+      return;
+    }
+
+    setPublishing(true);
+    try {
+      const response = await fetch("/api/preset-maps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          description,
+          author,
+          mapString,
+          mapConfigId,
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.success || !result?.slug) {
+        notifications.show({
+          title: "Publish failed",
+          message: result?.error ?? "Unable to publish map.",
+          color: "red",
+        });
+        return;
+      }
+
+      // Navigate to the published map page
+      navigate(`/maps/${result.slug}`);
+    } finally {
+      setPublishing(false);
+    }
   };
 
   const [activeSystemId, setActiveSystemId] = useState<string | null>(null);
@@ -547,6 +582,46 @@ function MapGeneratorContent() {
         onClose={closeDraftType}
         onSelect={handleDraftTypeSelect}
       />
+      <Modal
+        opened={publishOpened}
+        onClose={closePublish}
+        title="Publish Map"
+        centered
+      >
+        <Group gap="sm" mb="md" grow>
+          <TextInput
+            label="Name"
+            placeholder="Map name"
+            value={publishName}
+            onChange={(e) => setPublishName(e.currentTarget.value)}
+          />
+          <TextInput
+            label="Author"
+            placeholder="Your name"
+            value={publishAuthor}
+            onChange={(e) => setPublishAuthor(e.currentTarget.value)}
+          />
+        </Group>
+        <Textarea
+          label="Description"
+          placeholder="What makes this map special?"
+          minRows={4}
+          value={publishDescription}
+          onChange={(e) => setPublishDescription(e.currentTarget.value)}
+        />
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={closePublish}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handlePublish}
+            loading={publishing}
+            disabled={!isMapComplete}
+          >
+            Publish
+          </Button>
+        </Group>
+      </Modal>
       <TtsImportExportModal
         ttsExportString={hasSystems ? ttsMapString : ""}
         opened={ttsOpened}
@@ -667,6 +742,9 @@ function MapGeneratorContent() {
                     </Button>
                     <Button leftSection={<IconWand size={14} />} variant="filled" color="blue" size="xs" onClick={handleCreatePresetDraft} disabled={!isMapComplete}>
                       Preset Draft
+                    </Button>
+                    <Button variant="light" color="teal" size="xs" onClick={openPublish} disabled={!isMapComplete}>
+                      Publish
                     </Button>
                   </Group>
                 </Box>

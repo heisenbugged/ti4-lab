@@ -85,7 +85,7 @@ export function MainAppShell({ children, headerRightSection }: Props) {
   const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const isPresetsActive = location.pathname === "/draft/presets";
+  const isMapPresetsActive = location.pathname === "/map-presets";
   const isAboutActive = location.pathname === "/about";
   const isSoundboardActive = location.pathname === "/voices";
   const isMapGeneratorActive = location.pathname === "/map-generator";
@@ -106,7 +106,7 @@ export function MainAppShell({ children, headerRightSection }: Props) {
       label: "Map Generator",
       isActive: isMapGeneratorActive,
     },
-    { to: "/draft/presets", label: "Presets", isActive: isPresetsActive },
+    { to: "/map-presets", label: "Map Presets", isActive: isMapPresetsActive },
     { to: "/about", label: "About", isActive: isAboutActive },
   ];
 

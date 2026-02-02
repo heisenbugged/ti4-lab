@@ -1,0 +1,217 @@
+.page {
+  padding: var(--mantine-spacing-xl) 0;
+}
+
+/* Header section - simple like other pages */
+.header {
+  margin-bottom: var(--mantine-spacing-xl);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-md);
+  margin-bottom: var(--mantine-spacing-xs);
+}
+
+.title {
+  font-family: "Orbitron", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 0.03em;
+  color: var(--mantine-color-gray-1);
+  margin: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: color-mix(in srgb, var(--mantine-color-blue-6) 15%, transparent);
+  border: 1px solid var(--mantine-color-blue-6);
+  color: var(--mantine-color-blue-4);
+}
+
+.subtitle {
+  color: var(--mantine-color-dimmed);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Grid layout */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-lg);
+}
+
+@media (min-width: 48em) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 75em) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Card link wrapper */
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  height: 100%;
+}
+
+/* Card styles */
+.card {
+  position: relative;
+  background: var(--mantine-color-dark-7);
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.card:hover {
+  border-color: var(--mantine-color-blue-6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.card:hover .mapPreview {
+  transform: scale(1.02);
+}
+
+/* Map preview section */
+.mapPreviewWrap {
+  position: relative;
+  padding: var(--mantine-spacing-lg);
+  background: rgba(10, 16, 24, 0.6);
+  border-bottom: 1px solid var(--mantine-color-dark-5);
+}
+
+.mapPreview {
+  width: 60%;
+  display: block;
+  margin: 0 auto;
+  border-radius: 6px;
+  transition: transform 0.25s ease;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+/* Card content/meta section */
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
+  flex: 1;
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-md);
+}
+
+.name {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--mantine-color-gray-1);
+}
+
+.author {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mantine-color-violet-4);
+}
+
+.description {
+  color: var(--mantine-color-gray-4);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin-top: var(--mantine-spacing-xs);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Map statistics */
+.mapStats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--mantine-color-gray-4);
+}
+
+.statLabel {
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+.statValue {
+  font-weight: 600;
+  color: var(--mantine-color-gray-2);
+}
+
+/* Stats row */
+.statsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-lg);
+  background: var(--mantine-color-dark-8);
+  border-top: 1px solid var(--mantine-color-dark-5);
+}
+
+.statGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mantine-color-gray-4);
+  font-size: 0.8rem;
+}
+
+.statGroup svg {
+  opacity: 0.7;
+}
+
+/* Heart button */
+.heartButton {
+  transition: transform 0.15s ease;
+}
+
+.heartButton:hover {
+  transform: scale(1.1);
+}
+
+.heartButton:active {
+  transform: scale(0.95);
+}
+

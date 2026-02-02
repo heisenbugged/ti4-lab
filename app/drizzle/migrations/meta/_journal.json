@@ -64,6 +64,13 @@
       "when": 1768861875295,
       "tag": "0008_familiar_tiger_shark",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1770048141465,
+      "tag": "0009_lovely_thunderbolts",
+      "breakpoints": true
     }
   ]
 }
