@@ -216,6 +216,7 @@ export const useDraftSetup = create<DraftSetupStore>()(
             // Default to all 8 kings
             state.kings.numKings = 8;
           }
+
         }),
 
       validateSetup: () => {

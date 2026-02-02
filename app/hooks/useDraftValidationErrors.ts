@@ -17,7 +17,9 @@ export function useDraftValidationErrors() {
 
   return useMemo(() => {
     const errors = [];
-    if (draftGameMode === "texasStyle") return errors;
+    if (draftGameMode === "texasStyle" || draftGameMode === "presetMap") {
+      return errors;
+    }
 
     if (numFactions !== undefined && numFactions < players.length) {
       errors.push(
@@ -48,5 +50,13 @@ export function useDraftValidationErrors() {
     }
 
     return errors;
-  }, [config, presetMap, numFactions, allowEmptyMapTiles, slices, players]);
+  }, [
+    config,
+    presetMap,
+    numFactions,
+    allowEmptyMapTiles,
+    slices,
+    players,
+    draftGameMode,
+  ]);
 }

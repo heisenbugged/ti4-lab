@@ -10,7 +10,7 @@ import {
   FactionReferenceCardPack,
   FactionId,
 } from "~/types";
-import { hydrateMap } from "~/utils/map";
+import { hydrateMap, hydratePresetMap } from "~/utils/map";
 import { atom } from "jotai/vanilla";
 import { useAtom } from "jotai";
 import { draftConfig } from "~/draft";
@@ -326,12 +326,17 @@ export const hydratedPlayersAtom = atom((get) => {
 export const hydratedMapAtom = atom((get) => {
   const store = get(draftStoreAtom);
   const hydratedPlayers = get(hydratedPlayersAtom);
+  const selections = computePlayerSelections(hydratedPlayers);
+
+  if (store.draft.settings.draftGameMode === "presetMap") {
+    return hydratePresetMap(store.draft.presetMap, selections);
+  }
 
   return hydrateMap(
     draftConfig[store.draft.settings.type],
     store.draft.presetMap,
     store.draft.slices,
-    computePlayerSelections(hydratedPlayers),
+    selections,
   );
 });
 

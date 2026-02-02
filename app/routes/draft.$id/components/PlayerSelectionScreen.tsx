@@ -20,7 +20,7 @@ export function PlayerSelectionScreen({ onDraftJoined }: Props) {
   return (
     <Stack
       flex={1}
-      mih="calc(100vh - 60px)"
+      mih="calc(100vh - 49px)"
       align="center"
       justify="space-between"
       pb={{ base: 0, xs: "xl" }}

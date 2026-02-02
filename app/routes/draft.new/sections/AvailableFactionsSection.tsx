@@ -68,6 +68,8 @@ export function AvailableFactionsSection() {
   const minFactions = isTwilightsFall ? playerCount : 6;
   const maxFactions = isTwilightsFall ? 8 : factionPool.length;
 
+  const isPresetMap = draftGameMode === "presetMap";
+
   return (
     <Section>
       <SectionTitle title={isTwilightsFall ? "Kings Pool" : "Faction Pool"}>
@@ -115,7 +117,11 @@ export function AvailableFactionsSection() {
         </Group>
       </SectionTitle>
       <SimpleGrid
-        cols={{ base: 1, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }}
+        cols={
+          isPresetMap
+            ? { base: 1, xs: 2, sm: 3, md: 3, xl: 3, xxl: 3 }
+            : { base: 1, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }
+        }
         spacing="xs"
       >
         {availableFactions.map((factionId, idx) => (

@@ -1,5 +1,10 @@
 import { Draft, Slice, Tile, System } from "~/types";
 import { calcHexHeight } from "~/utils/positioning";
+import { hydratePresetMap } from "~/utils/map";
+import {
+  hydratePlayers,
+  computePlayerSelections,
+} from "~/hooks/useHydratedDraft";
 import {
   initializeFonts,
   loadAllAssets,
@@ -12,12 +17,19 @@ import {
   drawBackground,
   drawBranding,
   createCanvas,
+  calculateCanvasDimensions,
+  drawMap,
 } from "./canvasUtils.server";
 import { systemData } from "~/data/systemData";
 import { Wormhole, TechSpecialty } from "~/types";
 import { drawWormhole } from "./renderers/wormholeRenderer.server";
 import { factions } from "~/data/factionData";
-import { calculateSliceValue } from "~/stats";
+import { draftConfig } from "~/draft";
+import {
+  buildSliceValueConfig,
+  calculateSliceValue,
+  getEquidistantIndices,
+} from "~/stats";
 
 export async function generateDraftSlicesImage(
   draft: Draft,
@@ -35,6 +47,7 @@ export async function generateDraftSlicesImage(
   const sliceHeaderHeight = 80;
   const gap = 20;
   const padding = 100;
+  const sectionLabelHeight = 60;
   const factionColumnWidth = 600;
   const factionColumnGap = 40;
 
@@ -59,9 +72,8 @@ export async function generateDraftSlicesImage(
     logoY: 20,
   });
 
-  // Draw section labels
   const slicesLabelY = padding + 10;
-  const sectionLabelHeight = 60;
+
   drawSectionLabel(ctx, "Slices", gap, slicesLabelY, slicesWidth);
   drawSectionLabel(
     ctx,
@@ -71,7 +83,6 @@ export async function generateDraftSlicesImage(
     factionColumnWidth,
   );
 
-  // Draw faction list
   drawFactionList(
     ctx,
     draft,
@@ -79,7 +90,12 @@ export async function generateDraftSlicesImage(
     slicesLabelY + sectionLabelHeight + 15,
   );
 
-  // Draw each slice
+  const sliceValueConfig = buildSliceValueConfig(
+    draft.settings.sliceGenerationConfig?.sliceValueModifiers,
+    getEquidistantIndices(draft.settings.type),
+    draftConfig[draft.settings.type]?.mecatolPathSystemIndices,
+  );
+
   slices.forEach((slice, index) => {
     const row = Math.floor(index / slicesPerRow);
     const col = index % slicesPerRow;
@@ -99,8 +115,105 @@ export async function generateDraftSlicesImage(
       sliceWidth,
       sliceHeaderHeight,
       draft.settings.type,
+      sliceValueConfig,
     );
   });
+
+  return await canvas.toBuffer("png");
+}
+
+export async function generatePresetDraftImage(
+  draft: Draft,
+  draftId: string,
+): Promise<Buffer> {
+  initializeFonts();
+  await loadAllAssets();
+
+  const hydratedPlayers = hydratePlayers(
+    draft.players,
+    draft.selections,
+    draft.settings.draftSpeaker,
+    draft.integrations.discord?.players,
+    undefined,
+    undefined,
+    draft.settings,
+  );
+
+  const hydratedMap = hydratePresetMap(
+    draft.presetMap,
+    computePlayerSelections(hydratedPlayers),
+  );
+
+  const slicesPerRow = 3;
+  const rows = Math.ceil(Math.max(draft.slices.length, 1) / slicesPerRow);
+
+  const sliceWidth = 700;
+  const sliceHeaderHeight = 80;
+  const gap = 20;
+  const padding = 100;
+  const sectionLabelHeight = 60;
+  const factionColumnWidth = 600;
+  const factionColumnGap = 40;
+
+  const slicesWidth = slicesPerRow * sliceWidth + (slicesPerRow + 1) * gap;
+  const canvasWidth = slicesWidth + factionColumnGap + factionColumnWidth;
+  const baseSlicesHeight =
+    rows * (sliceWidth + sliceHeaderHeight) + (rows + 1) * gap;
+  const mapDimensions = calculateCanvasDimensions(hydratedMap);
+  const minMapHeight = mapDimensions.height + sectionLabelHeight + 20;
+  const canvasHeight = Math.max(
+    baseSlicesHeight,
+    minMapHeight,
+  ) + padding * 2;
+
+  const { canvas, ctx } = createCanvas(canvasWidth, canvasHeight);
+
+  drawBackground(ctx, canvasWidth, canvasHeight, {
+    withGradient: true,
+    tileOpacity: 0.5,
+  });
+
+  drawBranding(ctx, canvasWidth, canvasHeight, {
+    urlText: `tidraft.com/draft/${draftId}`,
+    urlPosition: "inline",
+    logoX: 20,
+    logoY: 20,
+  });
+
+  const slicesLabelY = padding + 10;
+  drawSectionLabel(ctx, "Map", gap, slicesLabelY, slicesWidth);
+  drawSectionLabel(
+    ctx,
+    "Factions",
+    slicesWidth + factionColumnGap,
+    slicesLabelY,
+    factionColumnWidth,
+  );
+
+  drawFactionList(
+    ctx,
+    draft,
+    slicesWidth + factionColumnGap,
+    slicesLabelY + sectionLabelHeight + 15,
+  );
+
+  const mapAreaX = gap;
+  const mapAreaY = slicesLabelY + sectionLabelHeight + gap;
+
+  const mapOffsetX = mapAreaX + (slicesWidth - mapDimensions.width) / 2;
+  const mapOffsetY =
+    mapAreaY + Math.max(0, (canvasHeight - mapAreaY - mapDimensions.height - padding) / 2);
+
+  drawMap(
+    ctx,
+    hydratedMap,
+    hydratedPlayers,
+    {
+      ...mapDimensions,
+      wOffset: mapDimensions.wOffset + mapOffsetX,
+      hOffset: mapDimensions.hOffset + mapOffsetY,
+    },
+  );
 
   return await canvas.toBuffer("png");
 }
@@ -194,6 +307,7 @@ function drawSlice(
   width: number,
   headerHeight: number,
   draftType: string,
+  sliceValueConfig: ReturnType<typeof buildSliceValueConfig>,
 ): void {
   // Draw slice background box with subtle sci-fi gradient
   const gradient = ctx.createLinearGradient(x, y, x, y + width + headerHeight);
@@ -221,7 +335,7 @@ function drawSlice(
 
   // Draw slice stats
   const stats = calculateSliceStats(slice);
-  const sliceValue = calculateSliceValueForSlice(slice);
+  const sliceValue = calculateSliceValueForSlice(slice, sliceValueConfig);
   ctx.font = "26px Quantico, sans-serif";
 
   ctx.fillStyle = "#fcc419";
@@ -412,11 +526,14 @@ function calculateSliceStats(slice: Slice): {
   };
 }
 
-function calculateSliceValueForSlice(slice: Slice): number {
+function calculateSliceValueForSlice(
+  slice: Slice,
+  config: ReturnType<typeof buildSliceValueConfig>,
+): number {
   const systems: System[] = slice.tiles
     .filter((t) => t.type === "SYSTEM")
     .map((t) => systemData[t.systemId])
     .filter((s) => !!s);
 
-  return calculateSliceValue(systems);
+  return calculateSliceValue(systems, config);
 }

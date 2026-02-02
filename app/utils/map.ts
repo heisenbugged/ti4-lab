@@ -161,6 +161,20 @@ export function hydrateMap(
   return hydrated;
 }
 
+export function hydratePresetMap(
+  map: Map,
+  selections: PlayerSelection[],
+): Map {
+  return map.map((tile) => {
+    if (tile.type !== "HOME" || tile.seat === undefined) return tile;
+    const selection = selections.find((s) => s.seatIdx === tile.seat);
+    return {
+      ...tile,
+      playerId: selection?.playerId,
+    };
+  });
+}
+
 /**
  * Iterates over the home systems in the map, calling the provided function
  */

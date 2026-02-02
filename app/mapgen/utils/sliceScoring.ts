@@ -100,6 +100,42 @@ function findAnomalyTiles(map: TiMap, anomaly: Anomaly): Set<number> {
 }
 
 /**
+ * Build a graph for equidistant calculations where supernovas are impassable
+ * and nebulas are dead-ends (enterable, but not pass-through).
+ */
+function buildEquidistantGraph(map: TiMap, baseGraph: HexGraph): HexGraph {
+  const supernovaIndices = findAnomalyTiles(map, "SUPERNOVA");
+  const nebulaIndices = findAnomalyTiles(map, "NEBULA");
+
+  if (supernovaIndices.size === 0 && nebulaIndices.size === 0) {
+    return baseGraph;
+  }
+
+  const blockedFrom = new Set<number>([...supernovaIndices, ...nebulaIndices]);
+  const edges = new Map<number, Map<number, number>>();
+
+  for (const [from, neighbors] of baseGraph.edges.entries()) {
+    const newNeighbors = new Map<number, number>();
+
+    // Supernovas and nebulas cannot be traversed through
+    if (blockedFrom.has(from)) {
+      edges.set(from, newNeighbors);
+      continue;
+    }
+
+    for (const [to, cost] of neighbors.entries()) {
+      // Supernovas are fully impassable - cannot enter
+      if (supernovaIndices.has(to)) continue;
+      newNeighbors.set(to, cost);
+    }
+
+    edges.set(from, newNeighbors);
+  }
+
+  return { edges };
+}
+
+/**
  * Calculate simple value for a system (used for slice scoring)
  * Uses Milty draft modifiers for tech, legendaries, trade stations, etc.
  */
@@ -165,6 +201,7 @@ export function calculateSliceValue(
   ringCount?: number,
 ): number {
   let totalValue = 0;
+  const equidistantGraph = graph ? buildEquidistantGraph(map, graph) : undefined;
 
   // Find all systems within 2 spaces (excluding Mecatol Rex at index 0)
   for (let i = 0; i < map.length; i++) {
@@ -173,7 +210,7 @@ export function calculateSliceValue(
     const tile = map[i];
     if (tile.type !== "SYSTEM") continue;
 
-    const distance = getHexDistance(map, homeIdx, i, graph);
+    const distance = getHexDistance(map, homeIdx, i, equidistantGraph);
 
     // Only count systems within 2 spaces (distance 1 and 2)
     if (distance === 0 || distance > 2) continue;
@@ -182,7 +219,7 @@ export function calculateSliceValue(
 
     // Find the minimum distance any home has to this tile
     const homeDistances = homeIndices
-      .map((h) => getHexDistance(map, h, i, graph))
+      .map((h) => getHexDistance(map, h, i, equidistantGraph))
       .filter((d) => d <= 2);
 
     const minDistance = Math.min(...homeDistances);
@@ -260,6 +297,7 @@ export function calculateSliceStats(
   let hazardous = 0;
   let industrial = 0;
   let cultural = 0;
+  const equidistantGraph = graph ? buildEquidistantGraph(map, graph) : undefined;
 
   // Find all systems within 2 spaces (excluding Mecatol Rex at index 0)
   for (let i = 0; i < map.length; i++) {
@@ -268,14 +306,14 @@ export function calculateSliceStats(
     const tile = map[i];
     if (tile.type !== "SYSTEM") continue;
 
-    const distance = getHexDistance(map, homeIdx, i, graph);
+    const distance = getHexDistance(map, homeIdx, i, equidistantGraph);
 
     // Only count systems within 2 spaces (distance 1 and 2)
     if (distance === 0 || distance > 2) continue;
 
     // Find the minimum distance any home has to this tile
     const homeDistances = homeIndices
-      .map((h) => getHexDistance(map, h, i, graph))
+      .map((h) => getHexDistance(map, h, i, equidistantGraph))
       .filter((d) => d <= 2);
 
     const minDistance = Math.min(...homeDistances);
@@ -444,6 +482,7 @@ export function calculateSliceValueBreakdown(
 
   // Also track actual (divided) values for the total
   let actualTotal = 0;
+  const equidistantGraph = graph ? buildEquidistantGraph(map, graph) : undefined;
 
   // Find all systems within 2 spaces (excluding Mecatol Rex at index 0)
   for (let i = 0; i < map.length; i++) {
@@ -452,7 +491,7 @@ export function calculateSliceValueBreakdown(
     const tile = map[i];
     if (tile.type !== "SYSTEM") continue;
 
-    const distance = getHexDistance(map, homeIdx, i, graph);
+    const distance = getHexDistance(map, homeIdx, i, equidistantGraph);
     if (distance === 0 || distance > 2) continue;
 
     const system = systemData[tile.systemId];
@@ -460,7 +499,7 @@ export function calculateSliceValueBreakdown(
 
     // Find the minimum distance any home has to this tile
     const homeDistances = homeIndices
-      .map((h) => getHexDistance(map, h, i, graph))
+      .map((h) => getHexDistance(map, h, i, equidistantGraph))
       .filter((d) => d <= 2);
 
     const minDistance = Math.min(...homeDistances);
@@ -678,6 +717,7 @@ export function getAllTileContributions(
 
   // Build graph for hyperlane-aware distance calculations
   const graph = buildHexGraph(map);
+  const equidistantGraph = buildEquidistantGraph(map, graph);
 
   // Collect all home indices
   const homeIndices: number[] = [];
@@ -701,7 +741,7 @@ export function getAllTileContributions(
     // Find which homes can reach this tile within distance 2
     const homeDistancePairs: { homeIdx: number; distance: number }[] = [];
     for (const homeIdx of homeIndices) {
-      const distance = getHexDistance(map, homeIdx, i, graph);
+      const distance = getHexDistance(map, homeIdx, i, equidistantGraph);
       if (distance > 0 && distance <= 2) {
         homeDistancePairs.push({ homeIdx, distance });
       }

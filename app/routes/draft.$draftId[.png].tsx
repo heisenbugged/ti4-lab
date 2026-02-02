@@ -2,7 +2,10 @@ import { LoaderFunctionArgs, redirect } from "react-router";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 import { generateDraftImageBuffer } from "~/skiaRendering/imageGenerator.server";
-import { generateDraftSlicesImage } from "~/skiaRendering/slicesImageGenerator.server";
+import {
+  generateDraftSlicesImage,
+  generatePresetDraftImage,
+} from "~/skiaRendering/slicesImageGenerator.server";
 import { syncImageToR2 } from "~/utils/syncImageToR2.server";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
@@ -41,7 +44,9 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   // Generate appropriate image based on completion status
   const imageBuffer = isComplete
     ? await generateDraftImageBuffer(draft, draftId)
-    : await generateDraftSlicesImage(draft, draftId);
+    : draft.settings.draftGameMode === "presetMap"
+      ? await generatePresetDraftImage(draft, draftId)
+      : await generateDraftSlicesImage(draft, draftId);
 
   // Dev mode: return image directly
   if (devMode) {

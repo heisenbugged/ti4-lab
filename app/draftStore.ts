@@ -781,7 +781,10 @@ export const draftStore = createStore<DraftV2State>()(
 
           // Generate map and slices using the utility function
           // Check for pre-seeded slices and map from map generator
-          if (settings.presetSlices && settings.presetMap) {
+          if (settings.draftGameMode === "presetMap" && settings.presetMap) {
+            draft.slices = [];
+            draft.presetMap = settings.presetMap;
+          } else if (settings.presetSlices && settings.presetMap) {
             // Use pre-seeded slices from map generator
             draft.slices = systemIdsToSlices(
               config,
@@ -811,7 +814,10 @@ export const draftStore = createStore<DraftV2State>()(
             );
           }
 
-          if (settings.draftGameMode === "texasStyle") {
+          if (
+            settings.draftGameMode === "texasStyle" ||
+            settings.draftGameMode === "presetMap"
+          ) {
             draft.slices = [];
           } else {
             // Set slice names using the utility function

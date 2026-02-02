@@ -1,7 +1,7 @@
 .banner {
     transition: background-color 500ms ease-in-out, border-color 500ms ease-in-out;
     position: fixed;
-    top: 60px;
+    top: 49px;
     left: 0;
     right: 0;
     z-index: 90;

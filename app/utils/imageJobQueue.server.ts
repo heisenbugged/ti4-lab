@@ -1,7 +1,10 @@
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 import { generateDraftImageBuffer } from "~/skiaRendering/imageGenerator.server";
-import { generateDraftSlicesImage } from "~/skiaRendering/slicesImageGenerator.server";
+import {
+  generateDraftSlicesImage,
+  generatePresetDraftImage,
+} from "~/skiaRendering/slicesImageGenerator.server";
 import { syncImageToR2 } from "~/utils/syncImageToR2.server";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
@@ -78,7 +81,9 @@ async function processJob(job: ImageJob) {
     // Generate appropriate image
     const imageBuffer = job.isComplete
       ? await generateDraftImageBuffer(draft, job.urlName)
-      : await generateDraftSlicesImage(draft, job.urlName);
+      : draft.settings.draftGameMode === "presetMap"
+        ? await generatePresetDraftImage(draft, job.urlName)
+        : await generateDraftSlicesImage(draft, job.urlName);
 
     // Upload to R2
     const status = job.isComplete ? "complete" : "incomplete";

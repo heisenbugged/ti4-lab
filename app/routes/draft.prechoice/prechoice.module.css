@@ -25,6 +25,7 @@
   .colRight {
     grid-column: span 5;
   }
+
 }
 
 .hiddenFromXs {

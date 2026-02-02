@@ -152,11 +152,6 @@ export function SliceValuePopover({ slice, breakdown: providedBreakdown, title =
                           {" "}({mod.count})
                         </Text>
                       )}
-                      {mod.equidistantShared && (
-                        <Text component="span" c="orange.5" size="xs">
-                          {" "}÷{mod.equidistantShared}
-                        </Text>
-                      )}
                     </Text>
                     <Text size="xs" fw={600} ff="monospace" c="green.5">
                       {formatValue(mod.value, true)}

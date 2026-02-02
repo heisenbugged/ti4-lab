@@ -21,6 +21,7 @@ import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
 import { createDraft } from "~/drizzle/draft.server";
 import { DiscordBanner } from "~/components/DiscordBanner";
+import { PlayerInputSection } from "./components/PlayerInputSection";
 import {
   AvailableFactionsSection,
   MapSection,
@@ -54,6 +55,7 @@ export default function DraftNew() {
     config.modifiableMapTiles.length > 0 ||
     Object.keys(config.presetTiles).length > 0;
   const isTexasStyle = draft.settings.draftGameMode === "texasStyle";
+  const isPresetMapDraft = draft.settings.draftGameMode === "presetMap";
   const autoCreatedRef = useRef(false);
 
   useEffect(() => {
@@ -71,7 +73,10 @@ export default function DraftNew() {
     const { draftSettings, players, discordData } = location.state;
     actions.initializeDraft(draftSettings, players, { discord: discordData });
 
-    if (draftStore.getState().draft.slices.length === 0) {
+    if (
+      draftSettings.draftGameMode !== "presetMap" &&
+      draftStore.getState().draft.slices.length === 0
+    ) {
       navigate("/draft/prechoice", {
         state: { invalidDraftParameters: true },
       });
@@ -92,9 +97,6 @@ export default function DraftNew() {
   }, [initialized, isTexasStyle, draftIsValid, createDraft, draft]);
 
   const handleCreate = () => createDraft(draft);
-
-  if (!initialized) return <LoadingOverlay />;
-  if (isTexasStyle) return <LoadingOverlay />;
 
   const advancedOptions = (
     <Stack gap="lg">
@@ -128,6 +130,44 @@ export default function DraftNew() {
       </Group>
     </Stack>
   );
+
+  if (!initialized) return <LoadingOverlay />;
+  if (isTexasStyle) return <LoadingOverlay />;
+  if (isPresetMapDraft) {
+    return (
+      <Flex py="lg" direction="column">
+        {draft.integrations.discord && (
+          <Box mb="lg">
+            <DiscordBanner />
+          </Box>
+        )}
+
+        <ConnectedFactionSettingsModal />
+        <PlanetFinder />
+
+        <Grid style={{ gap: 30 }} mt="lg">
+          <Grid.Col span={{ base: 12, lg: 6 }}>
+            <Stack gap="lg">
+              <PlayerInputSection
+                players={draft.players}
+                discordData={draft.integrations.discord}
+                onChangeName={(playerIdx, name) => {
+                  actions.updatePlayerName(playerIdx, name);
+                }}
+              />
+              <AvailableReferenceCardPacksSection />
+              <AvailableFactionsSection />
+              <AvailableMinorFactionsSection />
+              {advancedOptions}
+            </Stack>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 6 }}>
+            <MapSection />
+          </Grid.Col>
+        </Grid>
+      </Flex>
+    );
+  }
 
   return (
     <Flex py="lg" direction="column">

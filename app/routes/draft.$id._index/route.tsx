@@ -73,6 +73,7 @@ export default function RunningDraft() {
   const draftActions = draftStore.draftActions;
   const selectedPlayer = draftStore.selectedPlayer;
   const { draftFinished } = useHydratedDraft();
+  const isPresetMapDraft = settings.draftGameMode === "presetMap";
 
   // Real-time socket connection to push and receive state updates.
   const { socket, isDisconnected, isReconnecting, reconnect } =
@@ -393,20 +394,22 @@ export default function RunningDraft() {
         <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 2, sm: 3, lg: 4 }}>
           <DraftSummarySection />
         </Grid.Col>
-        <Grid.Col
-          span={
-            settings.draftGameMode === "twilightsFall" && !settings.nucleusStyle
-              ? 12
-              : { base: 12, lg: 6 }
-          }
-          order={{ base: 5, sm: 5, lg: 5 }}
-        >
-          <SlicesSection />
-        </Grid.Col>
+        {!isPresetMapDraft && (
+          <Grid.Col
+            span={
+              settings.draftGameMode === "twilightsFall" && !settings.nucleusStyle
+                ? 12
+                : { base: 12, lg: 6 }
+            }
+            order={{ base: 5, sm: 5, lg: 5 }}
+          >
+            <SlicesSection />
+          </Grid.Col>
+        )}
         {(settings.draftGameMode !== "twilightsFall" ||
           settings.nucleusStyle) && (
           <Grid.Col
-            span={{ base: 12, lg: 6 }}
+            span={isPresetMapDraft ? 12 : { base: 12, lg: 6 }}
             order={{ base: 6, sm: 6, lg: 6 }}
           >
             <MapSection />

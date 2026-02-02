@@ -7,7 +7,6 @@ import {
   ActionIcon,
   Select,
   MultiSelect,
-  TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -16,7 +15,7 @@ import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { MainAppShell } from "~/components/MainAppShell";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { useState, useMemo, useEffect } from "react";
-import { Tile, GameSet, SystemId } from "~/types";
+import { Tile, GameSet, SystemId, DraftSettings } from "~/types";
 import {
   DndContext,
   DragEndEvent,
@@ -38,6 +37,7 @@ import {
   IconMinus,
   IconPlus,
   IconHexagonOff,
+  IconFileExport,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router";
 import { draftConfig } from "~/draft/draftConfig";
@@ -66,6 +66,7 @@ import { systemData } from "~/data/systemData";
 import { ShareMapModal } from "./ShareMapModal";
 import { mapConfigs } from "~/mapgen/mapConfigs";
 import { DraftTypeSelectionModal } from "./DraftTypeSelectionModal";
+import { TtsImportExportModal } from "./TtsImportExportModal";
 import { DraftType } from "~/draft/types";
 
 function MapGeneratorContent() {
@@ -125,6 +126,8 @@ function MapGeneratorContent() {
     useDisclosure(false);
   const [draftTypeOpened, { open: openDraftType, close: closeDraftType }] =
     useDisclosure(false);
+  const [ttsOpened, { open: openTts, close: closeTts }] =
+    useDisclosure(false);
   const [compatibleDraftTypes, setCompatibleDraftTypes] = useState<DraftType[]>(
     [],
   );
@@ -147,15 +150,6 @@ function MapGeneratorContent() {
   const hasSystems = useMemo(() => {
     return map.some((tile) => tile.type === "SYSTEM" && tile.idx !== 0);
   }, [map]);
-
-  const [ttsString, setTtsString] = useState("");
-  const [isEditingTts, setIsEditingTts] = useState(false);
-
-  useEffect(() => {
-    if (!isEditingTts) {
-      setTtsString(hasSystems ? ttsMapString : "");
-    }
-  }, [ttsMapString, isEditingTts, hasSystems]);
 
   const shareUrl = useMemo(() => {
     const encoded = encodeMapString(map);
@@ -252,7 +246,7 @@ function MapGeneratorContent() {
     }
   };
 
-  const handleImportTtsString = () => {
+  const handleImportTtsString = (ttsString: string) => {
     if (!ttsString.trim()) {
       notifications.show({
         title: "Invalid input",
@@ -345,8 +339,6 @@ function MapGeneratorContent() {
       message: `Imported ${systemsPlaced} systems from TTS string`,
       color: "green",
     });
-
-    setIsEditingTts(false);
   };
 
   const handleCreateDraft = () => {
@@ -369,6 +361,62 @@ function MapGeneratorContent() {
 
     // Single compatible type - navigate directly
     navigateToDraft(compatibleTypes[0]);
+  };
+
+  const handleCreatePresetDraft = () => {
+    const compatibleTypes = mapConfigToCompatibleDraftTypes[mapConfigId];
+    if (!compatibleTypes || compatibleTypes.length === 0) {
+      notifications.show({
+        title: "Unsupported",
+        message: "This map type doesn't support draft creation",
+        color: "red",
+      });
+      return;
+    }
+
+    const selectedDraftType = compatibleTypes[0];
+    if (!selectedDraftType) {
+      notifications.show({
+        title: "Unsupported",
+        message: "This map type doesn't support draft creation",
+        color: "red",
+      });
+      return;
+    }
+
+    if (playerCount <= 0) {
+      notifications.show({
+        title: "Missing players",
+        message: "Add home systems before starting a draft",
+        color: "yellow",
+      });
+      return;
+    }
+    const presetSettings: DraftSettings = {
+      type: selectedDraftType,
+      factionGameSets: gameSets,
+      tileGameSets: gameSets,
+      draftSpeaker: true,
+      allowHomePlanetSearch: false,
+      numFactions: Math.max(6, playerCount),
+      numSlices: playerCount,
+      randomizeMap: false,
+      randomizeSlices: false,
+      draftPlayerColors: false,
+      allowEmptyTiles: false,
+      draftGameMode: "presetMap",
+      presetMap: map,
+    };
+
+    navigate("/draft/new", {
+      state: {
+        draftSettings: presetSettings,
+        players: Array(playerCount)
+          .fill(null)
+          .map((_, i) => ({ id: i, name: "" })),
+        discordData: undefined,
+      },
+    });
   };
 
   const navigateToDraft = (selectedDraftType: DraftType) => {
@@ -499,6 +547,12 @@ function MapGeneratorContent() {
         onClose={closeDraftType}
         onSelect={handleDraftTypeSelect}
       />
+      <TtsImportExportModal
+        ttsExportString={hasSystems ? ttsMapString : ""}
+        opened={ttsOpened}
+        onClose={closeTts}
+        onImport={handleImportTtsString}
+      />
 
       <MapBuilderPlanetFinder />
       <DndContext
@@ -558,21 +612,15 @@ function MapGeneratorContent() {
                     <IconPlus size={14} />
                   </ActionIcon>
                 </Group>
-                <TextInput
-                  placeholder="Import from TTS string"
-                  value={ttsString}
-                  onChange={(e) => setTtsString(e.currentTarget.value)}
-                  onFocus={() => setIsEditingTts(true)}
-                  onBlur={() => setIsEditingTts(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleImportTtsString();
-                      setIsEditingTts(false);
-                    }
-                  }}
+                <Button
+                  leftSection={<IconFileExport size={14} />}
+                  variant="subtle"
+                  color="gray"
                   size="xs"
-                  w={160}
-                />
+                  onClick={openTts}
+                >
+                  Import/Export
+                </Button>
                 <Group gap={4}>
                   <ActionIcon variant="subtle" color="gray" size="sm" onClick={removeHomeSystem} disabled={playerCount <= 1}>
                     <IconMinus size={14} />
@@ -614,8 +662,11 @@ function MapGeneratorContent() {
                     <Button leftSection={<IconPhoto size={14} />} variant="subtle" color="gray" size="xs" onClick={() => window.open(imageUrl, "_blank")} disabled={!isMapComplete}>
                       Image
                     </Button>
-                    <Button leftSection={<IconWand size={14} />} variant="filled" color="blue" size="xs" onClick={handleCreateDraft} disabled={!isMapComplete}>
-                      Create Draft
+                    <Button variant="light" color="blue" size="xs" onClick={handleCreateDraft} disabled={!isMapComplete}>
+                      Slice Draft
+                    </Button>
+                    <Button leftSection={<IconWand size={14} />} variant="filled" color="blue" size="xs" onClick={handleCreatePresetDraft} disabled={!isMapComplete}>
+                      Preset Draft
                     </Button>
                   </Group>
                 </Box>

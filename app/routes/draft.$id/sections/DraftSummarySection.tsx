@@ -9,7 +9,8 @@ export function DraftSummarySection() {
   const slices = useDraft((state) => state.draft.slices);
   const draftedSlices = useDraftedSlices();
   const draftGameMode = useDraft((state) => state.draft.settings.draftGameMode);
-  const showSlices = draftGameMode !== "texasStyle";
+  const showSlices =
+    draftGameMode !== "texasStyle" && draftGameMode !== "presetMap";
 
   return (
     <Tabs defaultValue="draft" variant="pills">

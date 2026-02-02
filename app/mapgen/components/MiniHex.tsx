@@ -5,7 +5,7 @@ type Props = {
 };
 
 export function MiniHex({ color }: Props) {
-  const radius = 10;
+  const radius = 8;
   const points = hexVertices(radius);
   const pointsString = points.map((point) => `${point.x},${point.y}`).join(" ");
 
@@ -14,6 +14,7 @@ export function MiniHex({ color }: Props) {
       width={radius * 2}
       height={radius * 2}
       viewBox={`-${radius} -${radius} ${radius * 2} ${radius * 2}`}
+      style={{ display: "block" }}
     >
       <polygon points={pointsString} fill={color} />
     </svg>

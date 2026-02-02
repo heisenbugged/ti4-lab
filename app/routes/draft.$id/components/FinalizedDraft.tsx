@@ -55,7 +55,8 @@ export function FinalizedDraft() {
     settings: { draftSpeaker, draftPlayerColors, draftGameMode },
   } = draft;
   const showSeat = draftSpeaker || draftGameMode === "texasStyle";
-  const showSliceSummary = draftGameMode !== "texasStyle";
+  const showSliceSummary =
+    draftGameMode !== "texasStyle" && draftGameMode !== "presetMap";
   const usingMinorFactions = useDraft(
     (state) =>
       state.draft.settings.minorFactionsInSharedPool ||

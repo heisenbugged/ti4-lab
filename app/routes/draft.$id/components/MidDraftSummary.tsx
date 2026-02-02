@@ -32,7 +32,8 @@ export function MidDraftSummary() {
       state.draft.availableMinorFactions !== undefined,
   );
   const showSeat = draftSpeaker || draftGameMode === "texasStyle";
-  const showSlice = draftGameMode !== "texasStyle";
+  const showSlice =
+    draftGameMode !== "texasStyle" && draftGameMode !== "presetMap";
   const playerOrder =
     draftGameMode === "texasStyle"
       ? [...hydratedPlayers]

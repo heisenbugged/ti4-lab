@@ -11,7 +11,7 @@ import {
   getTechIconCache,
   getTradeStationCache,
 } from "../cache.server";
-import { withContext, drawRotatedImage } from "../canvasUtils.server";
+import { withContext } from "../canvasUtils.server";
 
 export function drawPlanet(
   ctx: CanvasRenderingContext2D,
@@ -52,15 +52,22 @@ function drawTradeStation(
   const tradeStationCache = getTradeStationCache();
   if (!tradeStationCache) return;
 
-  const stationSize = planetRadius * 2.7;
-  drawRotatedImage(
-    ctx,
-    tradeStationCache,
-    centerX - 5,
-    centerY - 15,
-    stationSize,
-    -20,
-  );
+  const stationWidth = planetRadius * 3;
+  const stationHeight = planetRadius * 2;
+  const yOffset = planetRadius * 0.16;
+  const centerYWithOffset = centerY - planetRadius - yOffset + stationHeight / 2;
+
+  withContext(ctx, () => {
+    ctx.translate(centerX, centerYWithOffset);
+    ctx.rotate((-20 * Math.PI) / 180);
+    ctx.drawImage(
+      tradeStationCache,
+      -stationWidth / 2,
+      -stationHeight / 2,
+      stationWidth,
+      stationHeight,
+    );
+  });
 }
 
 function drawLegendaryImage(

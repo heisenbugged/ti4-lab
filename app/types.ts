@@ -266,7 +266,7 @@ export type DraftSettings = {
   /** Minor factions variant. */
   minorFactionsMode?: MinorFactionsMode;
 
-  draftGameMode?: "twilightsFall" | "texasStyle";
+  draftGameMode?: "twilightsFall" | "texasStyle" | "presetMap";
   texasFactionHandSize?: number;
   texasAllowFactionRedraw?: boolean;
 

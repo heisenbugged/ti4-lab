@@ -126,6 +126,34 @@ export function createDraftOrder({
     };
   }
 
+  if (settings.draftGameMode === "presetMap") {
+    let pickOrder: DraftPick[] = [
+      ...playerIds,
+      ...reversedPlayerIds,
+      ...playerIds,
+    ];
+
+    if (settings.modifiers?.banFactions) {
+      const modifier = settings.modifiers.banFactions;
+      const banOrder = [];
+      const banPlayerIds = [...reversedPlayerIds];
+      for (let i = 0; i < modifier.numFactions; i++) {
+        banOrder.push(...banPlayerIds.reverse());
+      }
+      pickOrder = [...banOrder, ...pickOrder];
+    }
+
+    return {
+      players: players.map((p) => ({
+        ...p,
+        name: p.name.length > 0 ? p.name : `Player ${placeholderName[p.id]}`,
+      })),
+      pickOrder,
+      playerFactionPool: undefined,
+      selections: [],
+    };
+  }
+
   // Normal draft flow
   let pickOrder: DraftPick[] = [...playerIds, ...reversedPlayerIds, ...playerIds];
 

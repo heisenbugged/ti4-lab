@@ -58,15 +58,27 @@ export function TileSidebar() {
             { value: "all", label: "All" },
             {
               value: "blue",
-              label: <MiniHex color="#4dabf7" />,
+              label: (
+                <Box style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <MiniHex color="#4dabf7" />
+                </Box>
+              ),
             },
             {
               value: "red",
-              label: <MiniHex color="#ff6b6b" />,
+              label: (
+                <Box style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <MiniHex color="#ff6b6b" />
+                </Box>
+              ),
             },
             {
               value: "wormhole",
-              label: <MiniWormhole />,
+              label: (
+                <Box style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <MiniWormhole />
+                </Box>
+              ),
             },
           ]}
         />
