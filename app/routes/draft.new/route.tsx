@@ -35,6 +35,7 @@ import { AvailableReferenceCardPacksSection } from "./sections/AvailableReferenc
 import { ConnectedFactionSettingsModal } from "./components/ConnectedFactionSettingsModal";
 import { createDraftOrder } from "~/utils/draftOrder.server";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
+import { systemData } from "~/data/systemData";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -73,12 +74,56 @@ export default function DraftNew() {
     const { draftSettings, players, discordData } = location.state;
     actions.initializeDraft(draftSettings, players, { discord: discordData });
 
+    const draftState = draftStore.getState();
     if (
       draftSettings.draftGameMode !== "presetMap" &&
-      draftStore.getState().draft.slices.length === 0
+      draftState.draft.slices.length === 0
     ) {
-      navigate("/draft/prechoice", {
-        state: { invalidDraftParameters: true },
+      // Analyze why slice generation failed
+      const systemPool = draftState.systemPool;
+      const settings = draftState.draft.settings;
+      const sliceConfig = settings.sliceGenerationConfig;
+      
+      let errorReason = "Could not generate slices with the given parameters.";
+      
+      if (sliceConfig) {
+        const availableSystems = systemPool.map(id => systemData[id]);
+        const alphaCount = availableSystems.filter(system => 
+          system.wormholes.includes("ALPHA")
+        ).length;
+        const betaCount = availableSystems.filter(system => 
+          system.wormholes.includes("BETA")
+        ).length;
+        const legendaryCount = availableSystems.filter(system => 
+          system.planets.some(planet => planet.legendary)
+        ).length;
+        
+        const requiredAlphas = sliceConfig.numAlphas ?? 2;
+        const requiredBetas = sliceConfig.numBetas ?? 2;
+        const requiredLegendaries = sliceConfig.numLegendaries ?? 1;
+        
+        if (alphaCount < requiredAlphas) {
+          errorReason = `Not enough alpha wormholes available. Need ${requiredAlphas}, but only ${alphaCount} are available in the selected game sets.`;
+        } else if (betaCount < requiredBetas) {
+          errorReason = `Not enough beta wormholes available. Need ${requiredBetas}, but only ${betaCount} are available in the selected game sets.`;
+        } else if (legendaryCount < requiredLegendaries) {
+          errorReason = `Not enough legendary systems available. Need ${requiredLegendaries}, but only ${legendaryCount} are available in the selected game sets.`;
+        } else if (sliceConfig.minOptimal && sliceConfig.maxOptimal) {
+          errorReason = `Could not generate slices within the optimal range (${sliceConfig.minOptimal}-${sliceConfig.maxOptimal}). Try adjusting the optimal values.`;
+        } else if (sliceConfig.minOptimal) {
+          errorReason = `Could not generate slices with minimum optimal value of ${sliceConfig.minOptimal}. Try reducing the minimum optimal value.`;
+        } else if (sliceConfig.maxOptimal) {
+          errorReason = `Could not generate slices with maximum optimal value of ${sliceConfig.maxOptimal}. Try increasing the maximum optimal value.`;
+        }
+      }
+      
+      return navigate("/draft/prechoice", {
+        state: { 
+          invalidDraftParameters: true,
+          errorReason 
+        },
+      });
+    }
       });
       return;
     }
