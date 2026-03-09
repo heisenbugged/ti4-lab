@@ -4,6 +4,8 @@
     letter-spacing: 0.03em;
     text-transform: uppercase;
     transition: all 0.15s ease;
+    --button-bg: #FF8066;
+    --button-hover: #ff6b4d;
 }
 
 @mixin light {
