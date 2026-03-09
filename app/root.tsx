@@ -117,8 +117,8 @@ const mantineTheme = createTheme({
   components: {
     Button: Button.extend({
       defaultProps: {
-        variant: "gradient",
-        gradient: { from: "purple", to: "indigo.9", deg: 90 },
+        variant: "filled",
+        color: "#B39CD0",
       },
     }),
   },
