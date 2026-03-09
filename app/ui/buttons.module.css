@@ -4,6 +4,7 @@
     letter-spacing: 0.03em;
     text-transform: uppercase;
     transition: all 0.15s ease;
+    background-color: #FF6B6B;
 }
 
 @mixin light {
