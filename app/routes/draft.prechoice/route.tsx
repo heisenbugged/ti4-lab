@@ -481,6 +481,7 @@ export default function DraftPrechoice() {
             onMouseDown={handleContinue}
             leftSection={<IconPlayerPlay />}
             className={buttonClasses.primaryCta}
+            gradient={{ from: "#008F7A", to: "#008F7A", deg: 90 }}
           >
             Continue
           </Button>
