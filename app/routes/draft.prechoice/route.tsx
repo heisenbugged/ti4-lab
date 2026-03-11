@@ -478,6 +478,7 @@ export default function DraftPrechoice() {
 
           <Button
             size="lg"
+            color="#E63946"
             onMouseDown={handleContinue}
             leftSection={<IconPlayerPlay />}
             className={buttonClasses.primaryCta}
