@@ -481,6 +481,8 @@ export default function DraftPrechoice() {
             onMouseDown={handleContinue}
             leftSection={<IconPlayerPlay />}
             className={buttonClasses.primaryCta}
+            color="#F4A261"
+            variant="filled"
           >
             Continue
           </Button>
