@@ -11,13 +11,25 @@ TI4 lab is a Twilight Imperium 4 drafting and map building tool. It supports mul
 
 ### Environment setup
 
+## Database Path
+
 In your shell configuration, add the following
 
-```
+```shell
 export TI4_LAB_DATABASE_PATH="file:///ABSOLUTE_PATH_HERE.sqlite"
 ```
 
 _NOTE_: The path must be an absolute path.
+
+## Discord Token
+
+TODO: some instructions on how to set up the Discord Bot Token would be nice
+
+For local development without a discord token, set
+
+```shell
+export DISCORD_DISABLED=true
+```
 
 ## Installing / running
 

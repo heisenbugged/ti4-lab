@@ -26,7 +26,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { factions } from "~/data/factionData";
 import { FactionId, FactionStratification, GameSet } from "~/types";
 
-const gameSetLabel: Record<GameSet, string> = {
+export const gameSetLabel: Record<GameSet, string> = {
   base: "Base",
   pok: "Prophecy of Kings",
   te: "Thunder's Edge",
@@ -104,8 +104,7 @@ export function FactionSettingsModal({
     setAllowedFactions(savedAllowedFactions ?? factionPool);
     setRequiredFactions(savedRequiredFactions ?? []);
     setStratifiedConfig(savedStratifiedConfig);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opened]);
+  }, [opened, factionPool, savedAllowedFactions, savedRequiredFactions, savedStratifiedConfig]);
 
   const handleSave = () => {
     // Remove any keys that have a value of 0

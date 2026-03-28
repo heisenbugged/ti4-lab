@@ -10,6 +10,7 @@ export interface SettingStepperProps<T extends string> {
   defaultValue?: number;
   allowUndefined?: boolean;
   minValue?: number;
+  max?: number;
 }
 
 export function SettingStepper<T extends string>({
@@ -21,6 +22,7 @@ export function SettingStepper<T extends string>({
   defaultValue,
   allowUndefined = false,
   minValue,
+  max,
 }: SettingStepperProps<T>) {
   const handleDecrease = () => {
     if (value === undefined) return;
@@ -50,7 +52,7 @@ export function SettingStepper<T extends string>({
     value === undefined ||
     (minValue !== undefined && value <= minValue) ||
     (!allowUndefined && value <= 0);
-  const increaseDisabled = false;
+  const increaseDisabled = max !== undefined && value !== undefined && value >= max;
 
   return (
     <Group>
