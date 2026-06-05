@@ -110,9 +110,8 @@ export function createDraftOrder({
 
     if (presetMap) {
       const ringCounts = getTexasRingPickCounts(presetMap);
-      ringCounts.forEach((count) => {
-        pickOrder.push(...generateSnakeOrder(seatOrder, count));
-      });
+      const totalTiles = ringCounts.reduce((sum, c) => sum + c, 0);
+      pickOrder.push(...generateSnakeOrder(seatOrder, totalTiles));
     }
 
     return {
