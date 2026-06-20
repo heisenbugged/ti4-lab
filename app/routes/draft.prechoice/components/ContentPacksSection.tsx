@@ -89,6 +89,7 @@ export function ContentPacksSection() {
     withTEFactions,
     withDiscordantTiles,
     withDiscordantFactions,
+    withLscoiTiles,
   } = content.flags;
 
   return (
@@ -156,6 +157,11 @@ export function ContentPacksSection() {
           factionsChecked={withDiscordantFactions}
           onTilesChange={content.setWithDiscordantTiles}
           onFactionsChange={content.setWithDiscordantFactions}
+        />
+        <ContentRow
+          label="Lost Star Charts of Ixth"
+          tilesChecked={withLscoiTiles}
+          onTilesChange={content.setWithLscoiTiles}
         />
       </Stack>
     </Box>
