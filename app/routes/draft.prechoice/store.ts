@@ -427,7 +427,11 @@ export const useDraftSetup = create<DraftSetupStore>()(
           withPokFactions: true,
           withTETiles: true,
           withTEFactions: true,
+<<<<<<< HEAD
           withLscoiTiles: true,
+=======
+          withLscoiTiles: false,
+>>>>>>> fe7a7e6 (add lscoi)
           withDiscordantTiles: false,
           withDiscordantFactions: false,
           // Legacy flags
