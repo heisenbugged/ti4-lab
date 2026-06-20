@@ -8,7 +8,7 @@ import {
 import { rawSystems } from "./rawSystemData";
 import { factions } from "./factionData";
 
-export type SystemGameSet = "base" | "pok" | "te" | "ds" | "us";
+export type SystemGameSet = "base" | "pok" | "te" | "ds" | "us" | "lscoi";
 
 export const systemGameSetLabels: Record<SystemGameSet, string> = {
   base: "Base",
@@ -16,6 +16,7 @@ export const systemGameSetLabels: Record<SystemGameSet, string> = {
   te: "TE",
   ds: "DS",
   us: "US",
+  lscoi: "LSCoI",
 };
 
 export function getSystemGameSet(systemId: string): SystemGameSet | undefined {
@@ -32,6 +33,8 @@ export function getSystemGameSet(systemId: string): SystemGameSet | undefined {
   if (id >= 4000 && id < 5000) return "ds";
   // Uncharted Stars: 150+
   if (id >= 150 && id < 4000) return "us";
+  // Lost Star Charts of Ixth: 6700+
+  if (id >= 6700 && id < 7000) return "lscoi";
 
   // Handle special string IDs
   if (systemId.startsWith("91")) return "te"; // 91A, 91B
@@ -106,6 +109,14 @@ export const unchartedStarsSystemIds = Object.values(systemData)
     (system) =>
       (system.type === "BLUE" || system.type === "RED") &&
       Number(system.id) >= 150,
+  )
+  .map((system) => system.id);
+
+export const lostStarChartsOfIxthSystemIds = Object.values(systemData)
+  .filter(
+    (system) =>
+      (system.type === "BLUE" || system.type === "RED") &&
+      Number(system.id) >= 6700 && Number(system.id) < 6715,
   )
   .map((system) => system.id);
 
@@ -211,6 +222,7 @@ export const searchableSystemData = Object.values(systemData).reduce(
         te: ["te", "thunders edge", "thunder's edge"],
         ds: ["ds", "discordant stars"],
         us: ["us", "uncharted stars"],
+        lscoi: ["lscoi", "lost star charts of ixth"],
       };
       gameSetSearchTerms[gameSet].forEach((term) => nameParts.push(term));
     }

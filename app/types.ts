@@ -9,6 +9,7 @@ export type GameSet =
   | "discordant"
   | "discordantexp"
   | "unchartedstars"
+  | "lscoi"
   | "drahn"
   | "twilightsFall";
 
@@ -212,9 +213,9 @@ export type SimultaneousPickType =
 export type DraftPick =
   | PlayerId
   | {
-      kind: "simultaneous";
-      phase: SimultaneousPickType;
-    };
+    kind: "simultaneous";
+    phase: SimultaneousPickType;
+  };
 
 export type FactionStratification = {
   ["base|pok"]?: number;
@@ -301,17 +302,17 @@ export type DraftSettings = {
 
 export type DiscordPlayer =
   | {
-      type: "identified";
-      playerId: number;
-      username: string;
-      memberId?: string;
-      nickname?: string;
-    }
+    type: "identified";
+    playerId: number;
+    username: string;
+    memberId?: string;
+    nickname?: string;
+  }
   | {
-      type: "unidentified";
-      playerId: number;
-      name: string;
-    };
+    type: "unidentified";
+    playerId: number;
+    name: string;
+  };
 
 export type DiscordData = {
   guildId: string;
@@ -374,64 +375,64 @@ export type PriorityValueSelection = {
 
 export type DraftSelection =
   | {
-      type: "BAN_FACTION";
-      playerId: PlayerId;
-      factionId: FactionId;
-    }
+    type: "BAN_FACTION";
+    playerId: PlayerId;
+    factionId: FactionId;
+  }
   | {
-      type: "SELECT_SPEAKER_ORDER";
-      playerId: PlayerId;
-      speakerOrder: number;
-    }
+    type: "SELECT_SPEAKER_ORDER";
+    playerId: PlayerId;
+    speakerOrder: number;
+  }
   | {
-      type: "SELECT_SLICE";
-      playerId: PlayerId;
-      sliceIdx: number;
-    }
+    type: "SELECT_SLICE";
+    playerId: PlayerId;
+    sliceIdx: number;
+  }
   | {
-      type: "SELECT_FACTION";
-      playerId: PlayerId;
-      factionId: FactionId;
-    }
+    type: "SELECT_FACTION";
+    playerId: PlayerId;
+    factionId: FactionId;
+  }
   | {
-      type: "SELECT_MINOR_FACTION";
-      playerId: PlayerId;
-      minorFactionId: FactionId;
-    }
+    type: "SELECT_MINOR_FACTION";
+    playerId: PlayerId;
+    minorFactionId: FactionId;
+  }
   | {
-      type: "SELECT_REFERENCE_CARD_PACK";
-      playerId: PlayerId;
-      packIdx: number;
-    }
+    type: "SELECT_REFERENCE_CARD_PACK";
+    playerId: PlayerId;
+    packIdx: number;
+  }
   | {
-      type: "COMMIT_PRIORITY_VALUES";
-      selections: PriorityValueSelection[];
-    }
+    type: "COMMIT_PRIORITY_VALUES";
+    selections: PriorityValueSelection[];
+  }
   | {
-      type: "COMMIT_HOME_SYSTEMS";
-      selections: HomeSystemSelection[];
-    }
+    type: "COMMIT_HOME_SYSTEMS";
+    selections: HomeSystemSelection[];
+  }
   | {
-      type: "COMMIT_SIMULTANEOUS";
-      phase: SimultaneousPickType;
-      selections: { playerId: PlayerId; value: string }[];
-    }
+    type: "COMMIT_SIMULTANEOUS";
+    phase: SimultaneousPickType;
+    selections: { playerId: PlayerId; value: string }[];
+  }
   | {
-      type: "SELECT_SEAT";
-      playerId: PlayerId;
-      seatIdx: number;
-    }
+    type: "SELECT_SEAT";
+    playerId: PlayerId;
+    seatIdx: number;
+  }
   | {
-      type: "PLACE_TILE";
-      playerId: PlayerId;
-      systemId: SystemId;
-      mapIdx: number;
-    }
+    type: "PLACE_TILE";
+    playerId: PlayerId;
+    systemId: SystemId;
+    mapIdx: number;
+  }
   | {
-      type: "SELECT_PLAYER_COLOR";
-      playerId: PlayerId;
-      color: InGameColor;
-    };
+    type: "SELECT_PLAYER_COLOR";
+    playerId: PlayerId;
+    color: InGameColor;
+  };
 
 export type TexasDraftState = {
   seatOrder: PlayerId[];

@@ -2490,4 +2490,198 @@ export const rawSystems: Record<string, RawSystem> = {
     wormholes: ["ALPHA", "BETA"],
     anomalies: ["SUPERNOVA"],
   },
+  6701: {
+    id: "6701",
+    planets: [
+      {
+        name: "Desmond",
+        resources: 0,
+        influence: 1,
+        trait: ["HAZARDOUS"],
+        legendary: true,
+        legendaryTitle: "Ancient Gashlai Ruins",
+        legendaryDescription:
+          "ACTION: Purge this card to draw 1 relic. Other players may draw 1 action card.",
+      },
+    ],
+    type: "RED",
+    wormholes: [],
+    anomalies: ["SUPERNOVA"],
+  },
+  6702: {
+    id: "6702",
+    planets: [
+      {
+        name: "Horace",
+        resources: 2,
+        influence: 1,
+        trait: ["INDUSTRIAL"],
+        legendary: true,
+        legendaryTitle: "Transgravity Conduit",
+        legendaryDescription:
+          "After you activate a system, you may exhaust this card during the \"Movement\" step of your tactical action to ignore the effects of an anomaly.",
+      },
+    ],
+    type: "RED",
+    wormholes: ["BETA"],
+    anomalies: ["NEBULA"],
+  },
+  6703: {
+    id: "6703",
+    planets: [
+      {
+        name: "Eko",
+        resources: 1,
+        influence: 2,
+        trait: ["CULTURAL"],
+        legendary: true,
+        legendaryTitle: "Temporal Anomaly",
+        legendaryDescription:
+          "At the end of your turn, you may exhaust this card to place a frontier token in a system that does not contain a planet or a frontier token.",
+      },
+    ],
+    type: "RED",
+    wormholes: ["ALPHA"],
+    anomalies: ["GRAVITY_RIFT"],
+  },
+  6704: {
+    id: "6704",
+    planets: [
+      {
+        name: "Locke",
+        resources: 1,
+        influence: 2,
+        legendary: false,
+        trait: ["INDUSTRIAL"],
+      },
+      {
+        name: "Bentham",
+        resources: 2,
+        influence: 1,
+        legendary: false,
+        trait: ["HAZARDOUS"],
+      }
+    ],
+    type: "BLUE",
+    wormholes: ["ALPHA", "BETA"],
+    anomalies: [],
+  },
+  6705: {
+    id: "6705",
+    planets: [
+      {
+        name: "Lapidus",
+        resources: 2,
+        influence: 2,
+        trait: ["INDUSTRIAL"],
+        legendary: true,
+        legendaryTitle: "Smugglers Network",
+        legendaryDescription:
+          "At the end of your turn, you may exhaust this card to explore a planet you control.",
+      }
+    ],
+    type: "RED",
+    wormholes: [],
+    anomalies: ["ASTEROID_FIELD"],
+  },
+  6706: {
+    id: "6706",
+    planets: [],
+    type: "RED",
+    wormholes: ["ALPHA", "BETA"],
+    anomalies: ["GRAVITY_RIFT"],
+  },
+  6707: {
+    id: "6707",
+    planets: [],
+    type: "RED",
+    wormholes: ["BETA"],
+    anomalies: ["NEBULA"],
+  },
+  6708: {
+    id: "6708",
+    planets: [],
+    type: "RED",
+    wormholes: ["GAMMA"],
+    anomalies: ["GRAVITY_RIFT"],
+  },
+  6709: {
+    id: "6709",
+    planets: [
+      {
+        name: "Jarrah",
+        resources: 1,
+        influence: 1,
+        trait: ["HAZARDOUS"],
+        legendary: true,
+        legendaryTitle: "Biocrystal Melange",
+        legendaryDescription:
+          "While you control this planet your commodity value is increased by 2.",
+      }
+    ],
+    type: "BLUE",
+    wormholes: [],
+    anomalies: [],
+  },
+  6711: {
+    id: "6711",
+    planets: [
+      {
+        name: "Lloyd",
+        resources: 0,
+        influence: 0,
+        trait: ["HAZARDOUS"],
+        legendary: true,
+        legendaryTitle: "New Elysium",
+        legendaryDescription:
+          "At the end of your turn, you may exhaust this card to choose and resolve 1 terraforming initiative.",
+      }
+    ],
+    type: "BLUE",
+    wormholes: [],
+    anomalies: [],
+  },
+  6712: {
+    id: "6712",
+    planets: [
+      {
+        name: "Widmore",
+        resources: 3,
+        influence: 2,
+        trait: ["CULTURAL"],
+        legendary: true,
+        legendaryTitle: "Tyrrel Syndicate",
+        legendaryDescription:
+          "This card enters play with this side face up.\n ACTION: Gain 2 action cards or 1 secret objective.Flip this card. \n At the start of the agenda phase another player at random may gain 2 action cards or 1 secret objective.Flip this card.",
+      }
+    ],
+    type: "BLUE",
+    wormholes: [],
+    anomalies: [],
+  },
+  6714: {
+    id: "6714",
+    planets: [
+      {
+        name: "Alpert",
+        resources: 3,
+        influence: 0,
+        trait: ["INDUSTRIAL"],
+        legendary: true,
+        legendaryTitle: "Imperial Shipyard",
+        legendaryDescription:
+          "This planet has the PRODUCTION 2 ability as if it were a unit. When you produce ships in this planet's system, reduce their combined cost by 1.",
+      }
+    ],
+    type: "BLUE",
+    wormholes: [],
+    anomalies: [],
+  },
+  6715: {
+    id: "6715",
+    planets: [],
+    type: "RED",
+    wormholes: [],
+    anomalies: ["ASTEROID_FIELD", "GRAVITY_RIFT"],
+  }
 };
