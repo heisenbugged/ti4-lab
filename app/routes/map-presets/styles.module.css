@@ -1,5 +1,7 @@
 .page {
   padding: var(--mantine-spacing-xl) 0;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 /* ── Header ── */
@@ -44,6 +46,324 @@
   margin: 0;
 }
 
+/* ── Entrance reveal ── */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    animation: reveal-rise 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Spotlight (Map of the Day) ── */
+.spotlight {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(280px, 5fr) 7fr;
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      900px 420px at 8% -20%,
+      color-mix(in srgb, var(--mantine-color-blue-9) 30%, transparent),
+      transparent 65%
+    ),
+    radial-gradient(
+      700px 380px at 95% 120%,
+      color-mix(in srgb, var(--mantine-color-violet-9) 14%, transparent),
+      transparent 60%
+    ),
+    var(--mantine-color-dark-8);
+  margin-bottom: calc(var(--mantine-spacing-xl) * 1.6);
+}
+
+/* Hairline accent along the top edge */
+.spotlight::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--mantine-color-blue-5),
+    var(--mantine-color-violet-5) 45%,
+    transparent 85%
+  );
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.spotlightImageWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mantine-spacing-xl);
+  background: rgba(8, 12, 20, 0.5);
+  border-right: 1px solid var(--mantine-color-dark-5);
+  min-height: 280px;
+}
+
+.spotlightImage {
+  max-width: 100%;
+  max-height: 340px;
+  border-radius: 6px;
+  filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.45));
+}
+
+.spotlightContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+  padding: var(--mantine-spacing-xl);
+  min-width: 0;
+}
+
+.spotlightKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--mantine-color-blue-4);
+  margin-bottom: 2px;
+}
+
+.spotlightName {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--mantine-color-gray-0);
+  margin: 0;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.spotlightAuthorRow {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+}
+
+.spotlightPlayers {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--mantine-color-dark-4);
+  color: var(--mantine-color-gray-4);
+  background: rgba(8, 12, 20, 0.5);
+}
+
+.spotlightDescription {
+  color: var(--mantine-color-gray-4);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  margin: var(--mantine-spacing-xs) 0 0;
+  max-width: 56ch;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.spotlightStats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--mantine-spacing-lg);
+  margin-top: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-md);
+  border-top: 1px solid var(--mantine-color-dark-5);
+}
+
+.spotlightStat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.spotlightStatValue {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--mantine-color-gray-0);
+  line-height: 1;
+}
+
+.spotlightStatLabel {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mantine-color-dimmed);
+}
+
+.spotlightEngagement {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--mantine-color-gray-4);
+}
+
+.spotlightEngagementItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 860px) {
+  .spotlight {
+    grid-template-columns: 1fr;
+  }
+
+  .spotlightImageWrap {
+    border-right: none;
+    border-bottom: 1px solid var(--mantine-color-dark-5);
+    min-height: 0;
+  }
+
+  .spotlightImage {
+    max-height: 260px;
+  }
+}
+
+/* ── Shelves ── */
+.shelf {
+  margin-bottom: calc(var(--mantine-spacing-xl) * 1.4);
+}
+
+.shelfHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  margin-bottom: var(--mantine-spacing-md);
+}
+
+.shelfIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.shelf[data-accent="teal"] .shelfIcon {
+  color: var(--mantine-color-teal-4);
+  border: 1px solid color-mix(in srgb, var(--mantine-color-teal-6) 45%, transparent);
+  background: color-mix(in srgb, var(--mantine-color-teal-9) 25%, transparent);
+}
+
+.shelf[data-accent="violet"] .shelfIcon {
+  color: var(--mantine-color-violet-4);
+  border: 1px solid color-mix(in srgb, var(--mantine-color-violet-6) 45%, transparent);
+  background: color-mix(in srgb, var(--mantine-color-violet-9) 25%, transparent);
+}
+
+.shelfTitle {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mantine-color-gray-2);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.shelfSubtitle {
+  font-size: 0.72rem;
+  color: var(--mantine-color-dimmed);
+  white-space: nowrap;
+}
+
+.shelfRule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--mantine-color-dark-4),
+    transparent
+  );
+}
+
+.shelfRow {
+  display: flex;
+  gap: var(--mantine-spacing-md);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: var(--mantine-spacing-sm);
+  scrollbar-width: thin;
+  scrollbar-color: var(--mantine-color-dark-4) transparent;
+}
+
+.shelfItem {
+  flex: 0 0 280px;
+  /* Defeat min-width: auto so long nowrap card titles can't widen the item */
+  min-width: 0;
+  max-width: 280px;
+  display: flex;
+  scroll-snap-align: start;
+}
+
+@media (max-width: 480px) {
+  .shelfItem {
+    flex-basis: 240px;
+  }
+}
+
+/* ── All maps section ── */
+.allMaps {
+  margin-top: calc(var(--mantine-spacing-xl) * 0.4);
+}
+
+.allMapsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--mantine-spacing-sm);
+  margin-bottom: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-md);
+  border-top: 1px solid var(--mantine-color-dark-5);
+}
+
+.allMapsTitle {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mantine-color-gray-2);
+  margin: 0;
+}
+
+.sortControl {
+  flex-shrink: 0;
+}
+
 /* ── Responsive grid ── */
 .grid {
   display: grid;
@@ -56,6 +376,8 @@
   text-decoration: none;
   color: inherit;
   display: flex;
+  width: 100%;
+  min-width: 0;
 }
 
 /* ── Card ── */
@@ -94,13 +416,49 @@
   justify-content: center;
 }
 
+/* Absolutely positioned so tall (portrait) map images can't stretch the
+   4:3 preview box and break row rhythm */
 .mapPreview {
+  position: absolute;
+  inset: var(--mantine-spacing-md);
+  margin: auto;
   max-width: 80%;
-  max-height: 100%;
-  display: block;
+  max-height: calc(100% - 2 * var(--mantine-spacing-md));
   border-radius: 4px;
   transition: transform 0.25s ease;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+/* ── Preview chips ── */
+.playerChip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  border-radius: 4px;
+  color: var(--mantine-color-gray-4);
+  background: rgba(8, 12, 20, 0.75);
+  border: 1px solid var(--mantine-color-dark-4);
+}
+
+.newBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: var(--mantine-color-teal-3);
+  background: color-mix(in srgb, var(--mantine-color-teal-9) 55%, rgba(8, 12, 20, 0.85));
+  border: 1px solid color-mix(in srgb, var(--mantine-color-teal-5) 55%, transparent);
 }
 
 /* ── Card content ── */
