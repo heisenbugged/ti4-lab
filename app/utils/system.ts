@@ -3,6 +3,7 @@ import {
   systemData,
   thunderSystemIds,
   unchartedStarsSystemIds,
+  lostStarChartsOfIxthSystemIds,
 } from "~/data/systemData";
 import { GameSet, System, SystemId, SystemStats } from "~/types";
 
@@ -77,6 +78,11 @@ export function getSystemPool(sets: GameSet[]) {
   // Thunder's Edge: IDs 92-149
   if (sets.includes("te")) {
     systemPool.push(...thunderSystemIds);
+  }
+
+  // Lost Star Charts of Ixth: IDs 6700-6714
+  if (sets.includes("lscoi")) {
+    systemPool.push(...lostStarChartsOfIxthSystemIds.filter(id => Number(id) >= 6700 && Number(id) < 7000));
   }
 
   return systemPool;
