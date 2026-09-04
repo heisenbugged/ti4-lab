@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import { DiscordData, DiscordPlayer } from "~/types";
 import { draftPresetByName } from "~/drizzle/draftPreset.server";
 import {
@@ -8,41 +8,9 @@ import {
 } from "~/utils/draftFromPreset.server";
 import { finalizeDraftPresetName } from "~/utils/draftPresetName";
 import { notifyPick } from "../bot.server";
+import { PLAYER_OPTIONS, startDraftCommand } from "./startDraftCommand";
 
-const PLAYER_OPTIONS = [
-  "player1",
-  "player2",
-  "player3",
-  "player4",
-  "player5",
-  "player6",
-  "player7",
-  "player8",
-] as const;
-
-const data = new SlashCommandBuilder()
-  .setName("labdraft")
-  .setDescription(
-    "Will provide a TI4 link. Once  created, notifications will be sent to this channel.",
-  );
-
-PLAYER_OPTIONS.forEach((name, idx) => {
-  data.addStringOption((option) =>
-    option
-      .setName(name)
-      .setDescription(`Player ${idx + 1}'s discord name`)
-      .setRequired(idx < 4),
-  );
-});
-
-data.addStringOption((option) =>
-  option
-    .setName("preset")
-    .setDescription(
-      "Name of a saved draft preset. Immediately starts a draft from it in this channel.",
-    )
-    .setRequired(false),
-);
+const data = startDraftCommand;
 
 async function resolveMember(
   interaction: ChatInputCommandInteraction,

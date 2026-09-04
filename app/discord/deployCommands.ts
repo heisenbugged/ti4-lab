@@ -1,12 +1,12 @@
 import { REST, Routes } from "discord.js";
-import startDraft from "./commands/startDraft";
+import { startDraftCommand } from "./commands/startDraftCommand";
 import dotenv from "dotenv";
 
 dotenv.config();
 const token = process.env.DISCORD_TOKEN!;
 const clientId = process.env.DISCORD_CLIENT_ID!;
 
-const commands = [startDraft.data.toJSON()];
+const commands = [startDraftCommand.toJSON()];
 
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(token);
