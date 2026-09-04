@@ -1357,7 +1357,7 @@ function getTakenNonPrimaryFactions(draft: Draft): FactionId[] {
   return takenFactions;
 }
 
-function generateReferenceCardPacks(numPlayers: number): FactionId[][] {
+export function generateReferenceCardPacks(numPlayers: number): FactionId[][] {
   const referenceCardFactionPool = getFactionPool(["base", "pok", "te"]).filter(
     (f) => f !== "keleres",
   );

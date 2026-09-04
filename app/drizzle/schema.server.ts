@@ -182,3 +182,30 @@ export const presetMapLikes = sqliteTable(
     ),
   }),
 );
+
+/**
+ * Saved draft configurations that can be used to start new drafts
+ * (e.g. via the discord `/labdraft preset:<name>` command).
+ */
+export const draftPresets = sqliteTable(
+  "draftPresets",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull().unique(),
+    /** JSON-encoded DraftPresetData */
+    data: text("data").notNull(),
+    keepFactions: integer("keepFactions", { mode: "boolean" })
+      .notNull()
+      .default(true),
+    playerCount: integer("playerCount").notNull(),
+    createdAt: text("createdAt")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updatedAt")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    nameIdx: index("draft_presets_name_index").on(table.name),
+  }),
+);

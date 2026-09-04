@@ -1,13 +1,16 @@
 import {
   Box,
   Button,
+  Code,
   Flex,
   Grid,
   Group,
   List,
   Popover,
   Stack,
+  Text,
 } from "@mantine/core";
+import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import type { ActionFunctionArgs } from "react-router";
 import { redirect, useLocation, useNavigate } from "react-router";
@@ -35,6 +38,7 @@ import { AvailableReferenceCardPacksSection } from "./sections/AvailableReferenc
 import { ConnectedFactionSettingsModal } from "./components/ConnectedFactionSettingsModal";
 import { createDraftOrder } from "~/utils/draftOrder.server";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
+import { SaveDraftPresetModal } from "./components/SaveDraftPresetModal";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -50,6 +54,8 @@ export default function DraftNew() {
     validationErrorsOpened,
     { close: closeValidationErrors, open: openValidationErrors },
   ] = useDisclosure(false);
+  const [savePresetOpened, { close: closeSavePreset, open: openSavePreset }] =
+    useDisclosure(false);
 
   const showFullMap =
     config.modifiableMapTiles.length > 0 ||
@@ -128,6 +134,33 @@ export default function DraftNew() {
           </Popover.Dropdown>
         </Popover>
       </Group>
+      <Stack gap="xs">
+        <SectionTitle title="Tournament Play" />
+        <Group
+          justify="space-between"
+          align="center"
+          px="sm"
+          wrap="nowrap"
+          gap="md"
+        >
+          <Text size="sm" c="dimmed">
+            Save this map, slices and settings as a named preset, then start
+            drafts from it per table with{" "}
+            <Code>/labdraft preset:&lt;name&gt;</Code>.
+          </Text>
+          <Button
+            variant="light"
+            color="gray"
+            size="sm"
+            leftSection={<IconDeviceFloppy size={16} />}
+            disabled={!draftIsValid}
+            onClick={openSavePreset}
+            style={{ flexShrink: 0 }}
+          >
+            Save as preset
+          </Button>
+        </Group>
+      </Stack>
     </Stack>
   );
 
@@ -143,6 +176,11 @@ export default function DraftNew() {
         )}
 
         <ConnectedFactionSettingsModal />
+        <SaveDraftPresetModal
+          draft={draft}
+          opened={savePresetOpened}
+          onClose={closeSavePreset}
+        />
         <PlanetFinder />
 
         <Grid style={{ gap: 30 }} mt="lg">
@@ -178,6 +216,11 @@ export default function DraftNew() {
       )}
 
       <ConnectedFactionSettingsModal />
+      <SaveDraftPresetModal
+        draft={draft}
+        opened={savePresetOpened}
+        onClose={closeSavePreset}
+      />
 
       <PlanetFinder />
       <Box mb="md">
