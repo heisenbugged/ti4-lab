@@ -4,7 +4,6 @@ import { DraftOrder } from "../components/DraftOrder";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
-import { ExportDraftState } from "../components/ExportDraftState";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useState } from "react";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
@@ -159,7 +158,6 @@ export function DraftOrderSection() {
                   Undo
                 </Button>
               )}
-              {adminMode && <ExportDraftState />}
             </Group>
           )}
         </>

@@ -1,14 +1,16 @@
-import { ActionFunctionArgs, data } from "react-router";
+import { ActionFunctionArgs, data, LoaderFunctionArgs } from "react-router";
 import {
   createDraftPreset,
   draftPresetByName,
   draftToPresetData,
 } from "~/drizzle/draftPreset.server";
+import type { DraftPreset } from "~/drizzle/draftPreset.server";
 import { Draft } from "~/types";
 import {
   finalizeDraftPresetName,
   isValidDraftPresetName,
 } from "~/utils/draftPresetName";
+import { draftPresetDataForNewDraft } from "~/utils/draftFromPreset.server";
 
 export type SaveDraftPresetInput = {
   name: string;
@@ -19,6 +21,39 @@ export type SaveDraftPresetInput = {
 export type SaveDraftPresetResponse =
   | { success: true; name: string }
   | { success: false; error: string };
+
+export type LoadDraftPresetResponse =
+  | { success: true; preset: DraftPreset }
+  | { success: false; error: string };
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const name = finalizeDraftPresetName(
+    new URL(request.url).searchParams.get("name") ?? "",
+  );
+
+  if (!isValidDraftPresetName(name)) {
+    return data<LoadDraftPresetResponse>(
+      { success: false, error: "Enter a valid preset name." },
+      { status: 400 },
+    );
+  }
+
+  const preset = await draftPresetByName(name);
+  if (!preset) {
+    return data<LoadDraftPresetResponse>(
+      { success: false, error: `No preset named "${name}" was found.` },
+      { status: 404 },
+    );
+  }
+
+  return data<LoadDraftPresetResponse>({
+    success: true,
+    preset: {
+      ...preset,
+      data: draftPresetDataForNewDraft(preset),
+    },
+  });
+}
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== "POST") {

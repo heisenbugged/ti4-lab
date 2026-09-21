@@ -46,7 +46,6 @@ import { StartingUnitsTable } from "~/components/StartingUnitsTable";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { PlayerChip } from "./PlayerChip";
 import { factions as allFactions } from "~/data/factionData";
-import { ExportDraftState } from "~/routes/draft.$id/components/ExportDraftState";
 
 export function FinalizedDraft() {
   const navigate = useNavigate();
@@ -153,7 +152,6 @@ export function FinalizedDraft() {
           >
             Undo Last
           </Button>
-          <ExportDraftState full />
         </Group>
       </Box>
       <SimpleGrid

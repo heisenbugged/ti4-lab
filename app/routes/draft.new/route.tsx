@@ -135,7 +135,7 @@ export default function DraftNew() {
         </Popover>
       </Group>
       <Stack gap="xs">
-        <SectionTitle title="Tournament Play" />
+        <SectionTitle title="Save for Later" />
         <Group
           justify="space-between"
           align="center"
@@ -144,9 +144,9 @@ export default function DraftNew() {
           gap="md"
         >
           <Text size="sm" c="dimmed">
-            Save this map, slices and settings as a named preset, then start
-            drafts from it per table with{" "}
-            <Code>/labdraft preset:&lt;name&gt;</Code>.
+            Save this map, slices and settings as a named preset. Continue from
+            it later in TI4 Lab, or use the Discord bot command{" "}
+            <Code>/labdraft preset:&lt;name&gt;</Code> to start a draft.
           </Text>
           <Button
             variant="light"

@@ -4,7 +4,10 @@ import {
   randomizeFactions,
 } from "~/draftStore";
 import { createDraft } from "~/drizzle/draft.server";
-import { DraftPreset } from "~/drizzle/draftPreset.server";
+import {
+  DraftPreset,
+  DraftPresetData,
+} from "~/drizzle/draftPreset.server";
 import { shuffle } from "~/draft/helpers/randomization";
 import { DiscordData, Draft, FactionId, Player } from "~/types";
 import { getFactionPool } from "~/utils/factions";
@@ -55,6 +58,17 @@ function rerollFactions(
   return { availableFactions, availableMinorFactions };
 }
 
+export function draftPresetDataForNewDraft(
+  preset: DraftPreset,
+): DraftPresetData {
+  if (preset.keepFactions) return preset.data;
+
+  return {
+    ...preset.data,
+    ...rerollFactions(preset, preset.playerCount),
+  };
+}
+
 export function playersFromDiscordData(discordData: DiscordData): Player[] {
   return discordData.players.map((discordPlayer) => ({
     id: discordPlayer.playerId,
@@ -72,7 +86,14 @@ export async function createDraftFromPreset(
   players: Player[],
   discordData?: DiscordData,
 ) {
-  const { settings, slices, presetMap } = preset.data;
+  const {
+    settings,
+    slices,
+    presetMap,
+    availableFactions,
+    availableMinorFactions,
+    availableReferenceCardPacks,
+  } = draftPresetDataForNewDraft(preset);
 
   if (settings.draftGameMode === "texasStyle") {
     throw new DraftPresetError(
@@ -86,24 +107,18 @@ export async function createDraftFromPreset(
     );
   }
 
-  const factionState = preset.keepFactions
-    ? {
-        availableFactions: preset.data.availableFactions,
-        availableMinorFactions: preset.data.availableMinorFactions,
-        availableReferenceCardPacks: preset.data.availableReferenceCardPacks,
-      }
-    : rerollFactions(preset, players.length);
-
   const draft: Draft = {
     settings,
     integrations: { discord: discordData },
     slices,
     presetMap,
-    ...factionState,
+    availableFactions,
+    availableMinorFactions,
+    availableReferenceCardPacks,
     ...createDraftOrder({
       players,
       settings,
-      availableFactions: factionState.availableFactions,
+      availableFactions,
       presetMap,
     }),
   };

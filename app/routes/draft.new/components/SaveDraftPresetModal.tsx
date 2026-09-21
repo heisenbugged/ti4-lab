@@ -45,7 +45,7 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
       notifications.show({
         color: "green",
         title: "Preset saved",
-        message: `Start a draft from it with /labdraft preset:${result.name}`,
+        message: `Continue from preset ${result.name} in TI4 Lab, or start it with /labdraft preset:${result.name} in Discord.`,
       });
       setName("");
       setKeepFactions(true);
@@ -84,10 +84,10 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
     >
       <Stack gap="md">
         <Text size="sm" c="dimmed">
-          Saves the current map, slices and settings so new drafts can be
-          started from them, e.g. from Discord with{" "}
-          <Code>/labdraft preset:&lt;name&gt;</Code>. Player order is always
-          re-randomized and players come from the command.
+          Save the current map, slices and settings so you can continue from
+          them later. You can also start a draft through the Discord bot with{" "}
+          <Code>/labdraft preset:&lt;name&gt;</Code>. The bot uses the players
+          from the command and always randomizes player order.
         </Text>
 
         <TextInput
@@ -109,7 +109,7 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
 
         <Checkbox
           label="Save factions"
-          description="Keep the exact factions (and minor factions / kings) shown here. When off, factions are re-rolled for each new draft, using the same faction pool, stratification and required factions."
+          description="Keep the exact factions (and minor factions / kings) shown here. When off, factions are re-rolled when you continue from the preset or start it through the bot."
           checked={keepFactions}
           onChange={(e) => setKeepFactions(e.currentTarget.checked)}
         />

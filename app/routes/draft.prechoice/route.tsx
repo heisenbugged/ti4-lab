@@ -10,8 +10,8 @@ import {
   Tabs,
   Text,
 } from "@mantine/core";
-import { DiscordData, Draft, DraftSettings } from "~/types";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { DiscordData, DraftSettings } from "~/types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
@@ -47,7 +47,8 @@ import { useDraftSettingsBuilder, useDraftNavigation } from "./hooks";
 import { buildTexasDraft } from "~/draft/texas/buildTexasDraft";
 import { DiscordIntegrationModal } from "./components/DiscordIntegrationModal";
 import { MinorFactionsInfoModal } from "./components/MinorFactionsInfoModal";
-import { SavedStateModal } from "./components/SavedStateModal";
+import { ContinueFromPresetModal } from "./components/ContinueFromPresetModal";
+import type { DraftPreset } from "~/drizzle/draftPreset.server";
 import { MapStyleSelector } from "./components/MapStyleSelector";
 import { SeededMapBanner } from "./components/SeededMapBanner";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
@@ -272,45 +273,34 @@ export default function DraftPrechoice() {
     { open: openMinorFactions, close: closeMinorFactions },
   ] = useDisclosure(false);
 
-  const [savedStateOpened, { open: openSavedState, close: closeSavedState }] =
+  const [presetOpened, { open: openPreset, close: closePreset }] =
     useDisclosure(false);
 
-  const [savedStateJson, setSavedStateJson] = useState("");
-
-  const handleContinueFromSavedState = () => {
-    try {
-      const savedState = JSON.parse(savedStateJson);
-      const savedPlayerCount = savedState.players.length;
-      // the saved state player count might be different from the current player count
-      // so we need to adjust the players array
-      const adjustedPlayers =
-        player.players.length < savedPlayerCount
-          ? [
-              ...player.players,
-              ...Array(savedPlayerCount - player.players.length)
-                .fill(null)
-                .map((_, i) => ({
-                  id: player.players.length + i,
-                  name: "",
-                })),
-            ]
-          : player.players.slice(0, savedPlayerCount);
+  const handleContinueFromPreset = useCallback(
+    (preset: DraftPreset) => {
+      const adjustedPlayers = Array.from(
+        { length: preset.playerCount },
+        (_, index) =>
+          player.players[index] ?? {
+            id: index,
+            name: "",
+          },
+      );
 
       navigate("/draft/new", {
         state: {
           savedDraftState: {
-            ...savedState,
+            ...preset.data,
             integrations: { discord: discordData },
             players: adjustedPlayers,
             selections: [],
             pickOrder: [],
-          } as Draft,
+          },
         },
       });
-    } catch (error) {
-      console.error("Invalid JSON:", error);
-    }
-  };
+    },
+    [discordData, navigate, player.players],
+  );
 
   const [
     sliceSettingsOpened,
@@ -337,12 +327,10 @@ export default function DraftPrechoice() {
         }}
       />
 
-      <SavedStateModal
-        opened={savedStateOpened}
-        savedStateJson={savedStateJson}
-        onClose={closeSavedState}
-        onSavedStateChange={setSavedStateJson}
-        onContinue={handleContinueFromSavedState}
+      <ContinueFromPresetModal
+        opened={presetOpened}
+        onClose={closePreset}
+        onContinue={handleContinueFromPreset}
       />
 
       <MinorFactionsInfoModal
@@ -523,12 +511,12 @@ export default function DraftPrechoice() {
             <Button
               size="md"
               flex={1}
-              onMouseDown={openSavedState}
+              onMouseDown={openPreset}
               variant="outline"
               color="purple.3"
               leftSection={<IconFile />}
             >
-              Continue from saved state
+              Continue from preset
             </Button>
             {!discordData && (
               <Button
