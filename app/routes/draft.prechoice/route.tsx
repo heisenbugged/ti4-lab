@@ -48,6 +48,7 @@ import { buildTexasDraft } from "~/draft/texas/buildTexasDraft";
 import { DiscordIntegrationModal } from "./components/DiscordIntegrationModal";
 import { MinorFactionsInfoModal } from "./components/MinorFactionsInfoModal";
 import { ContinueFromPresetModal } from "./components/ContinueFromPresetModal";
+import { playersFromDiscordData } from "~/utils/discordPlayers";
 import type { DraftPreset } from "~/drizzle/draftPreset.server";
 import { MapStyleSelector } from "./components/MapStyleSelector";
 import { SeededMapBanner } from "./components/SeededMapBanner";
@@ -96,12 +97,7 @@ export default function DraftPrechoice() {
   const discordDataInitialized = useRef(false);
   useEffect(() => {
     if (discordData?.players && !discordDataInitialized.current) {
-      setPlayers(
-        discordData.players.map((discordPlayer) => ({
-          id: discordPlayer.playerId,
-          name: discordPlayer.type === "unidentified" ? discordPlayer.name : "",
-        })),
-      );
+      setPlayers(playersFromDiscordData(discordData));
       discordDataInitialized.current = true;
     }
   }, [discordData, setPlayers]);

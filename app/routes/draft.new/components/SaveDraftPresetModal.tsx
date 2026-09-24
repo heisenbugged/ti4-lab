@@ -57,8 +57,7 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
         message: result.error,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetcher.state, fetcher.data]);
+  }, [fetcher.state, fetcher.data, onClose]);
 
   const handleSave = () => {
     if (!nameIsValid || saving) return;

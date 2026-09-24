@@ -4,13 +4,11 @@ import { draftPresetByName } from "~/drizzle/draftPreset.server";
 import {
   createDraftFromPreset,
   DraftPresetError,
-  playersFromDiscordData,
 } from "~/utils/draftFromPreset.server";
+import { playersFromDiscordData } from "~/utils/discordPlayers";
 import { finalizeDraftPresetName } from "~/utils/draftPresetName";
 import { notifyPick } from "../bot.server";
 import { PLAYER_OPTIONS, startDraftCommand } from "./startDraftCommand";
-
-const data = startDraftCommand;
 
 async function resolveMember(
   interaction: ChatInputCommandInteraction,
@@ -120,6 +118,6 @@ async function startDraftFromPreset(
 }
 
 export default {
-  data,
+  data: startDraftCommand,
   execute,
 };

@@ -1,79 +1,27 @@
-import {
-  generateReferenceCardPacks,
-  getDraftableFactions,
-  randomizeFactions,
-} from "~/draftStore";
+import { rollFactions } from "~/draftStore";
 import { createDraft } from "~/drizzle/draft.server";
-import {
-  DraftPreset,
-  DraftPresetData,
-} from "~/drizzle/draftPreset.server";
-import { shuffle } from "~/draft/helpers/randomization";
-import { DiscordData, Draft, FactionId, Player } from "~/types";
+import { DraftPreset, DraftPresetData } from "~/drizzle/draftPreset.server";
+import { DiscordData, Draft, Player } from "~/types";
 import { getFactionPool } from "~/utils/factions";
 import { createDraftOrder } from "~/utils/draftOrder.server";
 
 export class DraftPresetError extends Error {}
 
-/**
- * Re-rolls the faction related parts of a preset while respecting the
- * preset's faction pool settings (game sets, allowed/required factions,
- * stratification, minor factions, kings & reference card packs).
- */
-function rerollFactions(
-  preset: DraftPreset,
-  playerCount: number,
-): Pick<
-  Draft,
-  "availableFactions" | "availableMinorFactions" | "availableReferenceCardPacks"
-> {
-  const { settings } = preset.data;
-  const factionPool = getFactionPool(settings.factionGameSets);
-
-  if (settings.draftGameMode === "twilightsFall") {
-    const numKings = settings.numKings ?? 8;
-    return {
-      availableFactions: shuffle([...factionPool], numKings),
-      availableReferenceCardPacks: generateReferenceCardPacks(
-        settings.numReferenceCardPacks ?? playerCount,
-      ),
-    };
-  }
-
-  const availableFactions = randomizeFactions(
-    settings.numFactions,
-    getDraftableFactions(factionPool, null, settings.allowedFactions),
-    settings.requiredFactions,
-    settings.factionStratification,
-  );
-
-  let availableMinorFactions: FactionId[] | undefined = undefined;
-  if (settings.numMinorFactions) {
-    availableMinorFactions = shuffle(
-      getDraftableFactions(factionPool, availableFactions),
-      settings.numMinorFactions,
-    );
-  }
-
-  return { availableFactions, availableMinorFactions };
-}
-
+/** Returns the preset's data, with factions re-rolled unless `keepFactions`. */
 export function draftPresetDataForNewDraft(
   preset: DraftPreset,
 ): DraftPresetData {
   if (preset.keepFactions) return preset.data;
 
+  const { settings } = preset.data;
   return {
     ...preset.data,
-    ...rerollFactions(preset, preset.playerCount),
+    ...rollFactions(
+      settings,
+      getFactionPool(settings.factionGameSets),
+      preset.playerCount,
+    ),
   };
-}
-
-export function playersFromDiscordData(discordData: DiscordData): Player[] {
-  return discordData.players.map((discordPlayer) => ({
-    id: discordPlayer.playerId,
-    name: discordPlayer.type === "unidentified" ? discordPlayer.name : "",
-  }));
 }
 
 /**

@@ -18,7 +18,7 @@ export const PLAYER_OPTIONS = [
 export const startDraftCommand = new SlashCommandBuilder()
   .setName("labdraft")
   .setDescription(
-    "Will provide a TI4 link. Once  created, notifications will be sent to this channel.",
+    "Will provide a TI4 link. Once created, notifications will be sent to this channel.",
   );
 
 PLAYER_OPTIONS.forEach((name, idx) => {

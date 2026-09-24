@@ -71,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return data<SaveDraftPresetResponse>(
       {
         success: false,
-        error: "Preset name must contain only letters, numbers and hyphens.",
+        error: "Preset name is required.",
       },
       { status: 400 },
     );
