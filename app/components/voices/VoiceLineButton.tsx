@@ -1,4 +1,4 @@
-import { Button, ButtonProps, Loader, Badge, Group } from "@mantine/core";
+import { ButtonProps, Loader } from "@mantine/core";
 import { factionAudios, LineType, FactionAudio } from "~/data/factionAudios";
 import type { FactionId } from "~/types";
 import styles from "./VoiceLineButton.module.css";

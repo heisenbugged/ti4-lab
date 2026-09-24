@@ -20,7 +20,6 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const devMode = url.searchParams.get("dev") === "true";
 
-  console.log("draftId", draftId);
   const result = await draftByPrettyUrl(draftId);
   if (!result) {
     throw new Response("Draft not found", { status: 404 });

@@ -3,20 +3,16 @@ import {
   Text,
   Container,
   Button,
-  Table,
   Group,
   Slider,
   Stack,
   Select,
   Paper,
-  Badge,
   Popover,
-  ScrollArea,
   ActionIcon,
   Tooltip,
   Box,
   Alert,
-  Anchor,
   Modal,
   Switch,
   Image,
@@ -27,10 +23,10 @@ import { FactionId } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
 import { factionAudios, LineType, announcerAudios } from "~/data/factionAudios";
-import { VoiceLineButton } from "../soundboard._index/components/VoiceLineButton";
+import { VoiceLineButton } from "~/components/voices/VoiceLineButton";
 import { ActionFunctionArgs, data, redirect } from "react-router";
 import { Form, useSearchParams, useLoaderData } from "react-router";
-import { useAudioPlayer } from "../soundboard._index/useAudioPlayer";
+import { useAudioPlayer } from "~/components/voices/useAudioPlayer";
 import { useSocketConnection } from "~/useSocketConnection";
 import QRCode from "react-qr-code";
 import { createSession } from "~/drizzle/soundboardSession.server";
@@ -44,12 +40,10 @@ import {
   IconX,
   IconList,
   IconRefresh,
-  IconInfoCircle,
   IconQrcode,
   IconMicrophone2,
   IconMusic,
 } from "@tabler/icons-react";
-import { SectionTitle } from "~/components/Section";
 import {
   trackPageView,
   trackVoiceLineClick,
@@ -60,14 +54,14 @@ import {
 import { ClientOnly } from "remix-utils/client-only";
 import ccStyles from "./ClosedCaptions.module.css";
 import styles from "./styles.module.css";
-import { SpotifyLoginButton } from "../soundboard._index/components/SpotifyLoginButton";
-import { useSpotifyLogin } from "../soundboard._index/useSpotifyLogin";
+import { SpotifyLoginButton } from "~/components/voices/SpotifyLoginButton";
+import { useSpotifyLogin } from "~/components/voices/useSpotifyLogin";
 import { SpotifyPlaybackState } from "~/vendors/spotifyApi";
 import {
   SpotifyDeviceSelector,
   type SpotifyDeviceType,
-} from "../soundboard._index/components/SpotifyDeviceSelector";
-import { SpotifyPlaylistUI } from "../soundboard._index/components/SpotifyPlaylistUI";
+} from "~/components/voices/SpotifyDeviceSelector";
+import { SpotifyPlaylistUI } from "~/components/voices/SpotifyPlaylistUI";
 
 // Line type display names dictionary
 const LINE_TYPE_DISPLAY_NAMES: Record<LineType, string> = {

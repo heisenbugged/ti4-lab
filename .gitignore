@@ -5,8 +5,8 @@ node_modules
 ./public/build
 sqlite.db
 .DS_Store
-generated/*.png
 .wrangler
 .voice-sync-cache.json
 .react-router/
 deployment/
+*.log

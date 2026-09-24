@@ -19,10 +19,9 @@ type ImageJob = {
   createdAt: number;
 };
 
-let queue: ImageJob[] = [];
+const queue: ImageJob[] = [];
 let processing = false;
 let activeJobs = 0;
-let shuttingDown = false;
 
 const CONCURRENCY = 1;
 const MAX_RETRIES = 3;
@@ -44,19 +43,18 @@ export function enqueueImageJob(draftId: string, urlName: string, isComplete: bo
 }
 
 async function processQueue() {
-  if (shuttingDown) return;
   if (processing) return;
 
   processing = true;
 
-  while (queue.length > 0 && activeJobs < CONCURRENCY && !shuttingDown) {
+  while (queue.length > 0 && activeJobs < CONCURRENCY) {
     const job = queue.shift();
     if (!job) break;
 
     activeJobs++;
     processJob(job).finally(() => {
       activeJobs--;
-      if (queue.length > 0 && !shuttingDown) {
+      if (queue.length > 0) {
         setImmediate(() => processQueue());
       }
     });
@@ -112,32 +110,4 @@ async function processJob(job: ImageJob) {
       console.error(`[ImageQueue] Max retries reached for job ${job.id}, giving up`);
     }
   }
-}
-
-export async function shutdownQueue() {
-  console.log("[ImageQueue] Shutting down...");
-  shuttingDown = true;
-
-  // Wait for active jobs to complete
-  const maxWaitTime = 30000; // 30 seconds
-  const startTime = Date.now();
-
-  while (activeJobs > 0 && Date.now() - startTime < maxWaitTime) {
-    console.log(`[ImageQueue] Waiting for ${activeJobs} active jobs to complete...`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-
-  if (activeJobs > 0) {
-    console.log(`[ImageQueue] Forcefully shutting down with ${activeJobs} active jobs`);
-  } else {
-    console.log("[ImageQueue] All jobs completed, shutdown successful");
-  }
-}
-
-export function getQueueStats() {
-  return {
-    queueSize: queue.length,
-    activeJobs,
-    shuttingDown,
-  };
 }

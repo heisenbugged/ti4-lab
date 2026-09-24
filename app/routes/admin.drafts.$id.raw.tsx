@@ -1,5 +1,5 @@
-import { data, type LoaderFunctionArgs } from "react-router";
-import { draftById, draftByPrettyUrl } from "~/drizzle/draft.server";
+import { type LoaderFunctionArgs } from "react-router";
+import { draftByPrettyUrl } from "~/drizzle/draft.server";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   if (!params.id) {

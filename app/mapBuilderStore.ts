@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { FactionId, GameSet, Map, SystemId, HomeTile, OpenTile, SystemTile, ClosedTile } from "~/types";
+import { GameSet, Map, SystemId, HomeTile, OpenTile, SystemTile, ClosedTile } from "~/types";
 import { systemData } from "~/data/systemData";
 import { getSystemPool } from "~/utils/system";
 import {
@@ -10,7 +10,6 @@ import {
 import {
   generateHexRings,
   getTileCount,
-  getRingForIndex,
   getRingIndices,
   findClosestOnRing,
   findAvailableOnRing,
@@ -26,8 +25,6 @@ type MapBuilderState = {
   planetFinderModal: PlanetFinderModal;
   systemPool: SystemId[];
   gameSets: GameSet[];
-  factionPool: FactionId[];
-  allowHomePlanetSearch: boolean;
   mapConfigId: string;
   ringCount: number;
   hoveredHomeIdx: number | null;
@@ -46,7 +43,6 @@ type MapBuilderActions = {
   setHoveredHomeIdx: (idx: number | null) => void;
   openPlanetFinderForMap: (tileIdx: number) => void;
   closePlanetFinder: () => void;
-  selectSystemForPlanetFinder: (systemId: SystemId) => void;
   toggleCloseTileMode: () => void;
   toggleTileClosed: (idx: number) => void;
   addHomeSystem: () => void;
@@ -57,18 +53,9 @@ type MapBuilderActions = {
 type MapBuilderStore = {
   state: MapBuilderState;
   actions: MapBuilderActions;
-  // Expose for PlanetFinder compatibility
-  planetFinderModal: PlanetFinderModal;
-  systemPool: SystemId[];
-  factionPool: FactionId[];
-  draft: {
-    settings: {
-      allowHomePlanetSearch: boolean;
-    };
-  };
 };
 
-export const useMapBuilder = create<MapBuilderStore>((set, get) => {
+export const useMapBuilder = create<MapBuilderStore>((set) => {
   const initialGameSets: GameSet[] = ["base", "pok", "te"];
   const systemPool = getSystemPool(initialGameSets);
   const initialMapConfigId = defaultMapConfigId;
@@ -81,22 +68,10 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
       planetFinderModal: null,
       systemPool,
       gameSets: initialGameSets,
-      factionPool: [],
-      allowHomePlanetSearch: false,
       mapConfigId: initialMapConfigId,
       ringCount: initialRingCount,
       hoveredHomeIdx: null,
       closeTileMode: false,
-    },
-
-    // Expose for PlanetFinder compatibility
-    planetFinderModal: null,
-    systemPool,
-    factionPool: [],
-    draft: {
-      settings: {
-        allowHomePlanetSearch: false,
-      },
     },
 
     actions: {
@@ -381,7 +356,6 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
               systemPool: newSystemPool,
               map: newMap,
             },
-            systemPool: newSystemPool,
           };
         });
       },
@@ -393,7 +367,6 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
             ...store.state,
             planetFinderModal: { mode: "map", tileIdx },
           },
-          planetFinderModal: { mode: "map", tileIdx },
         }));
       },
 
@@ -404,21 +377,7 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
             ...store.state,
             planetFinderModal: null,
           },
-          planetFinderModal: null,
         }));
-      },
-
-      selectSystemForPlanetFinder: (systemId: SystemId) => {
-        const store = get();
-
-        if (store.state.planetFinderModal?.tileIdx !== undefined) {
-          store.actions.addSystemToMap(
-            store.state.planetFinderModal.tileIdx,
-            systemId,
-          );
-        }
-
-        store.actions.closePlanetFinder();
       },
 
       toggleCloseTileMode: () => {
@@ -608,7 +567,6 @@ export const useMapBuilder = create<MapBuilderStore>((set, get) => {
               // Reset to default mapConfigId since we're loading a custom map
               mapConfigId: defaultMapConfigId,
             },
-            systemPool: newSystemPool,
           };
         });
       },

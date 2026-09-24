@@ -227,24 +227,6 @@ export function withContext(
 }
 
 /**
- * Draw an image rotated by a specified angle (in degrees)
- */
-export function drawRotatedImage(
-  ctx: CanvasRenderingContext2D,
-  image: any,
-  x: number,
-  y: number,
-  size: number,
-  rotationDegrees: number,
-): void {
-  ctx.save();
-  ctx.translate(x + size / 2, y + size / 2);
-  ctx.rotate((rotationDegrees * Math.PI) / 180);
-  ctx.drawImage(image, -size / 2, -size / 2, size, size);
-  ctx.restore();
-}
-
-/**
  * Measure text and truncate if necessary to fit within maxWidth
  */
 export function measureAndTruncateText(

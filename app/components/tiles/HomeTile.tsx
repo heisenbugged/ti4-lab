@@ -9,7 +9,6 @@ import { factionSystems } from "~/data/systemData";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { OriginalArtTile } from "./OriginalArtTile";
-import { useRawDraftContext } from "~/contexts/RawDraftContext";
 import classes from "./Tiles.module.css";
 import { SystemTile as SystemTileComponent } from "./SystemTile";
 import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
@@ -45,14 +44,10 @@ export function HomeTile({
   const { originalArt } = useSafeOutletContext();
   const { radius, disabled } = useContext(MapContext);
   const { hydratedPlayers } = useHydratedDraft();
-  const rawDraftContext = useRawDraftContext();
-
-  // Use raw draft players if available, otherwise use regular draft players
-  const players = rawDraftContext?.players || hydratedPlayers;
 
   const player =
     tile.playerId !== undefined
-      ? players.find((p) => p.id === tile.playerId)
+      ? hydratedPlayers.find((p) => p.id === tile.playerId)
       : undefined;
 
   const scale = calcScale(radius);

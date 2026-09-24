@@ -69,7 +69,6 @@ setSocketIO(io);
 
 io.on("connection", (socket) => {
   observeSocketConnection();
-  socket.emit("confirmation", "connected!");
   socket.on("disconnect", () => {
     observeSocketDisconnection();
   });

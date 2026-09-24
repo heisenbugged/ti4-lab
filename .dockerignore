@@ -13,9 +13,6 @@ sqlite.db
 # Build artifacts (Docker will rebuild)
 build
 
-# Generated code (regenerated during build)
-generated
-
 # Logs
 *.log
 

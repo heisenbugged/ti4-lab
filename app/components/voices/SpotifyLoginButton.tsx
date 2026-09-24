@@ -1,6 +1,4 @@
-import querystring from "querystring";
 import { Button } from "@mantine/core";
-import { IconBrandSpotify } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
 import { EULAModal } from "./EULAModal";
 import { PrivacyPolicyModal } from "./PrivacyPolicyModal";
@@ -50,7 +48,7 @@ export function SpotifyLoginButton({
     localStorage.setItem("acceptedPrivacy", "true");
     setHasAcceptedPrivacy(true);
     setPrivacyOpened(false);
-    window.location.href = `https://accounts.spotify.com/authorize?${querystring.stringify(spotifyAuthParams)}`;
+    window.location.href = `https://accounts.spotify.com/authorize?${new URLSearchParams(spotifyAuthParams)}`;
   };
 
   const handleLoginClick = () => {
@@ -59,7 +57,7 @@ export function SpotifyLoginButton({
     } else if (!hasAcceptedPrivacy) {
       setPrivacyOpened(true);
     } else {
-      window.location.href = `https://accounts.spotify.com/authorize?${querystring.stringify(spotifyAuthParams)}`;
+      window.location.href = `https://accounts.spotify.com/authorize?${new URLSearchParams(spotifyAuthParams)}`;
     }
   };
 

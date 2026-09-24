@@ -129,17 +129,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((registration) => {
-          console.log(
-            "Service Worker registered with scope:",
-            registration.scope,
-          );
-        })
-        .catch((error) => {
-          console.log("Service Worker registration failed:", error);
-        });
+      navigator.serviceWorker.register("/sw.js").catch((error) => {
+        console.error("Service Worker registration failed:", error);
+      });
     }
   }, []);
 
@@ -150,13 +142,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       socket.close();
     };
   }, []);
-
-  useEffect(() => {
-    if (!socket) return;
-    socket.on("confirmation", (data) => {
-      console.log(data);
-    });
-  }, [socket]);
 
   const result = useRouteLoaderData<typeof loader>("root");
 
@@ -193,7 +178,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Quantico:ital,wght@0,400;0,700;1,400;1,700&display=swap&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Quantico:ital,wght@0,400;0,700;1,400;1,700&display=swap"
           rel="stylesheet"
         />
         <Meta />

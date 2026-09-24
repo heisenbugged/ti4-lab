@@ -7,12 +7,10 @@ type Props = {
 };
 
 export function MapBuilderPlanetFinder({ onSystemSelected }: Props) {
-  const planetFinderModal = useMapBuilder((state) => state.planetFinderModal);
-  const availableSystemIds = useMapBuilder((state) => state.systemPool);
-  const factionPool = useMapBuilder((state) => state.factionPool);
-  const allowHomePlanetSearch = useMapBuilder(
-    (state) => state.draft.settings.allowHomePlanetSearch,
+  const planetFinderModal = useMapBuilder(
+    (state) => state.state.planetFinderModal,
   );
+  const availableSystemIds = useMapBuilder((state) => state.state.systemPool);
   const { addSystemToMap, closePlanetFinder } = useMapBuilder(
     (state) => state.actions,
   );
@@ -34,8 +32,8 @@ export function MapBuilderPlanetFinder({ onSystemSelected }: Props) {
       onClose={closePlanetFinder}
       onSystemSelected={handleSelectSystem}
       availableSystemIds={availableSystemIds}
-      factionPool={factionPool}
-      allowHomePlanetSearch={allowHomePlanetSearch}
+      factionPool={[]}
+      allowHomePlanetSearch={false}
     />
   );
 }

@@ -5,7 +5,7 @@ import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factionAudios, LineType } from "~/data/factionAudios";
 import { factions } from "~/data/factionData";
 import { useSocketConnection } from "~/useSocketConnection";
-import { VoiceLineButton } from "../soundboard._index/components/VoiceLineButton";
+import { VoiceLineButton } from "~/components/voices/VoiceLineButton";
 import { FactionId } from "~/types";
 import { SelectFaction } from "./components/SelectFaction";
 import { IconRefresh } from "@tabler/icons-react";
