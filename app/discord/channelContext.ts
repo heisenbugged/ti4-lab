@@ -1,9 +1,9 @@
-import { TextChannel } from "discord.js";
+import { GuildTextBasedChannel } from "discord.js";
 import { Draft } from "~/types";
 import { getChannel } from "./bot.server";
 
 export type ChannelContext = {
-  channel: TextChannel;
+  channel: GuildTextBasedChannel;
   draftId: string;
   draft: Draft;
 };

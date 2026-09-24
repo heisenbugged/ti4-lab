@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { db } from "./config.server";
 import { presetMapLikes, presetMaps } from "./schema.server";
 import { decodeMapString } from "~/mapgen/utils/mapStringCodec";
-import { calculateMapStats } from "~/mapgen/utils/mapStats";
+import { calculateMapStats } from "~/utils/mapStats";
 import { getAllSliceValues } from "~/mapgen/utils/sliceScoring";
 
 export type PresetMapRecord = {
@@ -48,7 +48,7 @@ export function computeMapStats(mapString: string): {
   if (!decoded) return null;
 
   const { map } = decoded;
-  const mapStats = calculateMapStats(map);
+  const mapStats = calculateMapStats([], map);
 
   // Calculate average slice value
   const sliceValues = getAllSliceValues(map);
@@ -203,39 +203,34 @@ export async function likePresetMap(
   id: string,
   ip: string,
 ): Promise<{ likes: number; liked: boolean }> {
-  return await db.transaction(async (tx) => {
-    const existing = await tx
+  return db.transaction((tx) => {
+    const existing = tx
       .select({ id: presetMapLikes.id })
       .from(presetMapLikes)
       .where(and(eq(presetMapLikes.presetMapId, id), eq(presetMapLikes.ip, ip)))
-      .limit(1);
+      .get();
 
-    if (existing.length > 0) {
-      const current = await tx
-        .select({ likes: presetMaps.likes })
-        .from(presetMaps)
+    if (!existing) {
+      tx.insert(presetMapLikes)
+        .values({
+          id: uuidv4(),
+          presetMapId: id,
+          ip,
+        })
+        .run();
+
+      tx.update(presetMaps)
+        .set({ likes: sql`${presetMaps.likes} + 1` })
         .where(eq(presetMaps.id, id))
-        .limit(1);
-      return { likes: current[0]?.likes ?? 0, liked: true };
+        .run();
     }
 
-    await tx.insert(presetMapLikes).values({
-      id: uuidv4(),
-      presetMapId: id,
-      ip,
-    });
-
-    await tx
-      .update(presetMaps)
-      .set({ likes: sql`${presetMaps.likes} + 1` })
-      .where(eq(presetMaps.id, id));
-
-    const current = await tx
+    const current = tx
       .select({ likes: presetMaps.likes })
       .from(presetMaps)
       .where(eq(presetMaps.id, id))
-      .limit(1);
+      .get();
 
-    return { likes: current[0]?.likes ?? 0, liked: true };
+    return { likes: current?.likes ?? 0, liked: true };
   });
 }

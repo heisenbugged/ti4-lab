@@ -33,7 +33,7 @@ export default function MultidraftRoute() {
   return (
     <Stack p="lg" gap={50}>
       {drafts.map(({ draft, urlName }) => {
-        if (draft.data == null) return null;
+        if (draft?.data == null) return null;
         const data: Draft = JSON.parse(draft.data as string);
         return (
           <Stack key={urlName}>

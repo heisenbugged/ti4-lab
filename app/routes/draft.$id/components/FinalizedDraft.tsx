@@ -73,7 +73,8 @@ export function FinalizedDraft() {
   const { syncDraft, undoLastPick } = useSyncDraft();
 
   const sortedPlayers = useMemo(
-    () => hydratedPlayers.sort((a, b) => a.speakerOrder! - b.speakerOrder!),
+    () =>
+      [...hydratedPlayers].sort((a, b) => a.speakerOrder! - b.speakerOrder!),
     [hydratedPlayers],
   );
   const [mapStrings] = useAtom(hydratedMapStringsAtom);

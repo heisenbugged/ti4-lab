@@ -2,9 +2,11 @@ import dotenv from "dotenv";
 import {
   Client,
   Collection,
+  DiscordAPIError,
   Events,
   GatewayIntentBits,
-  TextChannel,
+  RESTJSONErrorCodes,
+  GuildTextBasedChannel,
 } from "discord.js";
 import startDraft from "./commands/startDraft";
 import { Draft } from "~/types";
@@ -30,7 +32,7 @@ declare module "discord.js" {
 }
 
 declare global {
-  var discordClient: Client;
+  var discordClient: Client | undefined;
 }
 export async function startDiscordBot() {
   const client = new Client({
@@ -85,41 +87,46 @@ export async function startDiscordBot() {
 }
 
 export async function getChannel(guildId: string, channelId: string) {
-  const cachedGuild = global.discordClient.guilds.cache.get(guildId);
-  const guild =
-    cachedGuild ?? (await global.discordClient.guilds.fetch(guildId));
+  const client = global.discordClient;
+  if (!client) {
+    throw new Error("Discord client is not ready");
+  }
 
-  const cachedChannel = guild.channels.cache.get(channelId);
-  return (cachedChannel ?? guild.channels.fetch(channelId)) as TextChannel;
+  const guild =
+    client.guilds.cache.get(guildId) ?? (await client.guilds.fetch(guildId));
+
+  const channel =
+    guild.channels.cache.get(channelId) ??
+    (await guild.channels.fetch(channelId));
+  if (!channel?.isTextBased()) {
+    throw new Error(`Discord channel ${channelId} is not a text channel`);
+  }
+  return channel;
 }
 
 async function deleteTrackedMessage(
   draftId: string,
   messageType: number,
-  channel: TextChannel,
+  channel: GuildTextBasedChannel,
 ) {
   const messageId = await getDiscordPickMessage(draftId, messageType);
   if (messageId) {
-    await channel.messages.delete(messageId);
+    try {
+      await channel.messages.delete(messageId);
+    } catch (error) {
+      const isUnknownMessage =
+        error instanceof DiscordAPIError &&
+        error.code === RESTJSONErrorCodes.UnknownMessage;
+      if (!isUnknownMessage) throw error;
+    }
     await deleteDiscordPickMessage(draftId, messageType);
   }
-}
-
-async function replaceMessage(
-  draftId: string,
-  messageType: number,
-  channel: TextChannel,
-  content: string,
-): Promise<void> {
-  await deleteTrackedMessage(draftId, messageType, channel);
-  const sentMessage = await channel.send(content);
-  await addDiscordPickMessage(draftId, messageType, sentMessage.id);
 }
 
 async function sendTrackedMessage(
   draftId: string,
   messageType: number,
-  channel: TextChannel,
+  channel: GuildTextBasedChannel,
   content: string,
 ): Promise<void> {
   await deleteTrackedMessage(draftId, messageType, channel);
@@ -156,7 +163,7 @@ function getPlayerMentionOrFallback(
 async function announceLastPick(
   draftId: string,
   draft: Draft,
-  channel: TextChannel,
+  channel: GuildTextBasedChannel,
 ): Promise<void> {
   if (draft.selections.length === 0) return;
 
@@ -184,7 +191,7 @@ async function notifyNextPlayer(
   draftId: string,
   draftUrl: string,
   draft: Draft,
-  channel: TextChannel,
+  channel: GuildTextBasedChannel,
 ): Promise<void> {
   const { players, pickOrder, selections, integrations } = draft;
   const currentPick = pickOrder[selections.length];
@@ -210,7 +217,7 @@ export async function notifyPick(
   try {
     const context = await createChannelContext(draftId, draft);
     const summaryMessage = getDraftSummaryMessage(draft);
-    await replaceMessage(
+    await sendTrackedMessage(
       draftId,
       MESSAGE_TYPE.SUMMARY,
       context.channel,
