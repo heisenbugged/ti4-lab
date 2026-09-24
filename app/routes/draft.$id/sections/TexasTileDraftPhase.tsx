@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useSimultaneousPickPhase } from "~/hooks/useSimultaneousPickPhase";
+import { useSimultaneousUndo } from "~/hooks/useSimultaneousUndo";
 import { useDraft } from "~/draftStore";
 import { useState } from "react";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
@@ -35,8 +36,7 @@ export function TexasTileDraftPhase({
   description,
   color,
 }: Props) {
-  const { stageSimultaneousPick, undoStagedPick, undoSimultaneousPhase } =
-    useSyncDraft();
+  const { stageSimultaneousPick } = useSyncDraft();
   const {
     adminMode,
     pickForAnyone,
@@ -48,7 +48,6 @@ export function TexasTileDraftPhase({
     handleAdminPasswordSubmit,
     handleAdminToggle,
   } = useAdminControls();
-  const selections = useDraft((state) => state.draft.selections);
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
   const texasDraft = useDraft((state) => state.draft.texasDraft);
   const [pendingPick, setPendingPick] = useState<SystemId | null>(null);
@@ -74,28 +73,11 @@ export function TexasTileDraftPhase({
 
   const isSpectatorMode = selectedPlayer === -1;
 
-  const hasAnyStagedSelections =
-    !!phase.stagingValues && Object.keys(phase.stagingValues).length > 0;
-  const canUndoPick = phase.currentPlayer
-    ? phase.stagingValues?.[phase.currentPlayer.id] !== undefined
-    : false;
-
-  const handleUndoPick = async () => {
-    if (!phase.currentPlayer) return;
-    if (confirm("Undo the staged pick for this player?")) {
-      await undoStagedPick(phaseType, phase.currentPlayer.id);
-    }
-  };
-
-  const handleUndoPhase = async () => {
-    if (
-      confirm(
-        "Undo this phase? This clears all staged picks and moves back one step.",
-      )
-    ) {
-      await undoSimultaneousPhase(phaseType);
-    }
-  };
+  const undo = useSimultaneousUndo(
+    phaseType,
+    phase.currentPlayer?.id,
+    phase.stagingValues,
+  );
 
   const confirmPendingPick = () => {
     if (!pendingPick || !phase.currentPlayer) return;
@@ -123,10 +105,10 @@ export function TexasTileDraftPhase({
         pickForAnyone={pickForAnyone}
         onTogglePickForAnyone={() => setPickForAnyone(!pickForAnyone)}
         showUndo={showUndoLastSelection}
-        onUndoPick={handleUndoPick}
-        onUndoPhase={handleUndoPhase}
-        undoPickDisabled={!canUndoPick}
-        undoPhaseDisabled={!hasAnyStagedSelections && selections.length === 0}
+        onUndoPick={undo.handleUndoPick}
+        onUndoPhase={undo.handleUndoPhase}
+        undoPickDisabled={undo.undoPickDisabled}
+        undoPhaseDisabled={undo.undoPhaseDisabled}
         showPickAnyWarning={true}
       />
 

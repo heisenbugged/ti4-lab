@@ -11,7 +11,7 @@ import { neighbors } from "../hex";
 import { shuffle, weightedChoice } from "./randomization";
 import {
   DEFAULT_SLICE_VALUE_MODIFIERS,
-  SliceValueConfig,
+  evaluateSystem,
   SliceValueModifiers,
 } from "~/stats";
 
@@ -278,17 +278,11 @@ function calculateSliceScore(
   return score;
 }
 
-const DEFAULT_SUMMARIZE_CONFIG: SliceValueConfig = {
-  ...DEFAULT_SLICE_VALUE_MODIFIERS,
-  equidistantIndices: [],
-  mecatolPathIndices: [],
-};
-
-function summarizeRaw(
+export function summarizeRaw(
   systems: SystemId[],
   sliceValueModifiers?: Partial<SliceValueModifiers>,
 ) {
-  const cfg = { ...DEFAULT_SUMMARIZE_CONFIG, ...sliceValueModifiers };
+  const modifiers = { ...DEFAULT_SLICE_VALUE_MODIFIERS, ...sliceValueModifiers };
   let res = 0;
   let optRes = 0;
   let inf = 0;
@@ -299,12 +293,8 @@ function summarizeRaw(
   const wormholes = [];
   const legendaries = [];
 
-  for (let idx = 0; idx < systems.length; idx++) {
-    const id = systems[idx];
+  for (const id of systems) {
     const system = systemData[id];
-    const isEquidistant = cfg.equidistantIndices.includes(idx);
-    const multiplier = isEquidistant ? cfg.equidistantMultiplier : 1;
-    let systemValue = 0;
 
     for (const planet of system.planets) {
       const r = planet.resources;
@@ -313,20 +303,16 @@ function summarizeRaw(
       inf += i;
       if (r > i) {
         optRes += r;
-        systemValue += r;
       } else if (r < i) {
         optInf += i;
-        systemValue += i;
       } else {
         optRes += r / 2;
         optInf += i / 2;
-        systemValue += r;
       }
       if (planet.tech) {
         for (const planetTech of planet.tech) {
           tech.push(planetTech.substring(0, 1).toUpperCase());
         }
-        systemValue += planet.tech.length * cfg.techValue;
       }
       if (planet.trait) {
         for (const planetTrait of planet.trait) {
@@ -335,30 +321,6 @@ function summarizeRaw(
       }
       if (planet.legendary) {
         legendaries.push("L");
-        if (planet.name === "Hope's End") {
-          systemValue += cfg.hopesEndValue;
-        } else if (planet.name === "Emelpar") {
-          systemValue += cfg.emelparValue;
-        } else if (planet.name === "Industrex") {
-          systemValue += cfg.industrexValue;
-        } else {
-          systemValue += cfg.otherLegendaryValue;
-        }
-      }
-      if (planet.tradeStation) {
-        systemValue += cfg.tradeStationValue;
-      }
-    }
-    if (system.anomalies.includes("ENTROPIC_SCAR")) {
-      systemValue += cfg.entropicScarValue;
-    }
-    // Path-to-Mecatol anomaly penalties
-    if (cfg.mecatolPathIndices.includes(idx)) {
-      if (system.anomalies.includes("SUPERNOVA")) {
-        systemValue += cfg.supernovaOnPathPenalty;
-      }
-      if (system.anomalies.includes("NEBULA")) {
-        systemValue += cfg.nebulaOnPathPenalty;
       }
     }
     for (const wormhole of system.wormholes) {
@@ -378,7 +340,7 @@ function summarizeRaw(
       }
     }
 
-    sliceValue += systemValue * multiplier;
+    sliceValue += evaluateSystem(system, modifiers).total;
   }
 
   return {

@@ -2,6 +2,7 @@ import { Box, Button, Center, Grid, SimpleGrid, Stack } from "@mantine/core";
 import { SelectionOverlay } from "~/components/SelectionOverlay";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useSimultaneousPickPhase } from "~/hooks/useSimultaneousPickPhase";
+import { useSimultaneousUndo } from "~/hooks/useSimultaneousUndo";
 import { useDraft } from "~/draftStore";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
 import { DraftableFaction } from "../components/DraftableFaction";
@@ -13,8 +14,7 @@ import { SimultaneousPhaseHeader } from "../components/SimultaneousPhaseHeader";
 import { useAdminControls } from "../components/useAdminControls";
 
 export function TexasFactionSelectionPhase() {
-  const { stageSimultaneousPick, undoStagedPick, undoSimultaneousPhase } =
-    useSyncDraft();
+  const { stageSimultaneousPick } = useSyncDraft();
   const {
     adminMode,
     pickForAnyone,
@@ -26,7 +26,6 @@ export function TexasFactionSelectionPhase() {
     handleAdminPasswordSubmit,
     handleAdminToggle,
   } = useAdminControls();
-  const selections = useDraft((state) => state.draft.selections);
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
   const allowRedraw =
     useDraft((state) => state.draft.settings.texasAllowFactionRedraw) !== false;
@@ -45,28 +44,11 @@ export function TexasFactionSelectionPhase() {
 
   const isSpectatorMode = selectedPlayer === -1;
 
-  const hasAnyStagedSelections =
-    !!phase.stagingValues && Object.keys(phase.stagingValues).length > 0;
-  const canUndoPick = phase.currentPlayer
-    ? phase.stagingValues?.[phase.currentPlayer.id] !== undefined
-    : false;
-
-  const handleUndoPick = async () => {
-    if (!phase.currentPlayer) return;
-    if (confirm("Undo the staged pick for this player?")) {
-      await undoStagedPick("texasFaction", phase.currentPlayer.id);
-    }
-  };
-
-  const handleUndoPhase = async () => {
-    if (
-      confirm(
-        "Undo this phase? This clears all staged picks and moves back one step.",
-      )
-    ) {
-      await undoSimultaneousPhase("texasFaction");
-    }
-  };
+  const undo = useSimultaneousUndo(
+    "texasFaction",
+    phase.currentPlayer?.id,
+    phase.stagingValues,
+  );
 
   return (
     <Box mih="100vh">
@@ -90,10 +72,10 @@ export function TexasFactionSelectionPhase() {
         pickForAnyone={pickForAnyone}
         onTogglePickForAnyone={() => setPickForAnyone(!pickForAnyone)}
         showUndo={showUndoLastSelection}
-        onUndoPick={handleUndoPick}
-        onUndoPhase={handleUndoPhase}
-        undoPickDisabled={!canUndoPick}
-        undoPhaseDisabled={!hasAnyStagedSelections && selections.length === 0}
+        onUndoPick={undo.handleUndoPick}
+        onUndoPhase={undo.handleUndoPhase}
+        undoPickDisabled={undo.undoPickDisabled}
+        undoPhaseDisabled={undo.undoPhaseDisabled}
         showPickAnyWarning={true}
       />
 

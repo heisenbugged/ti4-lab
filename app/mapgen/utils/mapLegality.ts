@@ -1,6 +1,21 @@
-import { Map, SystemId } from "~/types";
+import { Map, SystemId, Wormhole } from "~/types";
 import { systemData } from "~/data/systemData";
-import { getAllNeighbors } from "~/utils/hexDistance";
+import {
+  getAllNeighbors,
+  getGraphNeighbors,
+  HexGraph,
+} from "~/utils/hexDistance";
+
+/**
+ * Which adjacency rules to enforce. By default all rules apply; callers can
+ * waive the anomaly rule or limit the wormhole rule to specific wormholes.
+ */
+export type AdjacencyRules = {
+  anomalies: boolean;
+  wormholes: readonly Wormhole[] | "all";
+};
+
+const ALL_RULES: AdjacencyRules = { anomalies: true, wormholes: "all" };
 
 /**
  * Check if two systems can legally be adjacent.
@@ -11,6 +26,7 @@ import { getAllNeighbors } from "~/utils/hexDistance";
 export function areSystemsCompatibleAdjacent(
   systemIdA: SystemId,
   systemIdB: SystemId,
+  rules: AdjacencyRules = ALL_RULES,
 ): boolean {
   const systemA = systemData[systemIdA];
   const systemB = systemData[systemIdB];
@@ -18,15 +34,19 @@ export function areSystemsCompatibleAdjacent(
   if (!systemA || !systemB) return true;
 
   // Check wormhole rule: same wormholes cannot be adjacent
-  if (systemA.wormholes.length > 0 && systemB.wormholes.length > 0) {
-    const hasMatchingWormhole = systemA.wormholes.some((wh) =>
-      systemB.wormholes.includes(wh),
-    );
-    if (hasMatchingWormhole) return false;
-  }
+  const hasMatchingWormhole = systemA.wormholes.some(
+    (wh) =>
+      systemB.wormholes.includes(wh) &&
+      (rules.wormholes === "all" || rules.wormholes.includes(wh)),
+  );
+  if (hasMatchingWormhole) return false;
 
   // Check anomaly rule: anomalies cannot be adjacent
-  if (systemA.anomalies.length > 0 && systemB.anomalies.length > 0) {
+  if (
+    rules.anomalies &&
+    systemA.anomalies.length > 0 &&
+    systemB.anomalies.length > 0
+  ) {
     return false;
   }
 
@@ -35,13 +55,15 @@ export function areSystemsCompatibleAdjacent(
 
 /**
  * Check if placing a system at a tile index is legal.
- * Uses pre-computed adjacency map if provided for O(1) lookups.
+ * Uses pre-computed adjacency map if provided for O(1) lookups; otherwise
+ * checks physical neighbors only.
  */
 export function isPlacementLegal(
   map: Map,
   tileIdx: number,
   systemId: SystemId,
   adjacencyMap?: globalThis.Map<number, number[]>,
+  rules: AdjacencyRules = ALL_RULES,
 ): boolean {
   const system = systemData[systemId];
   if (!system) return false;
@@ -52,9 +74,9 @@ export function isPlacementLegal(
 
   for (const adjIdx of adjacentIndices) {
     const adjTile = map[adjIdx];
-    if (adjTile.type !== "SYSTEM") continue;
+    if (adjTile?.type !== "SYSTEM") continue;
 
-    if (!areSystemsCompatibleAdjacent(systemId, adjTile.systemId)) {
+    if (!areSystemsCompatibleAdjacent(systemId, adjTile.systemId, rules)) {
       return false;
     }
   }
@@ -90,20 +112,21 @@ export function countMapLegalityViolations(map: Map): number {
 }
 
 /**
- * Check if the entire map is legal (no illegal adjacencies).
- */
-export function isMapLegal(map: Map): boolean {
-  return countMapLegalityViolations(map) === 0;
-}
-
-/**
  * Pre-compute adjacency map for O(1) lookups.
+ * With a graph, adjacency follows the graph (including hyperlane
+ * connections); otherwise it is physical neighbors only.
  */
-export function buildAdjacencyMap(map: Map): globalThis.Map<number, number[]> {
+export function buildAdjacencyMap(
+  map: Map,
+  graph?: HexGraph,
+): globalThis.Map<number, number[]> {
   const adjacencyMap = new globalThis.Map<number, number[]>();
 
   for (let i = 0; i < map.length; i++) {
-    adjacencyMap.set(i, getAllNeighbors(map, i));
+    adjacencyMap.set(
+      i,
+      graph ? getGraphNeighbors(graph, i) : getAllNeighbors(map, i),
+    );
   }
 
   return adjacencyMap;

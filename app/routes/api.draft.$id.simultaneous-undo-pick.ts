@@ -1,11 +1,11 @@
 import { ActionFunctionArgs, data } from "react-router";
+import { deleteStagedSelection } from "~/drizzle/draft.server";
+import { PlayerId, SimultaneousPickType } from "~/types";
 import {
-  deleteStagedSelection,
-  draftById,
-  getDraftStagedSelections,
-} from "~/drizzle/draft.server";
-import { Draft, PlayerId, SimultaneousPickType } from "~/types";
-import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
+  broadcastDraftWithStaged,
+  draftNotFound,
+  loadDraft,
+} from "~/utils/draftApi.server";
 
 type UndoPickBody = {
   phase: SimultaneousPickType;
@@ -30,19 +30,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
     );
   }
 
-  const existingDraft = await draftById(id);
-  if (!existingDraft) {
-    return data({ success: false, error: "Draft not found" }, { status: 404 });
-  }
+  const draft = await loadDraft(id);
+  if (!draft) return draftNotFound();
 
   await deleteStagedSelection(id, body.phase, body.playerId);
 
-  const latestDraft = await draftById(id);
-  const latestDraftData = JSON.parse(latestDraft.data as string) as Draft;
-  const stagedSelections = await getDraftStagedSelections(id);
-  const payload = { ...latestDraftData, stagedSelections };
-
-  await broadcastDraftUpdate(id, payload);
+  const latestDraft = (await loadDraft(id)) ?? draft;
+  const payload = await broadcastDraftWithStaged(id, latestDraft);
 
   return data({
     success: true,

@@ -1,0 +1,4263 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`slice value characterization > calculateBreakdown 1`] = `
+{
+  "anomaliesOnPath/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -2,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Supernova on Path",
+        "value": -2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 0,
+  },
+  "anomaliesOnPath/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 7,
+  },
+  "anomaliesOnPath/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 2,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 3,
+  },
+  "anomaliesOnPath/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 2.8,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -1.3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 2.9000000000000004,
+  },
+  "anomaliesOnPath/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 2.0999999999999996,
+    "modifiers": [
+      {
+        "label": "Nebula on Path",
+        "value": -0.7,
+      },
+      {
+        "label": "Supernova on Path",
+        "value": -1.3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 2.9000000000000004,
+  },
+  "anomaliesOnPath/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 6,
+  },
+  "anomaliesOnPath/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 1.5,
+    "modifiers": [
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Supernova on Path",
+        "value": -2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 2.5,
+  },
+  "anomaliesOnPath/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 7,
+  },
+  "anomaliesOnPath/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 7,
+  },
+  "coreLegendary/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 10,
+  },
+  "coreLegendary/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 12,
+  },
+  "coreLegendary/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 3.5,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 8.5,
+  },
+  "coreLegendary/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 4.619999999999999,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 1.7,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 6.6800000000000015,
+  },
+  "coreLegendary/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 1.7,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -0.7,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 10.6,
+  },
+  "coreLegendary/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 11,
+  },
+  "coreLegendary/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 11,
+  },
+  "coreLegendary/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 1.7,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 11.3,
+  },
+  "coreLegendary/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 12,
+  },
+  "coreNebula/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 8.5,
+  },
+  "coreNebula/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 9.5,
+  },
+  "coreNebula/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 3.25,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 5.25,
+  },
+  "coreNebula/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 4.41,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.3,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -0.7,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 4.1899999999999995,
+  },
+  "coreNebula/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 9.3,
+  },
+  "coreNebula/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 9.5,
+  },
+  "coreNebula/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 9.5,
+  },
+  "coreNebula/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 9.3,
+  },
+  "coreNebula/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 9.5,
+  },
+  "corePartial/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 8,
+  },
+  "corePartial/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "corePartial/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 2.5,
+    "modifiers": [
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 5.5,
+  },
+  "corePartial/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 3.5,
+    "modifiers": [
+      {
+        "label": "Nebula on Path",
+        "value": -0.7,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 4.800000000000001,
+  },
+  "corePartial/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "corePartial/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "corePartial/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "corePartial/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "corePartial/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "coreSupernova/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -2,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 7,
+  },
+  "coreSupernova/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "coreSupernova/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 4.5,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -2,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 2.5,
+  },
+  "coreSupernova/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 5.39,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -1.3,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 1.0100000000000007,
+  },
+  "coreSupernova/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 7.7,
+  },
+  "coreSupernova/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "coreSupernova/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "coreSupernova/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 7.7,
+  },
+  "coreSupernova/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 9,
+  },
+  "empty/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "empty/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "empty/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "empty/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "empty/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "empty/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "empty/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "empty/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "empty/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "legendaries/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 20.5,
+  },
+  "legendaries/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 20.5,
+  },
+  "legendaries/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 5,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 15.5,
+  },
+  "legendaries/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 6.79,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.3,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 1.7,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 13.21,
+  },
+  "legendaries/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 3.01,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.3,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 1.7,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 16.990000000000002,
+  },
+  "legendaries/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 20.5,
+  },
+  "legendaries/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 2.25,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 18.25,
+  },
+  "legendaries/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.3,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 1.7,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 20,
+  },
+  "legendaries/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 20.5,
+  },
+  "mixed/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 1.5,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 14.5,
+  },
+  "mixed/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 1.5,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 15.5,
+  },
+  "mixed/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 2,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 1.5,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 13.5,
+  },
+  "mixed/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 2.5199999999999996,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 0.8999999999999999,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 12.38,
+  },
+  "mixed/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 2.0999999999999996,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 0.8999999999999999,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 12.8,
+  },
+  "mixed/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 1.5,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 15.5,
+  },
+  "mixed/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 1.5,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 1.5,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 14,
+  },
+  "mixed/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 0.8999999999999999,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 14.9,
+  },
+  "mixed/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 1.5,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 15.5,
+  },
+  "plain/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 18,
+  },
+  "plain/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 18,
+  },
+  "plain/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 3.25,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 14.75,
+  },
+  "plain/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 4.41,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 0.6,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 13.190000000000001,
+  },
+  "plain/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 3.5,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 0.6,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 14.100000000000001,
+  },
+  "plain/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 18,
+  },
+  "plain/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 2.5,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 15.5,
+  },
+  "plain/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 0.6,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 17.6,
+  },
+  "plain/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 18,
+  },
+  "scarTechWormholes/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 17,
+  },
+  "scarTechWormholes/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 17,
+  },
+  "scarTechWormholes/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 3.5,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 13.5,
+  },
+  "scarTechWormholes/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 4.34,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 1.2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 10.96,
+  },
+  "scarTechWormholes/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 2.0999999999999996,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 1.2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 13.200000000000001,
+  },
+  "scarTechWormholes/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 17,
+  },
+  "scarTechWormholes/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 1.5,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 15.5,
+  },
+  "scarTechWormholes/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 1.2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 15.3,
+  },
+  "scarTechWormholes/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 17,
+  },
+  "tradeStationsAndScar/allPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 15,
+  },
+  "tradeStationsAndScar/built": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 16,
+  },
+  "tradeStationsAndScar/core": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 4,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 11,
+  },
+  "tradeStationsAndScar/customCore": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 5.04,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -0.7,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 7.760000000000001,
+  },
+  "tradeStationsAndScar/customMilty": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 1.1199999999999999,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 12.38,
+  },
+  "tradeStationsAndScar/heisenPath": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 16,
+  },
+  "tradeStationsAndScar/miltyEquidistant": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 1,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 15,
+  },
+  "tradeStationsAndScar/modifiersOnly": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 13.5,
+  },
+  "tradeStationsAndScar/none": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 16,
+  },
+}
+`;
+
+exports[`slice value characterization > calculateSliceValue 1`] = `
+{
+  "anomaliesOnPath": {
+    "allPath": 0,
+    "built": 7,
+    "core": 3,
+    "customCore": 2.9,
+    "customMilty": 2.8999999999999995,
+    "heisenPath": 6,
+    "miltyEquidistant": 2.5,
+    "modifiersOnly": 7,
+    "none": 7,
+  },
+  "coreLegendary": {
+    "allPath": 10,
+    "built": 12,
+    "core": 8.5,
+    "customCore": 6.68,
+    "customMilty": 10.6,
+    "heisenPath": 11,
+    "miltyEquidistant": 11,
+    "modifiersOnly": 11.3,
+    "none": 12,
+  },
+  "coreNebula": {
+    "allPath": 8.5,
+    "built": 9.5,
+    "core": 5.25,
+    "customCore": 4.1899999999999995,
+    "customMilty": 9.3,
+    "heisenPath": 9.5,
+    "miltyEquidistant": 9.5,
+    "modifiersOnly": 9.3,
+    "none": 9.5,
+  },
+  "corePartial": {
+    "allPath": 8,
+    "built": 9,
+    "core": 5.5,
+    "customCore": 4.8,
+    "customMilty": 9,
+    "heisenPath": 9,
+    "miltyEquidistant": 9,
+    "modifiersOnly": 9,
+    "none": 9,
+  },
+  "coreSupernova": {
+    "allPath": 7,
+    "built": 9,
+    "core": 2.5,
+    "customCore": 1.0099999999999998,
+    "customMilty": 7.699999999999999,
+    "heisenPath": 9,
+    "miltyEquidistant": 9,
+    "modifiersOnly": 7.699999999999999,
+    "none": 9,
+  },
+  "empty": {
+    "allPath": 0,
+    "built": 0,
+    "core": 0,
+    "customCore": 0,
+    "customMilty": 0,
+    "heisenPath": 0,
+    "miltyEquidistant": 0,
+    "modifiersOnly": 0,
+    "none": 0,
+  },
+  "legendaries": {
+    "allPath": 20.5,
+    "built": 20.5,
+    "core": 15.5,
+    "customCore": 13.21,
+    "customMilty": 16.99,
+    "heisenPath": 20.5,
+    "miltyEquidistant": 18.25,
+    "modifiersOnly": 20,
+    "none": 20.5,
+  },
+  "mixed": {
+    "allPath": 14.5,
+    "built": 15.5,
+    "core": 13.5,
+    "customCore": 12.379999999999999,
+    "customMilty": 12.799999999999999,
+    "heisenPath": 15.5,
+    "miltyEquidistant": 14,
+    "modifiersOnly": 14.899999999999999,
+    "none": 15.5,
+  },
+  "plain": {
+    "allPath": 18,
+    "built": 18,
+    "core": 14.75,
+    "customCore": 13.19,
+    "customMilty": 14.1,
+    "heisenPath": 18,
+    "miltyEquidistant": 15.5,
+    "modifiersOnly": 17.6,
+    "none": 18,
+  },
+  "scarTechWormholes": {
+    "allPath": 17,
+    "built": 17,
+    "core": 13.5,
+    "customCore": 10.96,
+    "customMilty": 13.2,
+    "heisenPath": 17,
+    "miltyEquidistant": 15.5,
+    "modifiersOnly": 15.299999999999999,
+    "none": 17,
+  },
+  "tradeStationsAndScar": {
+    "allPath": 15,
+    "built": 16,
+    "core": 11,
+    "customCore": 7.76,
+    "customMilty": 12.38,
+    "heisenPath": 16,
+    "miltyEquidistant": 15,
+    "modifiersOnly": 13.5,
+    "none": 16,
+  },
+}
+`;
+
+exports[`slice value characterization > core slice breakdown 1`] = `
+{
+  "anomaliesOnPath/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 2.8,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -1.3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 2.9000000000000004,
+  },
+  "anomaliesOnPath/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 2,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 4,
+      "resources": 3,
+      "sum": 7,
+    },
+    "total": 3,
+  },
+  "coreLegendary/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 4.619999999999999,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 1.7,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 6.6800000000000015,
+  },
+  "coreLegendary/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 3.5,
+    "modifiers": [
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 2,
+      "resources": 5,
+      "sum": 7,
+    },
+    "total": 8.5,
+  },
+  "coreNebula/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 4.41,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.3,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -0.7,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 4.1899999999999995,
+  },
+  "coreNebula/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 3.25,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 7,
+      "sum": 7,
+    },
+    "total": 5.25,
+  },
+  "corePartial/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 3.5,
+    "modifiers": [
+      {
+        "label": "Nebula on Path",
+        "value": -0.7,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 4.800000000000001,
+  },
+  "corePartial/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 2.5,
+    "modifiers": [
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 6,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 5.5,
+  },
+  "coreSupernova/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 5.39,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -1.3,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 1.0100000000000007,
+  },
+  "coreSupernova/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 4.5,
+    "modifiers": [
+      {
+        "label": "Supernova on Path",
+        "value": -2,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 1,
+      "influence": 5,
+      "resources": 0,
+      "sum": 6,
+    },
+    "total": 2.5,
+  },
+  "empty/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "empty/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": null,
+    "modifiers": [],
+    "optimal": {
+      "flex": 0,
+      "influence": 0,
+      "resources": 0,
+      "sum": 0,
+    },
+    "total": 0,
+  },
+  "legendaries/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 6.79,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.3,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 1.7,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 13.21,
+  },
+  "legendaries/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 5,
+    "modifiers": [
+      {
+        "count": 1,
+        "label": "Tech Skips",
+        "value": 0.5,
+      },
+      {
+        "label": "Primor",
+        "value": 1,
+      },
+      {
+        "label": "Hope's End",
+        "value": 2,
+      },
+      {
+        "label": "Emelpar",
+        "value": 3,
+      },
+      {
+        "label": "Industrex",
+        "value": 2,
+      },
+      {
+        "label": "Silence",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 2,
+      "resources": 7,
+      "sum": 11,
+    },
+    "total": 15.5,
+  },
+  "mixed/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 2.5199999999999996,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 0.8999999999999999,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 12.38,
+  },
+  "mixed/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 2,
+    "modifiers": [
+      {
+        "count": 3,
+        "label": "Tech Skips",
+        "value": 1.5,
+      },
+      {
+        "label": "Faunus",
+        "value": 1,
+      },
+      {
+        "label": "Tempesta",
+        "value": 1,
+      },
+      {
+        "label": "Domna",
+        "value": 1,
+      },
+      {
+        "label": "Mallice",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 2,
+      "influence": 6,
+      "resources": 2,
+      "sum": 10,
+    },
+    "total": 13.5,
+  },
+  "plain/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 4.41,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 0.6,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 13.190000000000001,
+  },
+  "plain/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 3.25,
+    "modifiers": [
+      {
+        "count": 2,
+        "label": "Tech Skips",
+        "value": 1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 8,
+      "sum": 17,
+    },
+    "total": 14.75,
+  },
+  "scarTechWormholes/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 4.34,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 1.2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 10.96,
+  },
+  "scarTechWormholes/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 3.5,
+    "modifiers": [
+      {
+        "count": 4,
+        "label": "Tech Skips",
+        "value": 2,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 0,
+      "influence": 5,
+      "resources": 8,
+      "sum": 13,
+    },
+    "total": 13.5,
+  },
+  "tradeStationsAndScar/custom": {
+    "equidistantMultiplier": 0.3,
+    "equidistantPenalty": 5.04,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -0.7,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Trade Station",
+        "value": 0.6,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 1.1,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 7.760000000000001,
+  },
+  "tradeStationsAndScar/default": {
+    "equidistantMultiplier": 0.5,
+    "equidistantPenalty": 4,
+    "modifiers": [
+      {
+        "label": "Ordinian",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Nebula on Path",
+        "value": -1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Trade Station",
+        "value": 1,
+      },
+      {
+        "label": "Entropic Scar",
+        "value": 2,
+      },
+    ],
+    "optimal": {
+      "flex": 3,
+      "influence": 6,
+      "resources": 0,
+      "sum": 9,
+    },
+    "total": 11,
+  },
+}
+`;
+
+exports[`slice value characterization > mapgen sliceScoring 1`] = `
+{
+  "sparse/breakdowns": {
+    "19": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": null,
+      "modifiers": [],
+      "optimal": {
+        "flex": 0,
+        "influence": 0,
+        "resources": 0,
+        "sum": 0,
+      },
+      "total": 0,
+    },
+    "22": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": null,
+      "modifiers": [
+        {
+          "equidistantShared": undefined,
+          "label": "Primor",
+          "value": 1,
+        },
+      ],
+      "optimal": {
+        "flex": 0,
+        "influence": 0,
+        "resources": 2,
+        "sum": 2,
+      },
+      "total": 3,
+    },
+    "25": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": null,
+      "modifiers": [],
+      "optimal": {
+        "flex": 0,
+        "influence": 0,
+        "resources": 0,
+        "sum": 0,
+      },
+      "total": 0,
+    },
+    "28": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": null,
+      "modifiers": [],
+      "optimal": {
+        "flex": 0,
+        "influence": 0,
+        "resources": 0,
+        "sum": 0,
+      },
+      "total": 0,
+    },
+  },
+  "sparse/contributions": {
+    "19": {},
+    "22": {
+      "9": {
+        "actualValue": 3,
+        "equidistantCount": 1,
+        "fullValue": 3,
+        "percentage": 1,
+        "tileIdx": 9,
+      },
+    },
+    "25": {},
+    "28": {},
+  },
+  "sparse/stats": {
+    "19": {
+      "influence": 0,
+      "optimalInfluence": 0,
+      "optimalResources": 0,
+      "resources": 0,
+      "techs": "",
+      "traits": "0/0/0",
+    },
+    "22": {
+      "influence": 1,
+      "optimalInfluence": 0,
+      "optimalResources": 2,
+      "resources": 2,
+      "techs": "",
+      "traits": "0/0/1",
+    },
+    "25": {
+      "influence": 0,
+      "optimalInfluence": 0,
+      "optimalResources": 0,
+      "resources": 0,
+      "techs": "",
+      "traits": "0/0/0",
+    },
+    "28": {
+      "influence": 0,
+      "optimalInfluence": 0,
+      "optimalResources": 0,
+      "resources": 0,
+      "techs": "",
+      "traits": "0/0/0",
+    },
+  },
+  "sparse/values": {
+    "19": 0,
+    "22": 3,
+    "25": 0,
+    "28": 0,
+  },
+  "standard/breakdowns": {
+    "19": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": 2.8,
+      "modifiers": [
+        {
+          "equidistantShared": undefined,
+          "label": "Hope's End",
+          "value": 2,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Primor",
+          "value": 1,
+        },
+        {
+          "count": 1,
+          "equidistantShared": 2,
+          "label": "Tech Skips",
+          "value": 0.5,
+        },
+        {
+          "count": 2,
+          "equidistantShared": 2,
+          "label": "Tech Skips",
+          "value": 1,
+        },
+        {
+          "count": 1,
+          "equidistantShared": undefined,
+          "label": "Tech Skips",
+          "value": 0.5,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Trade Station",
+          "value": 1,
+        },
+      ],
+      "optimal": {
+        "flex": 2,
+        "influence": 2,
+        "resources": 10,
+        "sum": 14,
+      },
+      "total": 17.3,
+    },
+    "22": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": 1.3,
+      "modifiers": [
+        {
+          "count": 1,
+          "equidistantShared": 2,
+          "label": "Tech Skips",
+          "value": 0.5,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Trade Station",
+          "value": 1,
+        },
+        {
+          "label": "Supernova on Rex Path",
+          "value": -2,
+        },
+      ],
+      "optimal": {
+        "flex": 1,
+        "influence": 6,
+        "resources": 5,
+        "sum": 12,
+      },
+      "total": 10.3,
+    },
+    "25": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": 1,
+      "modifiers": [
+        {
+          "equidistantShared": undefined,
+          "label": "Ordinian",
+          "value": 1,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Trade Station",
+          "value": 1,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Trade Station",
+          "value": 1,
+        },
+        {
+          "equidistantShared": 2,
+          "label": "Entropic Scar",
+          "value": 2,
+        },
+        {
+          "count": 2,
+          "equidistantShared": undefined,
+          "label": "Tech Skips",
+          "value": 1,
+        },
+        {
+          "label": "Nebula on Rex Path",
+          "value": -1,
+        },
+      ],
+      "optimal": {
+        "flex": 1,
+        "influence": 10,
+        "resources": 1,
+        "sum": 12,
+      },
+      "total": 16,
+    },
+    "28": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": 1,
+      "modifiers": [
+        {
+          "count": 1,
+          "equidistantShared": undefined,
+          "label": "Tech Skips",
+          "value": 0.5,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Industrex",
+          "value": 2,
+        },
+        {
+          "equidistantShared": 2,
+          "label": "Entropic Scar",
+          "value": 2,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Emelpar",
+          "value": 3,
+        },
+        {
+          "count": 1,
+          "equidistantShared": undefined,
+          "label": "Tech Skips",
+          "value": 0.5,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Faunus",
+          "value": 1,
+        },
+      ],
+      "optimal": {
+        "flex": 0,
+        "influence": 7,
+        "resources": 4,
+        "sum": 11,
+      },
+      "total": 19,
+    },
+    "31": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": 1,
+      "modifiers": [
+        {
+          "equidistantShared": undefined,
+          "label": "Silence",
+          "value": 1,
+        },
+        {
+          "count": 1,
+          "equidistantShared": undefined,
+          "label": "Tech Skips",
+          "value": 0.5,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Tempesta",
+          "value": 1,
+        },
+        {
+          "count": 1,
+          "equidistantShared": undefined,
+          "label": "Tech Skips",
+          "value": 0.5,
+        },
+        {
+          "label": "Nebula on Rex Path",
+          "value": -1,
+        },
+      ],
+      "optimal": {
+        "flex": 6,
+        "influence": 0,
+        "resources": 3,
+        "sum": 9,
+      },
+      "total": 10,
+    },
+    "34": {
+      "equidistantMultiplier": 1,
+      "equidistantPenalty": 2.5,
+      "modifiers": [
+        {
+          "equidistantShared": undefined,
+          "label": "Entropic Scar",
+          "value": 2,
+        },
+        {
+          "count": 2,
+          "equidistantShared": 2,
+          "label": "Tech Skips",
+          "value": 1,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Domna",
+          "value": 1,
+        },
+        {
+          "equidistantShared": undefined,
+          "label": "Mallice",
+          "value": 1,
+        },
+      ],
+      "optimal": {
+        "flex": 2,
+        "influence": 6,
+        "resources": 7,
+        "sum": 15,
+      },
+      "total": 17.5,
+    },
+  },
+  "standard/contributions": {
+    "19": {
+      "1": {
+        "actualValue": 5,
+        "equidistantCount": 1,
+        "fullValue": 5,
+        "percentage": 1,
+        "tileIdx": 1,
+      },
+      "18": {
+        "actualValue": 1.5,
+        "equidistantCount": 2,
+        "fullValue": 3,
+        "percentage": 0.5,
+        "tileIdx": 18,
+      },
+      "20": {
+        "actualValue": 4.5,
+        "equidistantCount": 1,
+        "fullValue": 4.5,
+        "percentage": 1,
+        "tileIdx": 20,
+      },
+      "36": {
+        "actualValue": 2,
+        "equidistantCount": 1,
+        "fullValue": 2,
+        "percentage": 1,
+        "tileIdx": 36,
+      },
+      "7": {
+        "actualValue": 3,
+        "equidistantCount": 1,
+        "fullValue": 3,
+        "percentage": 1,
+        "tileIdx": 7,
+      },
+      "8": {
+        "actualValue": 1.3,
+        "equidistantCount": 2,
+        "fullValue": 2.5,
+        "percentage": 0.5,
+        "tileIdx": 8,
+      },
+    },
+    "22": {
+      "21": {
+        "actualValue": 5,
+        "equidistantCount": 1,
+        "fullValue": 5,
+        "percentage": 1,
+        "tileIdx": 21,
+      },
+      "23": {
+        "actualValue": 2,
+        "equidistantCount": 1,
+        "fullValue": 2,
+        "percentage": 1,
+        "tileIdx": 23,
+      },
+      "8": {
+        "actualValue": 1.3,
+        "equidistantCount": 2,
+        "fullValue": 2.5,
+        "percentage": 0.5,
+        "tileIdx": 8,
+      },
+      "9": {
+        "actualValue": 4,
+        "equidistantCount": 1,
+        "fullValue": 4,
+        "percentage": 1,
+        "tileIdx": 9,
+      },
+    },
+    "25": {
+      "11": {
+        "actualValue": 4,
+        "equidistantCount": 1,
+        "fullValue": 4,
+        "percentage": 1,
+        "tileIdx": 11,
+      },
+      "12": {
+        "actualValue": 1,
+        "equidistantCount": 2,
+        "fullValue": 2,
+        "percentage": 0.5,
+        "tileIdx": 12,
+      },
+      "24": {
+        "actualValue": 4,
+        "equidistantCount": 1,
+        "fullValue": 4,
+        "percentage": 1,
+        "tileIdx": 24,
+      },
+      "26": {
+        "actualValue": 4,
+        "equidistantCount": 1,
+        "fullValue": 4,
+        "percentage": 1,
+        "tileIdx": 26,
+      },
+      "3": {
+        "actualValue": 4,
+        "equidistantCount": 1,
+        "fullValue": 4,
+        "percentage": 1,
+        "tileIdx": 3,
+      },
+    },
+    "28": {
+      "12": {
+        "actualValue": 1,
+        "equidistantCount": 2,
+        "fullValue": 2,
+        "percentage": 0.5,
+        "tileIdx": 12,
+      },
+      "13": {
+        "actualValue": 5,
+        "equidistantCount": 1,
+        "fullValue": 5,
+        "percentage": 1,
+        "tileIdx": 13,
+      },
+      "27": {
+        "actualValue": 4,
+        "equidistantCount": 1,
+        "fullValue": 4,
+        "percentage": 1,
+        "tileIdx": 27,
+      },
+      "29": {
+        "actualValue": 4.5,
+        "equidistantCount": 1,
+        "fullValue": 4.5,
+        "percentage": 1,
+        "tileIdx": 29,
+      },
+      "4": {
+        "actualValue": 4.5,
+        "equidistantCount": 1,
+        "fullValue": 4.5,
+        "percentage": 1,
+        "tileIdx": 4,
+      },
+    },
+    "31": {
+      "15": {
+        "actualValue": 3,
+        "equidistantCount": 1,
+        "fullValue": 3,
+        "percentage": 1,
+        "tileIdx": 15,
+      },
+      "16": {
+        "actualValue": 1,
+        "equidistantCount": 2,
+        "fullValue": 2,
+        "percentage": 0.5,
+        "tileIdx": 16,
+      },
+      "30": {
+        "actualValue": 2.5,
+        "equidistantCount": 1,
+        "fullValue": 2.5,
+        "percentage": 1,
+        "tileIdx": 30,
+      },
+      "32": {
+        "actualValue": 1.5,
+        "equidistantCount": 1,
+        "fullValue": 1.5,
+        "percentage": 1,
+        "tileIdx": 32,
+      },
+      "5": {
+        "actualValue": 3,
+        "equidistantCount": 1,
+        "fullValue": 3,
+        "percentage": 1,
+        "tileIdx": 5,
+      },
+    },
+    "34": {
+      "16": {
+        "actualValue": 1,
+        "equidistantCount": 2,
+        "fullValue": 2,
+        "percentage": 0.5,
+        "tileIdx": 16,
+      },
+      "17": {
+        "actualValue": 5,
+        "equidistantCount": 1,
+        "fullValue": 5,
+        "percentage": 1,
+        "tileIdx": 17,
+      },
+      "18": {
+        "actualValue": 1.5,
+        "equidistantCount": 2,
+        "fullValue": 3,
+        "percentage": 0.5,
+        "tileIdx": 18,
+      },
+      "33": {
+        "actualValue": 3,
+        "equidistantCount": 1,
+        "fullValue": 3,
+        "percentage": 1,
+        "tileIdx": 33,
+      },
+      "35": {
+        "actualValue": 4,
+        "equidistantCount": 1,
+        "fullValue": 4,
+        "percentage": 1,
+        "tileIdx": 35,
+      },
+      "6": {
+        "actualValue": 3,
+        "equidistantCount": 1,
+        "fullValue": 3,
+        "percentage": 1,
+        "tileIdx": 6,
+      },
+    },
+  },
+  "standard/stats": {
+    "19": {
+      "influence": 7,
+      "optimalInfluence": 3,
+      "optimalResources": 11,
+      "resources": 13,
+      "techs": "GRY",
+      "traits": "3/2/2",
+    },
+    "22": {
+      "influence": 9,
+      "optimalInfluence": 6.5,
+      "optimalResources": 5.5,
+      "resources": 8,
+      "techs": "Y",
+      "traits": "1/1/3",
+    },
+    "25": {
+      "influence": 11,
+      "optimalInfluence": 10.5,
+      "optimalResources": 1.5,
+      "resources": 8,
+      "techs": "Y",
+      "traits": "0/2/2",
+    },
+    "28": {
+      "influence": 8,
+      "optimalInfluence": 7,
+      "optimalResources": 4,
+      "resources": 6,
+      "techs": "GR",
+      "traits": "0/4/1",
+    },
+    "31": {
+      "influence": 7,
+      "optimalInfluence": 3,
+      "optimalResources": 6,
+      "resources": 9,
+      "techs": "B",
+      "traits": "2/2/1",
+    },
+    "34": {
+      "influence": 11,
+      "optimalInfluence": 7,
+      "optimalResources": 8,
+      "resources": 9,
+      "techs": "RY",
+      "traits": "3/1/3",
+    },
+  },
+  "standard/values": {
+    "19": 17.3,
+    "22": 10.3,
+    "25": 16,
+    "28": 19,
+    "31": 10,
+    "34": 17.5,
+  },
+}
+`;
+
+exports[`slice value characterization > summarizeRaw 1`] = `
+{
+  "anomaliesOnPath/custom": {
+    "inf": 5,
+    "legendaries": [],
+    "optInf": 4,
+    "optRes": 3,
+    "res": 6,
+    "sliceValue": 7,
+    "tech": [],
+    "traits": [
+      "C",
+    ],
+    "wormholes": [],
+  },
+  "anomaliesOnPath/default": {
+    "inf": 5,
+    "legendaries": [],
+    "optInf": 4,
+    "optRes": 3,
+    "res": 6,
+    "sliceValue": 7,
+    "tech": [],
+    "traits": [
+      "C",
+    ],
+    "wormholes": [],
+  },
+  "coreLegendary/custom": {
+    "inf": 3,
+    "legendaries": [
+      "L",
+      "L",
+      "L",
+    ],
+    "optInf": 2,
+    "optRes": 5,
+    "res": 6,
+    "sliceValue": 11.3,
+    "tech": [],
+    "traits": [
+      "H",
+      "H",
+    ],
+    "wormholes": [],
+  },
+  "coreLegendary/default": {
+    "inf": 3,
+    "legendaries": [
+      "L",
+      "L",
+      "L",
+    ],
+    "optInf": 2,
+    "optRes": 5,
+    "res": 6,
+    "sliceValue": 12,
+    "tech": [],
+    "traits": [
+      "H",
+      "H",
+    ],
+    "wormholes": [],
+  },
+  "coreNebula/custom": {
+    "inf": 2,
+    "legendaries": [
+      "L",
+    ],
+    "optInf": 0,
+    "optRes": 7,
+    "res": 7,
+    "sliceValue": 9.3,
+    "tech": [
+      "W",
+    ],
+    "traits": [
+      "C",
+      "I",
+      "C",
+    ],
+    "wormholes": [
+      "β",
+    ],
+  },
+  "coreNebula/default": {
+    "inf": 2,
+    "legendaries": [
+      "L",
+    ],
+    "optInf": 0,
+    "optRes": 7,
+    "res": 7,
+    "sliceValue": 9.5,
+    "tech": [
+      "W",
+    ],
+    "traits": [
+      "C",
+      "I",
+      "C",
+    ],
+    "wormholes": [
+      "β",
+    ],
+  },
+  "corePartial/custom": {
+    "inf": 6,
+    "legendaries": [
+      "L",
+    ],
+    "optInf": 6,
+    "optRes": 0,
+    "res": 3,
+    "sliceValue": 9,
+    "tech": [],
+    "traits": [
+      "C",
+    ],
+    "wormholes": [],
+  },
+  "corePartial/default": {
+    "inf": 6,
+    "legendaries": [
+      "L",
+    ],
+    "optInf": 6,
+    "optRes": 0,
+    "res": 3,
+    "sliceValue": 9,
+    "tech": [],
+    "traits": [
+      "C",
+    ],
+    "wormholes": [],
+  },
+  "coreSupernova/custom": {
+    "inf": 6,
+    "legendaries": [],
+    "optInf": 5.5,
+    "optRes": 0.5,
+    "res": 2,
+    "sliceValue": 7.699999999999999,
+    "tech": [],
+    "traits": [
+      "C",
+      "I",
+    ],
+    "wormholes": [],
+  },
+  "coreSupernova/default": {
+    "inf": 6,
+    "legendaries": [],
+    "optInf": 5.5,
+    "optRes": 0.5,
+    "res": 2,
+    "sliceValue": 9,
+    "tech": [],
+    "traits": [
+      "C",
+      "I",
+    ],
+    "wormholes": [],
+  },
+  "empty/custom": {
+    "inf": 0,
+    "legendaries": [],
+    "optInf": 0,
+    "optRes": 0,
+    "res": 0,
+    "sliceValue": 0,
+    "tech": [],
+    "traits": [],
+    "wormholes": [],
+  },
+  "empty/default": {
+    "inf": 0,
+    "legendaries": [],
+    "optInf": 0,
+    "optRes": 0,
+    "res": 0,
+    "sliceValue": 0,
+    "tech": [],
+    "traits": [],
+    "wormholes": [],
+  },
+  "legendaries/custom": {
+    "inf": 5,
+    "legendaries": [
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+    ],
+    "optInf": 3,
+    "optRes": 8,
+    "res": 9,
+    "sliceValue": 20,
+    "tech": [
+      "W",
+    ],
+    "traits": [
+      "C",
+      "H",
+      "C",
+      "I",
+      "I",
+    ],
+    "wormholes": [],
+  },
+  "legendaries/default": {
+    "inf": 5,
+    "legendaries": [
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+    ],
+    "optInf": 3,
+    "optRes": 8,
+    "res": 9,
+    "sliceValue": 20.5,
+    "tech": [
+      "W",
+    ],
+    "traits": [
+      "C",
+      "H",
+      "C",
+      "I",
+      "I",
+    ],
+    "wormholes": [],
+  },
+  "mixed/custom": {
+    "inf": 9,
+    "legendaries": [
+      "L",
+      "L",
+      "L",
+      "L",
+    ],
+    "optInf": 7,
+    "optRes": 3,
+    "res": 5,
+    "sliceValue": 14.899999999999999,
+    "tech": [
+      "B",
+      "P",
+      "P",
+    ],
+    "traits": [
+      "I",
+      "H",
+      "I",
+      "H",
+      "C",
+    ],
+    "wormholes": [
+      "α",
+      "α",
+      "β",
+      "γ",
+    ],
+  },
+  "mixed/default": {
+    "inf": 9,
+    "legendaries": [
+      "L",
+      "L",
+      "L",
+      "L",
+    ],
+    "optInf": 7,
+    "optRes": 3,
+    "res": 5,
+    "sliceValue": 15.5,
+    "tech": [
+      "B",
+      "P",
+      "P",
+    ],
+    "traits": [
+      "I",
+      "H",
+      "I",
+      "H",
+      "C",
+    ],
+    "wormholes": [
+      "α",
+      "α",
+      "β",
+      "γ",
+    ],
+  },
+  "plain/custom": {
+    "inf": 12,
+    "legendaries": [],
+    "optInf": 7.5,
+    "optRes": 9.5,
+    "res": 13,
+    "sliceValue": 17.6,
+    "tech": [
+      "C",
+      "B",
+    ],
+    "traits": [
+      "I",
+      "H",
+      "I",
+      "H",
+      "C",
+      "H",
+      "I",
+      "I",
+    ],
+    "wormholes": [],
+  },
+  "plain/default": {
+    "inf": 12,
+    "legendaries": [],
+    "optInf": 7.5,
+    "optRes": 9.5,
+    "res": 13,
+    "sliceValue": 18,
+    "tech": [
+      "C",
+      "B",
+    ],
+    "traits": [
+      "I",
+      "H",
+      "I",
+      "H",
+      "C",
+      "H",
+      "I",
+      "I",
+    ],
+    "wormholes": [],
+  },
+  "scarTechWormholes/custom": {
+    "inf": 8,
+    "legendaries": [],
+    "optInf": 5,
+    "optRes": 8,
+    "res": 9,
+    "sliceValue": 15.299999999999999,
+    "tech": [
+      "C",
+      "W",
+      "C",
+      "C",
+    ],
+    "traits": [
+      "I",
+      "C",
+      "H",
+      "C",
+      "I",
+      "C",
+      "C",
+    ],
+    "wormholes": [
+      "α",
+      "β",
+    ],
+  },
+  "scarTechWormholes/default": {
+    "inf": 8,
+    "legendaries": [],
+    "optInf": 5,
+    "optRes": 8,
+    "res": 9,
+    "sliceValue": 17,
+    "tech": [
+      "C",
+      "W",
+      "C",
+      "C",
+    ],
+    "traits": [
+      "I",
+      "C",
+      "H",
+      "C",
+      "I",
+      "C",
+      "C",
+    ],
+    "wormholes": [
+      "α",
+      "β",
+    ],
+  },
+  "tradeStationsAndScar/custom": {
+    "inf": 9,
+    "legendaries": [
+      "L",
+    ],
+    "optInf": 7.5,
+    "optRes": 1.5,
+    "res": 6,
+    "sliceValue": 13.5,
+    "tech": [],
+    "traits": [
+      "C",
+      "I",
+      "C",
+    ],
+    "wormholes": [],
+  },
+  "tradeStationsAndScar/default": {
+    "inf": 9,
+    "legendaries": [
+      "L",
+    ],
+    "optInf": 7.5,
+    "optRes": 1.5,
+    "res": 6,
+    "sliceValue": 16,
+    "tech": [],
+    "traits": [
+      "C",
+      "I",
+      "C",
+    ],
+    "wormholes": [],
+  },
+}
+`;

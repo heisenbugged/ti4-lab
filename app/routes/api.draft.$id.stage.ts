@@ -1,8 +1,6 @@
 import { ActionFunctionArgs, data } from "react-router";
 import {
   clearStagedSelections,
-  draftById,
-  getDraftStagedSelections,
   getStagedSelections,
   updateDraft,
   upsertStagedSelection,
@@ -14,11 +12,15 @@ import {
   PRIORITY_PHASE,
   HOME_PHASE,
 } from "~/types";
-import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
 import {
   applyTexasFactionCommit,
   applyTexasTileCommit,
 } from "~/draft/texas/texasDraft";
+import {
+  broadcastDraftWithStaged,
+  draftNotFound,
+  loadDraft,
+} from "~/utils/draftApi.server";
 
 function applySimultaneousCommit(
   draft: Draft,
@@ -60,8 +62,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
     );
   }
 
-  const existingDraft = await draftById(id);
-  const draft = JSON.parse(existingDraft.data as string) as Draft;
+  const draft = await loadDraft(id);
+  if (!draft) return draftNotFound();
 
   const currentPick = draft.pickOrder[draft.selections.length];
   const isLegacyPhase =
@@ -109,12 +111,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
     await updateDraft(id, draft);
   }
 
-  const latestDraft = await draftById(id);
-  const latestDraftData = JSON.parse(latestDraft.data as string) as Draft;
-  const stagedSelections = await getDraftStagedSelections(id);
-  const payload = { ...latestDraftData, stagedSelections };
-
-  await broadcastDraftUpdate(id, payload);
+  const latestDraft = (await loadDraft(id)) ?? draft;
+  const payload = await broadcastDraftWithStaged(id, latestDraft);
 
   return data({
     success: true,

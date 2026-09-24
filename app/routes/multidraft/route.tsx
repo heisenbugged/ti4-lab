@@ -3,31 +3,14 @@ import { ActionFunctionArgs, MetaFunction } from "react-router";
 import { Outlet, redirect } from "react-router";
 import { IconMoon, IconSun } from "@tabler/icons-react";
 import { MainAppShell } from "~/components/MainAppShell";
-import {
-  initializeMap,
-  initializeSlices,
-  randomizeFactions,
-} from "~/draftStore";
 import { createDraft } from "~/drizzle/draft.server";
 import { createMultiDraft } from "~/drizzle/multiDraft.server";
-import { shuffle } from "~/draft/helpers/randomization";
-import {
-  DiscordData,
-  Draft,
-  DraftSettings,
-  FactionId,
-  Player,
-  TexasDraftState,
-} from "~/types";
+import { buildInitialDraft } from "~/draft/buildInitialDraft";
+import { DiscordData, Draft, DraftSettings, Player } from "~/types";
 import { createDraftOrder } from "~/utils/draftOrder.server";
 
-import { getFactionPool } from "~/utils/factions";
-import { getSystemPool } from "~/utils/system";
-import {
-  createTexasSeatAssignments,
-  dealTexasFactionOptions,
-  dealTexasTiles,
-} from "~/draft/texas/texasDraft";
+const MIN_DRAFTS = 2;
+const MAX_DRAFTS = 9;
 
 const parseIfDefined = (v: unknown | null | undefined): unknown => {
   if (v === null || v === undefined || v === "") return undefined;
@@ -44,70 +27,37 @@ export async function action({ request }: ActionFunctionArgs) {
   const discordData = parseIfDefined(formData.get("discordData")) as
     | DiscordData
     | undefined;
-  const numDrafts = parseInt(formData.get("numDrafts") as string);
+  const requestedDrafts = parseInt(formData.get("numDrafts") as string);
+  const numDrafts = Math.min(
+    MAX_DRAFTS,
+    Math.max(MIN_DRAFTS, isNaN(requestedDrafts) ? MIN_DRAFTS : requestedDrafts),
+  );
 
-  const draftUrlNames: string[] = [];
+  const drafts: Draft[] = [];
   for (let i = 0; i < numDrafts; i++) {
-    const factionPool = getFactionPool(settings.factionGameSets);
-    const systemPool = getSystemPool(settings.tileGameSets);
-
-    const availableFactions = randomizeFactions(
-      settings.numFactions,
-      factionPool,
-      undefined,
-    );
-
-    const numMinorFactions = settings.numMinorFactions;
-    let availableMinorFactions: FactionId[] | undefined = undefined;
-    if (numMinorFactions !== undefined) {
-      const otherFactions = factionPool.filter(
-        (f) => !availableFactions.includes(f),
+    const initial = buildInitialDraft(settings, players, {
+      discord: discordData,
+    });
+    if (!initial) {
+      throw new Response(
+        "Could not generate a valid map with the given settings.",
+        { status: 422 },
       );
-      availableMinorFactions = shuffle(otherFactions, numMinorFactions);
     }
-
-    const slices = initializeSlices(settings, systemPool);
-    if (!slices) return;
-    const presetMap = initializeMap(settings, slices, systemPool);
-
-    let texasDraft: TexasDraftState | undefined = undefined;
-    if (settings.draftGameMode === "texasStyle") {
-      texasDraft = {
-        ...createTexasSeatAssignments(players),
-        ...dealTexasTiles(systemPool, players),
-      };
-
-      if (!settings.modifiers?.banFactions) {
-        const handSize = settings.texasFactionHandSize ?? 2;
-        const {
-          factionOptions,
-          factionDrawPile,
-          initialFactionOptions,
-          initialFactionDrawPile,
-        } = dealTexasFactionOptions(availableFactions, players, handSize);
-        texasDraft.factionOptions = factionOptions;
-        texasDraft.factionDrawPile = factionDrawPile;
-        texasDraft.initialFactionOptions = initialFactionOptions;
-        texasDraft.initialFactionDrawPile = initialFactionDrawPile;
-      }
-    }
-
-    const draft: Draft = {
-      settings,
-      integrations: { discord: discordData },
-      availableFactions,
-      availableMinorFactions,
-      presetMap,
-      slices,
-      texasDraft,
+    drafts.push({
+      ...initial,
       ...createDraftOrder({
         players,
         settings,
-        availableFactions,
-        presetMap,
-        texasDraft,
+        availableFactions: initial.availableFactions,
+        presetMap: initial.presetMap,
+        texasDraft: initial.texasDraft,
       }),
-    };
+    });
+  }
+
+  const draftUrlNames: string[] = [];
+  for (const draft of drafts) {
     const { prettyUrl } = await createDraft(draft);
     draftUrlNames.push(prettyUrl);
   }

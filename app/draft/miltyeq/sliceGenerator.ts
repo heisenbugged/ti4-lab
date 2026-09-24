@@ -11,7 +11,7 @@ import {
 } from "../helpers/sliceGeneration";
 import { systemData } from "~/data/systemData";
 import { generateEmptyMap } from "~/utils/map";
-import { calculateSliceValue, getSliceValueConfig } from "~/stats";
+import { buildSliceValueConfig, calculateSliceValue } from "~/stats";
 import {
   coreGenerateMap,
   coreGenerateSlices,
@@ -123,7 +123,7 @@ const validateSlice = (slice: SystemIds, config: SliceGenerationConfig) => {
 
   const totalOptimal = calculateSliceValue(
     systems,
-    getSliceValueConfig(
+    buildSliceValueConfig(
       config.sliceValueModifiers,
       [],
       config.mecatolPathSystemIndices!,

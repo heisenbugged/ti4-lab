@@ -3,6 +3,7 @@ import {
   Player,
   Draft,
   DraftSelection,
+  hasPlayerId,
   DraftSettings,
   HydratedPlayer,
   DiscordPlayer,
@@ -27,6 +28,73 @@ import {
 const isDefaultName = (name: string) => {
   return name === "" || name.startsWith("Player ");
 };
+
+type FactionPick = { playerId: PlayerId; factionId: FactionId };
+
+function applyPriorityOrder(
+  players: HydratedPlayer[],
+  picks: FactionPick[],
+  preserveSeatAssignment: boolean,
+) {
+  picks.forEach(({ playerId, factionId }) => {
+    const idx = players.findIndex((p) => p.id === playerId);
+    if (idx !== -1) {
+      players[idx] = {
+        ...players[idx],
+        priorityValueFactionId: factionId,
+      };
+    }
+  });
+
+  const sortedByPriority = [...picks].sort((a, b) => {
+    const priorityA = allFactions[a.factionId]?.priorityOrder ?? 999;
+    const priorityB = allFactions[b.factionId]?.priorityOrder ?? 999;
+    return priorityA - priorityB;
+  });
+
+  sortedByPriority.forEach(({ playerId }, speakerOrder) => {
+    const idx = players.findIndex((p) => p.id === playerId);
+    if (idx === -1) return;
+    // If preserveSeatAssignment is true and player already has a seat,
+    // only assign speakerOrder, not seatIdx
+    if (preserveSeatAssignment && players[idx].seatIdx !== undefined) {
+      players[idx] = { ...players[idx], speakerOrder };
+    } else {
+      players[idx] = { ...players[idx], seatIdx: speakerOrder, speakerOrder };
+    }
+  });
+}
+
+function applyHomeSystems(
+  players: HydratedPlayer[],
+  picks: FactionPick[],
+  availableReferenceCardPacks?: FactionReferenceCardPack[],
+) {
+  picks.forEach(({ playerId, factionId }) => {
+    const idx = players.findIndex((p) => p.id === playerId);
+    if (idx === -1) return;
+    players[idx] = {
+      ...players[idx],
+      homeSystemFactionId: factionId,
+    };
+
+    const packIdx = players[idx].referenceCardPackIdx;
+    if (packIdx === undefined || !availableReferenceCardPacks) return;
+
+    const pack = availableReferenceCardPacks[packIdx]!;
+    const startingUnitsCard = pack.find(
+      (cardId) =>
+        cardId !== players[idx].priorityValueFactionId &&
+        cardId !== players[idx].homeSystemFactionId,
+    );
+    if (startingUnitsCard) {
+      players[idx] = {
+        ...players[idx],
+        startingUnitsFactionId: startingUnitsCard,
+      };
+    }
+  });
+}
 
 export function hydratePlayers(
   players: Player[],
@@ -76,7 +144,7 @@ export function hydratePlayers(
   return selections.reduce(
     (acc, selection) => {
       let playerIdx = -1;
-      if (draftSelectionHasPlayerId(selection)) {
+      if (hasPlayerId(selection)) {
         playerIdx = acc.findIndex((p) => p.id === selection.playerId);
         if (playerIdx === -1) return acc;
       }
@@ -127,124 +195,37 @@ export function hydratePlayers(
       }
 
       if (selection.type === "COMMIT_PRIORITY_VALUES") {
-        selection.selections.forEach(({ playerId, priorityValueFactionId }) => {
-          const idx = acc.findIndex((p) => p.id === playerId);
-          if (idx !== -1) {
-            acc[idx] = {
-              ...acc[idx],
-              priorityValueFactionId,
-            };
-          }
-        });
-
-        const sortedByPriority = [...selection.selections].sort((a, b) => {
-          const factionA = allFactions[a.priorityValueFactionId];
-          const factionB = allFactions[b.priorityValueFactionId];
-          const priorityA = factionA?.priorityOrder ?? 999;
-          const priorityB = factionB?.priorityOrder ?? 999;
-          return priorityA - priorityB;
-        });
-
-        sortedByPriority.forEach(({ playerId }, speakerOrder) => {
-          const idx = acc.findIndex((p) => p.id === playerId);
-          if (idx !== -1) {
-            // If preserveSeatAssignment is true and player already has a seat,
-            // only assign speakerOrder, not seatIdx
-            if (preserveSeatAssignment && acc[idx].seatIdx !== undefined) {
-              acc[idx] = {
-                ...acc[idx],
-                speakerOrder,
-              };
-            } else {
-              acc[idx] = {
-                ...acc[idx],
-                seatIdx: speakerOrder,
-                speakerOrder,
-              };
-            }
-          }
-        });
+        applyPriorityOrder(
+          acc,
+          selection.selections.map(({ playerId, priorityValueFactionId }) => ({
+            playerId,
+            factionId: priorityValueFactionId,
+          })),
+          preserveSeatAssignment,
+        );
       }
 
       if (selection.type === "COMMIT_SIMULTANEOUS") {
+        const picks = selection.selections.map(({ playerId, value }) => ({
+          playerId,
+          factionId: value as FactionId,
+        }));
+
         if (selection.phase === "priorityValue") {
-          selection.selections.forEach(({ playerId, value }) => {
-            const idx = acc.findIndex((p) => p.id === playerId);
-            if (idx !== -1) {
-              acc[idx] = {
-                ...acc[idx],
-                priorityValueFactionId: value as FactionId,
-              };
-            }
-          });
-
-          const sortedByPriority = [...selection.selections].sort((a, b) => {
-            const factionA = allFactions[a.value as FactionId];
-            const factionB = allFactions[b.value as FactionId];
-            const priorityA = factionA?.priorityOrder ?? 999;
-            const priorityB = factionB?.priorityOrder ?? 999;
-            return priorityA - priorityB;
-          });
-
-          sortedByPriority.forEach(({ playerId }, speakerOrder) => {
-            const idx = acc.findIndex((p) => p.id === playerId);
-            if (idx !== -1) {
-              // If preserveSeatAssignment is true and player already has a seat,
-              // only assign speakerOrder, not seatIdx
-              if (preserveSeatAssignment && acc[idx].seatIdx !== undefined) {
-                acc[idx] = {
-                  ...acc[idx],
-                  speakerOrder,
-                };
-              } else {
-                acc[idx] = {
-                  ...acc[idx],
-                  seatIdx: speakerOrder,
-                  speakerOrder,
-                };
-              }
-            }
-          });
+          applyPriorityOrder(acc, picks, preserveSeatAssignment);
         }
 
         if (selection.phase === "homeSystem") {
-          selection.selections.forEach(({ playerId, value }) => {
-            const idx = acc.findIndex((p) => p.id === playerId);
-            if (idx !== -1) {
-              acc[idx] = {
-                ...acc[idx],
-                homeSystemFactionId: value as FactionId,
-              };
-
-              if (
-                acc[idx].referenceCardPackIdx !== undefined &&
-                availableReferenceCardPacks
-              ) {
-                const pack =
-                  availableReferenceCardPacks[acc[idx].referenceCardPackIdx!]!;
-                const startingUnitsCard = pack.find(
-                  (cardId) =>
-                    cardId !== acc[idx].priorityValueFactionId &&
-                    cardId !== acc[idx].homeSystemFactionId,
-                );
-                if (startingUnitsCard) {
-                  acc[idx] = {
-                    ...acc[idx],
-                    startingUnitsFactionId: startingUnitsCard,
-                  };
-                }
-              }
-            }
-          });
+          applyHomeSystems(acc, picks, availableReferenceCardPacks);
         }
 
         if (selection.phase === "texasFaction") {
-          selection.selections.forEach(({ playerId, value }) => {
+          picks.forEach(({ playerId, factionId }) => {
             const idx = acc.findIndex((p) => p.id === playerId);
             if (idx !== -1) {
               acc[idx] = {
                 ...acc[idx],
-                faction: value as FactionId,
+                faction: factionId,
               };
             }
           });
@@ -252,34 +233,14 @@ export function hydratePlayers(
       }
 
       if (selection.type === "COMMIT_HOME_SYSTEMS") {
-        selection.selections.forEach(({ playerId, homeSystemFactionId }) => {
-          const idx = acc.findIndex((p) => p.id === playerId);
-          if (idx !== -1) {
-            acc[idx] = {
-              ...acc[idx],
-              homeSystemFactionId,
-            };
-
-            if (
-              acc[idx].referenceCardPackIdx !== undefined &&
-              availableReferenceCardPacks
-            ) {
-              const pack =
-                availableReferenceCardPacks[acc[idx].referenceCardPackIdx!]!;
-              const startingUnitsCard = pack.find(
-                (cardId) =>
-                  cardId !== acc[idx].priorityValueFactionId &&
-                  cardId !== acc[idx].homeSystemFactionId,
-              );
-              if (startingUnitsCard) {
-                acc[idx] = {
-                  ...acc[idx],
-                  startingUnitsFactionId: startingUnitsCard,
-                };
-              }
-            }
-          }
-        });
+        applyHomeSystems(
+          acc,
+          selection.selections.map(({ playerId, homeSystemFactionId }) => ({
+            playerId,
+            factionId: homeSystemFactionId,
+          })),
+          availableReferenceCardPacks,
+        );
       }
 
       if (selection.type === "SELECT_SEAT") {
@@ -363,10 +324,6 @@ export const hydratedMapStringsAtom = atom((get) => {
   };
 });
 
-export const hydratedMapStringAtom = atom(
-  (get) => get(hydratedMapStringsAtom).ttpg,
-);
-
 export function useHydratedDraft() {
   const { pickForAnyone } = useSafeOutletContext();
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
@@ -400,8 +357,3 @@ export function useHydratedDraft() {
   };
 }
 
-export const draftSelectionHasPlayerId = (
-  selection: DraftSelection,
-): selection is Extract<DraftSelection, { playerId: PlayerId }> => {
-  return "playerId" in selection;
-};

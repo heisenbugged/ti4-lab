@@ -56,8 +56,6 @@ export type Anomaly =
   | "SUPERNOVA";
 export type Wormhole = "ALPHA" | "BETA" | "DELTA" | "GAMMA" | "EPSILON";
 
-export type MapSpaceType = "SYSTEM" | "HOME" | "OPEN" | "CLOSED" | "WARP";
-
 export type TilePosition = {
   x: number;
   y: number;
@@ -509,3 +507,9 @@ export type InGameColor =
   | "Black"
   | "Orange"
   | "Magenta";
+
+export function hasPlayerId(
+  selection: DraftSelection,
+): selection is Extract<DraftSelection, { playerId: PlayerId }> {
+  return "playerId" in selection;
+}

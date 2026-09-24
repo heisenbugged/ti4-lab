@@ -1,12 +1,12 @@
 import { ActionFunctionArgs, data } from "react-router";
+import { updateDraft } from "~/drizzle/draft.server";
 import {
-  draftById,
-  getDraftStagedSelections,
-  updateDraft,
-} from "~/drizzle/draft.server";
-import { Draft } from "~/types";
-import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
-import { rebuildTexasDraftState } from "~/draft/texas/texasDraft";
+  applyTexasUndo,
+  broadcastDraftWithStaged,
+  draftNotFound,
+  loadDraft,
+  undoOutOfSync,
+} from "~/utils/draftApi.server";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const { id } = params;
@@ -19,29 +19,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   const body = (await request.json()) as { expectedSelectionCount?: number };
 
-  const existingDraft = await draftById(id);
-  if (!existingDraft) {
-    return data({ success: false, error: "Draft not found" }, { status: 404 });
-  }
+  const draft = await loadDraft(id);
+  if (!draft) return draftNotFound();
 
-  const draft = JSON.parse(existingDraft.data as string) as Draft;
-
-  if (
-    body.expectedSelectionCount !== undefined &&
-    body.expectedSelectionCount !== draft.selections.length
-  ) {
-    return data(
-      {
-        success: false,
-        error: "out_of_sync",
-        message:
-          "Draft state has changed. Please refresh to see the current state before undoing.",
-        serverSelectionCount: draft.selections.length,
-        expectedSelectionCount: body.expectedSelectionCount,
-      },
-      { status: 409 },
-    );
-  }
+  const outOfSync = undoOutOfSync(draft, body.expectedSelectionCount);
+  if (outOfSync) return outOfSync;
 
   if (draft.selections.length === 0) {
     return data(
@@ -51,39 +33,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   const removedSelection = draft.selections.pop();
-
-  if (draft.settings.draftGameMode === "texasStyle" && removedSelection) {
-    if (removedSelection.type === "PLACE_TILE" && draft.texasDraft?.playerTiles) {
-      const mapTile = draft.presetMap[removedSelection.mapIdx];
-      if (mapTile) {
-        draft.presetMap[removedSelection.mapIdx] = {
-          idx: mapTile.idx,
-          position: mapTile.position,
-          type: "OPEN",
-        };
-      }
-      draft.texasDraft.playerTiles[removedSelection.playerId] = [
-        ...(draft.texasDraft.playerTiles[removedSelection.playerId] ?? []),
-        removedSelection.systemId,
-      ];
-    }
-
-    if (removedSelection.type === "COMMIT_SIMULTANEOUS") {
-      if (
-        removedSelection.phase === "texasBlueKeep1" ||
-        removedSelection.phase === "texasBlueKeep2" ||
-        removedSelection.phase === "texasRedKeep" ||
-        removedSelection.phase === "texasFaction"
-      ) {
-        rebuildTexasDraftState(draft);
-      }
-    }
-  }
+  applyTexasUndo(draft, removedSelection);
 
   await updateDraft(id, draft);
-  const stagedSelections = await getDraftStagedSelections(id);
-  const payload = { ...draft, stagedSelections };
-  await broadcastDraftUpdate(id, payload);
+  const payload = await broadcastDraftWithStaged(id, draft);
 
   return data({
     success: true,

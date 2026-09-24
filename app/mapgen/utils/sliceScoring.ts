@@ -1,12 +1,14 @@
-import { Map as TiMap, SystemId, Anomaly, System } from "~/types";
+import { Map as TiMap, SystemId, Anomaly } from "~/types";
 import { systemData } from "~/data/systemData";
-import type {
+import {
+  DEFAULT_SLICE_VALUE_MODIFIERS,
+  evaluateSystem,
   SliceValueBreakdown,
   SliceValueModifier,
-} from "~/hooks/useSliceValueBreakdown";
+  SliceValueModifiers,
+} from "~/stats";
 import {
   buildHexGraph,
-  buildHexGraphWithExclusions,
   getGraphDistance,
   getSimpleHexDistance,
   HexGraph,
@@ -40,22 +42,6 @@ function getHexDistance(map: TiMap, idx1: number, idx2: number, graph?: HexGraph
 }
 
 /**
- * Slice value modifiers (based on Milty draft defaults)
- */
-export type SliceValueModifiers = {
-  entropicScarValue: number;
-  techValue: number;
-  hopesEndValue: number;
-  emelparValue: number;
-  industrexValue: number;
-  otherLegendaryValue: number;
-  tradeStationValue: number;
-  pathToMecatolPerTile: number;
-  pathSupernovaPenalty: number;
-  pathNebulaPenalty: number;
-};
-
-/**
  * Per-tile contribution data for hover visualization
  */
 export type TileContribution = {
@@ -70,38 +56,18 @@ type EvaluatedSystemContribution = {
   included: boolean;
   optimalResources: number;
   optimalInfluence: number;
-  optimalValue: number;
+  optimalFlex: number;
   modifiers: SliceValueModifier[];
-  modifierValue: number;
   fullValue: number;
   actualValue: number;
   equidistantPenalty: number;
 };
 
-type EvaluatedSystemValue = {
-  optimalResources: number;
-  optimalInfluence: number;
-  optimalValue: number;
-  modifiers: SliceValueModifier[];
-  modifierValue: number;
-  fullValue: number;
-};
-
-export const DEFAULT_MODIFIERS: SliceValueModifiers = {
-  entropicScarValue: 2,
-  techValue: 0.5,
-  hopesEndValue: 2,
-  emelparValue: 3,
-  industrexValue: 2,
-  otherLegendaryValue: 1,
-  tradeStationValue: 1,
-  pathToMecatolPerTile: 3,
-  pathSupernovaPenalty: -2,
-  pathNebulaPenalty: -1,
-};
-
 /** Baseline distance to Mecatol for bonus/penalty calculation */
 export const BASELINE_PATH_TO_MECATOL = 3;
+
+/** Value gained per tile the home is closer to Mecatol than the baseline */
+export const PATH_TO_MECATOL_VALUE_PER_TILE = 3;
 
 /**
  * Find all tile indices containing a specific anomaly type.
@@ -156,116 +122,22 @@ function buildEquidistantGraph(map: TiMap, baseGraph: HexGraph): HexGraph {
 }
 
 /**
- * Calculate simple value for a system (used for slice scoring)
- * Uses Milty draft modifiers for tech, legendaries, trade stations, etc.
+ * Full (unshared) value of a system for map-based slice scoring.
  */
 function getSystemValue(
   systemId: SystemId,
-  modifiers: SliceValueModifiers = DEFAULT_MODIFIERS,
+  modifiers: SliceValueModifiers = DEFAULT_SLICE_VALUE_MODIFIERS,
 ): number {
   const system = systemData[systemId];
   if (!system) return 0;
 
-  return evaluateSystemValue(system, modifiers).fullValue;
-}
-
-/**
- * Evaluate the raw value of a single system before any slice-specific sharing rules.
- *
- * This is the "system math" only:
- * - choose each planet's optimal spend via max(resources, influence)
- * - add tech/legendary/trade-station/anomaly modifiers
- * - keep the modifier rows needed by the popup
- *
- * It does NOT decide whether a home system can claim this tile. That map-level
- * ownership logic happens in `evaluateSystemContribution`.
- */
-function evaluateSystemValue(
-  system: System,
-  modifiers: SliceValueModifiers = DEFAULT_MODIFIERS,
-): EvaluatedSystemValue {
-  let optimalResources = 0;
-  let optimalInfluence = 0;
-  let optimalValue = 0;
-  let modifierValue = 0;
-  const systemModifiers: SliceValueModifier[] = [];
-  let techSkipCount = 0;
-  let techSkipValue = 0;
-
-  for (const planet of system.planets) {
-    optimalValue += Math.max(planet.resources, planet.influence);
-
-    // For the popup we still keep the chosen optimal contribution split into
-    // its resource or influence bucket.
-    if (planet.resources >= planet.influence) {
-      optimalResources += planet.resources;
-    } else {
-      optimalInfluence += planet.influence;
-    }
-
-    if (planet.tech && planet.tech.length > 0) {
-      techSkipCount += planet.tech.length;
-      techSkipValue += planet.tech.length * modifiers.techValue;
-    }
-
-    if (planet.legendary) {
-      let legValue = modifiers.otherLegendaryValue;
-      const legLabel = planet.name || "Legendary";
-      if (planet.name === "Hope's End") {
-        legValue = modifiers.hopesEndValue;
-      } else if (planet.name === "Emelpar") {
-        legValue = modifiers.emelparValue;
-      } else if (planet.name === "Industrex") {
-        legValue = modifiers.industrexValue;
-      }
-
-      systemModifiers.push({
-        label: legLabel,
-        value: legValue,
-      });
-      modifierValue += legValue;
-    }
-
-    if (planet.tradeStation) {
-      systemModifiers.push({
-        label: "Trade Station",
-        value: modifiers.tradeStationValue,
-      });
-      modifierValue += modifiers.tradeStationValue;
-    }
-  }
-
-  if (techSkipCount > 0) {
-    systemModifiers.unshift({
-      label: "Tech",
-      value: techSkipValue,
-      count: techSkipCount,
-    });
-    modifierValue += techSkipValue;
-  }
-
-  if (system.anomalies.includes("ENTROPIC_SCAR")) {
-    systemModifiers.push({
-      label: "Entropic Scar",
-      value: modifiers.entropicScarValue,
-    });
-    modifierValue += modifiers.entropicScarValue;
-  }
-
-  return {
-    optimalResources,
-    optimalInfluence,
-    optimalValue,
-    modifiers: systemModifiers,
-    modifierValue,
-    fullValue: optimalValue + modifierValue,
-  };
+  return evaluateSystem(system, modifiers).total;
 }
 
 /**
  * Evaluate how much one map tile contributes to one home system's slice.
  *
- * `evaluateSystemValue` handles the intrinsic value of the underlying system.
+ * `evaluateSystem` handles the intrinsic value of the underlying system.
  * This wrapper adds the map-level rules:
  * - is the tile within distance 2 of this home?
  * - is another home closer?
@@ -279,16 +151,15 @@ function evaluateSystemContribution(
   tileIdx: number,
   homeIdx: number,
   homeIndices: number[],
-  modifiers: SliceValueModifiers = DEFAULT_MODIFIERS,
+  modifiers: SliceValueModifiers = DEFAULT_SLICE_VALUE_MODIFIERS,
   graph?: HexGraph,
 ): EvaluatedSystemContribution {
   const emptyResult: EvaluatedSystemContribution = {
     included: false,
     optimalResources: 0,
     optimalInfluence: 0,
-    optimalValue: 0,
+    optimalFlex: 0,
     modifiers: [],
-    modifierValue: 0,
     fullValue: 0,
     actualValue: 0,
     equidistantPenalty: 0,
@@ -317,22 +188,21 @@ function evaluateSystemContribution(
   // If multiple homes are tied for closest, each home only receives 1/N of the
   // system's full value. The breakdown still shows the undivided system rows.
   const equidistantDivisor = homeDistances.filter((d) => d === minDistance).length;
-  const systemValue = evaluateSystemValue(system, modifiers);
+  const systemValue = evaluateSystem(system, modifiers);
   const systemModifiers = systemValue.modifiers.map((modifier) => ({
     ...modifier,
     equidistantShared: equidistantDivisor > 1 ? equidistantDivisor : undefined,
   }));
 
-  const fullValue = systemValue.fullValue;
+  const fullValue = systemValue.total;
   const actualValue = fullValue / equidistantDivisor;
 
   return {
     included: true,
-    optimalResources: systemValue.optimalResources,
-    optimalInfluence: systemValue.optimalInfluence,
-    optimalValue: systemValue.optimalValue,
+    optimalResources: systemValue.optimal.resources,
+    optimalInfluence: systemValue.optimal.influence,
+    optimalFlex: systemValue.optimal.flex,
     modifiers: systemModifiers,
-    modifierValue: systemValue.modifierValue,
     fullValue,
     actualValue,
     equidistantPenalty:
@@ -352,7 +222,7 @@ export function calculateSliceValue(
   map: TiMap,
   homeIdx: number,
   homeIndices: number[],
-  modifiers: SliceValueModifiers = DEFAULT_MODIFIERS,
+  modifiers: SliceValueModifiers = DEFAULT_SLICE_VALUE_MODIFIERS,
   graph?: HexGraph,
   _ringCount?: number,
 ): number {
@@ -376,25 +246,25 @@ export function calculateSliceValue(
   const otherHomeIndices = new Set(homeIndices.filter((h) => h !== homeIdx));
 
   // Build graph excluding other homes
-  const graphExcludingHomes = buildHexGraphWithExclusions(map, otherHomeIndices);
+  const graphExcludingHomes = buildHexGraph(map, { excludedIndices: otherHomeIndices });
   const pathToMecatol = getGraphDistance(graphExcludingHomes, homeIdx, 0);
 
   // Only add modifier if path is valid (not infinite)
   if (pathToMecatol !== Infinity) {
     // Base path bonus/penalty (compared to baseline of 3)
     const pathDifference = BASELINE_PATH_TO_MECATOL - pathToMecatol;
-    totalValue += pathDifference * modifiers.pathToMecatolPerTile;
+    totalValue += pathDifference * PATH_TO_MECATOL_VALUE_PER_TILE;
 
     // Check for supernova in ALL shortest paths
     const supernovaIndices = findAnomalyTiles(map, "SUPERNOVA");
     if (supernovaIndices.size > 0) {
       const excludeBoth = new Set([...otherHomeIndices, ...supernovaIndices]);
-      const graphNoSupernova = buildHexGraphWithExclusions(map, excludeBoth);
+      const graphNoSupernova = buildHexGraph(map, { excludedIndices: excludeBoth });
       const pathWithoutSupernova = getGraphDistance(graphNoSupernova, homeIdx, 0);
 
       // If path is longer without supernova, all shortest paths have supernova
       if (pathWithoutSupernova > pathToMecatol) {
-        totalValue += modifiers.pathSupernovaPenalty;
+        totalValue += modifiers.supernovaOnPathPenalty;
       }
     }
 
@@ -402,12 +272,12 @@ export function calculateSliceValue(
     const nebulaIndices = findAnomalyTiles(map, "NEBULA");
     if (nebulaIndices.size > 0) {
       const excludeBoth = new Set([...otherHomeIndices, ...nebulaIndices]);
-      const graphNoNebula = buildHexGraphWithExclusions(map, excludeBoth);
+      const graphNoNebula = buildHexGraph(map, { excludedIndices: excludeBoth });
       const pathWithoutNebula = getGraphDistance(graphNoNebula, homeIdx, 0);
 
       // If path is longer without nebula, all shortest paths have nebula
       if (pathWithoutNebula > pathToMecatol) {
-        totalValue += modifiers.pathNebulaPenalty;
+        totalValue += modifiers.nebulaOnPathPenalty;
       }
     }
   }
@@ -527,7 +397,7 @@ export function calculateSliceStats(
  */
 export function getAllSliceValues(
   map: TiMap,
-  modifiers: SliceValueModifiers = DEFAULT_MODIFIERS,
+  modifiers: SliceValueModifiers = DEFAULT_SLICE_VALUE_MODIFIERS,
   prebuiltGraph?: HexGraph,
   _ringCount?: number,
 ): Record<number, number> {
@@ -605,13 +475,14 @@ export function calculateSliceValueBreakdown(
   map: TiMap,
   homeIdx: number,
   homeIndices: number[],
-  modifiers: SliceValueModifiers = DEFAULT_MODIFIERS,
+  modifiers: SliceValueModifiers = DEFAULT_SLICE_VALUE_MODIFIERS,
   graph?: HexGraph,
   _ringCount?: number,
 ): SliceValueBreakdown {
   void _ringCount;
   let fullOptimalResources = 0;
   let fullOptimalInfluence = 0;
+  let fullOptimalFlex = 0;
   let totalEquidistantPenalty = 0;
   const allModifiers: SliceValueModifier[] = [];
   let actualTotal = 0;
@@ -630,6 +501,7 @@ export function calculateSliceValueBreakdown(
 
     fullOptimalResources += contribution.optimalResources;
     fullOptimalInfluence += contribution.optimalInfluence;
+    fullOptimalFlex += contribution.optimalFlex;
     totalEquidistantPenalty += contribution.equidistantPenalty;
     actualTotal += contribution.actualValue;
     allModifiers.push(...contribution.modifiers);
@@ -644,14 +516,14 @@ export function calculateSliceValueBreakdown(
   const otherHomeIndices = new Set(homeIndices.filter((h) => h !== homeIdx));
 
   // Build graph excluding other homes
-  const graphExcludingHomes = buildHexGraphWithExclusions(map, otherHomeIndices);
+  const graphExcludingHomes = buildHexGraph(map, { excludedIndices: otherHomeIndices });
   const pathToMecatol = getGraphDistance(graphExcludingHomes, homeIdx, 0);
 
   // Only add modifier if path is valid (not infinite)
   if (pathToMecatol !== Infinity) {
     // Base path bonus/penalty (compared to baseline of 3)
     const pathDifference = BASELINE_PATH_TO_MECATOL - pathToMecatol;
-    pathToMecatolValue = pathDifference * modifiers.pathToMecatolPerTile;
+    pathToMecatolValue = pathDifference * PATH_TO_MECATOL_VALUE_PER_TILE;
 
     if (pathDifference !== 0) {
       const direction = pathDifference > 0 ? "closer" : "further";
@@ -666,12 +538,12 @@ export function calculateSliceValueBreakdown(
     const supernovaIndices = findAnomalyTiles(map, "SUPERNOVA");
     if (supernovaIndices.size > 0) {
       const excludeBoth = new Set([...otherHomeIndices, ...supernovaIndices]);
-      const graphNoSupernova = buildHexGraphWithExclusions(map, excludeBoth);
+      const graphNoSupernova = buildHexGraph(map, { excludedIndices: excludeBoth });
       const pathWithoutSupernova = getGraphDistance(graphNoSupernova, homeIdx, 0);
 
       // If path is longer without supernova, all shortest paths have supernova
       if (pathWithoutSupernova > pathToMecatol) {
-        supernovaPenalty = modifiers.pathSupernovaPenalty;
+        supernovaPenalty = modifiers.supernovaOnPathPenalty;
         allModifiers.push({
           label: "Supernova on Rex Path",
           value: supernovaPenalty,
@@ -683,12 +555,12 @@ export function calculateSliceValueBreakdown(
     const nebulaIndices = findAnomalyTiles(map, "NEBULA");
     if (nebulaIndices.size > 0) {
       const excludeBoth = new Set([...otherHomeIndices, ...nebulaIndices]);
-      const graphNoNebula = buildHexGraphWithExclusions(map, excludeBoth);
+      const graphNoNebula = buildHexGraph(map, { excludedIndices: excludeBoth });
       const pathWithoutNebula = getGraphDistance(graphNoNebula, homeIdx, 0);
 
       // If path is longer without nebula, all shortest paths have nebula
       if (pathWithoutNebula > pathToMecatol) {
-        nebulaPenalty = modifiers.pathNebulaPenalty;
+        nebulaPenalty = modifiers.nebulaOnPathPenalty;
         allModifiers.push({
           label: "Nebula on Rex Path",
           value: nebulaPenalty,
@@ -697,7 +569,8 @@ export function calculateSliceValueBreakdown(
     }
   }
 
-  const fullOptimalSum = fullOptimalResources + fullOptimalInfluence;
+  const fullOptimalSum =
+    fullOptimalResources + fullOptimalInfluence + fullOptimalFlex;
   const total = Math.round((actualTotal + pathToMecatolValue + supernovaPenalty + nebulaPenalty) * 10) / 10;
 
   return {
@@ -705,7 +578,7 @@ export function calculateSliceValueBreakdown(
     optimal: {
       resources: Math.round(fullOptimalResources * 10) / 10,
       influence: Math.round(fullOptimalInfluence * 10) / 10,
-      flex: 0,
+      flex: Math.round(fullOptimalFlex * 10) / 10,
       sum: Math.round(fullOptimalSum * 10) / 10,
     },
     equidistantPenalty: totalEquidistantPenalty > 0 ? Math.round(totalEquidistantPenalty * 10) / 10 : null,
@@ -721,7 +594,7 @@ export function calculateSliceValueBreakdown(
  */
 export function getAllSliceBreakdowns(
   map: TiMap,
-  modifiers: SliceValueModifiers = DEFAULT_MODIFIERS,
+  modifiers: SliceValueModifiers = DEFAULT_SLICE_VALUE_MODIFIERS,
   ringCount?: number,
 ): Record<number, SliceValueBreakdown> {
   const breakdowns: Record<number, SliceValueBreakdown> = {};
@@ -752,7 +625,7 @@ export function getAllSliceBreakdowns(
  */
 export function getAllTileContributions(
   map: TiMap,
-  modifiers: SliceValueModifiers = DEFAULT_MODIFIERS,
+  modifiers: SliceValueModifiers = DEFAULT_SLICE_VALUE_MODIFIERS,
 ): Record<number, Map<number, TileContribution>> {
   const contributions: Record<number, Map<number, TileContribution>> = {};
 

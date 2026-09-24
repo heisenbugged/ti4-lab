@@ -9,7 +9,7 @@ import {
   isLegendary,
 } from "../helpers/sliceGeneration";
 import { factionSystems, systemData } from "~/data/systemData";
-import { calculateSliceValue, getSliceValueConfig } from "~/stats";
+import { buildSliceValueConfig, calculateSliceValue } from "~/stats";
 import {
   coreGenerateSlices,
   postProcessSlices,
@@ -74,7 +74,7 @@ export function generateSlices(
 
     const totalOptimal = calculateSliceValue(
       systems,
-      getSliceValueConfig(
+      buildSliceValueConfig(
         config.sliceValueModifiers,
         [3],
         config.mecatolPathSystemIndices!,

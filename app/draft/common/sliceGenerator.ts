@@ -17,7 +17,9 @@ import { mapStringOrder } from "~/data/mapStringOrder";
 import { generateEmptyMap } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
 import { systemIdsInSlice, systemIdsToSlices } from "~/utils/slice";
-import { calculateMapStats } from "~/hooks/useFullMapStats";
+import { calculateMapStats } from "~/utils/mapStats";
+import { getTileCount } from "~/utils/hexCoordinates";
+import { getAllNeighbors } from "~/utils/hexDistance";
 import { getSystemPool } from "~/utils/system";
 import { miltySystemTiers } from "~/data/miltyTileTiers";
 
@@ -401,25 +403,6 @@ export function hasPathToMecatol(
   return true;
 }
 
-// Function to check if a slice has high-quality tiles adjacent to home
-export function hasHighQualityAdjacent(
-  slice: SystemIds,
-  systemTiers: Record<string, ChoosableTier>,
-  highTier: string = "high",
-): boolean {
-  // Check if any of the adjacent tiles is a high-quality (high tier) tile
-  for (const tileIndex of HOME_ADJACENT_TILES) {
-    if (tileIndex >= slice.length) continue; // Skip if index out of bounds
-
-    const systemId = slice[tileIndex];
-    const tier = systemTiers[systemId];
-
-    if (tier === highTier) return true;
-  }
-
-  return false;
-}
-
 // Ensure a center tile no anomaly and with planets
 export function ensureCenterTileIsSafe(
   slices: SystemIds[],
@@ -621,7 +604,7 @@ export const RED_TILE_RATIO = 11 / 36;
 
 export const numTilesAvailable = (config: DraftConfig) => {
   // subtract 1 because the center tile is not editable (mecatol rex)
-  const rawTotal = ringToTiles(config.mapSize ?? 3) - 1;
+  const rawTotal = getTileCount(config.mapSize ?? 3) - 1;
   return (
     rawTotal -
     config.closedMapTiles.length -
@@ -631,13 +614,6 @@ export const numTilesAvailable = (config: DraftConfig) => {
       (tile) => systemData[tile.systemId].hyperlanes !== undefined,
     ).length
   );
-};
-
-export const ringToTiles = (numberRings: number): number => {
-  if (numberRings < 0) return 0;
-  if (numberRings === 0) return 1;
-
-  return 1 + 3 * numberRings * (numberRings + 1);
 };
 
 /**
@@ -665,47 +641,14 @@ export function hasAdjacentAnomalies(
 
   return false;
 }
+
+const STANDARD_GRID = mapStringOrder.map((position) => ({ position }));
+
 /**
- * Get positions adjacent to the given position in the hexagonal grid
+ * Get positions adjacent to the given map string index on the standard grid
  */
 export function getAdjacentPositions(position: number): number[] {
-  // Convert position index to actual coordinates in the hex grid
-  const posCoords = mapStringOrder[position];
-  if (!posCoords) return [];
-
-  const adjacentPositions: number[] = [];
-
-  // In a hex grid, adjacent hexes are at these relative coordinates:
-  const adjacentOffsets = [
-    { x: 1, y: 0, z: -1 }, // right
-    { x: 1, y: -1, z: 0 }, // upper right
-    { x: 0, y: -1, z: 1 }, // upper left
-    { x: -1, y: 0, z: 1 }, // left
-    { x: -1, y: 1, z: 0 }, // bottom left
-    { x: 0, y: 1, z: -1 }, // bottom right
-  ];
-
-  // Check each adjacent direction
-  for (const offset of adjacentOffsets) {
-    const adjX = posCoords.x + offset.x;
-    const adjY = posCoords.y + offset.y;
-    const adjZ = offset.z !== undefined ? posCoords.z + offset.z : -adjX - adjY; // Calculate z if not provided
-
-    // Find the index of this adjacent position in mapStringOrder
-    const adjIndex = mapStringOrder.findIndex(
-      (coords) =>
-        coords.x === adjX &&
-        coords.y === adjY &&
-        (coords.z === adjZ ||
-          (coords.z === undefined && -adjX - adjY === adjZ)),
-    );
-
-    if (adjIndex !== -1) {
-      adjacentPositions.push(adjIndex);
-    }
-  }
-
-  return adjacentPositions;
+  return getAllNeighbors(STANDARD_GRID, position);
 }
 
 // Post-processing function for Mecatol path, safe center tile and high-quality adjacent requirements

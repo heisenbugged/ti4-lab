@@ -4,7 +4,7 @@ import { getHexPosition } from "~/utils/positioning";
 import type { Map as TiMap } from "~/types";
 import type { TileContribution } from "~/mapgen/utils/sliceScoring";
 import {
-  buildHexGraphWithExclusions,
+  buildHexGraph,
   getGraphPath,
 } from "~/utils/hexDistance";
 import { systemData } from "~/data/systemData";
@@ -56,7 +56,7 @@ export function EquidistantLines({
 
     // Build graph excluding OTHER homes (not the hovered one)
     const otherHomeIndices = new Set(homeIndices.filter((h) => h !== hoveredHomeIdx));
-    const graph = buildHexGraphWithExclusions(map, otherHomeIndices);
+    const graph = buildHexGraph(map, { excludedIndices: otherHomeIndices });
 
     // Get path from hovered home to Mecatol (index 0)
     // Pass map for anomaly-aware tie-breaking when multiple shortest paths exist

@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Button, Group, Stack, Text } from "@mantine/core";
+import { ActionIcon, Box, Button, Stack, Text } from "@mantine/core";
 import {
   LoaderFunctionArgs,
   MetaFunction,
@@ -8,7 +8,6 @@ import {
 import {
   presetMapBySlug,
   incrementPresetMapViews,
-  TechSkipsData,
 } from "~/drizzle/presetMap.server";
 import {
   IconEye,
@@ -24,9 +23,10 @@ import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { buildPresetDraftState } from "~/mapgen/utils/presetDraft";
 import { notifications } from "@mantine/notifications";
 import { MainAppShell } from "~/components/MainAppShell";
-import { TechIcon } from "~/components/icons/TechIcon";
-import { LegendaryIcon } from "~/components/icons/LegendaryIcon";
-import { TechSpecialty } from "~/types";
+import {
+  LegendaryDisplay,
+  TechSkipsDisplay,
+} from "~/components/PresetMapBadges";
 import {
   getAllSliceValues,
   getAllSliceStats,
@@ -34,89 +34,6 @@ import {
   getAllTileContributions,
 } from "~/mapgen/utils/sliceScoring";
 import classes from "./maps/styles.module.css";
-
-function TechSkipIcon({
-  techSpecialty,
-  count,
-}: {
-  techSpecialty: TechSpecialty;
-  count: number;
-}) {
-  if (count === 0) return null;
-  return (
-    <Box
-      pos="relative"
-      style={{ display: "inline-flex", alignItems: "center" }}
-    >
-      <TechIcon techSpecialty={techSpecialty} size={22} />
-      <Text
-        size="xs"
-        fw="bold"
-        c="white"
-        pos="absolute"
-        style={{
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          WebkitTextStroke: "1.5px black",
-          paintOrder: "stroke fill",
-          fontSize: "0.65rem",
-        }}
-      >
-        {count}
-      </Text>
-    </Box>
-  );
-}
-
-function TechSkipsDisplay({ techSkips }: { techSkips: string | null }) {
-  if (!techSkips) return null;
-
-  try {
-    const data = JSON.parse(techSkips) as TechSkipsData;
-    const hasAny = data.G > 0 || data.R > 0 || data.B > 0 || data.Y > 0;
-    if (!hasAny) return null;
-
-    return (
-      <Group gap={4}>
-        <TechSkipIcon techSpecialty="BIOTIC" count={data.G} />
-        <TechSkipIcon techSpecialty="WARFARE" count={data.R} />
-        <TechSkipIcon techSpecialty="PROPULSION" count={data.B} />
-        <TechSkipIcon techSpecialty="CYBERNETIC" count={data.Y} />
-      </Group>
-    );
-  } catch {
-    return null;
-  }
-}
-
-function LegendaryDisplay({ count }: { count: number | null }) {
-  if (!count || count === 0) return null;
-  return (
-    <Box
-      pos="relative"
-      style={{ display: "inline-flex", alignItems: "center" }}
-    >
-      <LegendaryIcon size={22} />
-      <Text
-        size="xs"
-        fw="bold"
-        c="white"
-        pos="absolute"
-        style={{
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          WebkitTextStroke: "1.5px black",
-          paintOrder: "stroke fill",
-          fontSize: "0.65rem",
-        }}
-      >
-        {count}
-      </Text>
-    </Box>
-  );
-}
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const slug = params.slug;
@@ -356,7 +273,10 @@ export default function MapDetail() {
                   )}
                 {(preset.legendaries ?? 0) > 0 && (
                   <div className={classes.mapStatItem}>
-                    <LegendaryDisplay count={preset.legendaries} />
+                    <LegendaryDisplay
+                      count={preset.legendaries}
+                      size="md"
+                    />
                     <Text size="xs" c="dimmed">
                       Legendary
                     </Text>
@@ -364,7 +284,10 @@ export default function MapDetail() {
                 )}
                 {preset.techSkips && (
                   <div className={classes.mapStatItem}>
-                    <TechSkipsDisplay techSkips={preset.techSkips} />
+                    <TechSkipsDisplay
+                      techSkips={preset.techSkips}
+                      size="md"
+                    />
                     <Text size="xs" c="dimmed">
                       Tech Skips
                     </Text>

@@ -1,5 +1,6 @@
-import { Map as TiMap, SystemTile, Anomaly } from "~/types";
+import { Map as TiMap, SystemTile, Anomaly, TilePosition } from "~/types";
 import { systemData } from "~/data/systemData";
+import { hexDistance } from "~/utils/hexCoordinates";
 
 /** Anomalies that we want to avoid when choosing between equal-length paths */
 const AVOIDABLE_ANOMALIES: Anomaly[] = ["SUPERNOVA", "NEBULA", "ASTEROID_FIELD", "GRAVITY_RIFT"];
@@ -45,45 +46,45 @@ const DIRECTION_OFFSETS = [
 ];
 
 /**
- * Get the neighbor position index for a given position and direction.
- * Uses tile positions from the map instead of external lookup.
+ * Anything laid out on the hex grid by index: map tiles, or
+ * `{ position }` wrappers around raw coordinates.
+ */
+type PositionedGrid = ReadonlyArray<{ position?: TilePosition } | undefined>;
+
+/**
+ * Get the neighbor index for a given index and direction, by looking up
+ * the neighboring cube coordinate in the grid.
  * Returns -1 if no neighbor exists at that position.
  */
-function getNeighborAtDirection(map: TiMap, position: number, direction: number): number {
-  const tile = map[position];
-  if (!tile?.position) return -1;
+function getNeighborAtDirection(
+  grid: PositionedGrid,
+  position: number,
+  direction: number,
+): number {
+  const pos = grid[position]?.position;
+  if (!pos) return -1;
 
-  const pos = tile.position;
   const offset = DIRECTION_OFFSETS[direction];
-
   const neighborX = pos.x + offset.x;
   const neighborY = pos.y + offset.y;
-  // For cube coordinates, z = -x - y
-  const neighborZ = -neighborX - neighborY;
 
-  // Find this position in the map
-  for (let i = 0; i < map.length; i++) {
-    const p = map[i]?.position;
-    if (!p) continue;
-    const pZ = -p.x - p.y;
-    if (p.x === neighborX && p.y === neighborY && pZ === neighborZ) {
-      return i;
-    }
+  for (let i = 0; i < grid.length; i++) {
+    const p = grid[i]?.position;
+    if (p && p.x === neighborX && p.y === neighborY) return i;
   }
 
   return -1;
 }
 
 /**
- * Get all 6 neighbor indices for a position.
+ * Get all physically adjacent indices (up to 6) for a position.
+ * Ignores hyperlanes - use buildHexGraph + getGraphNeighbors for that.
  */
-export function getAllNeighbors(map: TiMap, position: number): number[] {
+export function getAllNeighbors(grid: PositionedGrid, position: number): number[] {
   const neighbors: number[] = [];
   for (let dir = 0; dir < 6; dir++) {
-    const neighbor = getNeighborAtDirection(map, position, dir);
-    if (neighbor !== -1 && neighbor < map.length) {
-      neighbors.push(neighbor);
-    }
+    const neighbor = getNeighborAtDirection(grid, position, dir);
+    if (neighbor !== -1) neighbors.push(neighbor);
   }
   return neighbors;
 }
@@ -304,6 +305,11 @@ type BuildHexGraphOptions = {
    * if OPEN positions are adjacent to anomalies through hyperlanes.
    */
   includeOpenTiles?: boolean;
+  /**
+   * Tile indices removed from the graph entirely (no edges in or out),
+   * e.g. other players' home systems when measuring a player's paths.
+   */
+  excludedIndices?: Set<number>;
 };
 
 /**
@@ -314,9 +320,11 @@ type BuildHexGraphOptions = {
  * - Hyperlane lane pairs connect their two neighboring exits directly
  *
  * @param options.includeOpenTiles - If true, OPEN tiles are treated as traversable
+ * @param options.excludedIndices - Tiles to remove from the graph
  */
 export function buildHexGraph(map: TiMap, options: BuildHexGraphOptions = {}): HexGraph {
-  const { includeOpenTiles = false } = options;
+  const { includeOpenTiles = false, excludedIndices = new Set<number>() } =
+    options;
   const edges = new Map<number, Map<number, number>>();
 
   // Initialize empty edge maps for all positions
@@ -326,12 +334,14 @@ export function buildHexGraph(map: TiMap, options: BuildHexGraphOptions = {}): H
 
   // Process physical adjacency between non-hyperlane tiles.
   for (let position = 0; position < map.length; position++) {
+    if (excludedIndices.has(position)) continue;
     if (!isPassableTile(map, position, includeOpenTiles)) continue;
 
     if (isHyperlaneTile(map, position)) continue;
 
     const neighbors = getAllNeighbors(map, position);
     for (const neighbor of neighbors) {
+      if (excludedIndices.has(neighbor)) continue;
       if (!isPassableTile(map, neighbor, includeOpenTiles)) continue;
       if (isHyperlaneTile(map, neighbor)) continue;
 
@@ -341,7 +351,13 @@ export function buildHexGraph(map: TiMap, options: BuildHexGraphOptions = {}): H
 
   for (let position = 0; position < map.length; position++) {
     if (isHyperlaneTile(map, position)) {
-      addHyperlanePairEdges(edges, map, position, includeOpenTiles);
+      addHyperlanePairEdges(
+        edges,
+        map,
+        position,
+        includeOpenTiles,
+        excludedIndices,
+      );
     }
   }
 
@@ -513,9 +529,8 @@ export function getPositionsWithinDistance(
 }
 
 /**
- * Simple hex distance (cube coordinate Chebyshev distance).
+ * Simple hex distance between two map indices.
  * Does NOT account for hyperlanes - use getGraphDistance for that.
- * Uses tile positions from the map.
  */
 export function getSimpleHexDistance(map: TiMap, idx1: number, idx2: number): number {
   const pos1 = map[idx1]?.position;
@@ -523,88 +538,22 @@ export function getSimpleHexDistance(map: TiMap, idx1: number, idx2: number): nu
 
   if (!pos1 || !pos2) return 99;
 
-  const dx = Math.abs(pos1.x - pos2.x);
-  const dy = Math.abs(pos1.y - pos2.y);
-  const dz = Math.abs(
-    (-pos1.x - pos1.y) - (-pos2.x - pos2.y)
+  return hexDistance(
+    { x: pos1.x, y: pos1.y, z: -pos1.x - pos1.y },
+    { x: pos2.x, y: pos2.y, z: -pos2.x - pos2.y },
   );
-
-  return Math.max(dx, dy, dz);
 }
 
 /**
- * Check if two positions are adjacent (including through hyperlanes).
- * Returns true if they have a direct edge in the graph.
+ * Get all positions adjacent to the given position in the graph
+ * (including hyperlane shortcuts).
  */
-export function areAdjacent(
-  graph: HexGraph,
-  position1: number,
-  position2: number
-): boolean {
-  const cost = graph.edges.get(position1)?.get(position2);
-  return cost !== undefined && cost <= 1;
-}
-
-/**
- * Get all positions adjacent to the given position (including hyperlane shortcuts).
- */
-export function getAdjacentPositions(
-  graph: HexGraph,
-  position: number
-): number[] {
+export function getGraphNeighbors(graph: HexGraph, position: number): number[] {
   const neighbors = graph.edges.get(position);
   if (!neighbors) return [];
 
   return Array.from(neighbors.entries())
-    .filter(([_, cost]) => cost <= 1)
-    .map(([pos, _]) => pos);
+    .filter(([, cost]) => cost <= 1)
+    .map(([pos]) => pos);
 }
 
-/**
- * Build a hex graph from the map, excluding specified tile indices from pathfinding.
- * Used for calculating paths that avoid certain tiles (e.g., other home systems, anomalies).
- *
- * Note: The start/end positions can still be in excludedIndices - only intermediate
- * tiles are blocked. This allows calculating path FROM a home TO Mecatol while
- * excluding OTHER homes.
- *
- * @param map - The tile map
- * @param excludedIndices - Set of tile indices to exclude from pathfinding
- */
-export function buildHexGraphWithExclusions(
-  map: TiMap,
-  excludedIndices: Set<number>,
-): HexGraph {
-  const edges = new Map<number, Map<number, number>>();
-
-  // Initialize empty edge maps for all positions
-  for (let i = 0; i < map.length; i++) {
-    edges.set(i, new Map());
-  }
-
-  // Process physical adjacency between non-hyperlane tiles that are NOT excluded.
-  for (let position = 0; position < map.length; position++) {
-    // Skip excluded positions (they won't have outgoing edges)
-    if (excludedIndices.has(position)) continue;
-    if (!isPassableTile(map, position)) continue;
-
-    if (isHyperlaneTile(map, position)) continue;
-
-    const neighbors = getAllNeighbors(map, position);
-    for (const neighbor of neighbors) {
-      if (excludedIndices.has(neighbor)) continue;
-      if (!isPassableTile(map, neighbor)) continue;
-      if (isHyperlaneTile(map, neighbor)) continue;
-
-      addEdge(edges, map, position, neighbor);
-    }
-  }
-
-  for (let position = 0; position < map.length; position++) {
-    if (isHyperlaneTile(map, position)) {
-      addHyperlanePairEdges(edges, map, position, false, excludedIndices);
-    }
-  }
-
-  return { edges };
-}

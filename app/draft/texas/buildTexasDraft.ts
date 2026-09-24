@@ -1,12 +1,4 @@
-import { draftConfig } from "~/draft/draftConfig";
-import { generateEmptyMap } from "~/utils/map";
-import { getFactionPool } from "~/utils/factions";
-import { getSystemPool } from "~/utils/system";
-import { getDraftableFactions } from "~/draftStore";
-import {
-  createTexasSeatAssignments,
-  dealTexasTiles,
-} from "~/draft/texas/texasDraft";
+import { buildInitialTexasDraft } from "~/draft/buildInitialDraft";
 import type { Draft, DraftSettings, Player, DraftIntegrations } from "~/types";
 
 type BuildTexasDraftInput = {
@@ -24,38 +16,6 @@ export function buildTexasDraft({
   settings,
   players,
   integrations,
-}: BuildTexasDraftInput): Omit<Draft, "pickOrder"> {
-  const config = draftConfig[settings.type];
-
-  // Initialize pools
-  const factionPool = getFactionPool(settings.factionGameSets);
-  const systemPool = getSystemPool(settings.tileGameSets);
-
-  // Get draftable factions
-  const draftableFactions = getDraftableFactions(
-    factionPool,
-    null,
-    settings.allowedFactions ?? null,
-  );
-
-  // Create texasDraft state with seat assignments and tile hands
-  // Faction hands are NOT dealt here because there's a ban phase first
-  const texasDraft = {
-    ...createTexasSeatAssignments(players),
-    ...dealTexasTiles(systemPool, players),
-  };
-
-  // Generate empty map for the selected map type
-  const presetMap = generateEmptyMap(config);
-
-  return {
-    settings,
-    players,
-    integrations,
-    availableFactions: draftableFactions,
-    slices: [],
-    presetMap,
-    selections: [],
-    texasDraft,
-  };
+}: BuildTexasDraftInput): Draft {
+  return buildInitialTexasDraft(settings, players, integrations);
 }

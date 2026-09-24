@@ -18,12 +18,16 @@ import {
   SystemIds,
   SystemId,
   DraftSettings,
-  FactionId,
 } from "~/types";
 import { generateEmptyMap } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
 import { calculateMapStats } from "~/hooks/useFullMapStats";
-import { calculateSliceValue, getSliceValueConfig, SliceValueModifiers } from "~/stats";
+import {
+  buildSliceValueConfig,
+  calculateSliceValue,
+  CORE_SLICE_VALUE_CONFIG,
+  SliceValueModifiers,
+} from "~/stats";
 import {
   getAdjacentPositions,
   hasAdjacentAnomalies,
@@ -91,12 +95,35 @@ const CORE_SLICE_MIN_OPTIMAL = 3; // Minimum optimal value for a core slice
 const CORE_SLICE_MAX_OPTIMAL = 8; // Maximum optimal value for a core slice
 const CORE_SLICE_MAX_BALANCE = 6; // Maximum difference between best and worst core slice
 const MIN_RED_TILES = 11; // Minimum red tiles on the map
+const MAX_VALIDATED_ATTEMPTS = 1000;
+
+const DEBUG_MAP_GENERATION = false;
 
 export function generateMap(
   settings: DraftSettings,
   systemPool: SystemId[],
-  minorFactionPool?: FactionId[],
-  attempts: number = 0,
+) {
+  for (let attempts = 0; ; attempts++) {
+    const validate = attempts <= MAX_VALIDATED_ATTEMPTS;
+    const result = tryGenerateMap(settings, systemPool, validate, attempts);
+    if (!result) continue;
+
+    if (DEBUG_MAP_GENERATION && attempts > 0) {
+      console.log(`[heisen] SUCCESS after ${attempts} attempts`);
+    }
+    return { ...result, valid: validate };
+  }
+}
+
+/**
+ * One generation attempt. Returns undefined if validation is enabled and the
+ * generated heisen map fails the balance checks.
+ */
+function tryGenerateMap(
+  settings: DraftSettings,
+  systemPool: SystemId[],
+  validate: boolean,
+  attempts: number,
 ) {
   const sliceCount = settings.numSlices;
   const config = draftConfig[settings.type];
@@ -325,7 +352,7 @@ export function generateMap(
   // ------------------------------------------------
   // Step 6: Validate map and core slice balance
   // ------------------------------------------------
-  if (settings.type === "heisen" && attempts <= 1000) {
+  if (settings.type === "heisen" && validate) {
     // Calculate min/max planets across all slices
     const planetCounts = slices.map((slice) =>
       slice.reduce(
@@ -339,7 +366,7 @@ export function generateMap(
     const totalSpends = slices.map((s) => {
       return calculateSliceValue(
         s.map((id) => systemData[id]),
-        getSliceValueConfig(
+        buildSliceValueConfig(
           sliceValueModifiers,
           [],
           config.mecatolPathSystemIndices!,
@@ -386,19 +413,14 @@ export function generateMap(
     if (hasAdjacentAnomalies(chosenMapLocations)) rejectionReasons.push(`hasAdjacentAnomalies`);
 
     if (rejectionReasons.length > 0) {
-      console.log(`[heisen attempt ${attempts}] REJECTED: ${rejectionReasons.join(', ')}`);
-      return generateMap(settings, systemPool, minorFactionPool, attempts + 1);
+      if (DEBUG_MAP_GENERATION) {
+        console.log(`[heisen attempt ${attempts}] REJECTED: ${rejectionReasons.join(', ')}`);
+      }
+      return undefined;
     }
   }
 
-  if (attempts > 0) {
-    console.log(`[heisen] SUCCESS after ${attempts} attempts`);
-  }
-  return {
-    map,
-    slices,
-    valid: attempts <= 1000,
-  };
+  return { map, slices };
 }
 
 function calculateCoreSliceValues(
@@ -412,11 +434,10 @@ function calculateCoreSliceValues(
       .map((pos) => chosenMapLocations[pos])
       .map((id) => systemData[id]);
 
-    return calculateSliceValue(systems, getSliceValueConfig(
-      sliceValueModifiers,
-      [1, 2],  // equidistantIndices
-      [0],     // mecatolPathIndices - ring 1 tile is on path to Rex
-    ));
+    return calculateSliceValue(systems, {
+      ...sliceValueModifiers,
+      ...CORE_SLICE_VALUE_CONFIG,
+    });
   });
 }
 
@@ -482,21 +503,18 @@ function fillCoreSlices(
 
       // Pre-evaluate how each candidate would affect the slice's optimal value
       if (candidateSystems.length > 1) {
-        // Get current systems in this slice
-        const currentSliceSystems = slicePositions
-          .filter((pos) => pos !== position && chosenMapLocations[pos])
-          .map((pos) => systemData[chosenMapLocations[pos]]);
+        // Value the slice as it would be with the candidate at this position
+        const sliceValueWith = (candidate: SystemId) =>
+          calculateCoreSliceValues(
+            [slicePositions],
+            { ...chosenMapLocations, [position]: candidate },
+            sliceValueModifiers,
+          )[0];
 
         // Sort candidates by how well they balance the slice
         candidateSystems.sort((a, b) => {
-          const totalA = calculateSliceValue(
-            [...currentSliceSystems, systemData[a]],
-            sliceValueModifiers,
-          );
-          const totalB = calculateSliceValue(
-            [...currentSliceSystems, systemData[b]],
-            sliceValueModifiers,
-          );
+          const totalA = sliceValueWith(a);
+          const totalB = sliceValueWith(b);
 
           // Prioritize systems that keep the slice within optimal range
           const aInRange =
@@ -551,7 +569,7 @@ const rebalanceTraits = (
   const { spread, maxTrait, minTrait } = calculateSpread(planetTraits);
 
   // Exit conditions: spread is acceptable or too many attempts
-  if (attempts >= maxAttempts)
+  if (DEBUG_MAP_GENERATION && attempts >= maxAttempts)
     console.log("Failed to rebalance after maximum attempts");
   if (spread < 3 || attempts >= maxAttempts) return { swaps };
 

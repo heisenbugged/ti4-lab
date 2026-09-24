@@ -7,7 +7,7 @@ import {
   Text,
 } from "@mantine/core";
 import { Link, MetaFunction, useLoaderData } from "react-router";
-import { listPresetMaps, TechSkipsData } from "~/drizzle/presetMap.server";
+import { listPresetMaps } from "~/drizzle/presetMap.server";
 import classes from "./map-presets/styles.module.css";
 import {
   IconArrowRight,
@@ -21,9 +21,10 @@ import {
 } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
-import { TechIcon } from "~/components/icons/TechIcon";
-import { LegendaryIcon } from "~/components/icons/LegendaryIcon";
-import { TechSpecialty } from "~/types";
+import {
+  LegendaryDisplay,
+  TechSkipsDisplay,
+} from "~/components/PresetMapBadges";
 import type { PresetMapRecord } from "~/drizzle/presetMap.server";
 import {
   hiddenGems,
@@ -41,89 +42,6 @@ export const meta: MetaFunction = () => [
     content: "Browse community-created preset maps for Twilight Imperium 4.",
   },
 ];
-
-function TechSkipIcon({
-  techSpecialty,
-  count,
-}: {
-  techSpecialty: TechSpecialty;
-  count: number;
-}) {
-  if (count === 0) return null;
-  return (
-    <Box
-      pos="relative"
-      style={{ display: "inline-flex", alignItems: "center" }}
-    >
-      <TechIcon techSpecialty={techSpecialty} size={18} />
-      <Text
-        size="xs"
-        fw="bold"
-        c="white"
-        pos="absolute"
-        style={{
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          WebkitTextStroke: "1.5px black",
-          paintOrder: "stroke fill",
-          fontSize: "0.6rem",
-        }}
-      >
-        {count}
-      </Text>
-    </Box>
-  );
-}
-
-function TechSkipsDisplay({ techSkips }: { techSkips: string | null }) {
-  if (!techSkips) return null;
-
-  try {
-    const data = JSON.parse(techSkips) as TechSkipsData;
-    const hasAny = data.G > 0 || data.R > 0 || data.B > 0 || data.Y > 0;
-    if (!hasAny) return null;
-
-    return (
-      <Group gap={3}>
-        <TechSkipIcon techSpecialty="BIOTIC" count={data.G} />
-        <TechSkipIcon techSpecialty="WARFARE" count={data.R} />
-        <TechSkipIcon techSpecialty="PROPULSION" count={data.B} />
-        <TechSkipIcon techSpecialty="CYBERNETIC" count={data.Y} />
-      </Group>
-    );
-  } catch {
-    return null;
-  }
-}
-
-function LegendaryDisplay({ count }: { count: number | null }) {
-  if (!count || count === 0) return null;
-  return (
-    <Box
-      pos="relative"
-      style={{ display: "inline-flex", alignItems: "center" }}
-    >
-      <LegendaryIcon size={18} />
-      <Text
-        size="xs"
-        fw="bold"
-        c="white"
-        pos="absolute"
-        style={{
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          WebkitTextStroke: "1.5px black",
-          paintOrder: "stroke fill",
-          fontSize: "0.6rem",
-        }}
-      >
-        {count}
-      </Text>
-    </Box>
-  );
-}
 
 type CardStats = { likes: number; views: number; liked: boolean };
 

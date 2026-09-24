@@ -9,6 +9,7 @@ import {
   TexasDraftState,
 } from "~/types";
 import { getRingForIndex } from "~/utils/hexCoordinates";
+import { dealFactionBags } from "~/utils/factionBags";
 
 type DraftOrderInput = {
   players: Player[];
@@ -44,6 +45,39 @@ function getTexasRingPickCounts(map: Draft["presetMap"]): number[] {
     .map(([, count]) => count);
 }
 
+/** `rounds` rounds of picks, alternating between `first` and `second`. */
+function alternatingRounds(
+  rounds: number,
+  first: PlayerId[],
+  second: PlayerId[],
+): PlayerId[] {
+  const order: PlayerId[] = [];
+  for (let i = 0; i < rounds; i++) {
+    order.push(...(i % 2 === 0 ? first : second));
+  }
+  return order;
+}
+
+function withPlaceholderNames(players: Player[]): Player[] {
+  return players.map((p) => ({
+    ...p,
+    name: p.name.length > 0 ? p.name : `Player ${placeholderName[p.id]}`,
+  }));
+}
+
+function draftOrderResult(
+  players: Player[],
+  pickOrder: DraftPick[],
+  playerFactionPool?: Record<PlayerId, FactionId[]>,
+) {
+  return {
+    players: withPlaceholderNames(players),
+    pickOrder,
+    playerFactionPool,
+    selections: [],
+  };
+}
+
 export function createDraftOrder({
   players,
   settings,
@@ -56,34 +90,21 @@ export function createDraftOrder({
     players.length,
   );
   const reversedPlayerIds = [...playerIds].reverse();
+  const numBanRounds = settings.modifiers?.banFactions?.numFactions ?? 0;
 
   if (settings.draftGameMode === "twilightsFall") {
+    // Nucleus with speaker draft adds three more snake rounds.
     const isNucleus = settings.nucleusStyle === true;
-    const pickOrder: DraftPick[] = [
-      ...playerIds,
-      ...reversedPlayerIds,
-      ...playerIds,
-    ];
-
-    // For nucleus mode, add speaker order round if draftSpeaker is enabled
-    if (isNucleus && settings.draftSpeaker) {
-      pickOrder.push(...reversedPlayerIds);
-      pickOrder.push(...playerIds);
-      pickOrder.push(...reversedPlayerIds);
-    }
-
+    const rounds = isNucleus && settings.draftSpeaker ? 6 : 3;
+    const pickOrder: DraftPick[] = alternatingRounds(
+      rounds,
+      playerIds,
+      reversedPlayerIds,
+    );
     pickOrder.push({ kind: "simultaneous", phase: "priorityValue" });
     pickOrder.push({ kind: "simultaneous", phase: "homeSystem" });
 
-    return {
-      players: players.map((p) => ({
-        ...p,
-        name: p.name.length > 0 ? p.name : `Player ${placeholderName[p.id]}`,
-      })),
-      pickOrder,
-      playerFactionPool: undefined,
-      selections: [],
-    };
+    return draftOrderResult(players, pickOrder);
   }
 
   if (settings.draftGameMode === "texasStyle") {
@@ -94,14 +115,11 @@ export function createDraftOrder({
       ...seatOrder.filter((id) => id !== speakerId).reverse(),
     ];
 
-    const pickOrder: DraftPick[] = [];
-
-    if (settings.modifiers?.banFactions) {
-      const modifier = settings.modifiers.banFactions;
-      for (let i = 0; i < modifier.numFactions; i++) {
-        pickOrder.push(...descendingSeatOrder);
-      }
-    }
+    const pickOrder: DraftPick[] = alternatingRounds(
+      numBanRounds,
+      descendingSeatOrder,
+      descendingSeatOrder,
+    );
 
     pickOrder.push({ kind: "simultaneous", phase: "texasFaction" });
     pickOrder.push({ kind: "simultaneous", phase: "texasBlueKeep1" });
@@ -114,92 +132,42 @@ export function createDraftOrder({
       pickOrder.push(...generateSnakeOrder(seatOrder, totalTiles));
     }
 
-    return {
-      players: players.map((p) => ({
-        ...p,
-        name: p.name.length > 0 ? p.name : `Player ${placeholderName[p.id]}`,
-      })),
-      pickOrder,
-      playerFactionPool: undefined,
-      selections: [],
-    };
+    return draftOrderResult(players, pickOrder);
   }
+
+  // Ban rounds, then the three-round snake draft.
+  const pickOrder: DraftPick[] = [
+    ...alternatingRounds(numBanRounds, playerIds, reversedPlayerIds),
+    ...alternatingRounds(3, playerIds, reversedPlayerIds),
+  ];
 
   if (settings.draftGameMode === "presetMap") {
-    let pickOrder: DraftPick[] = [
-      ...playerIds,
-      ...reversedPlayerIds,
-      ...playerIds,
-    ];
-
-    if (settings.modifiers?.banFactions) {
-      const modifier = settings.modifiers.banFactions;
-      const banOrder = [];
-      const banPlayerIds = [...reversedPlayerIds];
-      for (let i = 0; i < modifier.numFactions; i++) {
-        banOrder.push(...banPlayerIds.reverse());
-      }
-      pickOrder = [...banOrder, ...pickOrder];
-    }
-
-    return {
-      players: players.map((p) => ({
-        ...p,
-        name: p.name.length > 0 ? p.name : `Player ${placeholderName[p.id]}`,
-      })),
-      pickOrder,
-      playerFactionPool: undefined,
-      selections: [],
-    };
+    return draftOrderResult(players, pickOrder);
   }
 
-  // Normal draft flow
-  let pickOrder: DraftPick[] = [...playerIds, ...reversedPlayerIds, ...playerIds];
-
-  if (settings.modifiers?.banFactions) {
-    const modifier = settings.modifiers.banFactions;
-    const banOrder = [];
-    const banPlayerIds = [...reversedPlayerIds];
-    for (let i = 0; i < modifier.numFactions; i++) {
-      banOrder.push(...banPlayerIds.reverse());
-    }
-    pickOrder = [...banOrder, ...pickOrder];
-  }
-
-  // Add stages to snake draft
-  if (settings.draftSpeaker) {
-    pickOrder.push(...playerIds.reverse());
-  }
-  if (
+  // Each extra stage continues the snake; the third round ran forward, so the
+  // first extra stage runs in reverse.
+  const numExtraStages = [
+    settings.draftSpeaker,
     settings.numMinorFactions !== undefined ||
-    settings.minorFactionsInSharedPool
-  ) {
-    pickOrder.push(...playerIds.reverse());
-  }
-  if (settings.draftPlayerColors) {
-    pickOrder.push(...playerIds.reverse());
-  }
+      settings.minorFactionsInSharedPool,
+    settings.draftPlayerColors,
+  ].filter(Boolean).length;
+  pickOrder.push(
+    ...alternatingRounds(numExtraStages, reversedPlayerIds, playerIds),
+  );
 
   // Create 'bags' for each player if using bag draft
-  let playerFactionPool: Record<PlayerId, FactionId[]> | undefined = undefined;
-  if (settings.numPreassignedFactions !== undefined) {
-    playerFactionPool = {};
-    const available = shuffle(availableFactions);
-    players.forEach((player) => {
-      const bag = available.splice(0, settings.numPreassignedFactions!);
-      playerFactionPool![player.id] = bag;
-    });
-  }
+  const playerFactionPool =
+    settings.numPreassignedFactions !== undefined
+      ? dealFactionBags(
+          players,
+          availableFactions,
+          settings.numPreassignedFactions,
+        )
+      : undefined;
 
-  return {
-    players: players.map((p) => ({
-      ...p,
-      name: p.name.length > 0 ? p.name : `Player ${placeholderName[p.id]}`,
-    })),
-    pickOrder,
-    playerFactionPool,
-    selections: [],
-  };
+  return draftOrderResult(players, pickOrder, playerFactionPool);
 }
 
 const placeholderName = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];

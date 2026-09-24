@@ -53,6 +53,7 @@ import {
   SeededMapData,
 } from "../utils/mapToDraft";
 import { autoCompleteMap } from "../utils/mapCompletion";
+import { shuffle } from "~/draft/helpers/randomization";
 import { useMapStats } from "../utils/mapStats";
 import {
   encodeMapString,
@@ -200,13 +201,10 @@ function MapGeneratorContent() {
   ).filter((i) => i !== 0 && map[i]?.type !== "CLOSED");
 
   const handleRandomize = () => {
-    // Get current map state - preserve hyperlanes and home systems
     const currentMap = useMapBuilder.getState().state.map;
 
-    // Identify indices to preserve (hyperlanes and home systems)
-    const preserveIndices = new Set<number>();
-    preserveIndices.add(0); // Always preserve Mecatol Rex
-
+    // Preserve Mecatol Rex, home systems and hyperlanes
+    const preserveIndices = new Set<number>([0]);
     currentMap.forEach((tile, idx) => {
       if (tile.type === "HOME") {
         preserveIndices.add(idx);
@@ -218,43 +216,44 @@ function MapGeneratorContent() {
       }
     });
 
-    // Clear non-preserved system tiles
-    currentMap.forEach((tile, idx) => {
-      if (tile.type === "SYSTEM" && !preserveIndices.has(idx)) {
-        removeSystemFromMap(idx);
-      }
+    const clearedMap: Tile[] = currentMap.map((tile, idx) =>
+      tile.type === "SYSTEM" && !preserveIndices.has(idx)
+        ? { idx: tile.idx, position: tile.position, type: "OPEN" }
+        : tile,
+    );
+
+    const completedMap = autoCompleteMap(clearedMap, systemPool);
+    if (completedMap) {
+      setMap(completedMap);
+      return;
+    }
+
+    // Fallback to random placement if auto-complete fails
+    notifications.show({
+      title: "Randomization failed",
+      message: "Try different parameters. Using random placement as fallback.",
+      color: "yellow",
     });
 
-    // Get the partially cleared map
-    const partialMap = useMapBuilder.getState().state.map;
-    const completedMap = autoCompleteMap(partialMap, systemPool);
-
-    if (completedMap) {
-      completedMap.forEach((tile, idx) => {
-        // Only add to non-preserved positions
-        if (tile.type === "SYSTEM" && !preserveIndices.has(idx)) {
-          addSystemToMap(idx, tile.systemId);
-        }
-      });
-    } else {
-      // Fallback to random placement if auto-complete fails
-      notifications.show({
-        title: "Randomization failed",
-        message:
-          "Try different parameters. Using random placement as fallback.",
-        color: "yellow",
-      });
-
-      const shuffledSystems = [...systemPool].sort(() => Math.random() - 0.5);
-      let systemIdx = 0;
-      modifiableMapTiles.forEach((tileIdx) => {
-        // Skip preserved tiles (hyperlanes, homes)
-        if (!preserveIndices.has(tileIdx) && systemIdx < shuffledSystems.length) {
-          addSystemToMap(tileIdx, shuffledSystems[systemIdx]);
-          systemIdx++;
-        }
-      });
-    }
+    const shuffledSystems = shuffle(systemPool);
+    let systemIdx = 0;
+    const randomMap: Tile[] = clearedMap.map((tile, idx) => {
+      if (
+        idx === 0 ||
+        tile.type === "CLOSED" ||
+        preserveIndices.has(idx) ||
+        systemIdx >= shuffledSystems.length
+      ) {
+        return tile;
+      }
+      return {
+        idx: tile.idx,
+        position: tile.position,
+        type: "SYSTEM",
+        systemId: shuffledSystems[systemIdx++],
+      };
+    });
+    setMap(randomMap);
   };
 
   const handleImproveBalance = () => {
@@ -291,9 +290,7 @@ function MapGeneratorContent() {
       return false;
     }
 
-    setGameSets(decoded.gameSets);
-    setRingCount(decoded.ringCount);
-    setMap(decoded.map);
+    loadDecodedMap(decoded.map, decoded.ringCount, decoded.gameSets);
 
     const systemsPlaced = decoded.map.filter(
       (tile) => tile.type === "SYSTEM" && tile.idx !== 0,

@@ -14,11 +14,6 @@ import {
   PlayerDemoTile,
 } from "~/types";
 
-/**
- * Represents the pre-computed values required to manipulate the map
- * during the drafting process.
- */
-
 export const playerSpeakerOrder = [
   "Speaker",
   "2nd",
@@ -27,7 +22,6 @@ export const playerSpeakerOrder = [
   "5th",
   "6th",
 ];
-export const playerLetters = ["a", "b", "c", "d", "e", "f"];
 
 export const isTileModifiable = (config: DraftConfig, tileIdx: number) =>
   config.modifiableMapTiles.includes(tileIdx);
@@ -208,17 +202,6 @@ const hydrateHomeTile = (
 
   return homeTile;
 };
-
-export const totalStatsForSystems = (systems: System[]) =>
-  systems.reduce(
-    (acc, s) => {
-      acc.resources += s.totalSpend.resources;
-      acc.influence += s.totalSpend.influence;
-
-      return acc;
-    },
-    { resources: 0, influence: 0 },
-  );
 
 export const optimalStatsForSystems = (systems: System[]) =>
   systems.reduce(

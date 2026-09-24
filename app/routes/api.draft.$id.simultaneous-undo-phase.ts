@@ -1,52 +1,18 @@
 import { ActionFunctionArgs, data } from "react-router";
-import {
-  clearStagedSelections,
-  draftById,
-  getDraftStagedSelections,
-  updateDraft,
-} from "~/drizzle/draft.server";
+import { clearStagedSelections, updateDraft } from "~/drizzle/draft.server";
 import { Draft, SimultaneousPickType } from "~/types";
-import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
-import { rebuildTexasDraftState } from "~/draft/texas/texasDraft";
+import {
+  applyTexasUndo,
+  broadcastDraftWithStaged,
+  draftNotFound,
+  loadDraft,
+  undoOutOfSync,
+} from "~/utils/draftApi.server";
 
 type UndoPhaseBody = {
   phase: SimultaneousPickType;
   expectedSelectionCount?: number;
 };
-
-function applyTexasUndo(
-  draft: Draft,
-  removedSelection?: Draft["selections"][number],
-) {
-  if (draft.settings.draftGameMode !== "texasStyle" || !removedSelection) {
-    return;
-  }
-
-  if (removedSelection.type === "PLACE_TILE" && draft.texasDraft?.playerTiles) {
-    const mapTile = draft.presetMap[removedSelection.mapIdx];
-    if (mapTile) {
-      draft.presetMap[removedSelection.mapIdx] = {
-        idx: mapTile.idx,
-        position: mapTile.position,
-        type: "OPEN",
-      };
-    }
-    draft.texasDraft.playerTiles[removedSelection.playerId] = [
-      ...(draft.texasDraft.playerTiles[removedSelection.playerId] ?? []),
-      removedSelection.systemId,
-    ];
-  }
-
-  if (
-    removedSelection.type === "COMMIT_SIMULTANEOUS" &&
-    (removedSelection.phase === "texasBlueKeep1" ||
-      removedSelection.phase === "texasBlueKeep2" ||
-      removedSelection.phase === "texasRedKeep" ||
-      removedSelection.phase === "texasFaction")
-  ) {
-    rebuildTexasDraftState(draft);
-  }
-}
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const { id } = params;
@@ -66,29 +32,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
     );
   }
 
-  const existingDraft = await draftById(id);
-  if (!existingDraft) {
-    return data({ success: false, error: "Draft not found" }, { status: 404 });
-  }
+  const draft = await loadDraft(id);
+  if (!draft) return draftNotFound();
 
-  const draft = JSON.parse(existingDraft.data as string) as Draft;
-
-  if (
-    body.expectedSelectionCount !== undefined &&
-    body.expectedSelectionCount !== draft.selections.length
-  ) {
-    return data(
-      {
-        success: false,
-        error: "out_of_sync",
-        message:
-          "Draft state has changed. Please refresh to see the current state before undoing.",
-        serverSelectionCount: draft.selections.length,
-        expectedSelectionCount: body.expectedSelectionCount,
-      },
-      { status: 409 },
-    );
-  }
+  const outOfSync = undoOutOfSync(draft, body.expectedSelectionCount);
+  if (outOfSync) return outOfSync;
 
   await clearStagedSelections(id, body.phase);
 
@@ -103,12 +51,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     await updateDraft(id, draft);
   }
 
-  const latestDraft = await draftById(id);
-  const latestDraftData = JSON.parse(latestDraft.data as string) as Draft;
-  const stagedSelections = await getDraftStagedSelections(id);
-  const payload = { ...latestDraftData, stagedSelections };
-
-  await broadcastDraftUpdate(id, payload);
+  const payload = await broadcastDraftWithStaged(id, draft);
 
   return data({
     success: true,

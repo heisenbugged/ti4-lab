@@ -7,7 +7,6 @@ import type {
 import { useDraftSetup } from "./store";
 import { buildSliceGenerationConfig } from "./utils";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
-import { buildTexasDraft } from "~/draft/texas/buildTexasDraft";
 
 export const useDraftSettingsBuilder = (
   sliceSettings: Record<SliceSettingsFormatType, SliceGenerationSettings>,
