@@ -3,56 +3,46 @@ import { createContext, useContext, useEffect } from "react";
 import { draftStore } from "~/draftStore";
 import { useSocket } from "~/socketContext";
 import { notifications } from "@mantine/notifications";
-import { FactionId, PlayerId, SimultaneousPickType } from "~/types";
+import { Draft, PlayerId, SimultaneousPickType } from "~/types";
 
-type UndoResult = { success: boolean; removedSelection?: unknown };
+type SyncDraftContextValue = ReturnType<typeof useSyncDraftFetcher>;
 
-type SyncDraftContextValue = {
-  syncDraft: () => Promise<void>;
-  stagePriorityValue: (_: PlayerId, __: FactionId) => Promise<void>;
-  stageHomeSystem: (_: PlayerId, __: FactionId) => Promise<void>;
-  stageSimultaneousPick: (
-    _: SimultaneousPickType,
-    __: PlayerId,
-    ___: string,
-  ) => Promise<void>;
-  undoStagedPick: (_: SimultaneousPickType, __: PlayerId) => Promise<UndoResult>;
-  undoSimultaneousPhase: (_: SimultaneousPickType) => Promise<UndoResult>;
-  undoLastPick: () => Promise<UndoResult>;
-  syncing: boolean;
-};
+const noop = async () => {};
 
-export function useSyncDraft() {
-  const {
-    syncDraft,
-    syncing,
-    stagePriorityValue,
-    stageHomeSystem,
-    stageSimultaneousPick,
-    undoStagedPick,
-    undoSimultaneousPhase,
-    undoLastPick,
-  } =
-    useContext(SyncDraftContext);
-  return {
-    syncDraft,
-    syncing,
-    stagePriorityValue,
-    stageHomeSystem,
-    stageSimultaneousPick,
-    undoStagedPick,
-    undoSimultaneousPhase,
-    undoLastPick,
-  };
+export const SyncDraftContext = createContext<SyncDraftContextValue>({
+  syncDraft: noop,
+  stageSimultaneousPick: noop,
+  undoStagedPick: noop,
+  undoSimultaneousPhase: noop,
+  undoLastPick: noop,
+  syncing: false,
+});
+
+export const useSyncDraft = () => useContext(SyncDraftContext);
+
+function reloadOutOfSync(notification: {
+  id?: string;
+  title: string;
+  message: string;
+}) {
+  notifications.show({
+    ...notification,
+    message: `${notification.message} Refreshing...`,
+    color: "orange",
+    autoClose: 3000,
+  });
+  setTimeout(() => {
+    window.location.reload();
+  }, 2000);
 }
 
 async function postDraftMutation(
   draftId: string,
   action: string,
   body: unknown,
-  success: { title: string; message: string },
   errorMessage: string,
-): Promise<UndoResult> {
+  success?: { title: string; message: string },
+): Promise<boolean> {
   const response = await fetch(`/api/draft/${draftId}/${action}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -60,19 +50,17 @@ async function postDraftMutation(
   });
 
   if (!response.ok) {
-    const error = await response.json();
+    const error = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      message?: string;
+    };
     console.error(`${errorMessage}:`, error);
 
     if (error.error === "out_of_sync") {
-      notifications.show({
+      reloadOutOfSync({
         title: "Cannot Undo - Out of Sync",
-        message: `${error.message} Refreshing...`,
-        color: "orange",
-        autoClose: 3000,
+        message: error.message ?? "",
       });
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
     } else {
       notifications.show({
         title: "Error",
@@ -80,15 +68,17 @@ async function postDraftMutation(
         color: "red",
       });
     }
-    return { success: false };
+    return false;
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as { success?: boolean; draft?: Draft };
   if (data.success && data.draft) {
     draftStore.getState().draftActions.update(draftId, data.draft);
-    notifications.show({ ...success, color: "green", autoClose: 3000 });
+    if (success) {
+      notifications.show({ ...success, color: "green", autoClose: 3000 });
+    }
   }
-  return { success: true, removedSelection: data.removedSelection };
+  return true;
 }
 
 export function useSyncDraftFetcher() {
@@ -107,26 +97,17 @@ export function useSyncDraftFetcher() {
     };
 
     if (data?.success === false) {
-      // Handle out-of-sync error specifically
       if (data.error === "out_of_sync") {
-        notifications.show({
+        reloadOutOfSync({
           id: "out-of-sync-error",
           title: "Draft Out of Sync",
-          message: `${data.message} (Server: ${data.serverSelectionCount} picks, Your client: ${data.clientSelectionCount} picks). Refreshing...`,
-          color: "orange",
-          autoClose: 3000,
+          message: `${data.message} (Server: ${data.serverSelectionCount} picks, Your client: ${data.clientSelectionCount} picks).`,
         });
-        // Delay refresh slightly so user sees the notification
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
       } else {
-        // Other errors - just reload
         window.location.reload();
       }
     }
 
-    // Show Discord error notification if present
     if (data?.discordError && data?.discordMessage) {
       notifications.show({
         title: "Discord Notification Failed",
@@ -137,37 +118,25 @@ export function useSyncDraftFetcher() {
     }
   }, [fetcher.data]);
 
-  const stageSimultaneousPick = async (
+  /**
+   * Optimistically sets (or clears) a player's staged pick, restoring the
+   * previous value if the server rejects the mutation.
+   */
+  const mutateStagedPick = async (
     phase: SimultaneousPickType,
     playerId: PlayerId,
-    value: string,
+    value: string | undefined,
+    ...mutation: Parameters<typeof postDraftMutation>
   ) => {
-    const { draftId, draftActions } = draftStore.getState();
-    if (!draftId) return;
+    const { draft, draftActions } = draftStore.getState();
+    const setStaged = (staged: string | undefined) =>
+      staged === undefined
+        ? draftActions.clearStagedSelection(phase, playerId)
+        : draftActions.stageSimultaneousPick(phase, playerId, staged);
 
-    draftActions.stageSimultaneousPick(phase, playerId, value);
-
-    const response = await fetch(`/api/draft/${draftId}/stage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playerId, value, phase }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("Failed to stage pick:", error);
-      notifications.show({
-        title: "Error",
-        message: error.error || "Failed to stage selection",
-        color: "red",
-      });
-      return;
-    }
-
-    const data = await response.json();
-    if (data.success && data.draft) {
-      draftActions.update(draftId, data.draft);
-    }
+    const previous = draft.stagedSelections?.[phase]?.[playerId];
+    setStaged(value);
+    if (!(await postDraftMutation(...mutation))) setStaged(previous);
   };
 
   return {
@@ -181,84 +150,70 @@ export function useSyncDraftFetcher() {
       );
       socket?.emit("syncDraft", draftId, JSON.stringify(draft));
     },
-    stagePriorityValue: async (playerId: PlayerId, factionId: FactionId) => {
-      await stageSimultaneousPick("priorityValue", playerId, factionId);
-    },
-    stageHomeSystem: async (playerId: PlayerId, factionId: FactionId) => {
-      await stageSimultaneousPick("homeSystem", playerId, factionId);
-    },
-    stageSimultaneousPick,
-    undoStagedPick: async (
+    stageSimultaneousPick: async (
       phase: SimultaneousPickType,
       playerId: PlayerId,
+      value: string,
     ) => {
-      const { draftId, draftActions } = draftStore.getState();
-      if (!draftId) return { success: false };
+      const { draftId } = draftStore.getState();
+      if (!draftId) return;
 
-      draftActions.clearStagedSelection(phase, playerId);
+      await mutateStagedPick(
+        phase,
+        playerId,
+        value,
+        draftId,
+        "stage",
+        { playerId, value, phase },
+        "Failed to stage selection",
+      );
+    },
+    undoStagedPick: async (phase: SimultaneousPickType, playerId: PlayerId) => {
+      const { draftId } = draftStore.getState();
+      if (!draftId) return;
 
-      return postDraftMutation(
+      await mutateStagedPick(
+        phase,
+        playerId,
+        undefined,
         draftId,
         "simultaneous-undo-pick",
         { phase, playerId },
-        { title: "Pick Undone", message: "The staged pick has been removed." },
         "Failed to undo staged pick",
+        { title: "Pick Undone", message: "The staged pick has been removed." },
       );
     },
     undoSimultaneousPhase: async (phase: SimultaneousPickType) => {
       const { draftId, draft } = draftStore.getState();
-      if (!draftId || !draft) return { success: false };
+      if (!draftId || !draft) return;
 
-      return postDraftMutation(
+      await postDraftMutation(
         draftId,
         "simultaneous-undo-phase",
         { phase, expectedSelectionCount: draft.selections.length },
+        "Failed to undo phase",
         {
           title: "Phase Undone",
           message: "The simultaneous phase has been cleared.",
         },
-        "Failed to undo phase",
       );
     },
     undoLastPick: async () => {
       const { draftId, draft } = draftStore.getState();
-      if (!draftId || !draft) return { success: false };
+      if (!draftId || !draft) return;
+      if (!confirm("Are you sure you want to undo the last selection?")) return;
 
-      return postDraftMutation(
+      await postDraftMutation(
         draftId,
         "undo",
         { expectedSelectionCount: draft.selections.length },
+        "Failed to undo last pick",
         {
           title: "Pick Undone",
           message: "The last selection has been removed.",
         },
-        "Failed to undo last pick",
       );
     },
     syncing: fetcher.state === "submitting",
   };
 }
-
-export const SyncDraftContext = createContext<SyncDraftContextValue>({
-  syncDraft: async () => {},
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  stagePriorityValue: async (_: PlayerId, __: FactionId) => {},
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  stageHomeSystem: async (_: PlayerId, __: FactionId) => {},
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  stageSimultaneousPick: async (
-    _: SimultaneousPickType,
-    __: PlayerId,
-    ___: string,
-  ) => {},
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  undoStagedPick: async (_: SimultaneousPickType, __: PlayerId) => ({
-    success: false,
-  }),
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  undoSimultaneousPhase: async (_: SimultaneousPickType) => ({
-    success: false,
-  }),
-  undoLastPick: async () => ({ success: false }),
-  syncing: false,
-});

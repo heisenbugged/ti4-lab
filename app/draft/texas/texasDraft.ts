@@ -12,6 +12,14 @@ import {
 
 export const TEXAS_REDRAW_VALUE = "REDRAW";
 
+export function isTexasTilePhase(phase: SimultaneousPickType) {
+  return (
+    phase === "texasBlueKeep1" ||
+    phase === "texasBlueKeep2" ||
+    phase === "texasRedKeep"
+  );
+}
+
 export function createTexasSeatAssignments(
   players: Player[],
 ): Pick<TexasDraftState, "seatOrder" | "seatAssignments" | "speakerId"> {
@@ -242,14 +250,11 @@ export function rebuildTexasDraftState(draft: Draft) {
   }
 
   draft.selections.forEach((selection) => {
-    if (selection.type === "COMMIT_SIMULTANEOUS") {
-      if (
-        selection.phase === "texasBlueKeep1" ||
-        selection.phase === "texasBlueKeep2" ||
-        selection.phase === "texasRedKeep"
-      ) {
-        applyTexasTileCommit(draft, selection.phase, selection.selections);
-      }
+    if (
+      selection.type === "COMMIT_SIMULTANEOUS" &&
+      isTexasTilePhase(selection.phase)
+    ) {
+      applyTexasTileCommit(draft, selection.phase, selection.selections);
     }
   });
 }

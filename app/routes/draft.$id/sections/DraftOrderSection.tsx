@@ -18,10 +18,7 @@ import {
   IconArrowBackUp,
 } from "@tabler/icons-react";
 import { LabArtToggleButton } from "~/components/LabArtToggleButton";
-import {
-  isAudioAlertEnabled,
-  setAudioAlertEnabled,
-} from "~/utils/audioAlert";
+import { isAudioAlertEnabled, setAudioAlertEnabled } from "~/utils/audioAlert";
 
 export function DraftOrderSection() {
   const { originalArt, setOriginalArt } = useSafeOutletContext();
@@ -60,12 +57,6 @@ export function DraftOrderSection() {
     });
   };
 
-  const handleUndo = async () => {
-    if (confirm("Are you sure you want to undo the last selection?")) {
-      await undoLastPick();
-    }
-  };
-
   // Compact control bar with grouped controls using Mantine components
   const ControlBar = (
     <Group gap="xs" wrap="wrap">
@@ -95,9 +86,15 @@ export function DraftOrderSection() {
           variant={audioAlertEnabled ? "filled" : "default"}
           color={audioAlertEnabled ? "violet" : "gray"}
           onClick={handleAudioToggle}
-          title={audioAlertEnabled ? "Disable audio alerts" : "Enable audio alerts"}
+          title={
+            audioAlertEnabled ? "Disable audio alerts" : "Enable audio alerts"
+          }
         >
-          {audioAlertEnabled ? <IconVolume size={14} /> : <IconVolumeOff size={14} />}
+          {audioAlertEnabled ? (
+            <IconVolume size={14} />
+          ) : (
+            <IconVolumeOff size={14} />
+          )}
         </ActionIcon>
         <ActionIcon
           component={Link}
@@ -107,7 +104,9 @@ export function DraftOrderSection() {
           color="gray"
           disabled={selections.length === 0}
           title="Watch replay"
-          onClick={(e: React.MouseEvent) => selections.length === 0 && e.preventDefault()}
+          onClick={(e: React.MouseEvent) =>
+            selections.length === 0 && e.preventDefault()
+          }
         >
           <IconPlayerPlay size={14} />
         </ActionIcon>
@@ -151,7 +150,7 @@ export function DraftOrderSection() {
                   variant="subtle"
                   color="red"
                   leftSection={<IconArrowBackUp size={12} />}
-                  onClick={handleUndo}
+                  onClick={undoLastPick}
                   disabled={selections.length === 0}
                   title="Undo last selection"
                 >

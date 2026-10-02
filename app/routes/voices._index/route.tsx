@@ -531,7 +531,7 @@ export default function VoicesMaster() {
 
   const { socket, isDisconnected, isReconnecting, reconnect } =
     useSocketConnection({
-      onConnect: () => socket?.emit("joinSoundboardSession", sessionId),
+      onConnect: (socket) => socket.emit("joinSoundboardSession", sessionId),
     });
 
   useEffect(() => {

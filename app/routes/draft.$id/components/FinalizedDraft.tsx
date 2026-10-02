@@ -144,11 +144,7 @@ export function FinalizedDraft() {
             variant="subtle"
             color="gray"
             leftSection={<IconArrowBackUp size={14} />}
-            onClick={async () => {
-              if (confirm("Are you sure you want to undo the last selection?")) {
-                await undoLastPick();
-              }
-            }}
+            onClick={undoLastPick}
             disabled={selections.length === 0}
           >
             Undo Last
@@ -347,7 +343,11 @@ export function FinalizedDraft() {
                               : `Copy ${mapStringFormat} string`
                           }
                         >
-                          {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                          {copied ? (
+                            <IconCheck size={16} />
+                          ) : (
+                            <IconCopy size={16} />
+                          )}
                         </ActionIcon>
                       )}
                     </CopyButton>

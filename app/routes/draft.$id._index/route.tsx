@@ -3,25 +3,24 @@ import { ActionFunctionArgs, data, MetaFunction } from "react-router";
 import { useLoaderData } from "react-router";
 import { useEffect } from "react";
 import { useDraft } from "~/draftStore";
-import { Draft } from "~/types";
+import { banPhaseLength, Draft } from "~/types";
 import { CurrentPickBanner } from "../draft.$id/components/CurrentPickBanner";
 import { PlayerSelectionScreen } from "../draft.$id/components/PlayerSelectionScreen";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
-import { validate as validateUUID } from "uuid";
-import {
-  draftById,
-  draftByPrettyUrl,
-  updateDraft,
-  getDraftStagedSelections,
-} from "~/drizzle/draft.server";
-import { redirectToPrettyDraftUrl } from "~/utils/draftRedirect.server";
-import { notifyPick } from "~/discord/bot.server";
+import { updateDraft, getDraftStagedSelections } from "~/drizzle/draft.server";
+import { loadDraftByUrlParam } from "~/utils/draftRedirect.server";
+import { draftNotFound, loadDraftRecord } from "~/utils/draftApi.server";
+import { notifyPick } from "~/discord/notify.server";
 import { validateDraftSync } from "~/utils/draftSync.server";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { PlanetFinder } from "../draft.$id/components/PlanetFinder";
 import { useNotifyActivePlayer } from "~/hooks/useNotifyActivePlayer";
 import { FinalizedDraft } from "../draft.$id/components/FinalizedDraft";
-import { SyncDraftContext, useSyncDraftFetcher } from "~/hooks/useSyncDraft";
+import {
+  SyncDraftContext,
+  useSyncDraft,
+  useSyncDraftFetcher,
+} from "~/hooks/useSyncDraft";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { BanPhase } from "../draft.$id/sections/BanPhase";
@@ -36,30 +35,16 @@ import { TexasTileDraftPhase } from "../draft.$id/sections/TexasTileDraftPhase";
 import { TexasMapBuildPhase } from "../draft.$id/sections/TexasMapBuildPhase";
 
 export default function RunningDraft() {
-  const { adminMode } = useSafeOutletContext();
   useNotifyActivePlayer();
   const result = useLoaderData<typeof loader>();
-  const {
-    syncDraft,
-    syncing,
-    stagePriorityValue,
-    stageHomeSystem,
-    stageSimultaneousPick,
-    undoStagedPick,
-    undoSimultaneousPhase,
-    undoLastPick,
-  } = useSyncDraftFetcher();
+  const syncDraftContextValue = useSyncDraftFetcher();
   const draftStore = useDraft();
-  const draft = draftStore.draft;
-  const settings = draft.settings;
   const draftActions = draftStore.draftActions;
-  const selectedPlayer = draftStore.selectedPlayer;
-  const { draftFinished } = useHydratedDraft();
 
   // Real-time socket connection to push and receive state updates.
   const { socket, isDisconnected, isReconnecting, reconnect } =
     useSocketConnection({
-      onConnect: () => socket?.emit("joinDraft", result.id),
+      onConnect: (socket) => socket.emit("joinDraft", result.id),
     });
   useEffect(() => {
     if (!socket) return;
@@ -89,132 +74,6 @@ export default function RunningDraft() {
 
   if (!draftStore.hydrated) return <LoadingOverlay />;
 
-  const syncDraftContextValue = {
-    syncDraft,
-    syncing,
-    stagePriorityValue,
-    stageHomeSystem,
-    stageSimultaneousPick,
-    undoStagedPick,
-    undoSimultaneousPhase,
-    undoLastPick,
-  };
-
-  if (draftFinished) {
-    return (
-      <SyncDraftContext.Provider value={syncDraftContextValue}>
-        <FinalizedDraft />
-      </SyncDraftContext.Provider>
-    );
-  }
-
-  if (selectedPlayer === undefined) {
-    return (
-      <PlayerSelectionScreen
-        onDraftJoined={(playerId) => {
-          localStorage.setItem(
-            `draft:player:${result.id}`,
-            playerId.toString(),
-          );
-          draftActions.setSelectedPlayer(playerId);
-        }}
-      />
-    );
-  }
-
-  const isInBanPhase = () => {
-    if (!settings.modifiers) return false;
-    const banModifier = settings.modifiers.banFactions;
-    if (!banModifier) return false;
-
-    const totalBansNeeded = banModifier.numFactions * draft.players.length;
-    const currentPickNumber = draft.selections.length;
-
-    return currentPickNumber < totalBansNeeded;
-  };
-
-  if (isInBanPhase()) {
-    return (
-      <SyncDraftContext.Provider value={syncDraftContextValue}>
-        <BanPhase />
-      </SyncDraftContext.Provider>
-    );
-  }
-
-  const currentPick = draft.pickOrder[draft.selections.length];
-  if (typeof currentPick === "object" && currentPick?.kind === "simultaneous") {
-    if (currentPick.phase === "priorityValue") {
-      return (
-        <SyncDraftContext.Provider value={syncDraftContextValue}>
-          <PriorityValueSelectionPhase />
-        </SyncDraftContext.Provider>
-      );
-    }
-
-    if (currentPick.phase === "homeSystem") {
-      return (
-        <SyncDraftContext.Provider value={syncDraftContextValue}>
-          <HomeSystemSelectionPhase />
-        </SyncDraftContext.Provider>
-      );
-    }
-
-    if (currentPick.phase === "texasFaction") {
-      return (
-        <SyncDraftContext.Provider value={syncDraftContextValue}>
-          <TexasFactionSelectionPhase />
-        </SyncDraftContext.Provider>
-      );
-    }
-
-    if (currentPick.phase === "texasBlueKeep1") {
-      return (
-        <SyncDraftContext.Provider value={syncDraftContextValue}>
-          <TexasTileDraftPhase
-            phase="texasBlueKeep1"
-            title="Blue Tile Draft — Round 1"
-            description="Keep one blue tile and pass the rest left."
-            color="blue"
-          />
-        </SyncDraftContext.Provider>
-      );
-    }
-
-    if (currentPick.phase === "texasBlueKeep2") {
-      return (
-        <SyncDraftContext.Provider value={syncDraftContextValue}>
-          <TexasTileDraftPhase
-            phase="texasBlueKeep2"
-            title="Blue Tile Draft — Round 2"
-            description="Keep one blue tile from the pass."
-            color="blue"
-          />
-        </SyncDraftContext.Provider>
-      );
-    }
-
-    if (currentPick.phase === "texasRedKeep") {
-      return (
-        <SyncDraftContext.Provider value={syncDraftContextValue}>
-          <TexasTileDraftPhase
-            phase="texasRedKeep"
-            title="Red Tile Draft"
-            description="Keep one red tile and pass the other left."
-            color="red"
-          />
-        </SyncDraftContext.Provider>
-      );
-    }
-  }
-
-  if (settings.draftGameMode === "texasStyle") {
-    return (
-      <SyncDraftContext.Provider value={syncDraftContextValue}>
-        <TexasMapBuildPhase />
-      </SyncDraftContext.Provider>
-    );
-  }
-
   return (
     <SyncDraftContext.Provider value={syncDraftContextValue}>
       {socket && isDisconnected && (
@@ -236,7 +95,84 @@ export default function RunningDraft() {
           Refresh
         </Button>
       )}
+      <DraftPhase draftId={result.id} urlName={result.urlName} />
+    </SyncDraftContext.Provider>
+  );
+}
 
+function DraftPhase({
+  draftId,
+  urlName,
+}: {
+  draftId: string;
+  urlName: string | null;
+}) {
+  const { adminMode } = useSafeOutletContext();
+  const { syncDraft, syncing } = useSyncDraft();
+  const draftStore = useDraft();
+  const { draft, selectedPlayer, draftActions } = draftStore;
+  const { draftFinished } = useHydratedDraft();
+
+  if (draftFinished) return <FinalizedDraft />;
+
+  if (selectedPlayer === undefined) {
+    return (
+      <PlayerSelectionScreen
+        onDraftJoined={(playerId) => {
+          localStorage.setItem(`draft:player:${draftId}`, playerId.toString());
+          draftActions.setSelectedPlayer(playerId);
+        }}
+      />
+    );
+  }
+
+  if (draft.selections.length < banPhaseLength(draft)) return <BanPhase />;
+
+  const currentPick = draft.pickOrder[draft.selections.length];
+  if (typeof currentPick === "object" && currentPick?.kind === "simultaneous") {
+    switch (currentPick.phase) {
+      case "priorityValue":
+        return <PriorityValueSelectionPhase />;
+      case "homeSystem":
+        return <HomeSystemSelectionPhase />;
+      case "texasFaction":
+        return <TexasFactionSelectionPhase />;
+      case "texasBlueKeep1":
+        return (
+          <TexasTileDraftPhase
+            phase="texasBlueKeep1"
+            title="Blue Tile Draft — Round 1"
+            description="Keep one blue tile and pass the rest left."
+            color="blue"
+          />
+        );
+      case "texasBlueKeep2":
+        return (
+          <TexasTileDraftPhase
+            phase="texasBlueKeep2"
+            title="Blue Tile Draft — Round 2"
+            description="Keep one blue tile from the pass."
+            color="blue"
+          />
+        );
+      case "texasRedKeep":
+        return (
+          <TexasTileDraftPhase
+            phase="texasRedKeep"
+            title="Red Tile Draft"
+            description="Keep one red tile and pass the other left."
+            color="red"
+          />
+        );
+    }
+  }
+
+  if (draft.settings.draftGameMode === "texasStyle") {
+    return <TexasMapBuildPhase />;
+  }
+
+  return (
+    <>
       <PlanetFinder onSystemSelected={syncDraft} />
       <AudioAlertConsentModal />
       <audio id="notificationSound" src="/chime.mp3" preload="auto">
@@ -247,7 +183,7 @@ export default function RunningDraft() {
         <div style={{ height: 15 }} />
       </Stack>
 
-      <DraftBoard urlName={result.urlName}>
+      <DraftBoard urlName={urlName}>
         {adminMode && (
           <Grid.Col offset={6} span={6} order={{ base: 7 }}>
             <PlayerInputSection
@@ -262,7 +198,7 @@ export default function RunningDraft() {
           </Grid.Col>
         )}
       </DraftBoard>
-    </SyncDraftContext.Provider>
+    </>
   );
 }
 
@@ -270,7 +206,6 @@ export async function action({ request }: ActionFunctionArgs) {
   const { id, draft } = (await request.json()) as {
     id: string;
     draft: Draft;
-    turnPassed: boolean;
   };
 
   // if this draft data is the old legacy draft data,
@@ -284,12 +219,9 @@ export async function action({ request }: ActionFunctionArgs) {
     throw new Error("Cannot read old draft!");
   }
 
-  const existingDraft = await draftById(id);
-  if (!existingDraft) {
-    return data({ success: false, error: "Draft not found" }, { status: 404 });
-  }
-  const serverSelections = (JSON.parse(existingDraft.data as string) as Draft)
-    .selections;
+  const existingDraft = await loadDraftRecord(id);
+  if (!existingDraft) return draftNotFound();
+  const serverSelections = existingDraft.draft.selections;
 
   const validation = validateDraftSync(serverSelections, draft.selections);
   if (!validation.valid) {
@@ -329,28 +261,12 @@ function formatDraftType(type: string, playerCount: number): string {
 }
 
 export const loader = async ({ params }: { params: { id: string } }) => {
-  const draftId = params.id;
-
-  // If using a legacy "UUID url", generate a pretty URL
-  // and then redirect to it.
-  if (validateUUID(draftId)) {
-    return redirectToPrettyDraftUrl(draftId);
-  }
-
-  const result = await draftByPrettyUrl(draftId);
-  if (!result) {
-    throw new Response("Draft not found", { status: 404 });
-  }
-
+  const result = await loadDraftByUrlParam(params.id);
   const stagedSelections = await getDraftStagedSelections(result.id);
-  const parsedDraft = JSON.parse(result.data as string) as Draft;
 
   return data({
     ...result,
-    data: {
-      ...parsedDraft,
-      stagedSelections,
-    },
+    data: { ...result.data, stagedSelections },
   });
 };
 

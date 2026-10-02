@@ -2,8 +2,6 @@ import dotenv from "dotenv";
 import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
 import startDraft from "./commands/startDraft";
 
-export { notifyPick } from "./notify.server";
-
 const commands = [startDraft];
 
 declare module "discord.js" {

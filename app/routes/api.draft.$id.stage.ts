@@ -15,6 +15,7 @@ import {
 import {
   applyTexasFactionCommit,
   applyTexasTileCommit,
+  isTexasTilePhase,
 } from "~/draft/texas/texasDraft";
 import {
   broadcastDraftWithStaged,
@@ -28,27 +29,18 @@ function applySimultaneousCommit(
   selections: { playerId: PlayerId; value: string }[],
 ) {
   if (phase === "texasFaction") {
-    const resolved = applyTexasFactionCommit(draft, selections);
-    return { selections: resolved };
+    return applyTexasFactionCommit(draft, selections);
   }
 
-  if (phase === "texasBlueKeep1" || phase === "texasBlueKeep2" || phase === "texasRedKeep") {
+  if (isTexasTilePhase(phase)) {
     applyTexasTileCommit(draft, phase, selections);
-    return { selections };
   }
 
-  return { selections };
+  return selections;
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  const { id } = params;
-  if (!id) {
-    return data(
-      { success: false, error: "Draft ID is required" },
-      { status: 400 },
-    );
-  }
-
+  const id = params.id!;
   const { playerId, value, phase } = (await request.json()) as {
     playerId: PlayerId;
     value: string;
@@ -95,16 +87,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       value: stagingState[player.id],
     }));
 
-    const { selections: resolvedSelections } = applySimultaneousCommit(
-      draft,
-      phase,
-      selections,
-    );
-
     draft.selections.push({
       type: "COMMIT_SIMULTANEOUS",
       phase,
-      selections: resolvedSelections,
+      selections: applySimultaneousCommit(draft, phase, selections),
     });
 
     await clearStagedSelections(id, phase);
@@ -116,7 +102,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   return data({
     success: true,
-    allPlayersReady: !!allPlayersReady,
+    allPlayersReady,
     draft: payload,
   });
 }

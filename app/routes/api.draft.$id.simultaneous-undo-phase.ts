@@ -1,11 +1,10 @@
 import { ActionFunctionArgs, data } from "react-router";
-import { clearStagedSelections, updateDraft } from "~/drizzle/draft.server";
-import { Draft, SimultaneousPickType } from "~/types";
+import { clearStagedSelections } from "~/drizzle/draft.server";
+import { SimultaneousPickType } from "~/types";
 import {
-  applyTexasUndo,
-  broadcastDraftWithStaged,
   draftNotFound,
   loadDraft,
+  undoLastSelection,
   undoOutOfSync,
 } from "~/utils/draftApi.server";
 
@@ -15,14 +14,7 @@ type UndoPhaseBody = {
 };
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  const { id } = params;
-  if (!id) {
-    return data(
-      { success: false, error: "Draft ID is required" },
-      { status: 400 },
-    );
-  }
-
+  const id = params.id!;
   const body = (await request.json()) as UndoPhaseBody;
 
   if (!body?.phase) {
@@ -39,24 +31,5 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (outOfSync) return outOfSync;
 
   await clearStagedSelections(id, body.phase);
-
-  let removedSelection: Draft["selections"][number] | undefined;
-  if (draft.selections.length > 0) {
-    removedSelection = draft.selections.pop();
-  }
-
-  applyTexasUndo(draft, removedSelection);
-
-  if (removedSelection) {
-    await updateDraft(id, draft);
-  }
-
-  const payload = await broadcastDraftWithStaged(id, draft);
-
-  return data({
-    success: true,
-    removedSelection,
-    draft: payload,
-    newSelectionCount: payload.selections.length,
-  });
+  return undoLastSelection(id, draft);
 }

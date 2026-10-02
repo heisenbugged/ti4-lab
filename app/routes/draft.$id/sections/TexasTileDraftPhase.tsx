@@ -1,8 +1,6 @@
 import {
   Box,
   Button,
-  Center,
-  Grid,
   Group,
   Modal,
   SimpleGrid,
@@ -11,17 +9,12 @@ import {
 } from "@mantine/core";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useSimultaneousPickPhase } from "~/hooks/useSimultaneousPickPhase";
-import { useSimultaneousUndo } from "~/hooks/useSimultaneousUndo";
 import { useDraft } from "~/draftStore";
 import { useState } from "react";
-import { AdminPasswordModal } from "../components/AdminPasswordModal";
-import { PlayerSelectionSidebar } from "../components/PlayerSelectionSidebar";
-import { SpectatorModeNotice } from "../components/SpectatorModeNotice";
 import { SimultaneousPickType, SystemId } from "~/types";
 import { IconCheck } from "@tabler/icons-react";
-import { SimultaneousPhaseHeader } from "../components/SimultaneousPhaseHeader";
 import { SystemTileCard } from "~/components/SystemTileCard";
-import { useAdminControls } from "../components/useAdminControls";
+import { SimultaneousPhaseLayout } from "../components/SimultaneousPhaseLayout";
 
 type Props = {
   phase: SimultaneousPickType;
@@ -37,18 +30,6 @@ export function TexasTileDraftPhase({
   color,
 }: Props) {
   const { stageSimultaneousPick } = useSyncDraft();
-  const {
-    adminMode,
-    pickForAnyone,
-    setPickForAnyone,
-    showPickForAnyoneControl,
-    showUndoLastSelection,
-    passwordModalOpen,
-    setPasswordModalOpen,
-    handleAdminPasswordSubmit,
-    handleAdminToggle,
-  } = useAdminControls();
-  const selectedPlayer = useDraft((state) => state.selectedPlayer);
   const texasDraft = useDraft((state) => state.draft.texasDraft);
   const [pendingPick, setPendingPick] = useState<SystemId | null>(null);
 
@@ -56,7 +37,7 @@ export function TexasTileDraftPhase({
 
   const options: SystemId[] =
     phase.currentPlayer && texasDraft?.tileHands
-      ? texasDraft.tileHands[color][phase.currentPlayer.id] ?? []
+      ? (texasDraft.tileHands[color][phase.currentPlayer.id] ?? [])
       : [];
   const selectedTile =
     phase.currentPlayer && phase.stagingValues
@@ -71,127 +52,80 @@ export function TexasTileDraftPhase({
         ]
       : [];
 
-  const isSpectatorMode = selectedPlayer === -1;
-
-  const undo = useSimultaneousUndo(
-    phaseType,
-    phase.currentPlayer?.id,
-    phase.stagingValues,
-  );
-
   const confirmPendingPick = () => {
     if (!pendingPick || !phase.currentPlayer) return;
     stageSimultaneousPick(phaseType, phase.currentPlayer.id, pendingPick);
     setPendingPick(null);
   };
 
-  const phaseColor = color === "blue" ? "blue" : "red";
-
   return (
-    <Box mih="100vh">
-      <AdminPasswordModal
-        opened={passwordModalOpen}
-        onClose={() => setPasswordModalOpen(false)}
-        onSubmit={handleAdminPasswordSubmit}
-      />
+    <SimultaneousPhaseLayout
+      phase={phase}
+      phaseName={title}
+      phaseColor={color}
+      description={description}
+      showPickAnyWarning
+      maw={1400}
+      sidebarSpan={{ base: 12, md: 4 }}
+      contentSpan={{ base: 12, md: 8 }}
+    >
+      <Stack gap="lg">
+        {/* Kept tiles section */}
+        {keptTiles.length > 0 && (
+          <Box>
+            <Group gap="xs" mb="xs">
+              <IconCheck
+                size={14}
+                style={{ color: "var(--mantine-color-green-5)" }}
+              />
+              <Text size="xs" fw={600} c="green.5">
+                Kept
+              </Text>
+            </Group>
+            <Group gap="sm">
+              {keptTiles.map((systemId) => (
+                <SystemTileCard
+                  key={systemId}
+                  systemId={systemId}
+                  radius={44}
+                  padding={6}
+                  borderRadius="var(--mantine-radius-sm)"
+                />
+              ))}
+            </Group>
+          </Box>
+        )}
 
-      <SimultaneousPhaseHeader
-        phaseName={title}
-        phaseColor={phaseColor}
-        description={description}
-        adminMode={adminMode}
-        onAdminToggle={handleAdminToggle}
-        showPickForAnyoneControl={showPickForAnyoneControl}
-        pickForAnyone={pickForAnyone}
-        onTogglePickForAnyone={() => setPickForAnyone(!pickForAnyone)}
-        showUndo={showUndoLastSelection}
-        onUndoPick={undo.handleUndoPick}
-        onUndoPhase={undo.handleUndoPhase}
-        undoPickDisabled={undo.undoPickDisabled}
-        undoPhaseDisabled={undo.undoPhaseDisabled}
-        showPickAnyWarning={true}
-      />
-
-      <SpectatorModeNotice isSpectatorMode={isSpectatorMode} />
-
-      {/* Main content */}
-      <Center p="md" pt="lg">
-        <Grid maw={1400} w="100%" gutter="xl">
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <PlayerSelectionSidebar
-              players={phase.hydratedPlayers}
-              pickForAnyone={phase.pickForAnyone}
-              selectedPlayerId={phase.selectedPlayerId}
-              defaultPlayerId={phase.defaultPlayerId}
-              stagingValues={phase.stagingValues}
-              onPlayerSelect={phase.setSelectedPlayerId}
-              onPlayerHover={phase.setHoveredPlayerId}
-              currentPlayerId={phase.currentPlayer?.id}
-              spectatorMode={isSpectatorMode}
-            />
-          </Grid.Col>
-
-          <Grid.Col span={{ base: 12, md: 8 }}>
-            <Stack gap="lg">
-              {/* Kept tiles section */}
-              {keptTiles.length > 0 && (
-                <Box>
-                  <Group gap="xs" mb="xs">
-                    <IconCheck
-                      size={14}
-                      style={{ color: "var(--mantine-color-green-5)" }}
-                    />
-                    <Text size="xs" fw={600} c="green.5">
-                      Kept
-                    </Text>
-                  </Group>
-                  <Group gap="sm">
-                    {keptTiles.map((systemId) => (
-                      <SystemTileCard
-                        key={systemId}
-                        systemId={systemId}
-                        radius={44}
-                        padding={6}
-                        borderRadius="var(--mantine-radius-sm)"
-                      />
-                    ))}
-                  </Group>
-                </Box>
-              )}
-
-              {/* Available tiles to pick from */}
-              <Box>
-                <Text size="xs" fw={600} c="dimmed" mb="sm">
-                  Choose a tile to keep
-                </Text>
-                <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }} spacing="md">
-                  {options.map((systemId) => {
-                    const isSelected = selectedTile === systemId;
-                    const canClick = phase.canSelect && phase.currentPlayer;
-                    return (
-                      <SystemTileCard
-                        key={systemId}
-                        systemId={systemId}
-                        radius={56}
-                        padding={10}
-                        selected={isSelected}
-                        showOverlay={true}
-                        onClick={
-                          canClick
-                            ? () => {
-                                setPendingPick(systemId);
-                              }
-                            : undefined
+        {/* Available tiles to pick from */}
+        <Box>
+          <Text size="xs" fw={600} c="dimmed" mb="sm">
+            Choose a tile to keep
+          </Text>
+          <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }} spacing="md">
+            {options.map((systemId) => {
+              const isSelected = selectedTile === systemId;
+              const canClick = phase.canSelect && phase.currentPlayer;
+              return (
+                <SystemTileCard
+                  key={systemId}
+                  systemId={systemId}
+                  radius={56}
+                  padding={10}
+                  selected={isSelected}
+                  showOverlay={true}
+                  onClick={
+                    canClick
+                      ? () => {
+                          setPendingPick(systemId);
                         }
-                      />
-                    );
-                  })}
-                </SimpleGrid>
-              </Box>
-            </Stack>
-          </Grid.Col>
-        </Grid>
-      </Center>
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </SimpleGrid>
+        </Box>
+      </Stack>
       <Modal
         opened={pendingPick !== null}
         onClose={() => setPendingPick(null)}
@@ -216,6 +150,6 @@ export function TexasTileDraftPhase({
           </Group>
         </Stack>
       </Modal>
-    </Box>
+    </SimultaneousPhaseLayout>
   );
 }

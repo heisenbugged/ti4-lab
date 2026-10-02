@@ -1,4 +1,14 @@
-import { AppShell, Box, Button, Group, Modal, ScrollArea, Stack, Text, Tooltip } from "@mantine/core";
+import {
+  AppShell,
+  Box,
+  Button,
+  Group,
+  Modal,
+  ScrollArea,
+  Stack,
+  Text,
+  Tooltip,
+} from "@mantine/core";
 import { useMemo, useState } from "react";
 import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { useMediaQuery } from "@mantine/hooks";
@@ -6,7 +16,10 @@ import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { RollingDraftOrder } from "../components/RollingDraftOrder";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
-import { getCurrentPlaceableRing, getPlaceableTileIndices } from "~/utils/texasMapBuild";
+import {
+  getCurrentPlaceableRing,
+  getPlaceableTileIndices,
+} from "~/utils/texasMapBuild";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { systemData } from "~/data/systemData";
 import { IconArrowBackUp } from "@tabler/icons-react";
@@ -20,8 +33,13 @@ export function TexasMapBuildPhase() {
   const draft = useDraft((state) => state.draft);
   const { placeTexasTile } = useDraft((state) => state.draftActions);
   const { syncDraft, undoLastPick } = useSyncDraft();
-  const { hydratedPlayers, hydratedMap, currentPick, activePlayer, currentlyPicking } =
-    useHydratedDraft();
+  const {
+    hydratedPlayers,
+    hydratedMap,
+    currentPick,
+    activePlayer,
+    currentlyPicking,
+  } = useHydratedDraft();
   const selectedPlayer = useDraft((state) => state.selectedPlayer);
   const {
     adminMode,
@@ -44,15 +62,9 @@ export function TexasMapBuildPhase() {
   const isMobile = useMediaQuery("(max-width: 48em)");
   const mobileFooterHeight = 160;
 
-  const handleUndo = async () => {
-    if (confirm("Are you sure you want to undo the last selection?")) {
-      await undoLastPick();
-    }
-  };
-
   const playerTiles =
     activePlayer && draft.texasDraft?.playerTiles
-      ? draft.texasDraft.playerTiles[activePlayer.id] ?? []
+      ? (draft.texasDraft.playerTiles[activePlayer.id] ?? [])
       : [];
 
   const mapForRender = hydratedMap ?? draft.presetMap;
@@ -90,7 +102,8 @@ export function TexasMapBuildPhase() {
     return parseInt(a) - parseInt(b);
   });
 
-  const canSelect = pickForAnyone || (currentlyPicking && selectedPlayer !== undefined);
+  const canSelect =
+    pickForAnyone || (currentlyPicking && selectedPlayer !== undefined);
 
   const handleSelectTile = (systemId: string) => {
     if (!canSelect || !activePlayer) return;
@@ -109,7 +122,11 @@ export function TexasMapBuildPhase() {
 
   const confirmPlacement = () => {
     if (!pendingPlacement || !activePlayer) return;
-    placeTexasTile(activePlayer.id, pendingPlacement.tileIdx, pendingPlacement.systemId);
+    placeTexasTile(
+      activePlayer.id,
+      pendingPlacement.tileIdx,
+      pendingPlacement.systemId,
+    );
     syncDraft();
     setPendingPlacement(null);
     setSelectedSystemId(null);
@@ -131,12 +148,21 @@ export function TexasMapBuildPhase() {
       />
 
       <AppShell.Navbar p={0} visibleFrom="sm">
-        <Box h="calc(100vh - 60px)" style={{ display: "flex", flexDirection: "column" }}>
+        <Box
+          h="calc(100vh - 60px)"
+          style={{ display: "flex", flexDirection: "column" }}
+        >
           <Box className={classes.sidebarHeader} px="md" pt="sm" pb="xs">
             <Text size="sm" fw={700} mb="xs">
               {activePlayer?.name ?? "Waiting"}
             </Text>
-            <Text size="xs" fw={600} tt="uppercase" className={classes.mutedLabel} mb="xs">
+            <Text
+              size="xs"
+              fw={600}
+              tt="uppercase"
+              className={classes.mutedLabel}
+              mb="xs"
+            >
               Available Tiles ({sortedPlayerTiles.length}/5)
             </Text>
           </Box>
@@ -236,7 +262,7 @@ export function TexasMapBuildPhase() {
                   variant="subtle"
                   color="red"
                   leftSection={<IconArrowBackUp size={12} />}
-                  onClick={handleUndo}
+                  onClick={undoLastPick}
                   disabled={selections.length === 0}
                 >
                   Undo
@@ -299,9 +325,7 @@ export function TexasMapBuildPhase() {
         }}
       >
         <Stack gap="md">
-          <Text size="sm">
-            Place tile {pendingPlacement?.systemId} here?
-          </Text>
+          <Text size="sm">Place tile {pendingPlacement?.systemId} here?</Text>
           <Group justify="flex-end">
             <Button variant="default" onClick={() => setPendingPlacement(null)}>
               Cancel

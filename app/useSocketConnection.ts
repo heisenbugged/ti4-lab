@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import type { Socket } from "socket.io-client";
 import { useSocket } from "./socketContext";
 
 type Props = {
-  onConnect?: () => void;
+  onConnect?: (socket: Socket) => void;
 };
 
 export function useSocketConnection({ onConnect }: Props) {
@@ -18,7 +19,7 @@ export function useSocketConnection({ onConnect }: Props) {
     // join on every connect
     // this way if there's a disconnection, a reconnection will rejoin
     const handleConnect = () => {
-      onConnectRef.current?.();
+      onConnectRef.current?.(socket);
       setIsDisconnected(false);
       setIsReconnecting(false);
     };
@@ -34,7 +35,6 @@ export function useSocketConnection({ onConnect }: Props) {
 
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
-    socket.on("connect_error", handleReconnectFailed);
     socket.io.on("reconnect_attempt", handleReconnectAttempt);
     socket.io.on("reconnect_failed", handleReconnectFailed);
 
@@ -43,7 +43,6 @@ export function useSocketConnection({ onConnect }: Props) {
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
-      socket.off("connect_error", handleReconnectFailed);
       socket.io.off("reconnect_attempt", handleReconnectAttempt);
       socket.io.off("reconnect_failed", handleReconnectFailed);
     };

@@ -2,7 +2,21 @@ import { useState } from "react";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
-import { SimultaneousPickType } from "~/types";
+import { Draft, SimultaneousPickType } from "~/types";
+
+type LegacyStagingDraft = Draft & {
+  stagingPriorityValues?: Record<number, string>;
+  stagingHomeSystemValues?: Record<number, string>;
+};
+
+function legacyStagingValues(draft: Draft, phase: SimultaneousPickType) {
+  const legacy = draft as LegacyStagingDraft;
+  if (phase === "priorityValue") return legacy.stagingPriorityValues;
+  if (phase === "homeSystem") return legacy.stagingHomeSystemValues;
+  return undefined;
+}
+
+export type SimultaneousPickPhase = ReturnType<typeof useSimultaneousPickPhase>;
 
 export function useSimultaneousPickPhase(phase: SimultaneousPickType) {
   const { draft, selectedPlayer } = useDraft();
@@ -12,7 +26,8 @@ export function useSimultaneousPickPhase(phase: SimultaneousPickType) {
   const [hoveredPlayerId, setHoveredPlayerId] = useState<number | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
 
-  const stagingValues = draft.stagedSelections?.[phase];
+  const stagingValues =
+    draft.stagedSelections?.[phase] ?? legacyStagingValues(draft, phase);
 
   const defaultPlayerId = hydratedPlayers.find(
     (p) => stagingValues?.[p.id] === undefined,
@@ -28,17 +43,19 @@ export function useSimultaneousPickPhase(phase: SimultaneousPickType) {
     : false;
   const canSelect = currentPlayer ? !hasStaged : false;
 
-  const onTogglePickForAnyone = (checked: boolean) => {
-    setPickForAnyone(checked);
+  const togglePickForAnyone = () => {
+    setPickForAnyone(!pickForAnyone);
     setSelectedPlayerId(null);
   };
 
   return {
+    phase,
     draft,
     hydratedPlayers,
     stagingValues,
+    isSpectatorMode: selectedPlayer === -1,
     pickForAnyone,
-    onTogglePickForAnyone,
+    togglePickForAnyone,
     hoveredPlayerId,
     setHoveredPlayerId,
     selectedPlayerId,

@@ -13,14 +13,7 @@ type UndoPickBody = {
 };
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  const { id } = params;
-  if (!id) {
-    return data(
-      { success: false, error: "Draft ID is required" },
-      { status: 400 },
-    );
-  }
-
+  const id = params.id!;
   const body = (await request.json()) as UndoPickBody;
 
   if (!body?.phase || body.playerId === undefined) {
@@ -34,9 +27,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (!draft) return draftNotFound();
 
   await deleteStagedSelection(id, body.phase, body.playerId);
-
-  const latestDraft = (await loadDraft(id)) ?? draft;
-  const payload = await broadcastDraftWithStaged(id, latestDraft);
+  const payload = await broadcastDraftWithStaged(id, draft);
 
   return data({
     success: true,

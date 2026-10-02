@@ -1,13 +1,24 @@
 import { data } from "react-router";
-import { draftById, getDraftStagedSelections } from "~/drizzle/draft.server";
+import {
+  draftById,
+  getDraftStagedSelections,
+  updateDraft,
+} from "~/drizzle/draft.server";
 import { Draft } from "~/types";
 import { broadcastDraftUpdate } from "~/websocket/broadcast.server";
-import { rebuildTexasDraftState } from "~/draft/texas/texasDraft";
+import {
+  isTexasTilePhase,
+  rebuildTexasDraftState,
+} from "~/draft/texas/texasDraft";
+
+export async function loadDraftRecord(id: string) {
+  const record = await draftById(id);
+  if (!record) return undefined;
+  return { ...record, draft: JSON.parse(record.data as string) as Draft };
+}
 
 export async function loadDraft(id: string): Promise<Draft | undefined> {
-  const existingDraft = await draftById(id);
-  if (!existingDraft) return undefined;
-  return JSON.parse(existingDraft.data as string) as Draft;
+  return (await loadDraftRecord(id))?.draft;
 }
 
 export function draftNotFound() {
@@ -45,7 +56,7 @@ export async function broadcastDraftWithStaged(id: string, draft: Draft) {
   return payload;
 }
 
-export function applyTexasUndo(
+function applyTexasUndo(
   draft: Draft,
   removedSelection?: Draft["selections"][number],
 ) {
@@ -70,11 +81,25 @@ export function applyTexasUndo(
 
   if (
     removedSelection.type === "COMMIT_SIMULTANEOUS" &&
-    (removedSelection.phase === "texasBlueKeep1" ||
-      removedSelection.phase === "texasBlueKeep2" ||
-      removedSelection.phase === "texasRedKeep" ||
+    (isTexasTilePhase(removedSelection.phase) ||
       removedSelection.phase === "texasFaction")
   ) {
     rebuildTexasDraftState(draft);
   }
+}
+
+/** Pops the last selection (if any), persists, and broadcasts the result. */
+export async function undoLastSelection(id: string, draft: Draft) {
+  const removedSelection = draft.selections.pop();
+  applyTexasUndo(draft, removedSelection);
+  if (removedSelection) {
+    await updateDraft(id, draft);
+  }
+
+  const payload = await broadcastDraftWithStaged(id, draft);
+  return data({
+    success: true,
+    draft: payload,
+    newSelectionCount: payload.selections.length,
+  });
 }

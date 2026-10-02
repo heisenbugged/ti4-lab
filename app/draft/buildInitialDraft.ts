@@ -391,15 +391,3 @@ function randomizeMap(
   });
   return map;
 }
-
-export function dealTexasFactions(
-  settings: DraftSettings,
-  draftableFactions: FactionId[],
-  players: Player[],
-) {
-  return dealTexasFactionOptions(
-    draftableFactions,
-    players,
-    settings.texasFactionHandSize,
-  );
-}

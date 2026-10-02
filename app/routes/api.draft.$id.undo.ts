@@ -1,22 +1,13 @@
 import { ActionFunctionArgs, data } from "react-router";
-import { updateDraft } from "~/drizzle/draft.server";
 import {
-  applyTexasUndo,
-  broadcastDraftWithStaged,
   draftNotFound,
   loadDraft,
+  undoLastSelection,
   undoOutOfSync,
 } from "~/utils/draftApi.server";
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  const { id } = params;
-  if (!id) {
-    return data(
-      { success: false, error: "Draft ID is required" },
-      { status: 400 },
-    );
-  }
-
+  const id = params.id!;
   const body = (await request.json()) as { expectedSelectionCount?: number };
 
   const draft = await loadDraft(id);
@@ -32,16 +23,5 @@ export async function action({ request, params }: ActionFunctionArgs) {
     );
   }
 
-  const removedSelection = draft.selections.pop();
-  applyTexasUndo(draft, removedSelection);
-
-  await updateDraft(id, draft);
-  const payload = await broadcastDraftWithStaged(id, draft);
-
-  return data({
-    success: true,
-    removedSelection,
-    draft: payload,
-    newSelectionCount: payload.selections.length,
-  });
+  return undoLastSelection(id, draft);
 }

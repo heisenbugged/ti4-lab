@@ -469,7 +469,9 @@ export type Draft = {
   bannedFactions?: Record<PlayerId, FactionId[]>;
 
   texasDraft?: TexasDraftState;
-  stagedSelections?: Partial<Record<SimultaneousPickType, Record<PlayerId, string>>>;
+  stagedSelections?: Partial<
+    Record<SimultaneousPickType, Record<PlayerId, string>>
+  >;
 };
 
 export type HydratedPlayer = {
@@ -508,8 +510,16 @@ export type InGameColor =
   | "Orange"
   | "Magenta";
 
+export type PlayerDraftSelection = Extract<DraftSelection, { playerId: PlayerId }>;
+
 export function hasPlayerId(
   selection: DraftSelection,
-): selection is Extract<DraftSelection, { playerId: PlayerId }> {
+): selection is PlayerDraftSelection {
   return "playerId" in selection;
+}
+
+/** Number of picks taken up by the faction-ban phase (0 without bans). */
+export function banPhaseLength(draft: Pick<Draft, "settings" | "players">) {
+  const numBans = draft.settings.modifiers?.banFactions?.numFactions ?? 0;
+  return numBans * draft.players.length;
 }
