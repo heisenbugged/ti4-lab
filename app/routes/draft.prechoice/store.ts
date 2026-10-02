@@ -10,6 +10,7 @@ import {
 import { getFactionCount } from "~/data/factionData";
 import { MAPS, type ChoosableDraftType } from "./maps";
 import { getFactionPool } from "~/utils/factions";
+import { supportsTexasStyle } from "~/draft/texas/texasCompatibility";
 import { notifications } from "@mantine/notifications";
 import {
   validateFactionState,
@@ -268,6 +269,13 @@ export const useDraftSetup = create<DraftSetupStore>()(
             state.format.allowHomePlanetSearch = false;
             state.format.draftSpeaker =
               newMapType === "heisen" || newMapType === "heisen8p";
+          }
+
+          if (
+            state.draftMode === "texasStyle" &&
+            !supportsTexasStyle(state.map.selectedMapType)
+          ) {
+            state.draftMode = "base";
           }
 
           const maxSlices = Math.max(

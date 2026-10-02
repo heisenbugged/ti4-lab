@@ -9,6 +9,7 @@ import {
   Switch,
   Tabs,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import { DiscordData, DraftSettings } from "~/types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -45,6 +46,10 @@ import { KingsConfigurationSection } from "./components/KingsConfigurationSectio
 import { DraftConfigurationPanel } from "./components/DraftConfigurationPanel";
 import { useDraftSettingsBuilder, useDraftNavigation } from "./hooks";
 import { buildTexasDraft } from "~/draft/texas/buildTexasDraft";
+import {
+  getTexasSlotCounts,
+  TEXAS_TILES_PER_PLAYER,
+} from "~/draft/texas/texasCompatibility";
 import { DiscordIntegrationModal } from "./components/DiscordIntegrationModal";
 import { MinorFactionsInfoModal } from "./components/MinorFactionsInfoModal";
 import { ContinueFromPresetModal } from "./components/ContinueFromPresetModal";
@@ -188,6 +193,9 @@ export default function DraftPrechoice() {
     }
     map.setSelectedMapType(mapType);
   };
+
+  const texasSlots = getTexasSlotCounts(map.selectedMapType);
+  const texasSupported = texasSlots.openSlots === texasSlots.dealtTiles;
 
   const handleDraftModeChange = (value: string | null) => {
     if (!value) return;
@@ -437,7 +445,21 @@ export default function DraftPrechoice() {
               <Tabs.List mb="md">
                 <Tabs.Tab value="base">Base Draft</Tabs.Tab>
                 <Tabs.Tab value="twilightFalls">Twilight&apos;s Fall</Tabs.Tab>
-                <Tabs.Tab value="texasStyle">Texas Style</Tabs.Tab>
+                <Tooltip
+                  label={`Texas Style deals ${TEXAS_TILES_PER_PLAYER} tiles per player (${texasSlots.dealtTiles} total), but ${MAPS[map.selectedMapType].title} has ${texasSlots.openSlots} open systems, so the galaxy can't be completed. Choose a different map to use Texas Style.`}
+                  disabled={texasSupported}
+                  multiline
+                  w={260}
+                  withArrow
+                  events={{ hover: true, focus: true, touch: true }}
+                >
+                  {/* Disabled buttons don't fire pointer events; the span keeps the tooltip working. */}
+                  <span>
+                    <Tabs.Tab value="texasStyle" disabled={!texasSupported}>
+                      Texas Style
+                    </Tabs.Tab>
+                  </span>
+                </Tooltip>
               </Tabs.List>
 
               <Tabs.Panel value="base">
