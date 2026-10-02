@@ -98,7 +98,6 @@ export default function SoundboardProxy() {
           loadingAudio={loadingAudio}
           onPlay={() => handlePlayAudio(faction, "battleLines")}
           onStop={handleStopAudio}
-          size="xl"
           width="100%"
         />
 
@@ -110,7 +109,6 @@ export default function SoundboardProxy() {
             loadingAudio={loadingAudio}
             onPlay={() => handlePlayAudio(faction, "defenseOutnumbered")}
             onStop={handleStopAudio}
-            size="md"
             width="auto"
           />
           <VoiceLineButton
@@ -120,7 +118,6 @@ export default function SoundboardProxy() {
             loadingAudio={loadingAudio}
             onPlay={() => handlePlayAudio(faction, "offenseSuperior")}
             onStop={handleStopAudio}
-            size="md"
             width="auto"
           />
         </Stack>
@@ -132,7 +129,6 @@ export default function SoundboardProxy() {
           loadingAudio={loadingAudio}
           onPlay={() => handlePlayAudio(faction, "homeDefense")}
           onStop={handleStopAudio}
-          size="xl"
           width="100%"
         />
         <VoiceLineButton
@@ -142,7 +138,6 @@ export default function SoundboardProxy() {
           loadingAudio={loadingAudio}
           onPlay={() => handlePlayAudio(faction, "homeInvasion")}
           onStop={handleStopAudio}
-          size="xl"
           width="100%"
         />
 
@@ -153,7 +148,6 @@ export default function SoundboardProxy() {
           loadingAudio={loadingAudio}
           onPlay={() => handlePlayAudio(faction, "special")}
           onStop={handleStopAudio}
-          size="xl"
           width="100%"
         />
         {factionAudios[faction]?.special2 && (
@@ -164,7 +158,6 @@ export default function SoundboardProxy() {
             loadingAudio={loadingAudio}
             onPlay={() => handlePlayAudio(faction, "special2")}
             onStop={handleStopAudio}
-            size="xl"
             width="100%"
           />
         )}
@@ -176,7 +169,6 @@ export default function SoundboardProxy() {
           loadingAudio={loadingAudio}
           onPlay={() => handlePlayAudio(faction, "jokes")}
           onStop={handleStopAudio}
-          size="xl"
           width="100%"
         />
 
@@ -197,7 +189,6 @@ export default function SoundboardProxy() {
                   loadingAudio={loadingAudio}
                   onPlay={() => handlePlayAudio(faction, "roleplayYes")}
                   onStop={handleStopAudio}
-                  size="lg"
                   width="100%"
                 />
                 <VoiceLineButton
@@ -207,7 +198,6 @@ export default function SoundboardProxy() {
                   loadingAudio={loadingAudio}
                   onPlay={() => handlePlayAudio(faction, "roleplayNo")}
                   onStop={handleStopAudio}
-                  size="lg"
                   width="100%"
                 />
                 <VoiceLineButton
@@ -217,7 +207,6 @@ export default function SoundboardProxy() {
                   loadingAudio={loadingAudio}
                   onPlay={() => handlePlayAudio(faction, "roleplayIRefuse")}
                   onStop={handleStopAudio}
-                  size="lg"
                   width="100%"
                 />
                 <VoiceLineButton
@@ -227,7 +216,6 @@ export default function SoundboardProxy() {
                   loadingAudio={loadingAudio}
                   onPlay={() => handlePlayAudio(faction, "roleplayDealWithIt")}
                   onStop={handleStopAudio}
-                  size="lg"
                   width="100%"
                 />
                 <VoiceLineButton
@@ -237,7 +225,6 @@ export default function SoundboardProxy() {
                   loadingAudio={loadingAudio}
                   onPlay={() => handlePlayAudio(faction, "roleplayNotEnough")}
                   onStop={handleStopAudio}
-                  size="lg"
                   width="100%"
                 />
                 <VoiceLineButton
@@ -247,7 +234,6 @@ export default function SoundboardProxy() {
                   loadingAudio={loadingAudio}
                   onPlay={() => handlePlayAudio(faction, "roleplayTooMuch")}
                   onStop={handleStopAudio}
-                  size="lg"
                   width="100%"
                 />
                 <VoiceLineButton
@@ -257,7 +243,6 @@ export default function SoundboardProxy() {
                   loadingAudio={loadingAudio}
                   onPlay={() => handlePlayAudio(faction, "roleplaySabotage")}
                   onStop={handleStopAudio}
-                  size="lg"
                   width="100%"
                 />
                 <VoiceLineButton
@@ -267,7 +252,6 @@ export default function SoundboardProxy() {
                   loadingAudio={loadingAudio}
                   onPlay={() => handlePlayAudio(faction, "roleplayFire")}
                   onStop={handleStopAudio}
-                  size="lg"
                   width="100%"
                 />
               </Stack>

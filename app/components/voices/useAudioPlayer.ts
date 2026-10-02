@@ -56,7 +56,6 @@ export function useAudioPlayer({
   const [voiceLineMemory, setVoiceLineMemory] = useState<VoiceLineMemory>({});
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
   const [currentAudio, setCurrentAudio] = useState<AudioEntry | null>(null);
-  const [volume, setVolume] = useState(1);
   const voiceLineRef = useRef<Howl | null>(null);
   const [isWarMode, setIsWarMode] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
@@ -284,11 +283,7 @@ export function useAudioPlayer({
       }));
 
       setCurrentAudio(selectedEntry);
-      playLine(
-        selectedEntry.url,
-        false, // announcer never starts battle
-        isFromQueue,
-      );
+      playLine(selectedEntry.url, false); // announcer never starts battle
       return;
     }
 
@@ -344,14 +339,10 @@ export function useAudioPlayer({
     }));
 
     setCurrentAudio(selectedEntry);
-    playLine(selectedEntry.url, shouldStartBattle, isFromQueue);
+    playLine(selectedEntry.url, shouldStartBattle);
   };
 
-  const playLine = (
-    src: string,
-    shouldStartBattle: boolean,
-    isFromQueue: boolean = false,
-  ) => {
+  const playLine = (src: string, shouldStartBattle: boolean) => {
     // Play voice line directly
     const timeout = shouldStartBattle ? 500 : 0;
     setTimeout(() => playMainVoiceLine(), timeout);
@@ -366,7 +357,7 @@ export function useAudioPlayer({
         src: [src],
         html5: true,
         pool: 3,
-        volume: volume,
+        volume: 1,
         preload: true,
         onend: () => {
           setLoadingAudio(null);

@@ -1,4 +1,4 @@
-import { ButtonProps, Loader } from "@mantine/core";
+import { Loader } from "@mantine/core";
 import { factionAudios, LineType, FactionAudio } from "~/data/factionAudios";
 import type { FactionId } from "~/types";
 import styles from "./VoiceLineButton.module.css";
@@ -10,7 +10,6 @@ interface VoiceLineControlProps {
   onPlay: () => void;
   onStop: () => void;
   onRemoveFromQueue?: () => void;
-  size?: ButtonProps["size"];
   width?: number | string;
   label?: string;
   isQueued?: boolean;
@@ -27,7 +26,6 @@ export function VoiceLineButton({
   onRemoveFromQueue,
   width,
   label,
-  size,
   isQueued = false,
   lineCount,
   variant = "secondary",
@@ -60,7 +58,9 @@ export function VoiceLineButton({
       style={{ width: width }}
     >
       {/* Always render text to maintain button size, hide when loading */}
-      <span className={`${styles.label} ${isLoading ? styles.labelHidden : ""}`}>
+      <span
+        className={`${styles.label} ${isLoading ? styles.labelHidden : ""}`}
+      >
         {isQueued ? "Queued" : label}
       </span>
       {/* Loader overlays the hidden text */}
