@@ -1666,7 +1666,7 @@ export const rawSystems: Record<string, RawSystem> = {
         legendary: true,
         legendaryTitle: "Aeurex Mechanica",
         legendaryDescription:
-          "You may exhaust this card when you pass to place 1 ship that matches a unit upgrade technology you own form your reinforcements into a system that contains your ships.",
+          "You may exhaust this card when you pass to place 1 ship that matches a unit upgrade technology you own from your reinforcements into a system that contains your ships.",
         trait: ["INDUSTRIAL"],
         tech: ["WARFARE"],
       },
