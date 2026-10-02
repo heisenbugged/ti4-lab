@@ -4,6 +4,7 @@ import { drafts, draftStagedSelections } from "./schema.server";
 import { generatePrettyUrlName } from "~/data/urlWords.server";
 import { Draft, SimultaneousPickType } from "~/types";
 import { enqueueImageJob } from "~/utils/imageJobQueue.server";
+import { recordPresetMapPlay } from "./presetMap.server";
 import { v4 as uuidv4 } from "uuid";
 
 export async function draftById(id: string) {
@@ -420,6 +421,7 @@ export async function createDraft(draft: Draft, presetUrl?: string) {
 
   // Enqueue incomplete image generation
   enqueueImageJob(id, prettyUrl, false);
+  recordPresetMapPlay(draft.presetMap);
 
   return { id, prettyUrl };
 }

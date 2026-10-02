@@ -3,36 +3,58 @@ import {
   Box,
   Button,
   Group,
+  Loader,
   SegmentedControl,
   Text,
 } from "@mantine/core";
-import { Link, MetaFunction, useLoaderData } from "react-router";
+import {
+  Link,
+  LoaderFunctionArgs,
+  MetaFunction,
+  useFetcher,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+} from "react-router";
 import { listPresetMaps } from "~/drizzle/presetMap.server";
+import type { PresetMapListing } from "~/drizzle/presetMap.server";
+import type { loader as presetPageLoader } from "./api.preset-maps";
 import classes from "./map-presets/styles.module.css";
 import {
   IconArrowRight,
-  IconDiamond,
-  IconEye,
   IconHeart,
   IconHeartFilled,
   IconMap,
   IconPlanet,
+  IconPlayerPlay,
   IconSparkles,
+  IconX,
 } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
 import {
   LegendaryDisplay,
+  parseTechSkips,
   TechSkipsDisplay,
 } from "~/components/PresetMapBadges";
-import type { PresetMapRecord } from "~/drizzle/presetMap.server";
 import {
-  hiddenGems,
+  mapGeneratorHref,
+  postPresetMapLike,
+  presetImageUrl,
+} from "~/utils/presetMapClient";
+import {
+  BrowseFilters,
+  browseMaps,
+  GroupedMap,
   isNewMap,
   latestMaps,
+  matchesFilters,
+  parseBrowseFilters,
   pickMapOfTheDay,
-  sortMaps,
+  playerCountOptions,
+  PRESET_PAGE_SIZE,
   SortMode,
+  spotlightPool,
 } from "~/utils/presetDiscovery";
 
 export const meta: MetaFunction = () => [
@@ -43,126 +65,167 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-type CardStats = { likes: number; views: number; liked: boolean };
+type CardMap = GroupedMap<PresetMapListing>;
+/** Like totals for maps liked this visit, by id. */
+type LikedMaps = Record<string, number>;
 
-const presetImageUrl = (preset: PresetMapRecord) =>
-  preset.imageUrl ?? `/map-preset/${preset.id}.png`;
+/** Builds a listing URL from the current filters with some overridden. */
+function browseHref(filters: BrowseFilters, changes: Partial<BrowseFilters>) {
+  const next = { ...filters, ...changes };
+  const params = new URLSearchParams();
+  if (next.players != null) params.set("players", String(next.players));
+  if (next.author) params.set("author", next.author);
+  if (next.sort !== "played") params.set("sort", next.sort);
+  const query = params.toString();
+  return query ? `/map-presets?${query}` : "/map-presets";
+}
 
-function playerCountLabel(mapConfigId: string): string | null {
-  const match = mapConfigId.match(/(\d+)p/i);
-  return match ? `${match[1]}P` : null;
+function DraftCount({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className={classes.played}>
+      <IconPlayerPlay size={11} />
+      <span className={classes.playedCount}>{count}</span>
+      {count === 1 ? "draft" : "drafts"}
+    </span>
+  );
+}
+
+function AuthorTag({ author }: { author: string }) {
+  return (
+    <span className={classes.authorTag}>
+      <span className={classes.authorDot}>
+        {author.charAt(0).toUpperCase()}
+      </span>
+      {author}
+    </span>
+  );
+}
+
+function LikeButton({
+  preset,
+  liked,
+  onLike,
+  size,
+}: {
+  preset: PresetMapListing;
+  liked: LikedMaps;
+  onLike: (id: string) => void;
+  size: "xs" | "sm";
+}) {
+  const isLiked = preset.id in liked;
+  return (
+    <Group gap={4} className={classes.likeGroup}>
+      <ActionIcon
+        variant="subtle"
+        color={isLiked ? "red" : "gray"}
+        size={size}
+        className={classes.heartButton}
+        aria-label={isLiked ? "Liked" : `Like ${preset.name}`}
+        onClick={() => onLike(preset.id)}
+      >
+        {isLiked ? <IconHeartFilled size={14} /> : <IconHeart size={14} />}
+      </ActionIcon>
+      <Text size="xs">{liked[preset.id] ?? preset.likes}</Text>
+    </Group>
+  );
 }
 
 function MapCard({
   preset,
-  stats,
+  liked,
   onLike,
   isNew,
+  filters,
 }: {
-  preset: PresetMapRecord;
-  stats: CardStats | undefined;
+  preset: CardMap | PresetMapListing;
+  liked: LikedMaps;
   onLike: (id: string) => void;
   isNew: boolean;
+  filters: BrowseFilters;
 }) {
-  const players = playerCountLabel(preset.mapConfigId);
+  const moreByAuthor = "moreByAuthor" in preset ? preset.moreByAuthor : 0;
   return (
-    <Link to={`/maps/${preset.slug}`} className={classes.cardLink}>
-      <div className={classes.card}>
-        <div className={classes.mapPreviewWrap}>
-          <Box
-            component="img"
-            src={presetImageUrl(preset)}
-            alt={preset.name}
-            className={classes.mapPreview}
-          />
-          {players && <span className={classes.playerChip}>{players}</span>}
-          {isNew && <span className={classes.newBadge}>New</span>}
-        </div>
-        <div className={classes.cardContent}>
-          <div className={classes.name}>{preset.name}</div>
-          <div className={classes.authorTag}>
-            <span className={classes.authorDot}>
-              {preset.author.charAt(0).toUpperCase()}
-            </span>
-            {preset.author}
-          </div>
-          <div className={classes.mapStats}>
-            {preset.avgSliceValue != null && (
-              <span className={classes.stat}>
-                <span className={classes.statValue}>
-                  {preset.avgSliceValue}
-                </span>
-                <span className={classes.statLabel}>Avg</span>
-              </span>
-            )}
-            {preset.totalResources != null && preset.totalInfluence != null && (
-              <span className={classes.stat}>
-                <span className={classes.statValue}>
-                  {preset.totalResources}/{preset.totalInfluence}
-                </span>
-                <span className={classes.statLabel}>R/I</span>
-              </span>
-            )}
-            <LegendaryDisplay count={preset.legendaries} />
-            <TechSkipsDisplay techSkips={preset.techSkips} />
-          </div>
-          {preset.description && (
-            <div className={classes.description}>{preset.description}</div>
-          )}
-        </div>
-        <div className={classes.statsRow}>
-          <Group gap="xs" className={classes.statGroup}>
-            <IconEye size={14} />
-            <Text size="xs">{stats?.views ?? preset.views ?? 0}</Text>
-          </Group>
-          <Group gap={6} className={classes.statGroup}>
-            <ActionIcon
-              variant="subtle"
-              color={stats?.liked ? "red" : "gray"}
-              size="xs"
-              className={classes.heartButton}
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onLike(preset.id);
-              }}
-            >
-              {stats?.liked ? (
-                <IconHeartFilled size={14} />
-              ) : (
-                <IconHeart size={14} />
-              )}
-            </ActionIcon>
-            <Text size="xs">{stats?.likes ?? preset.likes ?? 0}</Text>
-          </Group>
-          <Button
-            component="a"
-            href={`/map-generator?map=${encodeURIComponent(preset.mapString)}`}
-            variant="subtle"
-            color="blue"
-            size="compact-xs"
-            leftSection={<IconSparkles size={11} />}
-            className={classes.genButton}
-            onClick={(event) => event.stopPropagation()}
-          >
-            Generator
-          </Button>
-        </div>
+    <article className={classes.card}>
+      <div className={classes.mapPreviewWrap}>
+        <Box
+          component="img"
+          src={presetImageUrl(preset)}
+          alt=""
+          loading="lazy"
+          className={classes.mapPreview}
+        />
+        {preset.playerCount > 0 && (
+          <span className={`${classes.playerTag} ${classes.playerChip}`}>
+            {preset.playerCount}P
+          </span>
+        )}
+        {isNew && <span className={classes.newBadge}>New</span>}
       </div>
-    </Link>
+      <div className={classes.cardContent}>
+        {/* Stretched over the whole card; other controls sit above it. */}
+        <Link to={`/maps/${preset.slug}`} className={classes.cardTitleLink}>
+          {preset.name}
+        </Link>
+        <AuthorTag author={preset.author} />
+        <div className={classes.mapStats}>
+          {preset.avgSliceValue != null && (
+            <span className={classes.stat}>
+              <span className={classes.statValue}>{preset.avgSliceValue}</span>
+              <span className={classes.statLabel}>Avg</span>
+            </span>
+          )}
+          {preset.totalResources != null && preset.totalInfluence != null && (
+            <span className={classes.stat}>
+              <span className={classes.statValue}>
+                {preset.totalResources}/{preset.totalInfluence}
+              </span>
+              <span className={classes.statLabel}>R/I</span>
+            </span>
+          )}
+          <LegendaryDisplay count={preset.legendaries} />
+          <TechSkipsDisplay techSkips={preset.techSkips} />
+        </div>
+        {preset.description && (
+          <div className={classes.description}>{preset.description}</div>
+        )}
+      </div>
+      <div className={classes.statsRow}>
+        <DraftCount count={preset.draftCount} />
+        <LikeButton preset={preset} liked={liked} onLike={onLike} size="xs" />
+        <Button
+          component="a"
+          href={mapGeneratorHref(preset.mapString)}
+          variant="subtle"
+          color="blue"
+          size="compact-xs"
+          leftSection={<IconSparkles size={11} />}
+          className={classes.genButton}
+        >
+          Generator
+        </Button>
+      </div>
+      {moreByAuthor > 0 && (
+        <Link
+          to={browseHref(filters, { author: preset.author })}
+          className={classes.moreByAuthor}
+        >
+          {moreByAuthor} more by {preset.author}
+        </Link>
+      )}
+    </article>
   );
 }
 
 function Spotlight({
   preset,
-  stats,
+  liked,
   onLike,
 }: {
-  preset: PresetMapRecord;
-  stats: CardStats | undefined;
+  preset: PresetMapListing;
+  liked: LikedMaps;
   onLike: (id: string) => void;
 }) {
-  const players = playerCountLabel(preset.mapConfigId);
   return (
     <section className={classes.spotlight}>
       <div className={classes.spotlightImageWrap}>
@@ -175,18 +238,13 @@ function Spotlight({
       <div className={classes.spotlightContent}>
         <div className={classes.spotlightKicker}>
           <IconPlanet size={13} />
-          <span>Map of the Day</span>
+          <span>Map of the day</span>
         </div>
         <h2 className={classes.spotlightName}>{preset.name}</h2>
         <div className={classes.spotlightAuthorRow}>
-          <span className={classes.authorTag}>
-            <span className={classes.authorDot}>
-              {preset.author.charAt(0).toUpperCase()}
-            </span>
-            {preset.author}
-          </span>
-          {players && (
-            <span className={classes.spotlightPlayers}>{players}</span>
+          <AuthorTag author={preset.author} />
+          {preset.playerCount > 0 && (
+            <span className={classes.playerTag}>{preset.playerCount}P</span>
           )}
         </div>
         {preset.description && (
@@ -209,39 +267,26 @@ function Spotlight({
               <span className={classes.spotlightStatLabel}>R/I</span>
             </div>
           )}
-          {(preset.legendaries ?? 0) > 0 && (
+          {!!preset.legendaries && (
             <div className={classes.spotlightStat}>
               <LegendaryDisplay count={preset.legendaries} />
               <span className={classes.spotlightStatLabel}>Legendary</span>
             </div>
           )}
-          {preset.techSkips && (
+          {parseTechSkips(preset.techSkips) && (
             <div className={classes.spotlightStat}>
               <TechSkipsDisplay techSkips={preset.techSkips} />
               <span className={classes.spotlightStatLabel}>Tech Skips</span>
             </div>
           )}
           <div className={classes.spotlightEngagement}>
-            <span className={classes.spotlightEngagementItem}>
-              <IconEye size={14} />
-              {stats?.views ?? preset.views ?? 0}
-            </span>
-            <ActionIcon
-              variant="subtle"
-              color={stats?.liked ? "red" : "gray"}
+            <DraftCount count={preset.draftCount} />
+            <LikeButton
+              preset={preset}
+              liked={liked}
+              onLike={onLike}
               size="sm"
-              className={classes.heartButton}
-              onClick={() => onLike(preset.id)}
-            >
-              {stats?.liked ? (
-                <IconHeartFilled size={14} />
-              ) : (
-                <IconHeart size={14} />
-              )}
-            </ActionIcon>
-            <span className={classes.spotlightEngagementItem}>
-              {stats?.likes ?? preset.likes ?? 0}
-            </span>
+            />
           </div>
         </div>
         <Group gap="sm" mt="auto" pt="md">
@@ -250,16 +295,16 @@ function Spotlight({
             to={`/maps/${preset.slug}`}
             rightSection={<IconArrowRight size={14} />}
           >
-            View Map
+            View map
           </Button>
           <Button
             component="a"
-            href={`/map-generator?map=${encodeURIComponent(preset.mapString)}`}
+            href={mapGeneratorHref(preset.mapString)}
             variant="light"
             color="blue"
             leftSection={<IconSparkles size={14} />}
           >
-            Open in Generator
+            Open in generator
           </Button>
         </Group>
       </div>
@@ -267,103 +312,197 @@ function Spotlight({
   );
 }
 
-function Shelf({
-  icon,
-  title,
-  subtitle,
-  accent,
-  children,
+function PlayerPicker({
+  filters,
+  options,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-  accent: "teal" | "violet";
-  children: React.ReactNode;
+  filters: BrowseFilters;
+  options: number[];
 }) {
+  const navigate = useNavigate();
   return (
-    <section className={classes.shelf} data-accent={accent}>
-      <div className={classes.shelfHeader}>
-        <span className={classes.shelfIcon}>{icon}</span>
-        <h2 className={classes.shelfTitle}>{title}</h2>
-        {subtitle && <span className={classes.shelfSubtitle}>{subtitle}</span>}
-        <div className={classes.shelfRule} />
+    <div className={classes.playerFilter}>
+      <span className={classes.playerFilterLabel}>Players</span>
+      <SegmentedControl
+        size="sm"
+        color="blue"
+        aria-label="Number of players"
+        value={filters.players == null ? "any" : String(filters.players)}
+        onChange={(value) =>
+          navigate(
+            browseHref(filters, {
+              players: value === "any" ? null : Number(value),
+            }),
+            { preventScrollReset: true },
+          )
+        }
+        data={[
+          { label: "Any", value: "any" },
+          ...options.map((players) => ({
+            label: String(players),
+            value: String(players),
+          })),
+        ]}
+      />
+    </div>
+  );
+}
+
+/**
+ * The paged grid. Keyed by the listing query, so a filter change mounts a
+ * fresh list seeded from the loader's first page.
+ */
+function MapGrid({
+  query,
+  firstPage,
+  initialHasMore,
+  renderCard,
+}: {
+  query: string;
+  firstPage: CardMap[];
+  initialHasMore: boolean;
+  renderCard: (preset: CardMap) => React.ReactNode;
+}) {
+  const [items, setItems] = useState(firstPage);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const fetcher = useFetcher<typeof presetPageLoader>();
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isLoading = fetcher.state !== "idle";
+
+  const loadMore = () => {
+    const params = new URLSearchParams(query);
+    params.set("offset", String(items.length));
+    fetcher.load(`/api/preset-maps?${params}`);
+  };
+
+  useEffect(() => {
+    const page = fetcher.data;
+    if (!page) return;
+    setHasMore(page.hasMore);
+    setItems((prev) => {
+      const seen = new Set(prev.map((preset) => preset.id));
+      return [...prev, ...page.items.filter((preset) => !seen.has(preset.id))];
+    });
+  }, [fetcher.data]);
+
+  // Re-observed whenever the list grows so a sentinel that is still on screen
+  // after a page lands (tall viewports) triggers the next page immediately.
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore || isLoading) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) loadMore();
+      },
+      { rootMargin: "800px 0px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.length, hasMore, isLoading]);
+
+  return (
+    <>
+      <div className={classes.grid}>{items.map(renderCard)}</div>
+      <div ref={sentinelRef} className={classes.loadMore}>
+        {isLoading ? (
+          <Loader size="sm" />
+        ) : hasMore ? (
+          <Button variant="subtle" size="xs" onClick={loadMore}>
+            Load more
+          </Button>
+        ) : (
+          items.length > PRESET_PAGE_SIZE && (
+            <Text size="xs" c="dimmed">
+              End of the list
+            </Text>
+          )
+        )}
       </div>
-      <div className={classes.shelfRow}>{children}</div>
-    </section>
+    </>
   );
 }
 
 const SORT_OPTIONS: { label: string; value: SortMode }[] = [
-  { label: "Trending", value: "trending" },
+  { label: "Most played", value: "played" },
   { label: "Newest", value: "newest" },
-  { label: "Most Viewed", value: "views" },
-  { label: "Most Liked", value: "likes" },
 ];
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const filters = parseBrowseFilters(new URL(request.url).searchParams);
   const presets = await listPresetMaps();
-  return { presets, now: Date.now() };
+  const now = Date.now();
+
+  // Shelves follow the player filter but step aside when browsing one author.
+  const forPlayers = presets.filter((preset) =>
+    matchesFilters(preset, { players: filters.players, author: null }),
+  );
+  const showShelves = filters.author == null;
+  const spotlight = showShelves
+    ? pickMapOfTheDay(spotlightPool(forPlayers), now)
+    : null;
+  const newArrivals = showShelves
+    ? latestMaps(
+        forPlayers.filter((preset) => preset.id !== spotlight?.id),
+        6,
+      )
+    : [];
+
+  const items = browseMaps(presets, filters);
+  return {
+    now,
+    filters,
+    total: presets.length,
+    playerOptions: playerCountOptions(presets),
+    // Ungrouped count of maps matching the filters, for the section header.
+    matching: presets.filter((preset) => matchesFilters(preset, filters))
+      .length,
+    spotlight,
+    newArrivals,
+    firstPage: items.slice(0, PRESET_PAGE_SIZE),
+    hasMore: items.length > PRESET_PAGE_SIZE,
+  };
 };
 
 export default function MapPresets() {
-  const { presets, now } = useLoaderData<typeof loader>();
-  const [statsById, setStatsById] = useState<Record<string, CardStats>>(() =>
-    Object.fromEntries(
-      presets.map((preset) => [
-        preset.id,
-        {
-          likes: preset.likes ?? 0,
-          views: preset.views ?? 0,
-          liked: false,
-        },
-      ]),
-    ),
-  );
-  const [sortMode, setSortMode] = useState<SortMode>("trending");
-
-  const spotlight = useMemo(
-    () => pickMapOfTheDay(presets, now),
-    [presets, now],
-  );
-  const newArrivals = useMemo(() => latestMaps(presets, 6), [presets]);
-  const gems = useMemo(() => {
-    const excludeIds = new Set([
-      ...(spotlight ? [spotlight.id] : []),
-      ...newArrivals.map((preset) => preset.id),
-    ]);
-    return hiddenGems(presets, excludeIds, 6);
-  }, [presets, spotlight, newArrivals]);
-  const sortedPresets = useMemo(
-    () => sortMaps(presets, sortMode, now),
-    [presets, sortMode, now],
-  );
+  const {
+    now,
+    filters,
+    total,
+    playerOptions,
+    matching,
+    spotlight,
+    newArrivals,
+    firstPage,
+    hasMore,
+  } = useLoaderData<typeof loader>();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [liked, setLiked] = useState<LikedMaps>({});
 
   const handleLike = async (id: string) => {
-    const response = await fetch(`/api/preset-maps/${id}/like`, {
-      method: "POST",
-    });
-    const result = await response.json().catch(() => null);
-    if (!result?.success) return;
-
-    setStatsById((prev) => ({
-      ...prev,
-      [id]: {
-        ...(prev[id] ?? { likes: 0, views: 0, liked: false }),
-        likes: result.likes ?? prev[id]?.likes ?? 0,
-        liked: result.liked ?? prev[id]?.liked ?? false,
-      },
-    }));
+    const likes = await postPresetMapLike(id);
+    if (likes != null) setLiked((prev) => ({ ...prev, [id]: likes }));
   };
 
-  const renderCard = (preset: PresetMapRecord) => (
+  const renderCard = (preset: CardMap | PresetMapListing) => (
     <MapCard
       key={preset.id}
       preset={preset}
-      stats={statsById[preset.id]}
+      liked={liked}
       onLike={handleLike}
       isNew={isNewMap(preset.createdAt, now)}
+      filters={filters}
     />
   );
+
+  const mapsLabel =
+    filters.players != null ? `${filters.players}-player maps` : "maps";
+  const gridTitle = filters.author
+    ? `${filters.players != null ? mapsLabel : "Maps"} by ${filters.author}`
+    : filters.players != null
+      ? mapsLabel
+      : "All maps";
 
   return (
     <MainAppShell>
@@ -373,73 +512,106 @@ export default function MapPresets() {
             <h1 className={classes.title}>Community Maps</h1>
             <span className={classes.badge}>
               <IconMap size={12} />
-              {presets.length}
+              {total}
             </span>
           </div>
           <p className={classes.subtitle}>
-            Maps built and shared by the community — a new spotlight every day.
+            Maps built and shared by the community. Pick a player count to
+            start.
           </p>
         </div>
 
+        <PlayerPicker filters={filters} options={playerOptions} />
+
         {spotlight && (
           <div className={classes.reveal}>
-            <Spotlight
-              preset={spotlight}
-              stats={statsById[spotlight.id]}
-              onLike={handleLike}
-            />
+            <Spotlight preset={spotlight} liked={liked} onLike={handleLike} />
           </div>
         )}
 
         {newArrivals.length > 0 && (
-          <div className={classes.reveal} style={{ animationDelay: "80ms" }}>
-            <Shelf
-              icon={<IconSparkles size={14} />}
-              title="New Arrivals"
-              subtitle="Hot off the forge"
-              accent="teal"
-            >
+          <section className={classes.shelf}>
+            <div className={classes.shelfHeader}>
+              <span className={classes.shelfIcon}>
+                <IconSparkles size={14} />
+              </span>
+              <h2 className={`${classes.sectionTitle} ${classes.shelfTitle}`}>
+                New Arrivals
+              </h2>
+              <span className={classes.shelfSubtitle}>Hot off the forge</span>
+              <div className={classes.shelfRule} />
+            </div>
+            <div className={classes.shelfRow}>
               {newArrivals.map((preset) => (
                 <div key={preset.id} className={classes.shelfItem}>
                   {renderCard(preset)}
                 </div>
               ))}
-            </Shelf>
-          </div>
+            </div>
+          </section>
         )}
 
-        {gems.length > 0 && (
-          <div className={classes.reveal} style={{ animationDelay: "160ms" }}>
-            <Shelf
-              icon={<IconDiamond size={14} />}
-              title="Hidden Gems"
-              subtitle="Loved by those who found them"
-              accent="violet"
-            >
-              {gems.map((preset) => (
-                <div key={preset.id} className={classes.shelfItem}>
-                  {renderCard(preset)}
-                </div>
-              ))}
-            </Shelf>
-          </div>
-        )}
-
-        <section
-          className={`${classes.allMaps} ${classes.reveal}`}
-          style={{ animationDelay: "240ms" }}
-        >
+        <section className={classes.allMaps}>
           <div className={classes.allMapsHeader}>
-            <h2 className={classes.allMapsTitle}>All Maps</h2>
+            <div className={classes.allMapsHeading}>
+              <h2 className={classes.sectionTitle}>{gridTitle}</h2>
+              <span className={classes.allMapsCount}>{matching}</span>
+              {filters.author && (
+                <Button
+                  component={Link}
+                  to={browseHref(filters, { author: null })}
+                  variant="subtle"
+                  color="gray"
+                  size="compact-xs"
+                  leftSection={<IconX size={12} />}
+                >
+                  Show all authors
+                </Button>
+              )}
+            </div>
             <SegmentedControl
               size="xs"
-              value={sortMode}
-              onChange={(value) => setSortMode(value as SortMode)}
+              value={filters.sort}
+              onChange={(value) =>
+                navigate(browseHref(filters, { sort: value as SortMode }), {
+                  preventScrollReset: true,
+                })
+              }
               data={SORT_OPTIONS}
               className={classes.sortControl}
             />
           </div>
-          <div className={classes.grid}>{sortedPresets.map(renderCard)}</div>
+          {!filters.author && (
+            <p className={classes.groupingNote}>
+              Showing up to two maps per author. Follow “more by” on a card to
+              see the rest.
+            </p>
+          )}
+          {firstPage.length === 0 ? (
+            <div className={classes.empty}>
+              <Text size="sm">
+                No {filters.players ? `${filters.players}-player ` : ""}maps
+                yet.
+              </Text>
+              <Button
+                component="a"
+                href="/map-generator"
+                variant="light"
+                size="xs"
+                leftSection={<IconSparkles size={12} />}
+              >
+                Build one in the map generator
+              </Button>
+            </div>
+          ) : (
+            <MapGrid
+              key={location.search}
+              query={location.search}
+              firstPage={firstPage}
+              initialHasMore={hasMore}
+              renderCard={renderCard}
+            />
+          )}
         </section>
       </Box>
     </MainAppShell>

@@ -7,6 +7,7 @@ import {
   integer,
   unique,
   real,
+  primaryKey,
 } from "drizzle-orm/sqlite-core";
 
 // Define a function to generate UUIDs for default values
@@ -148,6 +149,12 @@ export const presetMaps = sqliteTable(
     totalInfluence: integer("totalInfluence"),
     legendaries: integer("legendaries"),
     techSkips: text("techSkips"), // JSON: {"G":2,"R":1,"B":3,"Y":1}
+    // Drafts started on this map, matched by layout (see presetFingerprint)
+    draftCount: integer("draftCount").notNull().default(0),
+    // Kept reachable by URL but left out of the community listing
+    hidden: integer("hidden", { mode: "boolean" }).notNull().default(false),
+    // Pool for the map-of-the-day spotlight
+    featured: integer("featured", { mode: "boolean" }).notNull().default(false),
     createdAt: text("createdAt")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
@@ -180,6 +187,22 @@ export const presetMapLikes = sqliteTable(
       table.presetMapId,
       table.ip,
     ),
+  }),
+);
+
+/**
+ * One row per viewer per map per day, so reloads, revalidations and repeat
+ * visits only count once. Rows older than a couple of days are pruned.
+ */
+export const presetMapViews = sqliteTable(
+  "presetMapViews",
+  {
+    day: text("day").notNull(),
+    presetMapId: text("presetMapId").notNull(),
+    viewer: text("viewer").notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.day, table.presetMapId, table.viewer] }),
   }),
 );
 

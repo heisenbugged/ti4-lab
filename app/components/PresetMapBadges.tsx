@@ -50,7 +50,7 @@ function CountBadge({
   );
 }
 
-export function TechSkipIcon({
+function TechSkipIcon({
   techSpecialty,
   count,
   size = "sm",
@@ -70,6 +70,17 @@ export function TechSkipIcon({
   );
 }
 
+/** Parses the stored tech-skip JSON; null when malformed or all zero. */
+export function parseTechSkips(techSkips: string | null): TechSkipsData | null {
+  if (!techSkips) return null;
+  try {
+    const data = JSON.parse(techSkips) as TechSkipsData;
+    return data.G > 0 || data.R > 0 || data.B > 0 || data.Y > 0 ? data : null;
+  } catch {
+    return null;
+  }
+}
+
 export function TechSkipsDisplay({
   techSkips,
   size = "sm",
@@ -77,24 +88,16 @@ export function TechSkipsDisplay({
   techSkips: string | null;
   size?: BadgeSize;
 }) {
-  if (!techSkips) return null;
-
-  try {
-    const data = JSON.parse(techSkips) as TechSkipsData;
-    const hasAny = data.G > 0 || data.R > 0 || data.B > 0 || data.Y > 0;
-    if (!hasAny) return null;
-
-    return (
-      <Group gap={BADGE_SIZES[size].gap}>
-        <TechSkipIcon techSpecialty="BIOTIC" count={data.G} size={size} />
-        <TechSkipIcon techSpecialty="WARFARE" count={data.R} size={size} />
-        <TechSkipIcon techSpecialty="PROPULSION" count={data.B} size={size} />
-        <TechSkipIcon techSpecialty="CYBERNETIC" count={data.Y} size={size} />
-      </Group>
-    );
-  } catch {
-    return null;
-  }
+  const data = parseTechSkips(techSkips);
+  if (!data) return null;
+  return (
+    <Group gap={BADGE_SIZES[size].gap}>
+      <TechSkipIcon techSpecialty="BIOTIC" count={data.G} size={size} />
+      <TechSkipIcon techSpecialty="WARFARE" count={data.R} size={size} />
+      <TechSkipIcon techSpecialty="PROPULSION" count={data.B} size={size} />
+      <TechSkipIcon techSpecialty="CYBERNETIC" count={data.Y} size={size} />
+    </Group>
+  );
 }
 
 export function LegendaryDisplay({
@@ -104,7 +107,7 @@ export function LegendaryDisplay({
   count: number | null;
   size?: BadgeSize;
 }) {
-  if (!count || count === 0) return null;
+  if (!count) return null;
   const { icon, fontSize } = BADGE_SIZES[size];
   return (
     <CountBadge

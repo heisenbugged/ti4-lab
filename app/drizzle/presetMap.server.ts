@@ -1,10 +1,17 @@
-import { desc, eq, and, sql } from "drizzle-orm";
+import { desc, eq, and, lt, sql } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "./config.server";
-import { presetMapLikes, presetMaps } from "./schema.server";
+import { presetMapLikes, presetMaps, presetMapViews } from "./schema.server";
 import { decodeMapString } from "~/mapgen/utils/mapStringCodec";
 import { calculateMapStats } from "~/utils/mapStats";
 import { getAllSliceValues } from "~/mapgen/utils/sliceScoring";
+import {
+  fingerprintFromMap,
+  fingerprintFromMapString,
+  playerCountFromMapString,
+} from "~/utils/presetFingerprint";
+import { DAY_MS, parsePresetTimestamp } from "~/utils/presetDiscovery";
+import type { Map } from "~/types";
 
 export type PresetMapRecord = {
   id: string;
@@ -22,9 +29,15 @@ export type PresetMapRecord = {
   totalInfluence: number | null;
   legendaries: number | null;
   techSkips: string | null; // JSON: {"G":2,"R":1,"B":3,"Y":1}
+  draftCount: number;
+  hidden: boolean;
+  featured: boolean;
   createdAt: string;
   updatedAt: string;
 };
+
+/** A listing row: the stored record plus seats derived from its home tiles. */
+export type PresetMapListing = PresetMapRecord & { playerCount: number };
 
 export type TechSkipsData = {
   G: number;
@@ -37,7 +50,7 @@ export type TechSkipsData = {
  * Computes map statistics from a map string.
  * Returns null if the map string is invalid.
  */
-export function computeMapStats(mapString: string): {
+function computeMapStats(mapString: string): {
   avgSliceValue: number | null;
   totalResources: number;
   totalInfluence: number;
@@ -50,7 +63,6 @@ export function computeMapStats(mapString: string): {
   const { map } = decoded;
   const mapStats = calculateMapStats([], map);
 
-  // Calculate average slice value
   const sliceValues = getAllSliceValues(map);
   const values = Object.values(sliceValues);
   const avgSliceValue =
@@ -73,18 +85,25 @@ export function computeMapStats(mapString: string): {
   };
 }
 
-/**
- * Generate a URL-friendly slug from a name.
- * Converts to lowercase, replaces spaces with hyphens, removes special characters.
- */
-export function generateSlug(name: string): string {
+/** URL-friendly slug: lowercase, hyphen-separated, ASCII letters and digits only. */
+function generateSlug(name: string): string {
   return name
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
-    .replace(/\s+/g, "-") // Replace spaces with hyphens
-    .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
-    .replace(/^-|-$/g, ""); // Remove leading/trailing hyphens
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function slugTaken(slug: string): boolean {
+  return (
+    db
+      .select({ id: presetMaps.id })
+      .from(presetMaps)
+      .where(eq(presetMaps.slug, slug))
+      .get() != null
+  );
 }
 
 export async function createPresetMap(input: {
@@ -97,22 +116,11 @@ export async function createPresetMap(input: {
   const id = uuidv4();
   const baseSlug = generateSlug(input.name);
 
-  // Check if slug exists, append number if needed
   let slug = baseSlug;
-  let counter = 1;
-  while (true) {
-    const existing = await db
-      .select({ id: presetMaps.id })
-      .from(presetMaps)
-      .where(eq(presetMaps.slug, slug))
-      .limit(1);
-
-    if (existing.length === 0) break;
+  for (let counter = 1; slugTaken(slug); counter++) {
     slug = `${baseSlug}-${counter}`;
-    counter++;
   }
 
-  // Compute map statistics
   const stats = computeMapStats(input.mapString);
 
   await db.insert(presetMaps).values({
@@ -139,14 +147,69 @@ export async function createPresetMap(input: {
   return result[0] as PresetMapRecord;
 }
 
-export async function listPresetMaps(): Promise<PresetMapRecord[]> {
-  return (await db
+export async function listPresetMaps({
+  includeHidden = false,
+}: { includeHidden?: boolean } = {}): Promise<PresetMapListing[]> {
+  const rows = (await db
     .select()
     .from(presetMaps)
-    .orderBy(
-      desc(presetMaps.views),
-      desc(presetMaps.createdAt),
-    )) as PresetMapRecord[];
+    .where(includeHidden ? undefined : eq(presetMaps.hidden, false))
+    .orderBy(desc(presetMaps.createdAt))) as PresetMapRecord[];
+  // mapConfigId is unreliable for seat count (most "milty6p" maps aren't 6p),
+  // so derive it from the home tiles actually placed.
+  return rows.map((row) => ({
+    ...row,
+    playerCount: playerCountFromMapString(row.mapString),
+  }));
+}
+
+export async function setPresetMapFlags(
+  id: string,
+  flags: { hidden?: boolean; featured?: boolean },
+): Promise<void> {
+  await db
+    .update(presetMaps)
+    .set({ ...flags, updatedAt: sql`CURRENT_TIMESTAMP` })
+    .where(eq(presetMaps.id, id))
+    .run();
+}
+
+/**
+ * Credits a newly created draft to the preset map it was played on, if its
+ * layout matches one. When several presets share a layout (re-uploads), the
+ * oldest listed one gets the credit, matching scripts/curate-preset-maps.ts.
+ * Never throws — draft creation must not depend on it.
+ */
+export function recordPresetMapPlay(map: Map | undefined): void {
+  try {
+    const fingerprint = fingerprintFromMap(map);
+    if (!fingerprint) return;
+
+    const candidates = db
+      .select({
+        id: presetMaps.id,
+        mapString: presetMaps.mapString,
+        createdAt: presetMaps.createdAt,
+        hidden: presetMaps.hidden,
+      })
+      .from(presetMaps)
+      .all()
+      .filter((row) => fingerprintFromMapString(row.mapString) === fingerprint)
+      .sort(
+        (a, b) =>
+          Number(a.hidden) - Number(b.hidden) ||
+          parsePresetTimestamp(a.createdAt) - parsePresetTimestamp(b.createdAt),
+      );
+    const original = candidates[0];
+    if (!original) return;
+
+    db.update(presetMaps)
+      .set({ draftCount: sql`${presetMaps.draftCount} + 1` })
+      .where(eq(presetMaps.id, original.id))
+      .run();
+  } catch (error) {
+    console.error("Failed to record preset map play", error);
+  }
 }
 
 export async function presetMapById(
@@ -184,25 +247,44 @@ export async function updatePresetMapImageUrl(
     .run();
 }
 
-export async function incrementPresetMapViews(id: string): Promise<number> {
-  await db
-    .update(presetMaps)
-    .set({ views: sql`${presetMaps.views} + 1` })
-    .where(eq(presetMaps.id, id));
+const VIEW_RETENTION_DAYS = 2;
 
-  const result = await db
-    .select({ views: presetMaps.views })
-    .from(presetMaps)
-    .where(eq(presetMaps.id, id))
-    .limit(1);
+/**
+ * Counts a view at most once per viewer per map per UTC day. Returns the
+ * map's (possibly unchanged) view total.
+ */
+export function recordPresetMapView(id: string, viewer: string): number {
+  const now = new Date();
+  const day = now.toISOString().slice(0, 10);
+  const cutoff = new Date(now.getTime() - VIEW_RETENTION_DAYS * DAY_MS)
+    .toISOString()
+    .slice(0, 10);
 
-  return result[0]?.views ?? 0;
+  return db.transaction((tx) => {
+    const inserted = tx
+      .insert(presetMapViews)
+      .values({ day, presetMapId: id, viewer })
+      .onConflictDoNothing()
+      .run();
+
+    if (inserted.changes > 0) {
+      tx.update(presetMaps)
+        .set({ views: sql`${presetMaps.views} + 1` })
+        .where(eq(presetMaps.id, id))
+        .run();
+      tx.delete(presetMapViews).where(lt(presetMapViews.day, cutoff)).run();
+    }
+
+    const current = tx
+      .select({ views: presetMaps.views })
+      .from(presetMaps)
+      .where(eq(presetMaps.id, id))
+      .get();
+    return current?.views ?? 0;
+  });
 }
 
-export async function likePresetMap(
-  id: string,
-  ip: string,
-): Promise<{ likes: number; liked: boolean }> {
+export async function likePresetMap(id: string, ip: string): Promise<number> {
   return db.transaction((tx) => {
     const existing = tx
       .select({ id: presetMapLikes.id })
@@ -231,6 +313,6 @@ export async function likePresetMap(
       .where(eq(presetMaps.id, id))
       .get();
 
-    return { likes: current?.likes ?? 0, liked: true };
+    return current?.likes ?? 0;
   });
 }

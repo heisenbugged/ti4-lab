@@ -46,6 +46,19 @@
   margin: 0;
 }
 
+/* ── Player count filter ── */
+.playerFilter {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  margin-bottom: var(--mantine-spacing-xl);
+}
+
+.playerFilterLabel {
+  font-size: 0.875rem;
+  color: var(--mantine-color-gray-4);
+}
+
 /* ── Entrance reveal ── */
 @media (prefers-reduced-motion: no-preference) {
   .reveal {
@@ -161,7 +174,7 @@
   gap: var(--mantine-spacing-sm);
 }
 
-.spotlightPlayers {
+.playerTag {
   font-family: "Orbitron", sans-serif;
   font-size: 0.6rem;
   font-weight: 600;
@@ -225,13 +238,6 @@
   color: var(--mantine-color-gray-4);
 }
 
-.spotlightEngagementItem {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.8rem;
-}
-
 @media (max-width: 860px) {
   .spotlight {
     grid-template-columns: 1fr;
@@ -268,21 +274,13 @@
   height: 26px;
   border-radius: 6px;
   flex-shrink: 0;
-}
-
-.shelf[data-accent="teal"] .shelfIcon {
   color: var(--mantine-color-teal-4);
-  border: 1px solid color-mix(in srgb, var(--mantine-color-teal-6) 45%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--mantine-color-teal-6) 45%, transparent);
   background: color-mix(in srgb, var(--mantine-color-teal-9) 25%, transparent);
 }
 
-.shelf[data-accent="violet"] .shelfIcon {
-  color: var(--mantine-color-violet-4);
-  border: 1px solid color-mix(in srgb, var(--mantine-color-violet-6) 45%, transparent);
-  background: color-mix(in srgb, var(--mantine-color-violet-9) 25%, transparent);
-}
-
-.shelfTitle {
+.sectionTitle {
   font-family: "Orbitron", sans-serif;
   font-size: 0.85rem;
   font-weight: 700;
@@ -290,6 +288,9 @@
   text-transform: uppercase;
   color: var(--mantine-color-gray-2);
   margin: 0;
+}
+
+.shelfTitle {
   white-space: nowrap;
 }
 
@@ -302,11 +303,7 @@
 .shelfRule {
   flex: 1;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    var(--mantine-color-dark-4),
-    transparent
-  );
+  background: linear-gradient(90deg, var(--mantine-color-dark-4), transparent);
 }
 
 .shelfRow {
@@ -350,18 +347,44 @@
   border-top: 1px solid var(--mantine-color-dark-5);
 }
 
-.allMapsTitle {
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--mantine-color-gray-2);
-  margin: 0;
+.allMapsHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--mantine-spacing-sm);
+  min-width: 0;
+}
+
+.allMapsCount {
+  font-size: 0.75rem;
+  color: var(--mantine-color-dimmed);
+  font-variant-numeric: tabular-nums;
+}
+
+.groupingNote {
+  margin: calc(var(--mantine-spacing-xs) * -0.5) 0 var(--mantine-spacing-md);
+  font-size: 0.75rem;
+  color: var(--mantine-color-dimmed);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--mantine-spacing-sm);
+  padding: var(--mantine-spacing-xl) 0;
+  color: var(--mantine-color-gray-4);
 }
 
 .sortControl {
   flex-shrink: 0;
+}
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  min-height: 48px;
+  padding: var(--mantine-spacing-lg) 0;
 }
 
 /* ── Responsive grid ── */
@@ -371,27 +394,21 @@
   gap: var(--mantine-spacing-md);
 }
 
-/* ── Card link wrapper ── */
-.cardLink {
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  width: 100%;
-  min-width: 0;
-}
-
 /* ── Card ── */
 .card {
   position: relative;
   background: var(--mantine-color-dark-7);
   border: 1px solid var(--mantine-color-dark-4);
   border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-width: 0;
 }
 
 .card:hover {
@@ -430,19 +447,14 @@
 }
 
 /* ── Preview chips ── */
+/* Positions .playerTag over the card preview. */
 .playerChip {
   position: absolute;
   top: 10px;
   left: 10px;
-  font-family: "Orbitron", sans-serif;
   font-size: 0.55rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
   padding: 3px 7px;
-  border-radius: 4px;
-  color: var(--mantine-color-gray-4);
   background: rgba(8, 12, 20, 0.75);
-  border: 1px solid var(--mantine-color-dark-4);
 }
 
 .newBadge {
@@ -457,8 +469,13 @@
   padding: 3px 8px;
   border-radius: 4px;
   color: var(--mantine-color-teal-3);
-  background: color-mix(in srgb, var(--mantine-color-teal-9) 55%, rgba(8, 12, 20, 0.85));
-  border: 1px solid color-mix(in srgb, var(--mantine-color-teal-5) 55%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--mantine-color-teal-9) 55%,
+    rgba(8, 12, 20, 0.85)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--mantine-color-teal-5) 55%, transparent);
 }
 
 /* ── Card content ── */
@@ -470,15 +487,35 @@
   flex: 1;
 }
 
-.name {
+.cardTitleLink {
   font-family: "Orbitron", sans-serif;
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--mantine-color-gray-1);
+  text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Makes the whole card clickable without nesting other links inside one. */
+.cardTitleLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.cardTitleLink:focus-visible {
+  outline: none;
+}
+
+.cardTitleLink:focus-visible::after {
+  outline: 2px solid var(--mantine-color-blue-4);
+  outline-offset: -2px;
+  border-radius: 10px;
 }
 
 /* ── Inline author tag ── */
@@ -548,6 +585,8 @@
 
 /* ── Bottom stats row ── */
 .statsRow {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: var(--mantine-spacing-sm);
@@ -556,16 +595,52 @@
   border-top: 1px solid var(--mantine-color-dark-5);
 }
 
-.statGroup {
-  display: flex;
+/* Same voice as the like count beside it: only the number is brighter. */
+.played {
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--mantine-color-gray-4);
   font-size: 0.75rem;
+  color: var(--mantine-color-dimmed);
+  font-variant-numeric: tabular-nums;
 }
 
-.statGroup svg {
-  opacity: 0.7;
+.played svg {
+  opacity: 0.6;
+}
+
+.playedCount {
+  color: var(--mantine-color-gray-4);
+}
+
+.likeGroup {
+  color: var(--mantine-color-gray-4);
+}
+
+.moreByAuthor {
+  position: relative;
+  z-index: 2;
+  display: block;
+  padding: 7px var(--mantine-spacing-md);
+  font-size: 0.72rem;
+  color: var(--mantine-color-violet-3);
+  text-decoration: none;
+  background: color-mix(
+    in srgb,
+    var(--mantine-color-violet-9) 18%,
+    var(--mantine-color-dark-8)
+  );
+  border-top: 1px solid var(--mantine-color-dark-5);
+}
+
+.moreByAuthor:hover {
+  color: var(--mantine-color-violet-2);
+  text-decoration: underline;
+}
+
+.moreByAuthor:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-4);
+  outline-offset: -2px;
 }
 
 .heartButton {

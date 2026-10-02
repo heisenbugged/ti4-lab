@@ -71,6 +71,7 @@ import {
   getAllTileContributions,
 } from "../utils/sliceScoring";
 import { improveBalance } from "../utils/improveBalance";
+import { mapGeneratorHref } from "~/utils/presetMapClient";
 import { TileSidebar } from "./TileSidebar";
 import { SliceScoringInfoModal } from "./SliceScoringInfoModal";
 import { MapStatsOverlay } from "./MapStatsOverlay";
@@ -170,7 +171,7 @@ function MapGeneratorContent() {
     return map.some((tile) => tile.type === "SYSTEM" && tile.idx !== 0);
   }, [map]);
 
-  const shareUrl = `https://tidraft.com/map-generator?map=${encodeURIComponent(mapString)}`;
+  const shareUrl = mapGeneratorHref(mapString, "https://tidraft.com");
   const imageUrl = `https://tidraft.com/map-generator.png?map=${encodeURIComponent(mapString)}`;
 
   // Check if map is complete (no OPEN tiles)

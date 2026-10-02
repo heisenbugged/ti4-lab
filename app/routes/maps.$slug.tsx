@@ -7,8 +7,9 @@ import {
 } from "react-router";
 import {
   presetMapBySlug,
-  incrementPresetMapViews,
+  recordPresetMapView,
 } from "~/drizzle/presetMap.server";
+import { getRequestIp, isNonHumanRequest } from "~/utils/request.server";
 import {
   IconEye,
   IconHeart,
@@ -25,8 +26,15 @@ import { notifications } from "@mantine/notifications";
 import { MainAppShell } from "~/components/MainAppShell";
 import {
   LegendaryDisplay,
+  parseTechSkips,
   TechSkipsDisplay,
 } from "~/components/PresetMapBadges";
+import { playerCountFromMapString } from "~/utils/presetFingerprint";
+import {
+  mapGeneratorHref,
+  postPresetMapLike,
+  presetImageUrl,
+} from "~/utils/presetMapClient";
 import {
   getAllSliceValues,
   getAllSliceStats,
@@ -46,43 +54,22 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     throw new Response("Map not found", { status: 404 });
   }
 
-  // Increment views
-  const views = await incrementPresetMapViews(preset.id);
+  const views = isNonHumanRequest(request)
+    ? preset.views
+    : recordPresetMapView(preset.id, getRequestIp(request));
 
-  // Get client IP for like status (simplified - in production use proper IP detection)
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("cf-connecting-ip") ??
-    "unknown";
-
-  return {
-    preset: { ...preset, views },
-    ip,
-  };
-};
-
-type LoaderData = {
-  preset: {
-    id: string;
-    slug: string;
-    name: string;
-    description: string;
-    author: string;
-    imageUrl: string | null;
-  };
+  return { preset: { ...preset, views } };
 };
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  const typed = data as LoaderData | undefined;
-  if (!typed) return [];
+  if (!data) return [];
 
-  const { preset } = typed;
+  const { preset } = data;
   const title = `${preset.name} - TI4 Lab`;
   const description = preset.description
     ? `${preset.description} — by ${preset.author}`
     : `Map by ${preset.author}`;
-  const imageUrl =
-    preset.imageUrl ?? `https://tidraft.com/map-preset/${preset.id}.png`;
+  const imageUrl = presetImageUrl(preset, "https://tidraft.com");
   const url = `https://tidraft.com/maps/${preset.slug}`;
 
   return [
@@ -102,20 +89,16 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function MapDetail() {
-  const { preset, ip } = useLoaderData<typeof loader>();
+  const { preset } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
 
-  const [stats, setStats] = useState({
-    likes: preset.likes,
-    views: preset.views,
-    liked: false,
-  });
+  const [likes, setLikes] = useState(preset.likes);
+  const [liked, setLiked] = useState(false);
 
   const decoded = useMemo(() => {
     return decodeMapString(preset.mapString);
   }, [preset.mapString]);
 
-  // Compute slice stats for the map
   const sliceValues = useMemo(
     () => (decoded ? getAllSliceValues(decoded.map) : {}),
     [decoded],
@@ -133,17 +116,10 @@ export default function MapDetail() {
     [decoded],
   );
   const handleLike = async () => {
-    const response = await fetch(`/api/preset-maps/${preset.id}/like`, {
-      method: "POST",
-    });
-    const result = await response.json().catch(() => null);
-    if (!result?.success) return;
-
-    setStats((prev) => ({
-      ...prev,
-      likes: result.likes ?? prev.likes,
-      liked: result.liked ?? prev.liked,
-    }));
+    const total = await postPresetMapLike(preset.id);
+    if (total == null) return;
+    setLikes(total);
+    setLiked(true);
   };
 
   const handleStartDraft = () => {
@@ -156,9 +132,7 @@ export default function MapDetail() {
       return;
     }
 
-    const playerCount = decoded.map.filter(
-      (tile) => tile.type === "HOME",
-    ).length;
+    const playerCount = playerCountFromMapString(preset.mapString);
 
     const result = buildPresetDraftState({
       map: decoded.map,
@@ -237,7 +211,6 @@ export default function MapDetail() {
                 <p className={classes.description}>{preset.description}</p>
               )}
 
-              {/* Map Stats */}
               <div className={classes.mapStatsRow}>
                 {preset.avgSliceValue != null && (
                   <div className={classes.mapStatItem}>
@@ -260,7 +233,7 @@ export default function MapDetail() {
                       </Text>
                     </div>
                   )}
-                {(preset.legendaries ?? 0) > 0 && (
+                {!!preset.legendaries && (
                   <div className={classes.mapStatItem}>
                     <LegendaryDisplay count={preset.legendaries} size="md" />
                     <Text size="xs" c="dimmed">
@@ -268,7 +241,7 @@ export default function MapDetail() {
                     </Text>
                   </div>
                 )}
-                {preset.techSkips && (
+                {parseTechSkips(preset.techSkips) && (
                   <div className={classes.mapStatItem}>
                     <TechSkipsDisplay techSkips={preset.techSkips} size="md" />
                     <Text size="xs" c="dimmed">
@@ -280,9 +253,18 @@ export default function MapDetail() {
 
               <div className={classes.statsRow}>
                 <div className={classes.statItem}>
+                  <IconPlayerPlay size={16} style={{ opacity: 0.6 }} />
+                  <Text size="sm" fw={500}>
+                    {preset.draftCount}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {preset.draftCount === 1 ? "draft" : "drafts"}
+                  </Text>
+                </div>
+                <div className={classes.statItem}>
                   <IconEye size={16} style={{ opacity: 0.6 }} />
                   <Text size="sm" fw={500}>
-                    {stats.views}
+                    {preset.views}
                   </Text>
                   <Text size="xs" c="dimmed">
                     views
@@ -291,18 +273,18 @@ export default function MapDetail() {
                 <div className={classes.statItem}>
                   <ActionIcon
                     variant="subtle"
-                    color={stats.liked ? "red" : "gray"}
+                    color={liked ? "red" : "gray"}
                     className={classes.heartButton}
                     onClick={handleLike}
                   >
-                    {stats.liked ? (
+                    {liked ? (
                       <IconHeartFilled size={16} />
                     ) : (
                       <IconHeart size={16} />
                     )}
                   </ActionIcon>
                   <Text size="sm" fw={500}>
-                    {stats.likes}
+                    {likes}
                   </Text>
                   <Text size="xs" c="dimmed">
                     likes
@@ -322,9 +304,7 @@ export default function MapDetail() {
 
                 <Button
                   component="a"
-                  href={`/map-generator?map=${encodeURIComponent(
-                    preset.mapString,
-                  )}`}
+                  href={mapGeneratorHref(preset.mapString)}
                   variant="light"
                   color="blue"
                   size="sm"
