@@ -5,11 +5,11 @@ import {
   buildSliceValueConfig,
   calculateBreakdown,
   calculateSliceValue,
+  compactSliceSlots,
   CORE_SLICE_VALUE_CONFIG,
   SliceValueConfig,
   SliceValueModifiers,
 } from "~/stats";
-import { summarizeRaw } from "~/draft/helpers/sliceGeneration";
 import {
   getAllSliceBreakdowns,
   getAllSliceStats,
@@ -104,13 +104,22 @@ describe("slice value characterization", () => {
     expect(out).toMatchSnapshot();
   });
 
-  test("summarizeRaw", () => {
-    const out: Record<string, unknown> = {};
-    for (const [sliceName, ids] of Object.entries(SLICES)) {
-      out[`${sliceName}/default`] = summarizeRaw(ids);
-      out[`${sliceName}/custom`] = summarizeRaw(ids, CUSTOM_MODIFIERS);
-    }
-    expect(out).toMatchSnapshot();
+  test("empty core slots do not shift path and equidistant positions", () => {
+    const [supernova, other] = systems(["43", "109"]);
+    const { systems: compacted, config } = compactSliceSlots(
+      [undefined, supernova, other],
+      CORE_SLICE_VALUE_CONFIG,
+    );
+    expect(compacted).toEqual([supernova, other]);
+    expect(config).toMatchObject({
+      equidistantIndices: [0, 1],
+      mecatolPathIndices: [],
+    });
+    expect(calculateSliceValue(compacted, config)).toBe(
+      calculateSliceValue([supernova, other], {
+        equidistantIndices: [0, 1],
+      }),
+    );
   });
 
   // Ring 3 homes at idx 19, 22, 25, 28, 31, 34; parts[i] is map idx i + 1.

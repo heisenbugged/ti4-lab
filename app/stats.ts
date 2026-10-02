@@ -1,4 +1,6 @@
 import { Planet, System } from "./types";
+// Type-only: stats is imported by draft configs, so it must not import them back.
+import type { DraftConfig } from "./draft/types";
 
 export type SliceValueModifiers = {
   entropicScarValue: number;
@@ -70,7 +72,7 @@ export type SliceValueBreakdown = {
   modifiers: SliceValueModifier[];
 };
 
-export type SystemValue = {
+type SystemValue = {
   /** Optimal spend of the system's planets (flex = planets with R = I). */
   optimal: SliceValueBreakdown["optimal"];
   /** Modifiers applied to this system; a tech skip row, if any, is first. */
@@ -79,7 +81,7 @@ export type SystemValue = {
   total: number;
 };
 
-export const TECH_SKIPS_LABEL = "Tech Skips";
+const TECH_SKIPS_LABEL = "Tech Skips";
 
 export function buildSliceValueConfig(
   modifiers?: Partial<SliceValueModifiers>,
@@ -100,7 +102,7 @@ export function buildSliceValueConfig(
  * which corresponds to tile position 4 in the slice (since HOME is at position 0).
  * In other draft types (miltyeq, heisen), equidistants are handled differently.
  */
-export function getEquidistantIndices(draftType: string): number[] {
+function getEquidistantIndices(draftType: string): number[] {
   if (
     draftType === "milty" ||
     draftType === "milty5p" ||
@@ -111,6 +113,48 @@ export function getEquidistantIndices(draftType: string): number[] {
     return [3];
   }
   return [];
+}
+
+/**
+ * The slice value config a draft displays and sorts its slices by: the
+ * draft's modifiers plus its type's equidistant and Mecatol path positions.
+ */
+export function draftSliceValueConfig(
+  config: Pick<DraftConfig, "type" | "mecatolPathSystemIndices">,
+  modifiers?: Partial<SliceValueModifiers>,
+): Partial<SliceValueConfig> {
+  return buildSliceValueConfig(
+    modifiers,
+    getEquidistantIndices(config.type),
+    config.mecatolPathSystemIndices,
+  );
+}
+
+/**
+ * Drop empty slots from a slice, remapping the config's equidistant and
+ * Mecatol path indices (which refer to slot positions) onto the systems left.
+ */
+export function compactSliceSlots(
+  slots: (System | undefined)[],
+  config: Partial<SliceValueConfig>,
+): { systems: System[]; config: Partial<SliceValueConfig> } {
+  const systems: System[] = [];
+  const equidistantIndices: number[] = [];
+  const mecatolPathIndices: number[] = [];
+  slots.forEach((system, slot) => {
+    if (!system) return;
+    if (config.equidistantIndices?.includes(slot)) {
+      equidistantIndices.push(systems.length);
+    }
+    if (config.mecatolPathIndices?.includes(slot)) {
+      mecatolPathIndices.push(systems.length);
+    }
+    systems.push(system);
+  });
+  return {
+    systems,
+    config: { ...config, equidistantIndices, mecatolPathIndices },
+  };
 }
 
 function legendaryValue(planet: Planet, modifiers: SliceValueModifiers) {
@@ -138,14 +182,16 @@ export function evaluateSystem(
 ): SystemValue {
   const { resources, influence, flex } = system.optimalSpend;
   const optimalSum = resources + influence + flex;
+  const hasEntropicScar = system.anomalies.includes("ENTROPIC_SCAR");
   const applied: SliceValueModifier[] = [];
-  let total = optimalSum;
+  let total = optimalSum + (hasEntropicScar ? modifiers.entropicScarValue : 0);
   let techSkipCount = 0;
   let techSkipValue = 0;
 
-  if (system.anomalies.includes("ENTROPIC_SCAR")) {
-    total += modifiers.entropicScarValue;
-  }
+  const apply = (modifier: SliceValueModifier) => {
+    applied.push(modifier);
+    total += modifier.value;
+  };
 
   for (const planet of system.planets) {
     if (planet.tech && planet.tech.length > 0) {
@@ -156,14 +202,14 @@ export function evaluateSystem(
     }
 
     if (planet.legendary) {
-      const value = legendaryValue(planet, modifiers);
-      applied.push({ label: planet.name || "Legendary", value });
-      total += value;
+      apply({
+        label: planet.name || "Legendary",
+        value: legendaryValue(planet, modifiers),
+      });
     }
 
     if (planet.tradeStation) {
-      applied.push({ label: "Trade Station", value: modifiers.tradeStationValue });
-      total += modifiers.tradeStationValue;
+      apply({ label: "Trade Station", value: modifiers.tradeStationValue });
     }
   }
 
@@ -175,24 +221,22 @@ export function evaluateSystem(
     });
   }
 
-  if (system.anomalies.includes("ENTROPIC_SCAR")) {
-    applied.push({ label: "Entropic Scar", value: modifiers.entropicScarValue });
+  if (hasEntropicScar) {
+    applied.push({
+      label: "Entropic Scar",
+      value: modifiers.entropicScarValue,
+    });
   }
 
   if (onMecatolPath) {
     if (system.anomalies.includes("SUPERNOVA")) {
-      applied.push({
+      apply({
         label: "Supernova on Path",
         value: modifiers.supernovaOnPathPenalty,
       });
-      total += modifiers.supernovaOnPathPenalty;
     }
     if (system.anomalies.includes("NEBULA")) {
-      applied.push({
-        label: "Nebula on Path",
-        value: modifiers.nebulaOnPathPenalty,
-      });
-      total += modifiers.nebulaOnPathPenalty;
+      apply({ label: "Nebula on Path", value: modifiers.nebulaOnPathPenalty });
     }
   }
 
@@ -221,13 +265,7 @@ export function calculateSliceValue(
   sliceSystems: System[],
   config: Partial<SliceValueConfig> = {},
 ): number {
-  const { cfg, evaluated } = evaluateSliceSystems(sliceSystems, config);
-  let value = 0;
-  for (const { value: systemValue, isEquidistant } of evaluated) {
-    const multiplier = isEquidistant ? cfg.equidistantMultiplier : 1;
-    value += systemValue.total * multiplier;
-  }
-  return value;
+  return calculateBreakdown(sliceSystems, config).total;
 }
 
 /**
@@ -246,8 +284,11 @@ export function calculateBreakdown(
   let techSkipCount = 0;
   let techSkipValue = 0;
   let equidistantPenalty = 0;
+  let total = 0;
 
   for (const { value: systemValue, isEquidistant } of evaluated) {
+    const multiplier = isEquidistant ? cfg.equidistantMultiplier : 1;
+    total += systemValue.total * multiplier;
     optimal.resources += systemValue.optimal.resources;
     optimal.influence += systemValue.optimal.influence;
     optimal.flex += systemValue.optimal.flex;
@@ -262,8 +303,7 @@ export function calculateBreakdown(
     }
 
     if (isEquidistant) {
-      equidistantPenalty +=
-        systemValue.total * (1 - cfg.equidistantMultiplier);
+      equidistantPenalty += systemValue.total * (1 - multiplier);
     }
   }
 
@@ -276,10 +316,9 @@ export function calculateBreakdown(
   }
 
   optimal.sum = optimal.resources + optimal.influence + optimal.flex;
-  const modifiersSum = modifiers.reduce((acc, m) => acc + m.value, 0);
 
   return {
-    total: optimal.sum + modifiersSum - equidistantPenalty,
+    total,
     optimal,
     equidistantPenalty: equidistantPenalty > 0 ? equidistantPenalty : null,
     equidistantMultiplier: cfg.equidistantMultiplier,

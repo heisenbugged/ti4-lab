@@ -20,6 +20,10 @@ import { systemIdsInSlice, systemIdsToSlices } from "~/utils/slice";
 import { calculateMapStats } from "~/utils/mapStats";
 import { getTileCount } from "~/utils/hexCoordinates";
 import { getAllNeighbors } from "~/utils/hexDistance";
+import {
+  ANOMALY_RULES,
+  areSystemsCompatibleAdjacent,
+} from "~/mapgen/utils/mapLegality";
 import { getSystemPool } from "~/utils/system";
 import { miltySystemTiers } from "~/data/miltyTileTiers";
 
@@ -622,24 +626,15 @@ export const numTilesAvailable = (config: DraftConfig) => {
 export function hasAdjacentAnomalies(
   chosenMapLocations: Record<number, SystemId>,
 ): boolean {
-  // For each position with a system
-  for (const [posStr, systemId] of Object.entries(chosenMapLocations)) {
-    // Skip if not an anomaly
-    if (systemData[systemId].anomalies.length === 0) continue;
-
-    const position = parseInt(posStr);
-    const adjacentPositions = getAdjacentPositions(position);
-
-    // Check if any adjacent system is also an anomaly
-    for (const adjPos of adjacentPositions) {
+  return Object.entries(chosenMapLocations).some(([posStr, systemId]) =>
+    getAdjacentPositions(Number(posStr)).some((adjPos) => {
       const adjSystemId = chosenMapLocations[adjPos];
-      if (adjSystemId && systemData[adjSystemId].anomalies.length > 0) {
-        return true; // Found adjacent anomalies
-      }
-    }
-  }
-
-  return false;
+      return (
+        adjSystemId &&
+        !areSystemsCompatibleAdjacent(systemId, adjSystemId, ANOMALY_RULES)
+      );
+    }),
+  );
 }
 
 const STANDARD_GRID = mapStringOrder.map((position) => ({ position }));

@@ -17,6 +17,9 @@ export type AdjacencyRules = {
 
 const ALL_RULES: AdjacencyRules = { anomalies: true, wormholes: "all" };
 
+/** Only forbid anomalies next to anomalies. */
+export const ANOMALY_RULES: AdjacencyRules = { anomalies: true, wormholes: [] };
+
 /**
  * Check if two systems can legally be adjacent.
  * Rules:

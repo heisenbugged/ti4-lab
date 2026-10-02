@@ -4,7 +4,7 @@ import { systemData } from "~/data/systemData";
 import { CORE_SLICES } from "~/draft/heisen/generateMap";
 import {
   calculateBreakdown,
-  calculateSliceValue,
+  compactSliceSlots,
   CORE_SLICE_VALUE_CONFIG,
   SliceValueBreakdown,
   SliceValueModifiers,
@@ -26,24 +26,18 @@ export function useCoreSliceValues(
 ): CoreSliceData[] {
   return useMemo(() => {
     return CORE_SLICES.map((positions) => {
-      // Get systems at the core slice positions from the map
-      const systems: System[] = positions
-        .map((pos) => {
+      const { systems, config } = compactSliceSlots(
+        positions.map((pos) => {
           const tile = map[pos];
-          if (tile?.type === "SYSTEM" && "systemId" in tile) {
-            return systemData[tile.systemId];
-          }
-          return undefined;
-        })
-        .filter((s): s is System => s !== undefined);
+          return tile?.type === "SYSTEM"
+            ? systemData[tile.systemId]
+            : undefined;
+        }),
+        { ...sliceValueModifiers, ...CORE_SLICE_VALUE_CONFIG },
+      );
+      const breakdown = calculateBreakdown(systems, config);
 
-      const config = { ...sliceValueModifiers, ...CORE_SLICE_VALUE_CONFIG };
-
-      return {
-        value: calculateSliceValue(systems, config),
-        systems,
-        breakdown: calculateBreakdown(systems, config),
-      };
+      return { value: breakdown.total, systems, breakdown };
     });
   }, [map, sliceValueModifiers]);
 }

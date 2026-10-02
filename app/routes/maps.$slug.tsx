@@ -117,15 +117,7 @@ export default function MapDetail() {
 
   // Compute slice stats for the map
   const sliceValues = useMemo(
-    () =>
-      decoded
-        ? getAllSliceValues(
-            decoded.map,
-            undefined,
-            undefined,
-            decoded.ringCount,
-          )
-        : {},
+    () => (decoded ? getAllSliceValues(decoded.map) : {}),
     [decoded],
   );
   const sliceStats = useMemo(
@@ -133,10 +125,7 @@ export default function MapDetail() {
     [decoded],
   );
   const sliceBreakdowns = useMemo(
-    () =>
-      decoded
-        ? getAllSliceBreakdowns(decoded.map, undefined, decoded.ringCount)
-        : {},
+    () => (decoded ? getAllSliceBreakdowns(decoded.map) : {}),
     [decoded],
   );
   const tileContributions = useMemo(
@@ -273,10 +262,7 @@ export default function MapDetail() {
                   )}
                 {(preset.legendaries ?? 0) > 0 && (
                   <div className={classes.mapStatItem}>
-                    <LegendaryDisplay
-                      count={preset.legendaries}
-                      size="md"
-                    />
+                    <LegendaryDisplay count={preset.legendaries} size="md" />
                     <Text size="xs" c="dimmed">
                       Legendary
                     </Text>
@@ -284,10 +270,7 @@ export default function MapDetail() {
                 )}
                 {preset.techSkips && (
                   <div className={classes.mapStatItem}>
-                    <TechSkipsDisplay
-                      techSkips={preset.techSkips}
-                      size="md"
-                    />
+                    <TechSkipsDisplay techSkips={preset.techSkips} size="md" />
                     <Text size="xs" c="dimmed">
                       Tech Skips
                     </Text>

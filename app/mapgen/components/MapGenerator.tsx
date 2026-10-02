@@ -55,10 +55,7 @@ import {
 import { autoCompleteMap } from "../utils/mapCompletion";
 import { shuffle } from "~/draft/helpers/randomization";
 import { useMapStats } from "../utils/mapStats";
-import {
-  encodeMapString,
-  decodeMapString,
-} from "../utils/mapStringCodec";
+import { encodeMapString, decodeMapString } from "../utils/mapStringCodec";
 import {
   encodeAsyncMapString,
   decodeAsyncMapString,
@@ -120,15 +117,9 @@ function MapGeneratorContent() {
   );
 
   // Calculate slice values, stats, breakdowns, tile contributions, and balance gap
-  const sliceValues = useMemo(
-    () => getAllSliceValues(map, undefined, undefined, ringCount),
-    [map, ringCount],
-  );
+  const sliceValues = useMemo(() => getAllSliceValues(map), [map]);
   const sliceStats = useMemo(() => getAllSliceStats(map), [map]);
-  const sliceBreakdowns = useMemo(
-    () => getAllSliceBreakdowns(map, undefined, ringCount),
-    [map, ringCount],
-  );
+  const sliceBreakdowns = useMemo(() => getAllSliceBreakdowns(map), [map]);
   const tileContributions = useMemo(() => getAllTileContributions(map), [map]);
   const balanceGap = useMemo(
     () => calculateBalanceGap(sliceValues),
@@ -179,15 +170,8 @@ function MapGeneratorContent() {
     return map.some((tile) => tile.type === "SYSTEM" && tile.idx !== 0);
   }, [map]);
 
-  const shareUrl = useMemo(() => {
-    const encoded = encodeMapString(map);
-    return `https://tidraft.com/map-generator?map=${encodeURIComponent(encoded)}`;
-  }, [map]);
-
-  const imageUrl = useMemo(() => {
-    const encoded = encodeMapString(map);
-    return `https://tidraft.com/map-generator.png?map=${encodeURIComponent(encoded)}`;
-  }, [map]);
+  const shareUrl = `https://tidraft.com/map-generator?map=${encodeURIComponent(mapString)}`;
+  const imageUrl = `https://tidraft.com/map-generator.png?map=${encodeURIComponent(mapString)}`;
 
   // Check if map is complete (no OPEN tiles)
   const isMapComplete = useMemo(() => {
@@ -239,7 +223,6 @@ function MapGeneratorContent() {
     let systemIdx = 0;
     const randomMap: Tile[] = clearedMap.map((tile, idx) => {
       if (
-        idx === 0 ||
         tile.type === "CLOSED" ||
         preserveIndices.has(idx) ||
         systemIdx >= shuffledSystems.length
@@ -440,9 +423,9 @@ function MapGeneratorContent() {
   };
 
   const [activeSystemId, setActiveSystemId] = useState<string | null>(null);
-  const [activeSystemRotation, setActiveSystemRotation] = useState<number | undefined>(
-    undefined,
-  );
+  const [activeSystemRotation, setActiveSystemRotation] = useState<
+    number | undefined
+  >(undefined);
 
   // Parse URL parameters and seed map on page load
   useEffect(() => {
@@ -606,7 +589,8 @@ function MapGeneratorContent() {
           >
             <Alert color="yellow" variant="light" radius="md">
               <Text size="xs">
-                Duplicate hyperlanes detected. Physical maps may be limited to one copy per tile.
+                Duplicate hyperlanes detected. Physical maps may be limited to
+                one copy per tile.
               </Text>
             </Alert>
           </Box>
@@ -655,11 +639,25 @@ function MapGeneratorContent() {
                   styles={{ pill: { display: "none" } }}
                 />
                 <Group gap={4}>
-                  <ActionIcon variant="subtle" color="gray" size="sm" onClick={() => setRingCount(ringCount - 1)} disabled={ringCount <= 2}>
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    size="sm"
+                    onClick={() => setRingCount(ringCount - 1)}
+                    disabled={ringCount <= 2}
+                  >
                     <IconMinus size={14} />
                   </ActionIcon>
-                  <Text size="xs" c="dimmed" w={50} ta="center">{ringCount} rings</Text>
-                  <ActionIcon variant="subtle" color="gray" size="sm" onClick={() => setRingCount(ringCount + 1)} disabled={ringCount >= 5}>
+                  <Text size="xs" c="dimmed" w={50} ta="center">
+                    {ringCount} rings
+                  </Text>
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    size="sm"
+                    onClick={() => setRingCount(ringCount + 1)}
+                    disabled={ringCount >= 5}
+                  >
                     <IconPlus size={14} />
                   </ActionIcon>
                 </Group>
@@ -673,11 +671,24 @@ function MapGeneratorContent() {
                   Map Strings
                 </Button>
                 <Group gap={4}>
-                  <ActionIcon variant="subtle" color="gray" size="sm" onClick={removeHomeSystem} disabled={playerCount <= 1}>
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    size="sm"
+                    onClick={removeHomeSystem}
+                    disabled={playerCount <= 1}
+                  >
                     <IconMinus size={14} />
                   </ActionIcon>
-                  <Text size="xs" c="dimmed" w={55} ta="center">{playerCount} players</Text>
-                  <ActionIcon variant="subtle" color="gray" size="sm" onClick={addHomeSystem}>
+                  <Text size="xs" c="dimmed" w={55} ta="center">
+                    {playerCount} players
+                  </Text>
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    size="sm"
+                    onClick={addHomeSystem}
+                  >
                     <IconPlus size={14} />
                   </ActionIcon>
                 </Group>
@@ -690,36 +701,95 @@ function MapGeneratorContent() {
                 >
                   <IconHexagonOff size={16} />
                 </ActionIcon>
-                <Button leftSection={<IconRefresh size={14} />} variant="subtle" color="gray" size="xs" onClick={handleRandomize}>
+                <Button
+                  leftSection={<IconRefresh size={14} />}
+                  variant="subtle"
+                  color="gray"
+                  size="xs"
+                  onClick={handleRandomize}
+                >
                   Randomize
                 </Button>
-                <Button leftSection={<IconArrowsShuffle size={14} />} variant="subtle" color="gray" size="xs" onClick={handleImproveBalance} disabled={balanceGap === 0}>
+                <Button
+                  leftSection={<IconArrowsShuffle size={14} />}
+                  variant="subtle"
+                  color="gray"
+                  size="xs"
+                  onClick={handleImproveBalance}
+                  disabled={balanceGap === 0}
+                >
                   Balance
                 </Button>
-                <Button leftSection={<IconTrash size={14} />} variant="subtle" color="gray" size="xs" onClick={clearMap}>
+                <Button
+                  leftSection={<IconTrash size={14} />}
+                  variant="subtle"
+                  color="gray"
+                  size="xs"
+                  onClick={clearMap}
+                >
                   Reset
                 </Button>
                 {balanceGap > 0 && (
-                  <Group gap={4} onClick={openInfo} style={{ cursor: "pointer" }}>
-                    <Text size="xs" c="dimmed">Gap:</Text>
-                    <Text size="xs" fw={600} c="yellow.5">{balanceGap.toFixed(1)}</Text>
+                  <Group
+                    gap={4}
+                    onClick={openInfo}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <Text size="xs" c="dimmed">
+                      Gap:
+                    </Text>
+                    <Text size="xs" fw={600} c="yellow.5">
+                      {balanceGap.toFixed(1)}
+                    </Text>
                   </Group>
                 )}
                 <Box style={{ marginLeft: "auto" }}>
                   <Group gap="xs">
-                    <Button leftSection={<IconShare size={14} />} variant="subtle" color="gray" size="xs" onClick={openShare}>
+                    <Button
+                      leftSection={<IconShare size={14} />}
+                      variant="subtle"
+                      color="gray"
+                      size="xs"
+                      onClick={openShare}
+                    >
                       Share
                     </Button>
-                    <Button leftSection={<IconPhoto size={14} />} variant="subtle" color="gray" size="xs" onClick={() => window.open(imageUrl, "_blank")} disabled={!isMapComplete}>
+                    <Button
+                      leftSection={<IconPhoto size={14} />}
+                      variant="subtle"
+                      color="gray"
+                      size="xs"
+                      onClick={() => window.open(imageUrl, "_blank")}
+                      disabled={!isMapComplete}
+                    >
                       Image
                     </Button>
-                    <Button variant="light" color="blue" size="xs" onClick={handleCreateDraft} disabled={!isMapComplete}>
+                    <Button
+                      variant="light"
+                      color="blue"
+                      size="xs"
+                      onClick={handleCreateDraft}
+                      disabled={!isMapComplete}
+                    >
                       Slice Draft
                     </Button>
-                    <Button leftSection={<IconWand size={14} />} variant="filled" color="blue" size="xs" onClick={handleCreatePresetDraft} disabled={!isMapComplete}>
+                    <Button
+                      leftSection={<IconWand size={14} />}
+                      variant="filled"
+                      color="blue"
+                      size="xs"
+                      onClick={handleCreatePresetDraft}
+                      disabled={!isMapComplete}
+                    >
                       Preset Draft
                     </Button>
-                    <Button variant="light" color="teal" size="xs" onClick={openPublish} disabled={!isMapComplete}>
+                    <Button
+                      variant="light"
+                      color="teal"
+                      size="xs"
+                      onClick={openPublish}
+                      disabled={!isMapComplete}
+                    >
                       Publish
                     </Button>
                   </Group>

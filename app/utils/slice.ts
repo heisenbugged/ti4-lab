@@ -1,6 +1,10 @@
 import { systemData } from "~/data/systemData";
 import { DraftConfig } from "~/draft";
-import { calculateSliceValue, SliceValueModifiers } from "~/stats";
+import {
+  calculateSliceValue,
+  draftSliceValueConfig,
+  SliceValueModifiers,
+} from "~/stats";
 import { Slice, HomeTile, System, SystemId, Tile, SystemIds } from "~/types";
 import { systemsFromIds } from "./system";
 
@@ -81,10 +85,11 @@ export const systemIdsToSlices = (
   rawSlices: SystemId[][],
   sliceValueModifiers?: Partial<SliceValueModifiers>,
 ): Slice[] => {
+  const valueConfig = draftSliceValueConfig(config, sliceValueModifiers);
   const sorted = [...rawSlices].sort(
     (a, b) =>
-      calculateSliceValue(systemsFromIds(b), sliceValueModifiers) -
-      calculateSliceValue(systemsFromIds(a), sliceValueModifiers),
+      calculateSliceValue(systemsFromIds(b), valueConfig) -
+      calculateSliceValue(systemsFromIds(a), valueConfig),
   );
   return sorted.map((systemIds, idx) =>
     systemIdsToSlice(config, `Slice ${idx + 1}`, systemIds),

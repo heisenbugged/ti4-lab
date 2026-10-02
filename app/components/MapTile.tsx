@@ -15,7 +15,7 @@ import { OriginalArtTile } from "./tiles/OriginalArtTile";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
-import type { SliceValueBreakdown } from "~/hooks/useSliceValueBreakdown";
+import type { SliceValueBreakdown } from "~/stats";
 import type { TileContribution, SliceStats } from "~/mapgen/utils/sliceScoring";
 import { ContributionBadge } from "./tiles/ContributionBadge";
 import { getSafeWindow } from "~/hooks/useWindowDimensions";
@@ -241,17 +241,24 @@ function AbstractArtMapTile(props: Props) {
   // Determine if tile should be dimmed when a home is being hovered
   // Dim if: hoveredHomeIdx is set AND this tile has no contribution to that home
   // Don't dim: the hovered home itself, tiles that contribute
-  const isHomeHoverActive = hoveredHomeIdx !== null && hoveredHomeIdx !== undefined;
-  const isThisTheHoveredHome = tile.type === "HOME" && tile.idx === hoveredHomeIdx;
-  const shouldDim = isHomeHoverActive && !isThisTheHoveredHome && !tileContribution;
+  const isHomeHoverActive =
+    hoveredHomeIdx !== null && hoveredHomeIdx !== undefined;
+  const isThisTheHoveredHome =
+    tile.type === "HOME" && tile.idx === hoveredHomeIdx;
+  const shouldDim =
+    isHomeHoverActive && !isThisTheHoveredHome && !tileContribution;
 
   // Show contribution badge if tile has partial contribution (equidistantCount > 1)
-  const showContributionBadge = isHomeHoverActive && tileContribution && tileContribution.equidistantCount > 1;
+  const showContributionBadge =
+    isHomeHoverActive &&
+    tileContribution &&
+    tileContribution.equidistantCount > 1;
 
   // Cursor style for close tile mode
-  const cursorStyle = closeTileMode && tile.type !== "HOME" && tile.idx !== 0
-    ? { cursor: "crosshair" }
-    : undefined;
+  const cursorStyle =
+    closeTileMode && tile.type !== "HOME" && tile.idx !== 0
+      ? { cursor: "crosshair" }
+      : undefined;
 
   return (
     <>

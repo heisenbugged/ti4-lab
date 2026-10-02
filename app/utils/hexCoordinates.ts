@@ -18,12 +18,12 @@ export type HexCoord = {
  * Direction vectors for walking around a hex ring (counterclockwise from top).
  */
 const RING_DIRECTIONS: HexCoord[] = [
-  { x: 1, y: 0, z: -1 },   // SE
-  { x: 0, y: 1, z: -1 },   // S
-  { x: -1, y: 1, z: 0 },   // SW
-  { x: -1, y: 0, z: 1 },   // NW
-  { x: 0, y: -1, z: 1 },   // N
-  { x: 1, y: -1, z: 0 },   // NE
+  { x: 1, y: 0, z: -1 }, // SE
+  { x: 0, y: 1, z: -1 }, // S
+  { x: -1, y: 1, z: 0 }, // SW
+  { x: -1, y: 0, z: 1 }, // NW
+  { x: 0, y: -1, z: 1 }, // N
+  { x: 1, y: -1, z: 0 }, // NE
 ];
 
 /**
@@ -115,7 +115,20 @@ export function hexDistance(a: HexCoord, b: HexCoord): number {
   return Math.max(
     Math.abs(a.x - b.x),
     Math.abs(a.y - b.y),
-    Math.abs(a.z - b.z)
+    Math.abs(a.z - b.z),
+  );
+}
+
+/**
+ * Hex distance between two axial (x, y) positions.
+ */
+export function axialDistance(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): number {
+  return hexDistance(
+    { x: a.x, y: a.y, z: -a.x - a.y },
+    { x: b.x, y: b.y, z: -b.x - b.y },
   );
 }
 
@@ -126,7 +139,7 @@ export function hexDistance(a: HexCoord, b: HexCoord): number {
 export function findClosestOnRing(
   coord: HexCoord,
   targetRing: number,
-  allCoords: HexCoord[]
+  allCoords: HexCoord[],
 ): number {
   const ringIndices = getRingIndices(targetRing);
   let closestIdx = ringIndices[0];
@@ -150,7 +163,7 @@ export function findClosestOnRing(
 export function findAvailableOnRing(
   preferredIdx: number,
   targetRing: number,
-  occupiedIndices: Set<number>
+  occupiedIndices: Set<number>,
 ): number {
   const ringIndices = getRingIndices(targetRing);
   const ringSize = ringIndices.length;
@@ -173,7 +186,8 @@ export function findAvailableOnRing(
 
     // Try backward (skip 0 offset to avoid duplicate)
     if (offset > 0) {
-      const backwardIdx = ringIndices[(preferredRingPos - offset + ringSize) % ringSize];
+      const backwardIdx =
+        ringIndices[(preferredRingPos - offset + ringSize) % ringSize];
       if (!occupiedIndices.has(backwardIdx)) return backwardIdx;
     }
   }

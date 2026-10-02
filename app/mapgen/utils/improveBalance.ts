@@ -24,9 +24,7 @@ export function improveBalance(map: Map): Map | null {
 
   // Build graph once - valid for all swaps since we only swap non-hyperlane systems
   const graph = buildHexGraph(map);
-  const currentBalanceGap = calculateBalanceGap(
-    getAllSliceValues(map, undefined, graph),
-  );
+  const currentBalanceGap = calculateBalanceGap(getAllSliceValues(map, graph));
   const currentLegalityViolations = countMapLegalityViolations(map);
 
   for (let a = 0; a < shuffledIndices.length; a++) {
@@ -54,7 +52,7 @@ export function improveBalance(map: Map): Map | null {
         continue;
       }
 
-      const newSliceValues = getAllSliceValues(newMap, undefined, graph);
+      const newSliceValues = getAllSliceValues(newMap, graph);
       const newBalanceGap = calculateBalanceGap(newSliceValues);
 
       if (newBalanceGap < currentBalanceGap) {

@@ -13,18 +13,19 @@ import {
   fillSlicesWithRemainingTiles,
   fillSlicesWithRequiredTiles,
 } from "../helpers/sliceGeneration";
-import {
-  PlanetTrait,
-  SystemIds,
-  SystemId,
-  DraftSettings,
-} from "~/types";
+import { PlanetTrait, SystemIds, SystemId, DraftSettings } from "~/types";
 import { generateEmptyMap } from "~/utils/map";
 import { draftConfig } from "../draftConfig";
-import { calculateMapStats } from "~/hooks/useFullMapStats";
+import { calculateMapStats } from "~/utils/mapStats";
+import { axialDistance } from "~/utils/hexCoordinates";
+import {
+  ANOMALY_RULES,
+  areSystemsCompatibleAdjacent,
+} from "~/mapgen/utils/mapLegality";
 import {
   buildSliceValueConfig,
   calculateSliceValue,
+  compactSliceSlots,
   CORE_SLICE_VALUE_CONFIG,
   SliceValueModifiers,
 } from "~/stats";
@@ -97,21 +98,11 @@ const CORE_SLICE_MAX_BALANCE = 6; // Maximum difference between best and worst c
 const MIN_RED_TILES = 11; // Minimum red tiles on the map
 const MAX_VALIDATED_ATTEMPTS = 1000;
 
-const DEBUG_MAP_GENERATION = false;
-
-export function generateMap(
-  settings: DraftSettings,
-  systemPool: SystemId[],
-) {
+export function generateMap(settings: DraftSettings, systemPool: SystemId[]) {
   for (let attempts = 0; ; attempts++) {
     const validate = attempts <= MAX_VALIDATED_ATTEMPTS;
-    const result = tryGenerateMap(settings, systemPool, validate, attempts);
-    if (!result) continue;
-
-    if (DEBUG_MAP_GENERATION && attempts > 0) {
-      console.log(`[heisen] SUCCESS after ${attempts} attempts`);
-    }
-    return { ...result, valid: validate };
+    const result = tryGenerateMap(settings, systemPool, validate);
+    if (result) return { ...result, valid: validate };
   }
 }
 
@@ -123,7 +114,6 @@ function tryGenerateMap(
   settings: DraftSettings,
   systemPool: SystemId[],
   validate: boolean,
-  attempts: number,
 ) {
   const sliceCount = settings.numSlices;
   const config = draftConfig[settings.type];
@@ -399,23 +389,18 @@ function tryGenerateMap(
 
     const mapStats = calculateMapStats(slices, map);
 
-    // Check balance criteria
-    const rejectionReasons: string[] = [];
-    if (minTotalSpend < minSliceValue) rejectionReasons.push(`minTotalSpend=${minTotalSpend}<${minSliceValue}`);
-    if (maxTotalSpend > maxSliceValue) rejectionReasons.push(`maxTotalSpend=${maxTotalSpend}>${maxSliceValue}`);
-    if (minPlanets < 2) rejectionReasons.push(`minPlanets=${minPlanets}<2`);
-    if (maxPlanets > 5) rejectionReasons.push(`maxPlanets=${maxPlanets}>5`);
-    if (redTileCount < MIN_RED_TILES) rejectionReasons.push(`redTileCount=${redTileCount}<${MIN_RED_TILES}`);
-    if (config.type === "heisen" && mapStats.totalLegendary > 4) rejectionReasons.push(`totalLegendary=${mapStats.totalLegendary}>4`);
-    if (minCoreSpend < CORE_SLICE_MIN_OPTIMAL) rejectionReasons.push(`minCoreSpend=${minCoreSpend}<${CORE_SLICE_MIN_OPTIMAL}`);
-    if (maxCoreSpend > CORE_SLICE_MAX_OPTIMAL) rejectionReasons.push(`maxCoreSpend=${maxCoreSpend}>${CORE_SLICE_MAX_OPTIMAL}`);
-    if (coreSliceBalance > CORE_SLICE_MAX_BALANCE) rejectionReasons.push(`coreSliceBalance=${coreSliceBalance}>${CORE_SLICE_MAX_BALANCE}`);
-    if (hasAdjacentAnomalies(chosenMapLocations)) rejectionReasons.push(`hasAdjacentAnomalies`);
-
-    if (rejectionReasons.length > 0) {
-      if (DEBUG_MAP_GENERATION) {
-        console.log(`[heisen attempt ${attempts}] REJECTED: ${rejectionReasons.join(', ')}`);
-      }
+    if (
+      minTotalSpend < minSliceValue ||
+      maxTotalSpend > maxSliceValue ||
+      minPlanets < 2 ||
+      maxPlanets > 5 ||
+      redTileCount < MIN_RED_TILES ||
+      mapStats.totalLegendary > 4 ||
+      minCoreSpend < CORE_SLICE_MIN_OPTIMAL ||
+      maxCoreSpend > CORE_SLICE_MAX_OPTIMAL ||
+      coreSliceBalance > CORE_SLICE_MAX_BALANCE ||
+      hasAdjacentAnomalies(chosenMapLocations)
+    ) {
       return undefined;
     }
   }
@@ -429,15 +414,11 @@ function calculateCoreSliceValues(
   sliceValueModifiers?: Partial<SliceValueModifiers>,
 ): number[] {
   return coreSlices.map((positions) => {
-    const systems = positions
-      .filter((pos) => chosenMapLocations[pos])
-      .map((pos) => chosenMapLocations[pos])
-      .map((id) => systemData[id]);
-
-    return calculateSliceValue(systems, {
-      ...sliceValueModifiers,
-      ...CORE_SLICE_VALUE_CONFIG,
-    });
+    const { systems, config } = compactSliceSlots(
+      positions.map((pos) => systemData[chosenMapLocations[pos]]),
+      { ...sliceValueModifiers, ...CORE_SLICE_VALUE_CONFIG },
+    );
+    return calculateSliceValue(systems, config);
   });
 }
 
@@ -468,30 +449,23 @@ function fillCoreSlices(
       // Get the desired tier for this position
       const desiredTier = sliceTiers[j] as ChoosableTier;
 
-      // Get adjacent positions (to check for anomalies)
-      const adjacentPositions = getAdjacentPositions(position);
-      const adjacentSystemIds = adjacentPositions
-        .filter((pos) => chosenMapLocations[pos])
-        .map((pos) => chosenMapLocations[pos]);
+      // Prefer systems that would not put two anomalies next to each other
+      const adjacentSystemIds = getAdjacentPositions(position)
+        .map((pos) => chosenMapLocations[pos])
+        .filter(Boolean);
+      const fitsNeighbors = (id: SystemId) =>
+        adjacentSystemIds.every((adj) =>
+          areSystemsCompatibleAdjacent(id, adj, ANOMALY_RULES),
+        );
 
-      // Check if adjacent systems have anomalies
-      const adjacentAnomalies = adjacentSystemIds.some(
-        (id) => systemData[id] && systemData[id].anomalies.length > 0,
-      );
-
-      // If there are adjacent anomalies, prefer non-anomaly systems
-      let candidateSystems = tieredSystems[desiredTier].filter((id) =>
-        adjacentAnomalies ? systemData[id].anomalies.length === 0 : true,
-      );
+      let candidateSystems = tieredSystems[desiredTier].filter(fitsNeighbors);
 
       // If no suitable systems in the desired tier, try other tiers
       if (candidateSystems.length === 0) {
         const alternativeTiers: ChoosableTier[] = ["high", "med", "low", "red"];
         for (const tier of alternativeTiers) {
           if (tier !== desiredTier) {
-            candidateSystems = tieredSystems[tier].filter((id) =>
-              adjacentAnomalies ? systemData[id].anomalies.length === 0 : true,
-            );
+            candidateSystems = tieredSystems[tier].filter(fitsNeighbors);
             if (candidateSystems.length > 0) break;
           }
         }
@@ -503,18 +477,22 @@ function fillCoreSlices(
 
       // Pre-evaluate how each candidate would affect the slice's optimal value
       if (candidateSystems.length > 1) {
-        // Value the slice as it would be with the candidate at this position
-        const sliceValueWith = (candidate: SystemId) =>
-          calculateCoreSliceValues(
-            [slicePositions],
-            { ...chosenMapLocations, [position]: candidate },
-            sliceValueModifiers,
-          )[0];
+        // Value the slice as it would be with each candidate at this position
+        const sliceValueWith = new Map(
+          candidateSystems.map((candidate) => [
+            candidate,
+            calculateCoreSliceValues(
+              [slicePositions],
+              { ...chosenMapLocations, [position]: candidate },
+              sliceValueModifiers,
+            )[0],
+          ]),
+        );
 
         // Sort candidates by how well they balance the slice
         candidateSystems.sort((a, b) => {
-          const totalA = sliceValueWith(a);
-          const totalB = sliceValueWith(b);
+          const totalA = sliceValueWith.get(a)!;
+          const totalB = sliceValueWith.get(b)!;
 
           // Prioritize systems that keep the slice within optimal range
           const aInRange =
@@ -569,8 +547,6 @@ const rebalanceTraits = (
   const { spread, maxTrait, minTrait } = calculateSpread(planetTraits);
 
   // Exit conditions: spread is acceptable or too many attempts
-  if (DEBUG_MAP_GENERATION && attempts >= maxAttempts)
-    console.log("Failed to rebalance after maximum attempts");
   if (spread < 3 || attempts >= maxAttempts) return { swaps };
 
   const systemsOnMap = Object.values(mapLocations);
@@ -810,29 +786,4 @@ function distributeByDistance(
   }
 
   return chosen;
-}
-
-type Axial = { x: number; y: number };
-type Cube = { q: number; r: number; s: number };
-
-function axialToCube(axial: Axial): Cube {
-  const q = axial.x;
-  const r = axial.y;
-  const s = -q - r;
-  return { q, r, s };
-}
-
-function axialDistance(a: Axial, b: Axial) {
-  const ac = axialToCube(a);
-  const bc = axialToCube(b);
-  return cubeDistance(ac, bc);
-}
-
-function cubeSubtract(a: Cube, b: Cube): Cube {
-  return { q: a.q - b.q, r: a.r - b.r, s: a.s - b.s };
-}
-
-function cubeDistance(a: Cube, b: Cube) {
-  const vec = cubeSubtract(a, b);
-  return Math.max(Math.abs(vec.q), Math.abs(vec.r), Math.abs(vec.s));
 }

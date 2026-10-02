@@ -9,6 +9,7 @@ import {
   isLegendary,
 } from "../helpers/sliceGeneration";
 import { factionSystems, systemData } from "~/data/systemData";
+import { optimalStatsForSystems } from "~/utils/map";
 import { buildSliceValueConfig, calculateSliceValue } from "~/stats";
 import {
   coreGenerateSlices,
@@ -80,14 +81,7 @@ export function generateSlices(
         config.mecatolPathSystemIndices!,
       ),
     );
-    const rawOptimal = systems.reduce(
-      (acc, s) => ({
-        resources: acc.resources + s.optimalSpend.resources,
-        influence: acc.influence + s.optimalSpend.influence,
-        flex: acc.flex + s.optimalSpend.flex,
-      }),
-      { resources: 0, influence: 0, flex: 0 },
-    );
+    const rawOptimal = optimalStatsForSystems(systems);
     const infOptimal = rawOptimal.influence + rawOptimal.flex;
     const resOptimal = rawOptimal.resources + rawOptimal.flex;
 

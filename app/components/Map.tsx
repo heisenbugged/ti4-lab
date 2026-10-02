@@ -9,7 +9,7 @@ import { useDimensions } from "~/hooks/useDimensions";
 import { Box } from "@mantine/core";
 import { MapContext } from "~/contexts/MapContext";
 import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
-import type { SliceValueBreakdown } from "~/hooks/useSliceValueBreakdown";
+import type { SliceValueBreakdown } from "~/stats";
 import type { TileContribution, SliceStats } from "~/mapgen/utils/sliceScoring";
 
 type Props = {
@@ -134,7 +134,8 @@ export function Map({
           .map((tile) => {
             const isTileModifiable = modifiableMapTiles.includes(tile.idx);
             const canModifyTile =
-              isTileModifiable && (interactions.editable || interactions.droppable);
+              isTileModifiable &&
+              (interactions.editable || interactions.droppable);
             const canSelectSystem =
               interactions.allowSystemSelect &&
               tile.type === "SYSTEM" &&
@@ -166,10 +167,11 @@ export function Map({
                         if (closeTileMode && onToggleTileClosed) {
                           onToggleTileClosed(tile.idx);
                         } else {
-                        if (tile.type === "SYSTEM") onSelectSystemTile?.(tile);
-                        if (tile.type === "OPEN" && canModifyTile)
-                          onSelectSystemTile?.(tile);
-                        if (tile.type === "HOME") onSelectHomeTile?.(tile);
+                          if (tile.type === "SYSTEM")
+                            onSelectSystemTile?.(tile);
+                          if (tile.type === "OPEN" && canModifyTile)
+                            onSelectSystemTile?.(tile);
+                          if (tile.type === "HOME") onSelectHomeTile?.(tile);
                         }
                       }
                     : undefined
@@ -186,22 +188,30 @@ export function Map({
                 modifiable={interactions.editable && isTileModifiable}
                 droppable={interactions.droppable && isTileModifiable}
                 ringHighlight={ringHighlightTiles.includes(tile.idx)}
-                homeSelectable={interactions.allowHomeSelect && !!onSelectHomeTile}
+                homeSelectable={
+                  interactions.allowHomeSelect && !!onSelectHomeTile
+                }
                 hoverEffects={interactions.hoverEffects}
                 sliceValue={sliceValues[tile.idx]}
                 sliceStats={sliceStats[tile.idx]}
                 sliceBreakdown={sliceBreakdowns[tile.idx]}
                 coreSliceData={
-                  tile.type === "HOME" && tile.seat !== undefined && coreSliceData
+                  tile.type === "HOME" &&
+                  tile.seat !== undefined &&
+                  coreSliceData
                     ? coreSliceData[tile.seat]
                     : undefined
                 }
                 tileContribution={
-                  hoveredHomeIdx !== null && hoveredHomeIdx !== undefined && tileContributions
+                  hoveredHomeIdx !== null &&
+                  hoveredHomeIdx !== undefined &&
+                  tileContributions
                     ? tileContributions[hoveredHomeIdx]?.get(tile.idx)
                     : undefined
                 }
-                isHomeHovered={tile.type === "HOME" && tile.idx === hoveredHomeIdx}
+                isHomeHovered={
+                  tile.type === "HOME" && tile.idx === hoveredHomeIdx
+                }
                 hoveredHomeIdx={hoveredHomeIdx}
                 onHomeHover={tile.type === "HOME" ? onHomeHover : undefined}
                 closeTileMode={closeTileMode}

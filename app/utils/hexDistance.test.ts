@@ -4,11 +4,7 @@ import { mapStringOrder } from "~/data/mapStringOrder";
 import { getAdjacentPositions } from "~/draft/common/sliceGenerator";
 import { areSystemsCompatibleAdjacent } from "~/mapgen/utils/mapLegality";
 import { generateHexRings, hexDistance } from "./hexCoordinates";
-import {
-  buildHexGraph,
-  getAllNeighbors,
-  getSimpleHexDistance,
-} from "./hexDistance";
+import { buildHexGraph, getAllNeighbors } from "./hexDistance";
 import { getPlaceableTileIndices } from "./texasMapBuild";
 
 const sorted = (xs: number[]) => [...xs].sort((a, b) => a - b);
@@ -47,17 +43,6 @@ describe("hex neighbors", () => {
 
   it("returns no neighbors for an unknown index", () => {
     expect(getAdjacentPositions(999)).toEqual([]);
-  });
-});
-
-describe("getSimpleHexDistance", () => {
-  it("uses cube distance between tile positions", () => {
-    const map = buildMap(3);
-    expect(getSimpleHexDistance(map, 0, 0)).toBe(0);
-    expect(getSimpleHexDistance(map, 0, 3)).toBe(1);
-    expect(getSimpleHexDistance(map, 0, 19)).toBe(3);
-    expect(getSimpleHexDistance(map, 19, 28)).toBe(6);
-    expect(getSimpleHexDistance(map, 0, 999)).toBe(99);
   });
 });
 

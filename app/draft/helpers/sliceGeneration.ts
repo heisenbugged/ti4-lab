@@ -4,7 +4,7 @@
  * Has been adapted to 'typescript' and minor modifications to better fit
  * with the aesthetic of this project, but largely unchanged.
  */
-import { SystemIds, System, SystemId } from "~/types";
+import { SystemIds, System, SystemId, Wormhole } from "~/types";
 import { systemData } from "~/data/systemData";
 import { ChoosableTier, TieredSlice, TieredSystems } from "../types";
 import { neighbors } from "../hex";
@@ -14,8 +14,6 @@ import {
   evaluateSystem,
   SliceValueModifiers,
 } from "~/stats";
-
-const DEBUG_SLICE_SCORING = false;
 
 /**
  * Gives shuffled systems, and then promotes systems to the chosenSystems
@@ -237,12 +235,12 @@ function calculateSliceScore(
   const avgSliceValue = sliceValue / slice.length;
 
   // Avoid multi-wormhole systems.
-  if (wormholes.length > 1) {
+  if (wormholes > 1) {
     return 0.001;
   }
 
   // Avoid multi-legendary systems.
-  if (legendaries.length > 1) {
+  if (legendaries > 1) {
     return 0.001;
   }
 
@@ -261,99 +259,39 @@ function calculateSliceScore(
     1 / (Math.abs(avgOptInf - targetOptInf) + 1),
     1 / (Math.abs(avgOptRes - targetOptRes) + 1),
   ];
-  const score = 100 * weights.reduce((acc, w) => acc * w, 1);
-
-  if (DEBUG_SLICE_SCORING) {
-    console.log(
-      JSON.stringify({
-        avgOptInf,
-        avgOptRes,
-        avgSliceValue,
-        weights,
-        score,
-      }),
-    );
-  }
-
-  return score;
+  return 100 * weights.reduce((acc, w) => acc * w, 1);
 }
 
-export function summarizeRaw(
+const COUNTED_WORMHOLES: Wormhole[] = ["ALPHA", "BETA", "GAMMA", "DELTA"];
+
+function summarizeRaw(
   systems: SystemId[],
   sliceValueModifiers?: Partial<SliceValueModifiers>,
 ) {
-  const modifiers = { ...DEFAULT_SLICE_VALUE_MODIFIERS, ...sliceValueModifiers };
-  let res = 0;
+  const modifiers = {
+    ...DEFAULT_SLICE_VALUE_MODIFIERS,
+    ...sliceValueModifiers,
+  };
   let optRes = 0;
-  let inf = 0;
   let optInf = 0;
   let sliceValue = 0;
-  const tech = [];
-  const traits = [];
-  const wormholes = [];
-  const legendaries = [];
+  let wormholes = 0;
+  let legendaries = 0;
 
   for (const id of systems) {
     const system = systemData[id];
+    const { resources, influence, flex } = system.optimalSpend;
 
-    for (const planet of system.planets) {
-      const r = planet.resources;
-      const i = planet.influence;
-      res += r;
-      inf += i;
-      if (r > i) {
-        optRes += r;
-      } else if (r < i) {
-        optInf += i;
-      } else {
-        optRes += r / 2;
-        optInf += i / 2;
-      }
-      if (planet.tech) {
-        for (const planetTech of planet.tech) {
-          tech.push(planetTech.substring(0, 1).toUpperCase());
-        }
-      }
-      if (planet.trait) {
-        for (const planetTrait of planet.trait) {
-          traits.push(planetTrait.substring(0, 1).toUpperCase());
-        }
-      }
-      if (planet.legendary) {
-        legendaries.push("L");
-      }
-    }
-    for (const wormhole of system.wormholes) {
-      switch (wormhole) {
-        case "ALPHA":
-          wormholes.push("α");
-          break;
-        case "BETA":
-          wormholes.push("β");
-          break;
-        case "GAMMA":
-          wormholes.push("γ");
-          break;
-        case "DELTA":
-          wormholes.push("δ");
-          break;
-      }
-    }
-
+    optRes += resources + flex / 2;
+    optInf += influence + flex / 2;
     sliceValue += evaluateSystem(system, modifiers).total;
+    wormholes += system.wormholes.filter((w) =>
+      COUNTED_WORMHOLES.includes(w),
+    ).length;
+    legendaries += system.planets.filter((p) => p.legendary).length;
   }
 
-  return {
-    res,
-    optRes,
-    inf,
-    optInf,
-    sliceValue,
-    tech,
-    traits,
-    wormholes,
-    legendaries,
-  };
+  return { optRes, optInf, sliceValue, wormholes, legendaries };
 }
 
 export function separateAnomalies(origSlice: SystemId[], shape: string[]) {
@@ -362,14 +300,14 @@ export function separateAnomalies(origSlice: SystemId[], shape: string[]) {
   // First, shuffle a few times and see if we get a good setup.
   // Give up after a reasonable number of tries.
   for (let i = 0; i < 20; i++) {
-    if (!hasAdjacentAnomalies(slice, shape)) return slice;
+    if (!sliceHasAdjacentAnomalies(slice, shape)) return slice;
     slice = shuffle(slice);
   }
 
   // No luck.  Walk through slice permutations and use the first good one.
   // (This always fixes the same way, hence a few random stabs before this.)
   const inspector = (candidate: SystemId[]) => {
-    return !hasAdjacentAnomalies(candidate, shape);
+    return !sliceHasAdjacentAnomalies(candidate, shape);
   };
   const goodSlice = permutator(slice, inspector);
   if (goodSlice) {
@@ -379,7 +317,7 @@ export function separateAnomalies(origSlice: SystemId[], shape: string[]) {
   return slice;
 }
 
-function hasAdjacentAnomalies(slice: SystemId[], shape: string[]) {
+function sliceHasAdjacentAnomalies(slice: SystemId[], shape: string[]) {
   const hexIsAnomalySet = new Set();
   for (let i = 0; i < slice.length; i++) {
     const hex = shape[i + 1]; // first is home system

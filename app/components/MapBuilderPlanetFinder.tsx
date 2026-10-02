@@ -32,8 +32,6 @@ export function MapBuilderPlanetFinder({ onSystemSelected }: Props) {
       onClose={closePlanetFinder}
       onSystemSelected={handleSelectSystem}
       availableSystemIds={availableSystemIds}
-      factionPool={[]}
-      allowHomePlanetSearch={false}
     />
   );
 }

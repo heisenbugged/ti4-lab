@@ -1,7 +1,8 @@
 import { Box, Group, HoverCard, Stack, Text } from "@mantine/core";
 import { IconInfoCircleFilled } from "@tabler/icons-react";
 import { Slice } from "~/types";
-import { SliceValueBreakdown, useSliceValueBreakdown } from "~/hooks/useSliceValueBreakdown";
+import { useSliceValueBreakdown } from "~/hooks/useSliceValueBreakdown";
+import type { SliceValueBreakdown } from "~/stats";
 
 type Props = {
   slice?: Slice;
@@ -18,7 +19,12 @@ function formatValue(value: number, showSign = false): string {
   return formatted;
 }
 
-export function SliceValuePopover({ slice, breakdown: providedBreakdown, title = "Slice Value", variant = "light" }: Props) {
+export function SliceValuePopover({
+  slice,
+  breakdown: providedBreakdown,
+  title = "Slice Value",
+  variant = "light",
+}: Props) {
   const computedBreakdown = useSliceValueBreakdown(slice);
   const breakdown = providedBreakdown ?? computedBreakdown;
 
@@ -34,9 +40,8 @@ export function SliceValuePopover({ slice, breakdown: providedBreakdown, title =
   const hasAnyPenalty = hasPenalties || hasEquidistant;
 
   // Icon colors based on variant - dark variant for light backgrounds (like green home tiles)
-  const iconColor = variant === "dark"
-    ? "rgba(0, 0, 0, 0.55)"
-    : "rgba(255, 255, 255, 0.7)";
+  const iconColor =
+    variant === "dark" ? "rgba(0, 0, 0, 0.55)" : "rgba(255, 255, 255, 0.7)";
 
   return (
     <HoverCard
@@ -101,11 +106,12 @@ export function SliceValuePopover({ slice, breakdown: providedBreakdown, title =
           {/* Base Optimal */}
           <Box
             pb="xs"
-            mb={(hasBonuses || hasAnyPenalty) ? "xs" : 0}
+            mb={hasBonuses || hasAnyPenalty ? "xs" : 0}
             style={{
-              borderBottom: (hasBonuses || hasAnyPenalty)
-                ? "1px dashed var(--mantine-color-default-border)"
-                : "none",
+              borderBottom:
+                hasBonuses || hasAnyPenalty
+                  ? "1px dashed var(--mantine-color-default-border)"
+                  : "none",
             }}
           >
             <Text size="xs" c="dimmed" fw={500} mb={4}>
@@ -113,13 +119,24 @@ export function SliceValuePopover({ slice, breakdown: providedBreakdown, title =
             </Text>
             <Group justify="space-between" gap="xs">
               <Text size="xs">
-                <Text component="span" c="orange.5">R</Text>
-                <Text component="span" c="dimmed">+</Text>
-                <Text component="span" c="blue.5">I</Text>
-                <Text component="span" c="dimmed">+</Text>
-                <Text component="span" c="violet.5">F</Text>
+                <Text component="span" c="orange.5">
+                  R
+                </Text>
+                <Text component="span" c="dimmed">
+                  +
+                </Text>
+                <Text component="span" c="blue.5">
+                  I
+                </Text>
+                <Text component="span" c="dimmed">
+                  +
+                </Text>
+                <Text component="span" c="violet.5">
+                  F
+                </Text>
                 <Text component="span" c="dimmed" size="xs" ml={4}>
-                  ({breakdown.optimal.resources}+{breakdown.optimal.influence}+{breakdown.optimal.flex})
+                  ({breakdown.optimal.resources}+{breakdown.optimal.influence}+
+                  {breakdown.optimal.flex})
                 </Text>
               </Text>
               <Text size="xs" fw={600} ff="monospace">
@@ -149,7 +166,8 @@ export function SliceValuePopover({ slice, breakdown: providedBreakdown, title =
                       {mod.label}
                       {mod.count !== undefined && (
                         <Text component="span" c="dimmed" size="xs">
-                          {" "}({mod.count})
+                          {" "}
+                          ({mod.count})
                         </Text>
                       )}
                     </Text>
@@ -171,9 +189,7 @@ export function SliceValuePopover({ slice, breakdown: providedBreakdown, title =
               <Stack gap={2}>
                 {penalties.map((mod, idx) => (
                   <Group key={idx} justify="space-between" gap="xs">
-                    <Text size="xs">
-                      {mod.label}
-                    </Text>
+                    <Text size="xs">{mod.label}</Text>
                     <Text size="xs" fw={600} ff="monospace" c="red.4">
                       {formatValue(mod.value, true)}
                     </Text>

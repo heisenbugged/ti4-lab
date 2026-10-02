@@ -1,6 +1,6 @@
-import { Draft, Slice, Tile, System } from "~/types";
+import { Draft, Slice, TechSpecialty, Tile, Wormhole } from "~/types";
 import { calcHexHeight } from "~/utils/positioning";
-import { hydratePresetMap } from "~/utils/map";
+import { hydratePresetMap, optimalStatsForSystems } from "~/utils/map";
 import {
   hydratePlayers,
   computePlayerSelections,
@@ -21,15 +21,14 @@ import {
   drawMap,
 } from "./canvasUtils.server";
 import { systemData } from "~/data/systemData";
-import { Wormhole, TechSpecialty } from "~/types";
-import { drawWormhole } from "./renderers/wormholeRenderer.server";
 import { factions } from "~/data/factionData";
-import { draftConfig } from "~/draft";
 import {
-  buildSliceValueConfig,
   calculateSliceValue,
-  getEquidistantIndices,
+  draftSliceValueConfig,
+  SliceValueConfig,
 } from "~/stats";
+import { systemsInSlice } from "~/utils/slice";
+import { draftConfig } from "~/draft/draftConfig";
 
 export async function generateDraftSlicesImage(
   draft: Draft,
@@ -90,10 +89,9 @@ export async function generateDraftSlicesImage(
     slicesLabelY + sectionLabelHeight + 15,
   );
 
-  const sliceValueConfig = buildSliceValueConfig(
+  const sliceValueConfig = draftSliceValueConfig(
+    draftConfig[draft.settings.type],
     draft.settings.sliceGenerationConfig?.sliceValueModifiers,
-    getEquidistantIndices(draft.settings.type),
-    draftConfig[draft.settings.type]?.mecatolPathSystemIndices,
   );
 
   slices.forEach((slice, index) => {
@@ -161,10 +159,7 @@ export async function generatePresetDraftImage(
     rows * (sliceWidth + sliceHeaderHeight) + (rows + 1) * gap;
   const mapDimensions = calculateCanvasDimensions(hydratedMap);
   const minMapHeight = mapDimensions.height + sectionLabelHeight + 20;
-  const canvasHeight = Math.max(
-    baseSlicesHeight,
-    minMapHeight,
-  ) + padding * 2;
+  const canvasHeight = Math.max(baseSlicesHeight, minMapHeight) + padding * 2;
 
   const { canvas, ctx } = createCanvas(canvasWidth, canvasHeight);
 
@@ -202,18 +197,14 @@ export async function generatePresetDraftImage(
 
   const mapOffsetX = mapAreaX + (slicesWidth - mapDimensions.width) / 2;
   const mapOffsetY =
-    mapAreaY + Math.max(0, (canvasHeight - mapAreaY - mapDimensions.height - padding) / 2);
+    mapAreaY +
+    Math.max(0, (canvasHeight - mapAreaY - mapDimensions.height - padding) / 2);
 
-  drawMap(
-    ctx,
-    hydratedMap,
-    hydratedPlayers,
-    {
-      ...mapDimensions,
-      wOffset: mapDimensions.wOffset + mapOffsetX,
-      hOffset: mapDimensions.hOffset + mapOffsetY,
-    },
-  );
+  drawMap(ctx, hydratedMap, hydratedPlayers, {
+    ...mapDimensions,
+    wOffset: mapDimensions.wOffset + mapOffsetX,
+    hOffset: mapDimensions.hOffset + mapOffsetY,
+  });
 
   return await canvas.toBuffer("png");
 }
@@ -298,7 +289,6 @@ function drawFactionList(
   });
 }
 
-
 function drawSlice(
   ctx: CanvasRenderingContext2D,
   slice: Slice,
@@ -307,7 +297,7 @@ function drawSlice(
   width: number,
   headerHeight: number,
   draftType: string,
-  sliceValueConfig: ReturnType<typeof buildSliceValueConfig>,
+  sliceValueConfig: Partial<SliceValueConfig>,
 ): void {
   // Draw slice background box with subtle sci-fi gradient
   const gradient = ctx.createLinearGradient(x, y, x, y + width + headerHeight);
@@ -334,8 +324,9 @@ function drawSlice(
   ctx.fillText(sliceName, x + 15, y + 15);
 
   // Draw slice stats
-  const stats = calculateSliceStats(slice);
-  const sliceValue = calculateSliceValueForSlice(slice, sliceValueConfig);
+  const systems = systemsInSlice(slice);
+  const optimal = optimalStatsForSystems(systems);
+  const sliceValue = calculateSliceValue(systems, sliceValueConfig);
   ctx.font = "26px Quantico, sans-serif";
 
   ctx.fillStyle = "#fcc419";
@@ -343,8 +334,8 @@ function drawSlice(
   ctx.fillText(svText, x + 15, y + 55);
 
   ctx.fillStyle = "#51cf66";
-  const optimalSum = stats.optimal.resources + stats.optimal.influence + stats.optimal.flex;
-  const optimalText = `Opt: ${stats.optimal.resources}/${stats.optimal.influence}/${stats.optimal.flex} (${optimalSum})`;
+  const optimalSum = optimal.resources + optimal.influence + optimal.flex;
+  const optimalText = `Opt: ${optimal.resources}/${optimal.influence}/${optimal.flex} (${optimalSum})`;
   ctx.fillText(optimalText, x + 150, y + 55);
 
   // Draw slice features in top right
@@ -497,43 +488,4 @@ function getSliceHeightForDraftType(draftType: string): number {
   if (draftType.startsWith("milty")) return 3;
   if (draftType === "prechoice") return 3;
   return 3; // default
-}
-
-function calculateSliceStats(slice: Slice): {
-  optimal: { resources: number; influence: number; flex: number };
-} {
-  let optimalResources = 0;
-  let optimalInfluence = 0;
-  let optimalFlex = 0;
-
-  slice.tiles.forEach((tile) => {
-    if (tile.type === "SYSTEM") {
-      const system = systemData[tile.systemId];
-      if (system) {
-        optimalResources += system.optimalSpend.resources;
-        optimalInfluence += system.optimalSpend.influence;
-        optimalFlex += system.optimalSpend.flex;
-      }
-    }
-  });
-
-  return {
-    optimal: {
-      resources: optimalResources,
-      influence: optimalInfluence,
-      flex: optimalFlex,
-    },
-  };
-}
-
-function calculateSliceValueForSlice(
-  slice: Slice,
-  config: ReturnType<typeof buildSliceValueConfig>,
-): number {
-  const systems: System[] = slice.tiles
-    .filter((t) => t.type === "SYSTEM")
-    .map((t) => systemData[t.systemId])
-    .filter((s) => !!s);
-
-  return calculateSliceValue(systems, config);
 }

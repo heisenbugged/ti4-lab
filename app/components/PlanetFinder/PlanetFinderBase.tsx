@@ -31,8 +31,8 @@ export type PlanetFinderBaseProps = {
   onClose: () => void;
   onSystemSelected: (system: System) => void;
   availableSystemIds: SystemId[];
-  factionPool: FactionId[];
-  allowHomePlanetSearch: boolean;
+  factionPool?: FactionId[];
+  allowHomePlanetSearch?: boolean;
 };
 
 export function PlanetFinderBase({
@@ -40,8 +40,8 @@ export function PlanetFinderBase({
   onClose,
   onSystemSelected,
   availableSystemIds,
-  factionPool,
-  allowHomePlanetSearch,
+  factionPool = [],
+  allowHomePlanetSearch = false,
 }: PlanetFinderBaseProps) {
   const usedSystemIds = useUsedSystemIds();
 
@@ -136,7 +136,12 @@ export function PlanetFinderBase({
       onClose={onClose}
       size="900"
       title={
-        <Text size="sm" fw={600} tt="uppercase" style={{ letterSpacing: "0.05em" }}>
+        <Text
+          size="sm"
+          fw={600}
+          tt="uppercase"
+          style={{ letterSpacing: "0.05em" }}
+        >
           System Database
         </Text>
       }
@@ -160,13 +165,19 @@ export function PlanetFinderBase({
               }}
             />
 
-            <Group gap="xs" p="xs" wrap="wrap" mih={36} className={styles.activeFiltersBar}>
+            <Group
+              gap="xs"
+              p="xs"
+              wrap="wrap"
+              mih={36}
+              className={styles.activeFiltersBar}
+            >
               {hasActiveFilters ? (
                 <>
                   {activeFilters.map((filterId) => {
-                    const filter = FILTER_CATEGORIES.flatMap((c) => c.filters).find(
-                      (f) => f.id === filterId,
-                    );
+                    const filter = FILTER_CATEGORIES.flatMap(
+                      (c) => c.filters,
+                    ).find((f) => f.id === filterId);
                     if (!filter) return null;
                     return (
                       <Badge
@@ -251,15 +262,31 @@ export function PlanetFinderBase({
             )}
 
             {systems.length === 0 && hasActiveFilters && (
-              <Stack align="center" justify="center" p="xl" mih={200} ta="center">
-                <Text size="xl" mb="xs">∅</Text>
+              <Stack
+                align="center"
+                justify="center"
+                p="xl"
+                mih={200}
+                ta="center"
+              >
+                <Text size="xl" mb="xs">
+                  ∅
+                </Text>
                 <Text size="sm">No systems match your filters</Text>
               </Stack>
             )}
 
             {systems.length === 0 && !hasActiveFilters && (
-              <Stack align="center" justify="center" p="xl" mih={200} ta="center">
-                <Text size="xl" mb="xs">⬡</Text>
+              <Stack
+                align="center"
+                justify="center"
+                p="xl"
+                mih={200}
+                ta="center"
+              >
+                <Text size="xl" mb="xs">
+                  ⬡
+                </Text>
                 <Text size="sm">Select filters or search to find systems</Text>
               </Stack>
             )}
@@ -314,7 +341,11 @@ export function PlanetFinderBase({
                             influence={planet.influence}
                           />
                           {planet.tech?.map((tech) => (
-                            <TechIcon key={tech} techSpecialty={tech} size={14} />
+                            <TechIcon
+                              key={tech}
+                              techSpecialty={tech}
+                              size={14}
+                            />
                           ))}
                           {planet.legendary && (
                             <Badge size="xs" color="yellow" variant="light">
@@ -350,7 +381,12 @@ export function PlanetFinderBase({
                     })}
 
                     {system.anomalies.map((anomaly) => (
-                      <Badge key={anomaly} size="xs" color="orange" variant="light">
+                      <Badge
+                        key={anomaly}
+                        size="xs"
+                        color="orange"
+                        variant="light"
+                      >
                         {anomaly.replace(/_/g, " ")}
                       </Badge>
                     ))}

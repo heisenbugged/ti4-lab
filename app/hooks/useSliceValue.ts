@@ -1,12 +1,8 @@
 import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
 import { useDraft } from "~/draftStore";
-import { draftConfig } from "~/draft";
-import {
-  buildSliceValueConfig,
-  calculateSliceValue,
-  getEquidistantIndices,
-} from "~/stats";
+import { calculateSliceValue, draftSliceValueConfig } from "~/stats";
+import { draftConfig } from "~/draft/draftConfig";
 
 /**
  * Hook to get the slice value config from draft settings.
@@ -17,12 +13,7 @@ export function useSliceValueConfig() {
     (state) => state.draft.settings.sliceGenerationConfig?.sliceValueModifiers,
   );
   const draftType = useDraft((state) => state.draft.settings.type);
-  const config = draftConfig[draftType];
-  return buildSliceValueConfig(
-    sliceValueModifiers,
-    getEquidistantIndices(draftType),
-    config?.mecatolPathSystemIndices,
-  );
+  return draftSliceValueConfig(draftConfig[draftType], sliceValueModifiers);
 }
 
 /**
@@ -38,4 +29,3 @@ export function useSliceValue(slice: Slice | undefined): number | undefined {
   const systems = systemsInSlice(slice);
   return calculateSliceValue(systems, config);
 }
-
