@@ -2,20 +2,17 @@ import { ActionFunctionArgs, data, LoaderFunctionArgs } from "react-router";
 import {
   createDraftPreset,
   draftPresetByName,
-  draftToPresetData,
 } from "~/drizzle/draftPreset.server";
 import type { DraftPreset } from "~/drizzle/draftPreset.server";
-import { Draft } from "~/types";
-import {
-  finalizeDraftPresetName,
-  isValidDraftPresetName,
-} from "~/utils/draftPresetName";
+import { finalizeDraftPresetName } from "~/utils/draftPresetName";
+import { DraftPresetData, draftToPresetData } from "~/utils/draftPreset";
 import { draftPresetDataForNewDraft } from "~/utils/draftFromPreset.server";
 
 export type SaveDraftPresetInput = {
   name: string;
   keepFactions: boolean;
-  draft: Draft;
+  playerCount: number;
+  data: DraftPresetData;
 };
 
 export type SaveDraftPresetResponse =
@@ -26,14 +23,16 @@ export type LoadDraftPresetResponse =
   | { success: true; preset: DraftPreset }
   | { success: false; error: string };
 
+const INVALID_NAME_ERROR = "Enter a valid preset name.";
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const name = finalizeDraftPresetName(
     new URL(request.url).searchParams.get("name") ?? "",
   );
 
-  if (!isValidDraftPresetName(name)) {
+  if (!name) {
     return data<LoadDraftPresetResponse>(
-      { success: false, error: "Enter a valid preset name." },
+      { success: false, error: INVALID_NAME_ERROR },
       { status: 400 },
     );
   }
@@ -65,26 +64,28 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const body = (await request.json()) as Partial<SaveDraftPresetInput>;
   const name = finalizeDraftPresetName(body.name ?? "");
-  const draft = body.draft;
+  const { playerCount, data: presetData } = body;
 
-  if (!isValidDraftPresetName(name)) {
+  if (!name) {
     return data<SaveDraftPresetResponse>(
-      {
-        success: false,
-        error: "Preset name is required.",
-      },
+      { success: false, error: INVALID_NAME_ERROR },
       { status: 400 },
     );
   }
 
-  if (!draft?.settings || !Array.isArray(draft.players)) {
+  if (
+    !presetData?.settings ||
+    typeof playerCount !== "number" ||
+    !Number.isInteger(playerCount) ||
+    playerCount < 1
+  ) {
     return data<SaveDraftPresetResponse>(
       { success: false, error: "Missing draft data." },
       { status: 400 },
     );
   }
 
-  if (draft.settings.draftGameMode === "texasStyle") {
+  if (presetData.settings.draftGameMode === "texasStyle") {
     return data<SaveDraftPresetResponse>(
       {
         success: false,
@@ -94,19 +95,19 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  if (await draftPresetByName(name)) {
+  const preset = await createDraftPreset({
+    name,
+    keepFactions: body.keepFactions !== false,
+    playerCount,
+    data: draftToPresetData(presetData),
+  });
+
+  if (!preset) {
     return data<SaveDraftPresetResponse>(
       { success: false, error: `A preset named "${name}" already exists.` },
       { status: 409 },
     );
   }
-
-  const preset = await createDraftPreset({
-    name,
-    keepFactions: body.keepFactions !== false,
-    playerCount: draft.players.length,
-    data: draftToPresetData(draft),
-  });
 
   return data<SaveDraftPresetResponse>({ success: true, name: preset.name });
 }

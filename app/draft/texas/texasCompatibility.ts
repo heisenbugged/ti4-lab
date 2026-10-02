@@ -14,10 +14,10 @@ export function getTexasSlotCounts(type: DraftType) {
   const openSlots = generateEmptyMap(config).filter(
     (tile) => tile.type === "OPEN",
   ).length;
-  return { openSlots, dealtTiles: config.numPlayers * TEXAS_TILES_PER_PLAYER };
+  const dealtTiles = config.numPlayers * TEXAS_TILES_PER_PLAYER;
+  return { openSlots, dealtTiles, supported: openSlots === dealtTiles };
 }
 
 export function supportsTexasStyle(type: DraftType): boolean {
-  const { openSlots, dealtTiles } = getTexasSlotCounts(type);
-  return openSlots === dealtTiles;
+  return getTexasSlotCounts(type).supported;
 }

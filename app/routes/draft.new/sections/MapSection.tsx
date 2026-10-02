@@ -17,7 +17,6 @@ import {
 } from "@dnd-kit/core";
 import { Tile } from "~/types";
 import { systemData } from "~/data/systemData";
-import { hydrateMap } from "~/utils/map";
 import { useCoreSliceValues } from "~/hooks/useCoreSliceValues";
 
 export function MapSection() {

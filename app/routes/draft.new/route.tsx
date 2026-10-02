@@ -32,11 +32,11 @@ import {
 } from "./sections";
 import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
-import { notifyPick } from "~/discord/bot.server";
+import { notifyPick } from "~/discord/notify.server";
 import { AvailableMinorFactionsSection } from "./sections/AvailableMinorFactionsSection";
 import { AvailableReferenceCardPacksSection } from "./sections/AvailableReferenceCardPacksSection";
 import { ConnectedFactionSettingsModal } from "./components/ConnectedFactionSettingsModal";
-import { createDraftOrder } from "~/utils/draftOrder.server";
+import { withDraftOrder } from "~/utils/draftOrder.server";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 import { SaveDraftPresetModal } from "./components/SaveDraftPresetModal";
 
@@ -274,16 +274,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const presetUrl = body.presetUrl;
   delete body.presetUrl;
 
-  const draft: Draft = {
-    ...body,
-    ...createDraftOrder({
-      players: body.players,
-      settings: body.settings,
-      availableFactions: body.availableFactions,
-      presetMap: body.presetMap,
-      texasDraft: body.texasDraft,
-    }),
-  };
+  const draft: Draft = withDraftOrder(body);
 
   const { prettyUrl, id } = await createDraft(draft, presetUrl);
   if (body.integrations?.discord) {

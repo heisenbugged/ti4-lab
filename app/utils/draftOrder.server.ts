@@ -1,23 +1,12 @@
 import { shuffle } from "~/draft/helpers/randomization";
-import {
-  DraftSettings,
-  DraftPick,
-  FactionId,
-  Player,
-  PlayerId,
-  Draft,
-  TexasDraftState,
-} from "~/types";
+import { DraftPick, FactionId, Player, PlayerId, Draft } from "~/types";
 import { getRingForIndex } from "~/utils/hexCoordinates";
 import { dealFactionBags } from "~/utils/factionBags";
 
-type DraftOrderInput = {
-  players: Player[];
-  settings: DraftSettings;
-  availableFactions: FactionId[];
-  presetMap?: Draft["presetMap"];
-  texasDraft?: TexasDraftState;
-};
+type DraftOrderInput = Pick<
+  Draft,
+  "players" | "settings" | "availableFactions" | "presetMap" | "texasDraft"
+>;
 
 function generateSnakeOrder(baseOrder: PlayerId[], picks: number): PlayerId[] {
   const order: PlayerId[] = [];
@@ -78,7 +67,15 @@ function draftOrderResult(
   };
 }
 
-export function createDraftOrder({
+/**
+ * Returns the draft with a freshly randomized pick order, placeholder player
+ * names, faction bags (if enabled) and no selections.
+ */
+export function withDraftOrder<T extends DraftOrderInput>(draft: T) {
+  return { ...draft, ...createDraftOrder(draft) };
+}
+
+function createDraftOrder({
   players,
   settings,
   availableFactions,

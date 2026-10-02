@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   finalizeDraftPresetName,
-  isValidDraftPresetName,
   sanitizeDraftPresetName,
 } from "./draftPresetName";
 
@@ -25,11 +24,10 @@ describe("draftPresetName", () => {
     expect(sanitizeDraftPresetName("a".repeat(100))).toHaveLength(64);
   });
 
-  it("validates final names", () => {
-    expect(isValidDraftPresetName("lsgc4-round-1")).toBe(true);
-    expect(isValidDraftPresetName("")).toBe(false);
-    expect(isValidDraftPresetName("-abc")).toBe(false);
-    expect(isValidDraftPresetName("abc-")).toBe(false);
-    expect(isValidDraftPresetName("Abc")).toBe(false);
+  it("finalizes to a valid slug, or empty when nothing usable remains", () => {
+    expect(finalizeDraftPresetName("LSGC4 Round 1")).toBe("lsgc4-round-1");
+    expect(finalizeDraftPresetName("-abc-")).toBe("abc");
+    expect(finalizeDraftPresetName("")).toBe("");
+    expect(finalizeDraftPresetName("--!!--")).toBe("");
   });
 });

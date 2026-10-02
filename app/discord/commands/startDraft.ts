@@ -7,7 +7,7 @@ import {
 } from "~/utils/draftFromPreset.server";
 import { playersFromDiscordData } from "~/utils/discordPlayers";
 import { finalizeDraftPresetName } from "~/utils/draftPresetName";
-import { notifyPick } from "../bot.server";
+import { notifyPick } from "../notify.server";
 import { PLAYER_OPTIONS, startDraftCommand } from "./startDraftCommand";
 
 async function resolveMember(

@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams, useSubmit } from "react-router";
-import type { DraftSettings, DiscordData, Player } from "~/types";
+import type { DraftSettings, DiscordData } from "~/types";
 import type {
   SliceGenerationSettings,
   SliceSettingsFormatType,
@@ -33,8 +33,7 @@ export const useDraftSettingsBuilder = (
       numSlices: Number(slices.numSlices),
       randomizeSlices: true,
       draftSpeaker: format.draftSpeaker,
-      showMonumentImagesInFactionInfo:
-        format.showMonumentImagesInFactionInfo,
+      showMonumentImagesInFactionInfo: format.showMonumentImagesInFactionInfo,
       allowHomePlanetSearch: format.allowHomePlanetSearch,
       allowEmptyTiles: format.allowEmptyTiles,
       draftPlayerColors: format.draftPlayerColors,

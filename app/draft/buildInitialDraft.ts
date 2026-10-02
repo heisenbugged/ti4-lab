@@ -9,6 +9,7 @@ import {
   Slice,
   SystemId,
   TexasDraftState,
+  Tile,
 } from "~/types";
 import { draftConfig } from "~/draft/draftConfig";
 import { DraftConfig } from "~/draft/types";
@@ -19,6 +20,7 @@ import {
   dealTexasTiles,
 } from "~/draft/texas/texasDraft";
 import { factions } from "~/data/factionData";
+import { systemData } from "~/data/systemData";
 import { mapStringOrder } from "~/data/mapStringOrder";
 import { getRandomSliceNames } from "~/data/sliceWords";
 import { getFactionPool } from "~/utils/factions";
@@ -57,7 +59,7 @@ export function buildInitialDraft(
     return { ...base, ...rolled, slices: [], presetMap: settings.presetMap };
   }
 
-  let slices: Slice[] | undefined;
+  let slices: Slice[];
   let presetMap: Map;
   if (settings.presetSlices && settings.presetMap) {
     slices = systemIdsToSlices(
@@ -77,8 +79,9 @@ export function buildInitialDraft(
     slices = generated.slices;
     presetMap = generated.presetMap;
   } else {
-    slices = initializeSlices(config, settings, systemPool);
-    if (!slices) return undefined;
+    const initialized = initializeSlices(config, settings, systemPool);
+    if (!initialized) return undefined;
+    slices = initialized;
     presetMap = settings.randomizeMap
       ? randomizeMap(config, slices, systemPool)
       : generateEmptyMap(config);
@@ -87,7 +90,7 @@ export function buildInitialDraft(
   return {
     ...base,
     ...rolled,
-    slices: settings.draftGameMode === "presetMap" ? [] : setSliceNames(slices),
+    slices: setSliceNames(slices),
     presetMap,
   };
 }
@@ -114,7 +117,11 @@ export function buildInitialTexasDraft(
   if (!settings.modifiers?.banFactions) {
     Object.assign(
       texasDraft,
-      dealTexasFactions(settings, draftableFactions, players),
+      dealTexasFactionOptions(
+        draftableFactions,
+        players,
+        settings.texasFactionHandSize,
+      ),
     );
   }
 
@@ -131,27 +138,34 @@ export function buildInitialTexasDraft(
   };
 }
 
-export function dealTexasFactions(
-  settings: DraftSettings,
-  draftableFactions: FactionId[],
-  players: Player[],
-) {
-  return dealTexasFactionOptions(
-    draftableFactions,
-    players,
-    settings.texasFactionHandSize ?? 2,
-  );
+/**
+ * Factions already present on the map or in slices (e.g. home systems), plus
+ * the chosen minor factions; these can't be rolled as playable factions.
+ */
+export function getTakenNonPrimaryFactions(
+  draft: Pick<Draft, "presetMap" | "slices" | "availableMinorFactions">,
+): FactionId[] {
+  const tileFaction = (tile: Tile) =>
+    tile.type === "SYSTEM" ? systemData[tile.systemId].faction : undefined;
+
+  return [
+    ...draft.presetMap.map(tileFaction),
+    ...draft.slices.flatMap((slice) => slice.tiles.map(tileFaction)),
+    ...(draft.availableMinorFactions ?? []),
+  ].filter((faction): faction is FactionId => faction !== undefined);
 }
 
 /**
  * Rolls the faction-related parts of a new (non-Texas) draft: kings and
  * reference card packs for Twilight's Fall, otherwise factions, plus minor
- * factions when enabled.
+ * factions when enabled. `excludedFactions` are never rolled as factions or
+ * minor factions.
  */
 export function rollFactions(
   settings: DraftSettings,
   factionPool: FactionId[],
   playerCount: number,
+  excludedFactions: FactionId[] = [],
 ): Pick<
   Draft,
   "availableFactions" | "availableMinorFactions" | "availableReferenceCardPacks"
@@ -173,28 +187,31 @@ export function rollFactions(
 
   const availableFactions = randomizeFactions(
     settings.numFactions,
-    getDraftableFactions(factionPool, null, settings.allowedFactions),
+    getDraftableFactions(
+      factionPool,
+      excludedFactions,
+      settings.allowedFactions,
+    ),
     settings.requiredFactions,
     settings.factionStratification,
   );
   return {
     availableFactions,
-    availableMinorFactions: rollMinorFactions(
-      settings,
-      factionPool,
-      availableFactions,
-    ),
+    availableMinorFactions: rollMinorFactions(settings, factionPool, [
+      ...excludedFactions,
+      ...availableFactions,
+    ]),
   };
 }
 
 function rollMinorFactions(
   settings: DraftSettings,
   factionPool: FactionId[],
-  availableFactions: FactionId[],
+  excludedFactions: FactionId[],
 ): FactionId[] | undefined {
   if (!settings.numMinorFactions) return undefined;
   return shuffle(
-    getDraftableFactions(factionPool, availableFactions),
+    getDraftableFactions(factionPool, excludedFactions),
     settings.numMinorFactions,
   );
 }
@@ -225,10 +242,8 @@ export function randomizeFactions(
   requiredFactions: FactionId[] | undefined,
   stratifiedConfig?: FactionStratification,
 ) {
-  // Start with required factions
   const availableFactions = [...(requiredFactions ?? [])];
 
-  // Behavior if no stratification is requested
   if (!stratifiedConfig) {
     const remainingToPull = numFactions - availableFactions.length;
     if (remainingToPull > 0) {
@@ -259,7 +274,6 @@ export function randomizeFactions(
     {} as { [key: string]: number },
   );
 
-  // For each group, pull the remaining needed factions
   for (const [groupKey, targetCount] of Object.entries(stratifiedConfig)) {
     const gameSets = groupKey.split("|");
     const currentCount = usedQuotas[groupKey] || 0;
@@ -268,7 +282,7 @@ export function randomizeFactions(
     if (remainingNeeded > 0) {
       const toPullFrom = factionPool.filter(
         (f) =>
-          gameSets.includes(factionGameSet(f)) && // Faction is from one of the game sets in this group
+          gameSets.includes(factionGameSet(f)) &&
           !availableFactions.includes(f),
       );
       availableFactions.push(...shuffle(toPullFrom).slice(0, remainingNeeded));
@@ -280,20 +294,18 @@ export function randomizeFactions(
 
 const factionGameSet = (faction: FactionId) => factions[faction].set;
 
-export function generateReferenceCardPacks(numPlayers: number): FactionId[][] {
-  const referenceCardFactionPool = getFactionPool(["base", "pok", "te"]).filter(
+/** Deals packs of three reference cards, capped by the size of the pool. */
+export function generateReferenceCardPacks(
+  requestedPacks: number,
+): FactionId[][] {
+  const pool = getFactionPool(["base", "pok", "te"]).filter(
     (f) => f !== "keleres",
   );
-  const numPacks = numPlayers;
-  const shuffledFactions = shuffle(referenceCardFactionPool, numPacks * 3);
-  const referenceCardPacks: FactionId[][] = [];
-  for (let i = 0; i < numPacks; i++) {
-    const pack = shuffledFactions.slice(i * 3, i * 3 + 3);
-    if (pack.length === 3) {
-      referenceCardPacks.push(pack);
-    }
-  }
-  return referenceCardPacks;
+  const numPacks = Math.min(requestedPacks, Math.floor(pool.length / 3));
+  const shuffled = shuffle(pool, numPacks * 3);
+  return Array.from({ length: numPacks }, (_, i) =>
+    shuffled.slice(i * 3, i * 3 + 3),
+  );
 }
 
 export function generateMapAndSlices(
@@ -378,4 +390,16 @@ function randomizeMap(
     };
   });
   return map;
+}
+
+export function dealTexasFactions(
+  settings: DraftSettings,
+  draftableFactions: FactionId[],
+  players: Player[],
+) {
+  return dealTexasFactionOptions(
+    draftableFactions,
+    players,
+    settings.texasFactionHandSize,
+  );
 }

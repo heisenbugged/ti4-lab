@@ -1,25 +1,34 @@
-import { rollFactions } from "~/draftStore";
+import {
+  getTakenNonPrimaryFactions,
+  rollFactions,
+} from "~/draft/buildInitialDraft";
 import { createDraft } from "~/drizzle/draft.server";
-import { DraftPreset, DraftPresetData } from "~/drizzle/draftPreset.server";
+import { DraftPreset } from "~/drizzle/draftPreset.server";
 import { DiscordData, Draft, Player } from "~/types";
+import { DraftPresetData, presetPlayerCountError } from "~/utils/draftPreset";
 import { getFactionPool } from "~/utils/factions";
-import { createDraftOrder } from "~/utils/draftOrder.server";
+import { withDraftOrder } from "~/utils/draftOrder.server";
 
 export class DraftPresetError extends Error {}
 
-/** Returns the preset's data, with factions re-rolled unless `keepFactions`. */
+/**
+ * Returns the preset's data, with factions re-rolled unless `keepFactions`.
+ * Re-rolled factions never include factions whose systems are already on the
+ * saved map or slices.
+ */
 export function draftPresetDataForNewDraft(
   preset: DraftPreset,
 ): DraftPresetData {
   if (preset.keepFactions) return preset.data;
 
-  const { settings } = preset.data;
+  const { settings, presetMap, slices } = preset.data;
   return {
     ...preset.data,
     ...rollFactions(
       settings,
       getFactionPool(settings.factionGameSets),
       preset.playerCount,
+      getTakenNonPrimaryFactions({ presetMap, slices }),
     ),
   };
 }
@@ -34,42 +43,14 @@ export async function createDraftFromPreset(
   players: Player[],
   discordData?: DiscordData,
 ) {
-  const {
-    settings,
-    slices,
-    presetMap,
-    availableFactions,
-    availableMinorFactions,
-    availableReferenceCardPacks,
-  } = draftPresetDataForNewDraft(preset);
+  const playerCountError = presetPlayerCountError(preset, players.length);
+  if (playerCountError) throw new DraftPresetError(playerCountError);
 
-  if (settings.draftGameMode === "texasStyle") {
-    throw new DraftPresetError(
-      "Texas style drafts cannot be started from a preset.",
-    );
-  }
-
-  if (players.length !== preset.playerCount) {
-    throw new DraftPresetError(
-      `Preset "${preset.name}" was saved for ${preset.playerCount} players, but ${players.length} were provided.`,
-    );
-  }
-
-  const draft: Draft = {
-    settings,
+  const draft: Draft = withDraftOrder({
+    ...draftPresetDataForNewDraft(preset),
     integrations: { discord: discordData },
-    slices,
-    presetMap,
-    availableFactions,
-    availableMinorFactions,
-    availableReferenceCardPacks,
-    ...createDraftOrder({
-      players,
-      settings,
-      availableFactions,
-      presetMap,
-    }),
-  };
+    players,
+  });
 
   const { id, prettyUrl } = await createDraft(draft);
   return { id, prettyUrl, draft };

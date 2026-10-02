@@ -6,21 +6,17 @@ import {
   Modal,
   Stack,
   Text,
-  TextInput,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 import { Draft } from "~/types";
-import {
-  finalizeDraftPresetName,
-  isValidDraftPresetName,
-  sanitizeDraftPresetName,
-} from "~/utils/draftPresetName";
+import { draftToPresetData } from "~/utils/draftPreset";
 import type {
   SaveDraftPresetInput,
   SaveDraftPresetResponse,
 } from "~/routes/api.draft-presets";
+import { PresetNameInput, usePresetName } from "./PresetNameInput";
 
 type Props = {
   draft: Draft;
@@ -30,11 +26,9 @@ type Props = {
 
 export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
   const fetcher = useFetcher<SaveDraftPresetResponse>();
-  const [name, setName] = useState("");
+  const presetName = usePresetName();
+  const { setValue: setPresetName } = presetName;
   const [keepFactions, setKeepFactions] = useState(true);
-
-  const finalName = finalizeDraftPresetName(name);
-  const nameIsValid = isValidDraftPresetName(finalName);
   const saving = fetcher.state !== "idle";
 
   useEffect(() => {
@@ -47,7 +41,7 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
         title: "Preset saved",
         message: `Continue from preset ${result.name} in TI4 Lab, or start it with /labdraft preset:${result.name} in Discord.`,
       });
-      setName("");
+      setPresetName("");
       setKeepFactions(true);
       onClose();
     } else {
@@ -57,14 +51,15 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
         message: result.error,
       });
     }
-  }, [fetcher.state, fetcher.data, onClose]);
+  }, [fetcher.state, fetcher.data, onClose, setPresetName]);
 
   const handleSave = () => {
-    if (!nameIsValid || saving) return;
+    if (!presetName.isValid || saving) return;
     const input: SaveDraftPresetInput = {
-      name: finalName,
+      name: presetName.name,
       keepFactions,
-      draft,
+      playerCount: draft.players.length,
+      data: draftToPresetData(draft),
     };
     fetcher.submit(input, {
       method: "POST",
@@ -89,21 +84,11 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
           from the command and always randomizes player order.
         </Text>
 
-        <TextInput
-          label="Preset name"
+        <PresetNameInput
+          preset={presetName}
+          onSubmit={handleSave}
           description="Lowercase letters, numbers and hyphens only."
           placeholder="my-tournament-round-1"
-          value={name}
-          onChange={(e) =>
-            setName(sanitizeDraftPresetName(e.currentTarget.value))
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSave();
-          }}
-          error={
-            name.length > 0 && !nameIsValid ? "Enter a valid name" : undefined
-          }
-          data-autofocus
         />
 
         <Checkbox
@@ -117,7 +102,11 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
           <Button variant="default" onClick={onClose} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!nameIsValid} loading={saving}>
+          <Button
+            onClick={handleSave}
+            disabled={!presetName.isValid}
+            loading={saving}
+          >
             Save preset
           </Button>
         </Group>

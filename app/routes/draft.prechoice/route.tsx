@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { DiscordData, DraftSettings } from "~/types";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
 import { SectionTitle } from "~/components/Section";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
@@ -32,6 +32,7 @@ import {
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { useDisclosure } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import {
   SliceSettingsModal,
   DEFAULT_SLICE_SETTINGS,
@@ -45,7 +46,7 @@ import { SlicesConfigurationSection } from "./components/SlicesConfigurationSect
 import { KingsConfigurationSection } from "./components/KingsConfigurationSection";
 import { DraftConfigurationPanel } from "./components/DraftConfigurationPanel";
 import { useDraftSettingsBuilder, useDraftNavigation } from "./hooks";
-import { buildTexasDraft } from "~/draft/texas/buildTexasDraft";
+import { buildInitialTexasDraft } from "~/draft/buildInitialDraft";
 import {
   getTexasSlotCounts,
   TEXAS_TILES_PER_PLAYER,
@@ -55,6 +56,7 @@ import { MinorFactionsInfoModal } from "./components/MinorFactionsInfoModal";
 import { ContinueFromPresetModal } from "./components/ContinueFromPresetModal";
 import { playersFromDiscordData } from "~/utils/discordPlayers";
 import type { DraftPreset } from "~/drizzle/draftPreset.server";
+import { presetPlayerCountError } from "~/utils/draftPreset";
 import { MapStyleSelector } from "./components/MapStyleSelector";
 import { SeededMapBanner } from "./components/SeededMapBanner";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
@@ -168,12 +170,7 @@ export default function DraftPrechoice() {
           !!faction.minorFactionsMode,
         ),
       ),
-    [
-      faction.minorFactionsMode,
-      map.selectedMapType,
-      playerCount,
-      tileGameSets,
-    ],
+    [faction.minorFactionsMode, map.selectedMapType, playerCount, tileGameSets],
   );
 
   const { buildDraftSettings } = useDraftSettingsBuilder(sliceSettings);
@@ -195,7 +192,6 @@ export default function DraftPrechoice() {
   };
 
   const texasSlots = getTexasSlotCounts(map.selectedMapType);
-  const texasSupported = texasSlots.openSlots === texasSlots.dealtTiles;
 
   const handleDraftModeChange = (value: string | null) => {
     if (!value) return;
@@ -218,8 +214,7 @@ export default function DraftPrechoice() {
         randomizeMap: true,
         randomizeSlices: true,
         draftSpeaker: false,
-        showMonumentImagesInFactionInfo:
-          format.showMonumentImagesInFactionInfo,
+        showMonumentImagesInFactionInfo: format.showMonumentImagesInFactionInfo,
         allowHomePlanetSearch: false,
         allowEmptyTiles: false,
         draftPlayerColors: false,
@@ -251,10 +246,8 @@ export default function DraftPrechoice() {
       };
 
       // Build the full draft object and submit directly to bypass /draft/new page
-      const draft = buildTexasDraft({
-        settings: texasSettings,
-        players: player.players,
-        integrations: { discord: discordData },
+      const draft = buildInitialTexasDraft(texasSettings, player.players, {
+        discord: discordData,
       });
 
       submit(draft, {
@@ -280,31 +273,41 @@ export default function DraftPrechoice() {
   const [presetOpened, { open: openPreset, close: closePreset }] =
     useDisclosure(false);
 
-  const handleContinueFromPreset = useCallback(
-    (preset: DraftPreset) => {
-      const adjustedPlayers = Array.from(
-        { length: preset.playerCount },
-        (_, index) =>
-          player.players[index] ?? {
-            id: index,
-            name: "",
-          },
-      );
-
-      navigate("/draft/new", {
-        state: {
-          savedDraftState: {
-            ...preset.data,
-            integrations: { discord: discordData },
-            players: adjustedPlayers,
-            selections: [],
-            pickOrder: [],
-          },
-        },
+  const handleContinueFromPreset = (preset: DraftPreset) => {
+    // Discord players are fixed by the bot command, so they can't be padded
+    // or truncated to fit the preset.
+    const playerCountError =
+      discordData && presetPlayerCountError(preset, player.players.length);
+    if (playerCountError) {
+      notifications.show({
+        color: "red",
+        title: "Could not continue from preset",
+        message: playerCountError,
       });
-    },
-    [discordData, navigate, player.players],
-  );
+      return;
+    }
+
+    const adjustedPlayers = Array.from(
+      { length: preset.playerCount },
+      (_, index) =>
+        player.players[index] ?? {
+          id: index,
+          name: "",
+        },
+    );
+
+    navigate("/draft/new", {
+      state: {
+        savedDraftState: {
+          ...preset.data,
+          integrations: { discord: discordData },
+          players: adjustedPlayers,
+          selections: [],
+          pickOrder: [],
+        },
+      },
+    });
+  };
 
   const [
     sliceSettingsOpened,
@@ -373,44 +376,44 @@ export default function DraftPrechoice() {
           </div>
         )}
         <div className={classes.colLeft}>
-        <Flex align="center" direction="column">
-          <Box w="100%">
-            <SectionTitle title="Draft style" />
-          </Box>
-          <Group w="100%" align="flex-start">
-            <MapStyleSelector
-              playerCount={player.players.length}
-              selectedMapType={map.selectedMapType}
-              onMapTypeHover={setHoveredMapType}
-              onMapTypeSelect={handleMapTypeSelect}
-              onOpenSettings={handleOpenSettings}
-              onOpenMinorFactionsInfo={openMinorFactions}
-            />
-            <Box flex={1} pos="relative" mt="sm">
-              <Box
-                flex={1}
-                pos="relative"
-                mah="1000px"
-                mb="lg"
-                visibleFrom="xs"
-              >
-                {mapType && (
-                  <DemoMap
-                    id="prechoice-map"
-                    map={MAPS[mapType].map}
-                    titles={MAPS[mapType].titles}
-                    padding={0}
-                  />
-                )}
-              </Box>
-              <DraftFormatDescription
-                mapType={mapType}
-                data={MAPS[mapType].descriptionData}
-                title={MAPS[mapType].title}
-              />
+          <Flex align="center" direction="column">
+            <Box w="100%">
+              <SectionTitle title="Draft style" />
             </Box>
-          </Group>
-        </Flex>
+            <Group w="100%" align="flex-start">
+              <MapStyleSelector
+                playerCount={player.players.length}
+                selectedMapType={map.selectedMapType}
+                onMapTypeHover={setHoveredMapType}
+                onMapTypeSelect={handleMapTypeSelect}
+                onOpenSettings={handleOpenSettings}
+                onOpenMinorFactionsInfo={openMinorFactions}
+              />
+              <Box flex={1} pos="relative" mt="sm">
+                <Box
+                  flex={1}
+                  pos="relative"
+                  mah="1000px"
+                  mb="lg"
+                  visibleFrom="xs"
+                >
+                  {mapType && (
+                    <DemoMap
+                      id="prechoice-map"
+                      map={MAPS[mapType].map}
+                      titles={MAPS[mapType].titles}
+                      padding={0}
+                    />
+                  )}
+                </Box>
+                <DraftFormatDescription
+                  mapType={mapType}
+                  data={MAPS[mapType].descriptionData}
+                  title={MAPS[mapType].title}
+                />
+              </Box>
+            </Group>
+          </Flex>
         </div>
 
         <div className={`${classes.col12} ${classes.hiddenFromXs}`}>
@@ -427,128 +430,133 @@ export default function DraftPrechoice() {
         </div>
 
         <div className={classes.colRight}>
-        <Stack>
-          <PlayerInputSection
-            players={player.players}
-            discordData={discordData}
-            onChangeName={handleChangeName}
-            onIncreasePlayers={player.add}
-            onDecreasePlayers={player.remove}
-          />
           <Stack>
-            <SectionTitle title="Configuration" />
-            <Tabs
-              value={draftMode}
-              onChange={handleDraftModeChange}
-              variant="pills"
-            >
-              <Tabs.List mb="md">
-                <Tabs.Tab value="base">Base Draft</Tabs.Tab>
-                <Tabs.Tab value="twilightFalls">Twilight&apos;s Fall</Tabs.Tab>
-                <Tooltip
-                  label={`Texas Style deals ${TEXAS_TILES_PER_PLAYER} tiles per player (${texasSlots.dealtTiles} total), but ${MAPS[map.selectedMapType].title} has ${texasSlots.openSlots} open systems, so the galaxy can't be completed. Choose a different map to use Texas Style.`}
-                  disabled={texasSupported}
-                  multiline
-                  w={260}
-                  withArrow
-                  events={{ hover: true, focus: true, touch: true }}
-                >
-                  {/* Disabled buttons don't fire pointer events; the span keeps the tooltip working. */}
-                  <span>
-                    <Tabs.Tab value="texasStyle" disabled={!texasSupported}>
-                      Texas Style
-                    </Tabs.Tab>
-                  </span>
-                </Tooltip>
-              </Tabs.List>
-
-              <Tabs.Panel value="base">
-                <DraftConfigurationPanel maxSlices={maxSlices} />
-              </Tabs.Panel>
-
-              <Tabs.Panel value="twilightFalls">
-                <Stack gap="sm">
-                  <Alert
-                    color="blue"
-                    title="Simplified Configuration"
-                    variant="light"
+            <PlayerInputSection
+              players={player.players}
+              discordData={discordData}
+              onChangeName={handleChangeName}
+              onIncreasePlayers={player.add}
+              onDecreasePlayers={player.remove}
+            />
+            <Stack>
+              <SectionTitle title="Configuration" />
+              <Tabs
+                value={draftMode}
+                onChange={handleDraftModeChange}
+                variant="pills"
+              >
+                <Tabs.List mb="md">
+                  <Tabs.Tab value="base">Base Draft</Tabs.Tab>
+                  <Tabs.Tab value="twilightFalls">
+                    Twilight&apos;s Fall
+                  </Tabs.Tab>
+                  <Tooltip
+                    label={`Texas Style deals ${TEXAS_TILES_PER_PLAYER} tiles per player (${texasSlots.dealtTiles} total), but ${MAPS[map.selectedMapType].title} has ${texasSlots.openSlots} open systems, so the galaxy can't be completed. Choose a different map to use Texas Style.`}
+                    disabled={texasSlots.supported}
+                    multiline
+                    w={260}
+                    withArrow
+                    events={{ hover: true, focus: true, touch: true }}
                   >
-                    <Text size="xs">
-                      Players pick a &quot;reference card pack&quot; during the
-                      snake draft. After drafting, choose home system, faction,
-                      and priority from your pack.
-                    </Text>
-                  </Alert>
+                    {/* Disabled buttons don't fire pointer events; the span keeps the tooltip working. */}
+                    <span>
+                      <Tabs.Tab
+                        value="texasStyle"
+                        disabled={!texasSlots.supported}
+                      >
+                        Texas Style
+                      </Tabs.Tab>
+                    </span>
+                  </Tooltip>
+                </Tabs.List>
 
-                  <div className={classes.twoColGrid}>
-                    <SlicesConfigurationSection maxSlices={maxSlices} />
-                    <ReferenceCardPacksConfigurationSection />
-                  </div>
-                  <div className={classes.twoColGrid}>
-                    <KingsConfigurationSection />
-                  </div>
-                </Stack>
-              </Tabs.Panel>
+                <Tabs.Panel value="base">
+                  <DraftConfigurationPanel maxSlices={maxSlices} />
+                </Tabs.Panel>
 
-              <Tabs.Panel value="texasStyle">
-                <Stack gap="sm">
-                  <Alert
-                    color="blue"
-                    title="Texas Style Draft"
-                    variant="light"
-                  >
-                    <Text size="xs">
-                      Randomized seating and speaker, faction bans, simultaneous
-                      faction selection, and a pass-based tile draft before the
-                      galaxy build.
-                    </Text>
-                  </Alert>
+                <Tabs.Panel value="twilightFalls">
+                  <Stack gap="sm">
+                    <Alert
+                      color="blue"
+                      title="Simplified Configuration"
+                      variant="light"
+                    >
+                      <Text size="xs">
+                        Players pick a &quot;reference card pack&quot; during
+                        the snake draft. After drafting, choose home system,
+                        faction, and priority from your pack.
+                      </Text>
+                    </Alert>
 
-                  <div className={classes.twoColGrid}>
-                    <TexasStyleSettings
-                      factionHandSize={texas.factionHandSize}
-                      allowRedraw={texas.allowRedraw}
-                      onChangeHandSize={texas.setFactionHandSize}
-                      onToggleRedraw={texas.setAllowRedraw}
-                    />
-                  </div>
-                </Stack>
-              </Tabs.Panel>
-            </Tabs>
-          </Stack>
+                    <div className={classes.twoColGrid}>
+                      <SlicesConfigurationSection maxSlices={maxSlices} />
+                      <ReferenceCardPacksConfigurationSection />
+                    </div>
+                    <div className={classes.twoColGrid}>
+                      <KingsConfigurationSection />
+                    </div>
+                  </Stack>
+                </Tabs.Panel>
 
-          <Button
-            size="lg"
-            onMouseDown={handleContinue}
-            leftSection={<IconPlayerPlay />}
-            className={buttonClasses.primaryCta}
-          >
-            Continue
-          </Button>
-          <Group>
+                <Tabs.Panel value="texasStyle">
+                  <Stack gap="sm">
+                    <Alert
+                      color="blue"
+                      title="Texas Style Draft"
+                      variant="light"
+                    >
+                      <Text size="xs">
+                        Randomized seating and speaker, faction bans,
+                        simultaneous faction selection, and a pass-based tile
+                        draft before the galaxy build.
+                      </Text>
+                    </Alert>
+
+                    <div className={classes.twoColGrid}>
+                      <TexasStyleSettings
+                        factionHandSize={texas.factionHandSize}
+                        allowRedraw={texas.allowRedraw}
+                        onChangeHandSize={texas.setFactionHandSize}
+                        onToggleRedraw={texas.setAllowRedraw}
+                      />
+                    </div>
+                  </Stack>
+                </Tabs.Panel>
+              </Tabs>
+            </Stack>
+
             <Button
-              size="md"
-              flex={1}
-              onMouseDown={openPreset}
-              variant="outline"
-              color="purple.3"
-              leftSection={<IconFile />}
+              size="lg"
+              onMouseDown={handleContinue}
+              leftSection={<IconPlayerPlay />}
+              className={buttonClasses.primaryCta}
             >
-              Continue from preset
+              Continue
             </Button>
-            {!discordData && (
+            <Group>
               <Button
                 size="md"
-                variant="filled"
-                color="discordBlue.5"
-                leftSection={<IconBrandDiscordFilled />}
-                onMouseDown={openDiscord}
+                flex={1}
+                onMouseDown={openPreset}
+                variant="outline"
+                color="purple.3"
+                leftSection={<IconFile />}
               >
-                Integrate with Discord
+                Continue from preset
               </Button>
-            )}
-          </Group>
-        </Stack>
+              {!discordData && (
+                <Button
+                  size="md"
+                  variant="filled"
+                  color="discordBlue.5"
+                  leftSection={<IconBrandDiscordFilled />}
+                  onMouseDown={openDiscord}
+                >
+                  Integrate with Discord
+                </Button>
+              )}
+            </Group>
+          </Stack>
         </div>
       </div>
     </>

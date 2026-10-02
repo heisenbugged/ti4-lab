@@ -1,6 +1,5 @@
 import { GuildTextBasedChannel } from "discord.js";
 import { Draft } from "~/types";
-import { getChannel } from "./bot.server";
 
 export type ChannelContext = {
   channel: GuildTextBasedChannel;
@@ -24,4 +23,22 @@ export async function createChannelContext(
     draftId,
     draft,
   };
+}
+
+async function getChannel(guildId: string, channelId: string) {
+  const client = global.discordClient;
+  if (!client) {
+    throw new Error("Discord client is not ready");
+  }
+
+  const guild =
+    client.guilds.cache.get(guildId) ?? (await client.guilds.fetch(guildId));
+
+  const channel =
+    guild.channels.cache.get(channelId) ??
+    (await guild.channels.fetch(channelId));
+  if (!channel?.isTextBased()) {
+    throw new Error(`Discord channel ${channelId} is not a text channel`);
+  }
+  return channel;
 }

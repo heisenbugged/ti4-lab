@@ -18,7 +18,7 @@ import { systemIdsToSlice } from "~/utils/slice";
 import { DraftConfig, draftConfig } from "~/draft";
 import { useCreateDraft } from "../draft.new/useCreateDraft";
 import { generateEmptyMap } from "~/utils/map";
-import { randomizeFactions } from "~/draftStore";
+import { randomizeFactions } from "~/draft/buildInitialDraft";
 import { getFactionPool } from "~/utils/factions";
 import { shuffle } from "~/draft/helpers/randomization";
 

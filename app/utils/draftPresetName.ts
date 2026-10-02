@@ -13,11 +13,10 @@ export function sanitizeDraftPresetName(raw: string): string {
     .slice(0, DRAFT_PRESET_NAME_MAX_LENGTH);
 }
 
-/** Final form of a name: also strips trailing hyphens left while typing. */
+/**
+ * Final form of a name: also strips trailing hyphens left while typing.
+ * An empty result means the name is invalid.
+ */
 export function finalizeDraftPresetName(raw: string): string {
   return sanitizeDraftPresetName(raw).replace(/-+$/, "");
-}
-
-export function isValidDraftPresetName(name: string): boolean {
-  return /^[a-z0-9]+(-[a-z0-9]+)*$/.test(name);
 }

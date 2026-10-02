@@ -2,19 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { eq } from "drizzle-orm";
 import { db } from "./config.server";
 import { draftPresets } from "./schema.server";
-import { Draft } from "~/types";
-
-const DRAFT_PRESET_KEYS = [
-  "settings",
-  "slices",
-  "presetMap",
-  "availableFactions",
-  "availableMinorFactions",
-  "availableReferenceCardPacks",
-] as const;
-
-/** The subset of a draft that is persisted in a preset. */
-export type DraftPresetData = Pick<Draft, (typeof DRAFT_PRESET_KEYS)[number]>;
+import type { DraftPresetData } from "~/utils/draftPreset";
 
 export type DraftPreset = {
   id: string;
@@ -24,12 +12,6 @@ export type DraftPreset = {
   playerCount: number;
   createdAt: string;
 };
-
-export function draftToPresetData(draft: DraftPresetData): DraftPresetData {
-  return Object.fromEntries(
-    DRAFT_PRESET_KEYS.map((key) => [key, draft[key]]),
-  ) as DraftPresetData;
-}
 
 type Row = typeof draftPresets.$inferSelect;
 
@@ -55,22 +37,35 @@ export async function draftPresetByName(
   return rows[0] ? rowToPreset(rows[0]) : undefined;
 }
 
+function isUniqueConstraintError(error: unknown) {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    error.code === "SQLITE_CONSTRAINT_UNIQUE"
+  );
+}
+
+/** Returns undefined when a preset with the same name already exists. */
 export async function createDraftPreset(input: {
   name: string;
   keepFactions: boolean;
   playerCount: number;
   data: DraftPresetData;
-}): Promise<DraftPreset> {
-  const rows = db
-    .insert(draftPresets)
-    .values({
-      id: uuidv4(),
-      name: input.name,
-      data: JSON.stringify(input.data),
-      keepFactions: input.keepFactions,
-      playerCount: input.playerCount,
-    })
-    .returning()
-    .all();
-  return rowToPreset(rows[0]);
+}): Promise<DraftPreset | undefined> {
+  try {
+    const rows = await db
+      .insert(draftPresets)
+      .values({
+        id: uuidv4(),
+        name: input.name,
+        data: JSON.stringify(input.data),
+        keepFactions: input.keepFactions,
+        playerCount: input.playerCount,
+      })
+      .returning();
+    return rowToPreset(rows[0]);
+  } catch (error) {
+    if (isUniqueConstraintError(error)) return undefined;
+    throw error;
+  }
 }

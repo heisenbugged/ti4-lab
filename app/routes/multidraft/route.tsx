@@ -7,7 +7,7 @@ import { createDraft } from "~/drizzle/draft.server";
 import { createMultiDraft } from "~/drizzle/multiDraft.server";
 import { buildInitialDraft } from "~/draft/buildInitialDraft";
 import { DiscordData, Draft, DraftSettings, Player } from "~/types";
-import { createDraftOrder } from "~/utils/draftOrder.server";
+import { withDraftOrder } from "~/utils/draftOrder.server";
 
 const MIN_DRAFTS = 2;
 const MAX_DRAFTS = 9;
@@ -44,16 +44,7 @@ export async function action({ request }: ActionFunctionArgs) {
         { status: 422 },
       );
     }
-    drafts.push({
-      ...initial,
-      ...createDraftOrder({
-        players,
-        settings,
-        availableFactions: initial.availableFactions,
-        presetMap: initial.presetMap,
-        texasDraft: initial.texasDraft,
-      }),
-    });
+    drafts.push(withDraftOrder(initial));
   }
 
   const draftUrlNames: string[] = [];

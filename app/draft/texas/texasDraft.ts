@@ -15,7 +15,10 @@ export const TEXAS_REDRAW_VALUE = "REDRAW";
 export function createTexasSeatAssignments(
   players: Player[],
 ): Pick<TexasDraftState, "seatOrder" | "seatAssignments" | "speakerId"> {
-  const seatOrder = shuffle(players.map((player) => player.id), players.length);
+  const seatOrder = shuffle(
+    players.map((player) => player.id),
+    players.length,
+  );
   const seatAssignments = seatOrder.reduce<Record<PlayerId, number>>(
     (acc, playerId, idx) => {
       acc[playerId] = idx;
@@ -34,7 +37,7 @@ export function createTexasSeatAssignments(
 export function dealTexasFactionOptions(
   factionPool: FactionId[],
   players: Player[],
-  handSize: number,
+  handSize = 2,
 ): Pick<
   TexasDraftState,
   | "factionOptions"
