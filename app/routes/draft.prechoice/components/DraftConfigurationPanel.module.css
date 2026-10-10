@@ -1,6 +1,6 @@
 .panelBody {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .optional {
@@ -12,7 +12,7 @@
 .rules {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .rule {
@@ -20,7 +20,7 @@
   grid-template-columns: 44px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: start;
-  padding: 12px;
+  padding: 8px 10px;
   background: var(--hull-sunken);
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);

@@ -11,9 +11,9 @@
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 28px;
+  gap: 22px;
   align-items: start;
-  padding-bottom: 48px;
+  padding-bottom: 32px;
 }
 
 @media (min-width: 992px) {
@@ -30,13 +30,13 @@
 .left,
 .right {
   display: grid;
-  gap: 24px;
+  gap: 18px;
   min-width: 0;
 }
 
 .sec {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   min-width: 0;
 }
 

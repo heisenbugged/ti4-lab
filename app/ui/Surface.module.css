@@ -2,7 +2,7 @@
 .panel { background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); min-width: 0; }
 .well { background: var(--hull-sunken); }
 .well > .head { background: var(--hull); }
-.head { display: flex; align-items: center; gap: var(--space-3); min-height: 42px; padding: 4px var(--space-4); border-bottom: 1px solid var(--rule); }
+.head { display: flex; align-items: center; gap: var(--space-3); min-height: 38px; padding: 3px var(--space-4); border-bottom: 1px solid var(--rule); }
 .trigger { width: 100%; border: 0; border-bottom: 1px solid var(--rule); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .panel[data-closed] .trigger { border-bottom-color: transparent; }
 .trigger:hover .title { color: var(--text); }
@@ -22,9 +22,9 @@
 
 /* Rows */
 .rows > * + * { border-top: 1px solid var(--rule); }
-.row { display: flex; align-items: center; gap: var(--space-3); min-height: 42px; padding: var(--space-2) 0; }
-.rows > .row:first-child { padding-top: 0; min-height: 36px; }
-.rows > .row:last-child { padding-bottom: 0; min-height: 36px; }
+.row { display: flex; align-items: center; gap: var(--space-3); min-height: 36px; padding: 6px 0; }
+.rows > .row:first-child { padding-top: 0; min-height: 32px; }
+.rows > .row:last-child { padding-bottom: 0; min-height: 32px; }
 .rowLabel { flex: 1; min-width: 0; font-size: 14px; }
 .rowLabel small { display: block; color: var(--text-muted); font-size: 12.5px; line-height: 1.4; }
 .rowControl { display: flex; align-items: center; gap: var(--space-2); flex: none; }
@@ -40,7 +40,7 @@
 .sunken { background: var(--hull-sunken); }
 
 /* Section heading */
-.sectionHead { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; min-height: 32px; padding-bottom: 8px; border-bottom: 1px solid var(--rule); }
+.sectionHead { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; min-height: 30px; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
 .sticky { position: sticky; top: var(--header-h); z-index: 5; background: var(--void); padding-top: 8px; }
 .sectionTitle { margin: 0; font-size: 19px; line-height: 1.25; font-weight: 600; font-stretch: var(--wide); }
 .sectionMeta { font-size: 13px; color: var(--text-muted); }
@@ -49,11 +49,11 @@
 /* Table */
 .tableWrap { width: 100%; overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--hull); }
 .table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-.table th { position: sticky; top: 0; padding: 7px 10px; background: var(--hull-sunken); color: var(--text-muted); font-size: 12px; font-weight: 600; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--rule); }
-.table td { padding: 8px 10px; border-top: 1px solid var(--rule); vertical-align: middle; }
+.table th { position: sticky; top: 0; padding: 5px 8px; background: var(--hull-sunken); color: var(--text-muted); font-size: 12px; font-weight: 600; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--rule); }
+.table td { padding: 6px 8px; border-top: 1px solid var(--rule); vertical-align: middle; }
 .table tbody tr:first-child td { border-top: 0; }
-.dense th { padding: 6px 10px; }
-.dense td { padding: 6px 10px; }
+.dense th { padding: 4px 8px; }
+.dense td { padding: 4px 8px; }
 .striped tbody tr:nth-child(even) td { background: color-mix(in oklab, var(--hull-raised) 60%, transparent); }
 .hover tbody tr:hover td { background: var(--hull-raised); }
 .num { font-variant-numeric: tabular-nums; }

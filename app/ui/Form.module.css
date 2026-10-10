@@ -11,7 +11,7 @@
 .input {
   width: 100%;
   min-width: 0;
-  height: 34px;
+  height: 32px;
   padding: 0 var(--space-3);
   background: var(--hull-sunken);
   border: 1px solid var(--rule-strong);

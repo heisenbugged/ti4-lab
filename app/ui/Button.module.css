@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  height: 34px;
+  height: 32px;
   padding: 0 var(--space-4);
   border: 0;
   background: none;
@@ -36,7 +36,7 @@
 .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .sm { height: 28px; padding: 0 var(--space-3); font-size: 13px; --c: var(--chamfer-sm); }
 .sm svg { width: 15px; height: 15px; }
-.lg { height: 42px; padding: 0 var(--space-5); font-size: 16px; --c: var(--chamfer-lg); }
+.lg { height: 40px; padding: 0 var(--space-5); font-size: 16px; --c: var(--chamfer-lg); }
 .lg svg { width: 18px; height: 18px; }
 .block { display: flex; width: 100%; }
 

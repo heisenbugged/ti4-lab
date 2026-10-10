@@ -8,13 +8,13 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 40px;
+  min-height: 30px;
   border-top: 1px solid var(--rule);
   font-size: 14px;
 }
 
 .packs > .head {
-  min-height: 26px;
+  min-height: 22px;
   border-top: 0;
   font-size: 12px;
   font-weight: 600;

@@ -69,12 +69,12 @@
   /* Scale */
   --space-1: 4px;
   --space-2: 8px;
-  --space-3: 10px;
-  --space-4: 14px;
-  --space-5: 20px;
-  --space-6: 26px;
-  --space-7: 40px;
-  --space-8: 52px;
+  --space-3: 9px;
+  --space-4: 12px;
+  --space-5: 17px;
+  --space-6: 22px;
+  --space-7: 34px;
+  --space-8: 44px;
   --radius-sm: 3px;
   --radius-full: 999px;
   --chamfer: 6px;
@@ -85,7 +85,7 @@
   --shadow-modal: 0 30px 80px -20px rgb(0 0 0 / 0.75), 0 0 0 1px rgb(255 255 255 / 0.03);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --header-h: 48px;
+  --header-h: 46px;
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
 }
