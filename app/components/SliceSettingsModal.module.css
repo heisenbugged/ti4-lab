@@ -1,7 +1,7 @@
 .body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 14px;
   align-items: start;
 }
 
@@ -9,7 +9,7 @@
   display: grid;
   gap: 12px;
   min-width: 0;
-  padding: 16px;
+  padding: 14px;
   background: var(--hull);
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);

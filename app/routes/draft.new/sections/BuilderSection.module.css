@@ -1,6 +1,6 @@
 .section {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 

@@ -23,7 +23,7 @@
   display: grid;
   gap: 4px;
   align-content: center;
-  padding: 10px 14px;
+  padding: 10px 12px;
   background: var(--hull);
   border: 1px solid var(--rule);
   border-radius: 2px;
@@ -61,7 +61,7 @@
 .stratRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: 8px 14px;
 }
 
 .summary .stratItem {
@@ -75,7 +75,7 @@
 /* Groups */
 .groups {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .group {

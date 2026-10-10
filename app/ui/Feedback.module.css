@@ -60,7 +60,7 @@
 .count { display: inline-grid; place-items: center; min-width: 20px; height: 18px; padding: 0 5px; border-radius: 2px; background: var(--hull-sunken); color: var(--text-muted); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* notices */
-.notice { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid; border-radius: var(--radius-sm); }
+.notice { display: flex; gap: 10px; align-items: flex-start; padding: 12px 12px; border: 1px solid; border-radius: var(--radius-sm); }
 .noticeIcon { display: grid; flex: none; margin-top: 1px; }
 .noticeBody { flex: 1; min-width: 0; display: grid; gap: 2px; }
 .noticeTitle { font-size: 14px; font-weight: 600; color: var(--text); }
@@ -92,7 +92,7 @@
 }
 .toast {
   position: relative;
-  padding: 12px 10px 12px 14px;
+  padding: 12px 10px 12px 12px;
   background: var(--hull-raised);
   border: 1px solid var(--rule-strong);
   border-radius: var(--radius-sm);

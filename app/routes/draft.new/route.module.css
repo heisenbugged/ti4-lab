@@ -33,7 +33,7 @@
 .bottom {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 28px;
+  gap: 24px;
   align-items: start;
 }
 
@@ -90,7 +90,7 @@
 
 .errors ul {
   margin: 0;
-  padding-left: 18px;
+  padding-left: 16px;
   color: var(--danger);
 }
 
@@ -113,6 +113,6 @@
 
 @media (max-width: 575px) {
   .page {
-    gap: 28px;
+    gap: 24px;
   }
 }

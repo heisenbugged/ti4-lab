@@ -32,7 +32,7 @@
 .toolgrp { display: inline-flex; gap: 2px; padding: 2px; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
 
 /* Pool sections */
-.sec { display: grid; gap: 14px; min-width: 0; scroll-margin-top: calc(var(--stack-top) + var(--space-4)); }
+.sec { display: grid; gap: 12px; min-width: 0; scroll-margin-top: calc(var(--stack-top) + var(--space-4)); }
 .slices { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--space-4); align-items: start; }
 /* Keep slice cards from growing past their column (long names, admin controls). */
 .slices > * { grid-template-columns: minmax(0, 1fr); }

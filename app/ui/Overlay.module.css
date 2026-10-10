@@ -46,7 +46,7 @@
 .positioner { z-index: 300; outline: none; }
 .pop { max-width: min(360px, calc(100vw - 24px)); background: var(--hull-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); font-size: 13px; color: var(--text); outline: none; transform-origin: var(--transform-origin); transition: opacity 140ms var(--ease), transform 140ms var(--ease); }
 .pop[data-starting-style], .pop[data-ending-style] { opacity: 0; transform: scale(0.97); }
-.popPad { padding: 12px 14px; }
+.popPad { padding: 12px 12px; }
 .popTitle { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
 
 .tooltip { max-width: 280px; padding: 6px 9px; background: var(--hull-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); font-size: 12.5px; line-height: 1.4; color: var(--text); transition: opacity 120ms var(--ease); }

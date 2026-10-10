@@ -4,7 +4,7 @@
   max-width: 1440px;
   margin: 0 auto;
   /* room for the fixed player bar */
-  padding-bottom: calc(80px + var(--sab));
+  padding-bottom: calc(70px + var(--sab));
 }
 
 .reconnect {
@@ -84,7 +84,7 @@
   display: grid;
   gap: var(--space-3);
   min-width: 0;
-  padding: 14px var(--space-4);
+  padding: 12px var(--space-4);
   background: var(--hull);
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
@@ -441,6 +441,6 @@
     display: none;
   }
   .page {
-    padding-bottom: calc(110px + var(--sab));
+    padding-bottom: calc(96px + var(--sab));
   }
 }

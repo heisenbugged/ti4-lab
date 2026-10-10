@@ -1,8 +1,8 @@
 .stats { display: grid; gap: 6px; margin: 0; padding: 10px 12px; min-width: 220px; background: color-mix(in oklab, var(--hull-sunken) 88%, transparent); backdrop-filter: blur(6px); border: 1px solid var(--rule); border-radius: var(--radius-sm); font-size: 12.5px; }
-.stats > div { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 22px; }
+.stats > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 22px; }
 .stats dt { color: var(--text-muted); }
 .stats dd { margin: 0; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
-.mobile { min-width: 0; backdrop-filter: none; background: var(--hull); font-size: 14px; padding: 12px 14px; gap: 8px; }
+.mobile { min-width: 0; backdrop-filter: none; background: var(--hull); font-size: 14px; padding: 12px 12px; gap: 8px; }
 .glyphs { display: flex; align-items: center; gap: 8px; }
 .none { font-weight: 400; color: var(--text-muted); }
 .glyph { position: relative; display: inline-grid; place-items: center; width: 20px; height: 20px; }

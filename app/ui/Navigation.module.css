@@ -22,7 +22,7 @@
 .accPanel[data-starting-style], .accPanel[data-ending-style] { height: 0; }
 .accBody { padding: 0 var(--space-4) var(--space-4); font-size: 14px; color: var(--text-muted); }
 
-.steps { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.steps { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
 .step { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; }
 .stepNum { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--rule-strong); font-size: 13px; font-weight: 700; color: var(--text-muted); }
 .current .stepNum { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }

@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  height: 36px;
+  height: 34px;
   padding: 0 var(--space-4);
   border: 0;
   background: none;
@@ -34,9 +34,9 @@
 .btn::after { inset: 1px; background: var(--fill); }
 .btn svg { width: 16px; height: 16px; flex: none; }
 .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.sm { height: 30px; padding: 0 var(--space-3); font-size: 13px; --c: var(--chamfer-sm); }
+.sm { height: 28px; padding: 0 var(--space-3); font-size: 13px; --c: var(--chamfer-sm); }
 .sm svg { width: 15px; height: 15px; }
-.lg { height: 46px; padding: 0 var(--space-5); font-size: 16px; --c: var(--chamfer-lg); }
+.lg { height: 42px; padding: 0 var(--space-5); font-size: 16px; --c: var(--chamfer-lg); }
 .lg svg { width: 18px; height: 18px; }
 .block { display: flex; width: 100%; }
 
@@ -73,7 +73,7 @@
   place-items: center;
   flex: none;
   width: 32px;
-  height: 32px;
+  height: 30px;
   padding: 0;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -95,7 +95,7 @@
 .icon-xs svg { width: 13px; height: 13px; }
 .icon-sm { width: 28px; height: 28px; }
 .icon-sm svg { width: 15px; height: 15px; }
-.icon-lg { width: 40px; height: 40px; }
+.icon-lg { width: 36px; height: 36px; }
 .icon-lg svg { width: 20px; height: 20px; }
 
 /* Pick: the small Select on anything pickable */
@@ -104,7 +104,7 @@
   --tint: var(--ion);
   position: relative; isolation: isolate;
   display: inline-flex; align-items: center; gap: 5px; flex: none;
-  height: 28px; padding: 0 11px;
+  height: 26px; padding: 0 10px;
   border: 0; background: none;
   color: var(--tint);
   font: 600 12.5px/1 var(--font);

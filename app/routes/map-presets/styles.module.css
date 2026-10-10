@@ -38,11 +38,11 @@
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; }
 .heroMap { display: grid; place-items: center; padding: var(--space-5) var(--space-7); background: var(--hull-sunken); border-right: 1px solid var(--rule); }
 .heroMap img { display: block; width: 100%; max-width: 560px; height: auto; aspect-ratio: 1; object-fit: contain; }
-.heroInfo { display: grid; gap: 14px; align-content: center; padding: 28px 32px; min-width: 0; }
+.heroInfo { display: grid; gap: 12px; align-content: center; padding: 24px 28px; min-width: 0; }
 .heroKicker { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; font-weight: 600; color: var(--gold-line); }
 .heroBy { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .heroDesc { margin: 0; max-width: 60ch; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.heroStats { display: flex; flex-wrap: wrap; gap: 14px 28px; padding: 14px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.heroStats { display: flex; flex-wrap: wrap; gap: 12px 24px; padding: 12px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
 .heroStats > div { display: grid; gap: 6px; align-content: end; }
 .statValue { font-size: 24px; line-height: 1.1; font-weight: 600; font-stretch: var(--wide); font-variant-numeric: tabular-nums; }
 .statLabel { font-size: 12px; font-weight: 600; color: var(--text-muted); }
@@ -56,13 +56,13 @@
 .sortSeg { margin-left: auto; }
 
 /* New arrivals shelf */
-.shelf { display: grid; gap: 14px; min-width: 0; }
-.shelfRow { display: grid; grid-auto-flow: column; grid-auto-columns: 280px; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent; }
+.shelf { display: grid; gap: 12px; min-width: 0; }
+.shelfRow { display: grid; grid-auto-flow: column; grid-auto-columns: 280px; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent; }
 .shelfRow > * { scroll-snap-align: start; }
 
 /* All maps grid */
-.allMaps { display: grid; gap: 14px; min-width: 0; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+.allMaps { display: grid; gap: 12px; min-width: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
 .loadMore { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 48px; padding: var(--space-3) 0; }
 
 .empty { display: grid; justify-items: center; gap: var(--space-3); padding: var(--space-8) var(--space-4); text-align: center; background: var(--hull); border: 1px dashed var(--rule-strong); border-radius: var(--radius-sm); }
@@ -72,11 +72,11 @@
 .card { position: relative; display: grid; grid-template-rows: auto 1fr auto; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; transition: border-color 120ms var(--ease); }
 .card:hover { border-color: var(--rule-strong); }
 .card:has(.cardTitle:focus-visible) { outline: 2px solid var(--ion); outline-offset: 1px; }
-.cardImg { position: relative; display: block; padding: 14px 28px; background: var(--hull-sunken); border-bottom: 1px solid var(--rule); }
+.cardImg { position: relative; display: block; padding: 12px 24px; background: var(--hull-sunken); border-bottom: 1px solid var(--rule); }
 .cardImg img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; }
 .cardPlayers { position: absolute; top: 10px; left: 10px; background: var(--hull); }
 .cardNew { position: absolute; top: 10px; right: 10px; background: var(--hull); }
-.cardBody { display: grid; gap: 8px; align-content: start; padding: 12px 14px; min-width: 0; }
+.cardBody { display: grid; gap: 8px; align-content: start; padding: 12px 12px; min-width: 0; }
 .cardTitle { min-width: 0; font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cardTitle:focus-visible { outline: none; }
 /* Stretched link: the whole card opens the map. */
@@ -84,18 +84,18 @@
 .cardStats { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 12.5px; color: var(--text-muted); }
 .cardStats b { color: var(--text); font-variant-numeric: tabular-nums; }
 .cardDesc { margin: 0; font-size: 13px; line-height: 1.45; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.cardFoot { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border-top: 1px solid var(--rule); }
+.cardFoot { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 12px; border-top: 1px solid var(--rule); }
 .cardGen { position: relative; z-index: 2; margin-left: auto; }
-.cardMore { position: relative; z-index: 2; display: block; padding: 8px 14px; border-top: 1px solid var(--rule); background: var(--hull-sunken); color: var(--ion); font-size: 12.5px; font-weight: 600; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cardMore { position: relative; z-index: 2; display: block; padding: 8px 12px; border-top: 1px solid var(--rule); background: var(--hull-sunken); color: var(--ion); font-size: 12.5px; font-weight: 600; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cardMore:hover { text-decoration: underline; }
 
 @container (max-width: 860px) {
   .hero { grid-template-columns: minmax(0, 1fr); }
-  .heroMap { padding: var(--space-4) 60px; border-right: 0; border-bottom: 1px solid var(--rule); }
+  .heroMap { padding: var(--space-4) 52px; border-right: 0; border-bottom: 1px solid var(--rule); }
 }
 @container (max-width: 520px) {
   .heroMap { padding: var(--space-3) var(--space-5); }
-  .heroInfo { padding: 18px; }
+  .heroInfo { padding: 16px; }
   .shelfRow { grid-auto-columns: 240px; }
   .sortSeg { margin-left: 0; }
 }
