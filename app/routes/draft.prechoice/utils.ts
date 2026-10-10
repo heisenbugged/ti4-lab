@@ -8,7 +8,7 @@ import { draftConfig } from "~/draft";
 import { getSystemPool } from "~/utils/system";
 import { systemData } from "~/data/systemData";
 
-export type SliceValueRange = {
+type SliceValueRange = {
   minSliceValue: number | undefined;
   maxSliceValue: number | undefined;
 };
@@ -22,7 +22,7 @@ export const filterFactionList = (
   return filtered.length === 0 ? undefined : filtered;
 };
 
-export const calculateSliceValueRange = (
+const calculateSliceValueRange = (
   settings: { minSliceValue?: number; maxSliceValue?: number },
   hasMinorFactions: boolean,
 ): SliceValueRange => {

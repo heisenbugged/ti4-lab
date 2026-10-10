@@ -1,4 +1,4 @@
-import { DiscordData, DraftSettings } from "~/types";
+import { DiscordData, DraftSettings, GameSet } from "~/types";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
 import {
@@ -29,12 +29,11 @@ import {
   notify,
   useDisclosure,
 } from "~/ui";
+import { SliceSettingsModal } from "~/components/SliceSettingsModal";
 import {
-  SliceSettingsModal,
   DEFAULT_SLICE_SETTINGS,
-  SliceGenerationSettings,
-  SliceSettingsFormatType,
-} from "~/components/SliceSettingsModal";
+  type SliceSettingsFormatType,
+} from "~/draft/sliceSettings";
 import { DraftMode, useDraftSetup } from "./store";
 import { MAPS, ChoosableDraftType } from "./maps";
 import { ReferenceCardPacksConfigurationSection } from "./components/ReferenceCardPacksConfigurationSection";
@@ -91,13 +90,7 @@ export default function DraftPrechoice() {
   const texas = useDraftSetup((state) => state.texas);
   const faction = useDraftSetup((state) => state.faction);
 
-  const [sliceSettings, setSliceSettings] = useState<
-    Record<SliceSettingsFormatType, SliceGenerationSettings>
-  >({
-    milty: DEFAULT_SLICE_SETTINGS.milty,
-    miltyeq: DEFAULT_SLICE_SETTINGS.miltyeq,
-    heisen: DEFAULT_SLICE_SETTINGS.heisen,
-  });
+  const [sliceSettings, setSliceSettings] = useState(DEFAULT_SLICE_SETTINGS);
 
   const [activeSettingsFormat, setActiveSettingsFormat] =
     useState<SliceSettingsFormatType>("milty");
@@ -152,35 +145,36 @@ export default function DraftPrechoice() {
   }, [mapSlicesString, selectedDraftType, player, setPlayers, map, slices]);
 
   const mapType = hoveredMapType ?? map.selectedMapType;
+  // Crossfade the demo map and description only once the format has changed, never on page load.
+  const firstMapType = useRef(mapType);
+  const switchedRef = useRef(false);
+  if (mapType !== firstMapType.current) switchedRef.current = true;
+  const formatSwitched = switchedRef.current;
   const playerCount = player.players.length;
 
-  const tileGameSets = useMemo(() => {
-    if (draftMode === "twilightFalls") {
-      return ["base", "pok", "te"] as const;
-    }
-
-    return content.getTileGameSets();
-  }, [content, draftMode]);
-
-  const maxSlices = useMemo(
-    () =>
-      Math.max(
-        playerCount,
-        getMaxAvailableSlices(
-          map.selectedMapType,
-          [...tileGameSets],
-          !!faction.minorFactionsMode,
-        ),
+  const maxSlices = useMemo(() => {
+    const tileGameSets: GameSet[] =
+      draftMode === "twilightFalls"
+        ? ["base", "pok", "te"]
+        : content.getTileGameSets();
+    return Math.max(
+      playerCount,
+      getMaxAvailableSlices(
+        map.selectedMapType,
+        tileGameSets,
+        !!faction.minorFactionsMode,
       ),
-    [faction.minorFactionsMode, map.selectedMapType, playerCount, tileGameSets],
-  );
+    );
+  }, [
+    content,
+    draftMode,
+    faction.minorFactionsMode,
+    map.selectedMapType,
+    playerCount,
+  ]);
 
   const { buildDraftSettings } = useDraftSettingsBuilder(sliceSettings);
   const { navigateToDraft } = useDraftNavigation(discordData);
-
-  const handleChangeName = (playerIdx: number, name: string) => {
-    player.changeName(playerIdx, name);
-  };
 
   const handleMapTypeSelect = (mapType: ChoosableDraftType) => {
     // Clear seeded map params from URL when map type changes
@@ -195,11 +189,6 @@ export default function DraftPrechoice() {
 
   const texasSlots = getTexasSlotCounts(map.selectedMapType);
   const texasReason = `Texas style deals ${TEXAS_TILES_PER_PLAYER} tiles per player (${texasSlots.dealtTiles} total), but ${MAPS[map.selectedMapType].title} has ${texasSlots.openSlots} open systems, so the galaxy can't be completed. Choose a different map to use Texas style.`;
-
-  const handleDraftModeChange = (value: DraftMode) => {
-    if (!value) return;
-    setDraftMode(value);
-  };
 
   const handleContinue = () => {
     if (draftMode === "twilightFalls") {
@@ -337,6 +326,8 @@ export default function DraftPrechoice() {
 
   const demoMap = mapType && (
     <DemoMap
+      key={mapType}
+      fadeIn={formatSwitched}
       id="prechoice-map"
       map={MAPS[mapType].map}
       titles={MAPS[mapType].titles}
@@ -410,7 +401,8 @@ export default function DraftPrechoice() {
                 <div className={classes.mapwrap}>{demoMap}</div>
               </div>
               <DraftFormatDescription
-                mapType={mapType}
+                key={mapType}
+                fadeIn={formatSwitched}
                 data={MAPS[mapType].descriptionData}
                 title={MAPS[mapType].title}
               />
@@ -421,7 +413,7 @@ export default function DraftPrechoice() {
             <PlayerInputSection
               players={player.players}
               discordData={discordData}
-              onChangeName={handleChangeName}
+              onChangeName={player.changeName}
               onIncreasePlayers={player.add}
               onDecreasePlayers={player.remove}
             />
@@ -432,7 +424,7 @@ export default function DraftPrechoice() {
                 label="Draft mode"
                 block
                 value={draftMode}
-                onChange={handleDraftModeChange}
+                onChange={setDraftMode}
                 options={[
                   { value: "base", label: "Base draft" },
                   { value: "twilightFalls", label: "Twilight's Fall" },
@@ -538,28 +530,17 @@ export default function DraftPrechoice() {
 }
 
 export const loader = async (args: LoaderFunctionArgs) => {
-  let discordData: DiscordData | undefined;
-  const discordString = new URL(args.request.url).searchParams.get("discord");
-
-  if (discordString) {
-    discordData = JSON.parse(atob(discordString)) as DiscordData;
-  }
-
-  // Parse seeded map data from URL param
-  const mapSlicesString = new URL(args.request.url).searchParams.get(
-    "mapSlices",
-  );
-
-  // Parse selected draft type from URL param
-  const selectedDraftType = new URL(args.request.url).searchParams.get(
-    "draftType",
-  );
+  const params = new URL(args.request.url).searchParams;
+  const discordString = params.get("discord");
+  const discordData = discordString
+    ? (JSON.parse(atob(discordString)) as DiscordData)
+    : undefined;
 
   return {
     discordData,
     discordOauthUrl: global.env.discordOauthUrl,
-    mapSlicesString,
-    selectedDraftType,
+    mapSlicesString: params.get("mapSlices"),
+    selectedDraftType: params.get("draftType"),
   };
 };
 

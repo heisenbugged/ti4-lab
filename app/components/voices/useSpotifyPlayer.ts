@@ -11,8 +11,6 @@ export type SpotifyDevice = {
   volume_percent: number;
 };
 
-export type SpotifyRestrictions = boolean | null;
-
 export function useSpotifyPlayer(
   accessToken: string | null,
   playlistId: string | null,
@@ -20,7 +18,6 @@ export function useSpotifyPlayer(
   const [currentPlayback, setCurrentPlayback] =
     useState<SpotifyPlaybackState | null>(null);
   const [availableDevices, setAvailableDevices] = useState<SpotifyDevice[]>([]);
-  const [activeDevice, setActiveDevice] = useState<SpotifyDevice | null>(null);
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [noActiveDeviceError, setNoActiveDeviceError] = useState(false);
 
@@ -120,7 +117,6 @@ export function useSpotifyPlayer(
       setAvailableDevices(devices);
 
       const active = devices.find((d: SpotifyDevice) => d.is_active);
-      setActiveDevice(active || null);
 
       // If no active device but devices exist, we need to show the selector
       if (!active && devices.length > 0) {
@@ -176,7 +172,6 @@ export function useSpotifyPlayer(
     getAndUpdateDevices,
     transferToDevice,
     availableDevices,
-    activeDevice,
     isLoadingDevices,
     noActiveDeviceError,
     setNoActiveDeviceError,

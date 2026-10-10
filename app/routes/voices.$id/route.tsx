@@ -11,8 +11,6 @@ import { SelectFaction } from "./components/SelectFaction";
 import { IconRefresh } from "@tabler/icons-react";
 import styles from "./session.module.css";
 
-export const factionIds: FactionId[] = ["sol", "hacan"];
-
 export default function SoundboardProxy() {
   const { id: sessionId } = useParams();
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
@@ -30,12 +28,14 @@ export default function SoundboardProxy() {
     socket.emit("joinSoundboardSession", sessionId);
     socket.emit("requestSessionData", sessionId);
 
-    socket.on("sendSessionData", (factionIds: FactionId[]) => {
-      setFactionIds(factionIds);
-    });
-    socket.on("lineFinished", () => {
-      setLoadingAudio(null);
-    });
+    const handleSessionData = (ids: FactionId[]) => setFactionIds(ids);
+    const handleLineFinished = () => setLoadingAudio(null);
+    socket.on("sendSessionData", handleSessionData);
+    socket.on("lineFinished", handleLineFinished);
+    return () => {
+      socket.off("sendSessionData", handleSessionData);
+      socket.off("lineFinished", handleLineFinished);
+    };
   }, [sessionId, socket]);
 
   const handlePlayAudio = (factionId: FactionId, type: LineType) => {
@@ -133,7 +133,6 @@ export default function SoundboardProxy() {
         <VoiceLineButton label="Joke" {...line("jokes")} />
       </section>
 
-      {/* Roleplay buttons for specific factions */}
       {(faction === "nomad" || faction === "vulraith" || faction === "hacan") &&
         factionAudios[faction]?.roleplayYes && (
           <section className={styles.group}>

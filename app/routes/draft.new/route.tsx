@@ -11,12 +11,10 @@ import { SlicesTable } from "../draft/SlicesTable";
 import { createDraft } from "~/drizzle/draft.server";
 import { DiscordBanner } from "~/components/DiscordBanner";
 import { PlayerInputSection } from "./components/PlayerInputSection";
-import {
-  AvailableFactionsSection,
-  MapSection,
-  SlicesSection,
-  PlayersSection,
-} from "./sections";
+import { AvailableFactionsSection } from "./sections/AvailableFactionsSection";
+import { MapSection } from "./sections/MapSection";
+import { SlicesSection } from "./sections/SlicesSection";
+import { PlayersSection } from "./sections/PlayersSection";
 import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { notifyPick } from "~/discord/notify.server";
@@ -192,9 +190,7 @@ export default function DraftNew() {
                 showHeader={false}
                 players={draft.players}
                 discordData={draft.integrations.discord}
-                onChangeName={(playerIdx, name) => {
-                  actions.updatePlayerName(playerIdx, name);
-                }}
+                onChangeName={actions.updatePlayerName}
               />
             </BuilderSection>
             <AvailableReferenceCardPacksSection />

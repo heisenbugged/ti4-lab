@@ -30,9 +30,6 @@ export function useMediaQuery(query: string, initial = false) {
   return matches;
 }
 
-/** Breakpoints used across the app, in px. */
-export const breakpoints = { xs: 576, sm: 768, md: 992, lg: 1200, xl: 1408 } as const;
-
 export function useLocalStorage<T>({
   key,
   defaultValue,
@@ -41,7 +38,6 @@ export function useLocalStorage<T>({
   defaultValue: T;
 }) {
   const [value, setValue] = useState<T>(defaultValue);
-  const loaded = useRef(false);
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(key);
@@ -49,7 +45,6 @@ export function useLocalStorage<T>({
     } catch {
       /* storage blocked: keep the default */
     }
-    loaded.current = true;
   }, [key]);
   const set = useCallback(
     (next: T | ((prev: T) => T)) => {
@@ -83,4 +78,23 @@ export function useClipboard({ timeout = 1600 } = {}) {
     [timeout],
   );
   return { copied, copy };
+}
+
+/**
+ * True for a moment after `key` changes (never on first render), so "just picked"
+ * can animate without everything animating on page load. Pair with data-landed.
+ */
+export function useLanded(key: unknown, ms = 700) {
+  const first = useRef(true);
+  const [landed, setLanded] = useState(false);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    setLanded(true);
+    const t = setTimeout(() => setLanded(false), ms);
+    return () => clearTimeout(t);
+  }, [key, ms]);
+  return landed;
 }

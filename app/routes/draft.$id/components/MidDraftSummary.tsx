@@ -6,11 +6,9 @@ import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { systemsInSlice } from "~/utils/slice";
 import { useSliceValue } from "~/hooks/useSliceValue";
 import { PlayerHex, cx } from "~/ui";
-import { playerColorOf, playerLetter, shortFactionName } from "./draftOrderUtils";
+import { playerColorOf, playerLetter, shortFactionName, speakerOrdinal } from "./draftOrderUtils";
 import classes from "./MidDraftSummary.module.css";
-
-const ordinal = (n: number) =>
-  n === 1 ? "Speaker" : `${n}${n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
+import { PickToken, sliceName } from "./PickToken";
 
 /** One card per player with a slot for each thing they pick. Empty slots are dashed. */
 export function MidDraftSummary() {
@@ -71,12 +69,9 @@ export function MidDraftSummary() {
   );
 }
 
-function Slot({ empty, children, title }: { empty?: boolean; children: React.ReactNode; title?: string }) {
-  return (
-    <span className={cx(classes.slot, empty && classes.empty)} title={title}>
-      {children}
-    </span>
-  );
+/** A slot in a player card: shaped and glyphed by what kind of pick it holds. */
+function Slot(props: Omit<React.ComponentProps<typeof PickToken>, "variant" | "className">) {
+  return <PickToken {...props} variant="chip" className={classes.slot} />;
 }
 
 function SliceSlot({ slice }: { slice: Slice }) {
@@ -85,10 +80,10 @@ function SliceSlot({ slice }: { slice: Slice }) {
   const sv = sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1);
   return (
     <Slot
-      title={`Slice ${slice.name}: SV ${sv}, optimal ${optimal.resources} resources, ${optimal.influence} influence, ${optimal.flex} flex`}
-    >
-      <span className={classes.slotText}>{slice.name}</span>
-    </Slot>
+      kind="slice"
+      label={sliceName(slice.name, 0)}
+      title={`${slice.name}: SV ${sv}, optimal ${optimal.resources} resources, ${optimal.influence} influence, ${optimal.flex} flex`}
+    />
   );
 }
 
@@ -116,7 +111,7 @@ function PlayerCard({
   const color = playerColorOf(player.id);
 
   return (
-    <div className={cx(classes.card, isPicking && classes.now)}>
+    <div className={cx(classes.card, isPicking && classes.now, isPicking && "ui-now")}>
       <div className={classes.head}>
         <PlayerHex color={color} size="sm">
           {playerLetter(player.id)}
@@ -127,46 +122,40 @@ function PlayerCard({
         {isPicking && <small className={classes.picking}>Picking</small>}
       </div>
       <div className={classes.slots}>
-        {faction ? (
-          <Slot title={faction.name}>
-            <img src={faction.iconPath} alt="" />
-            <span className={classes.slotText}>{shortFactionName(faction.name)}</span>
-          </Slot>
+        {faction && player.faction ? (
+          <Slot kind="faction" factionId={player.faction} label={shortFactionName(faction.name)} title={faction.name} />
         ) : (
-          <Slot empty>Faction</Slot>
+          <Slot kind="faction" empty label="Faction" />
         )}
         {showMinorFaction &&
-          (minor ? (
-            <Slot title={`Minor faction: ${minor.name}`}>
-              <img src={minor.iconPath} alt="" />
-              <span className={classes.slotText}>{shortFactionName(minor.name)}</span>
-            </Slot>
+          (minor && player.minorFaction ? (
+            <Slot kind="minor" factionId={player.minorFaction} label={shortFactionName(minor.name)} title={`Minor faction: ${minor.name}`} />
           ) : (
-            <Slot empty>Minor</Slot>
+            <Slot kind="minor" empty label="Minor" />
           ))}
-        {showSlice && (slice ? <SliceSlot slice={slice} /> : <Slot empty>Slice</Slot>)}
+        {showSlice && (slice ? <SliceSlot slice={slice} /> : <Slot kind="slice" empty label="Slice" />)}
         {showSpeaker &&
           (player.speakerOrder !== undefined ? (
-            <Slot title="Speaker order">{ordinal(player.speakerOrder + 1)}</Slot>
+            <Slot kind="speaker" value={player.speakerOrder + 1} label={speakerOrdinal(player.speakerOrder + 1)} title="Speaker order" />
           ) : (
-            <Slot empty>Speaker</Slot>
+            <Slot kind="speaker" empty label="Speaker" />
           ))}
         {player.seatIdx !== undefined ? (
-          <Slot>Seat {player.seatIdx + 1}</Slot>
+          <Slot kind="seat" value={player.seatIdx + 1} label="Seat" title={`Seat ${player.seatIdx + 1}`} />
         ) : (
-          <Slot empty>Seat</Slot>
+          <Slot kind="seat" empty label="Seat" />
         )}
         {showPack &&
           (player.referenceCardPackIdx !== undefined ? (
-            <Slot title="Reference card pack">Pack {player.referenceCardPackIdx + 1}</Slot>
+            <Slot kind="pack" label={`Pack ${player.referenceCardPackIdx + 1}`} title="Reference card pack" />
           ) : (
-            <Slot empty>Pack</Slot>
+            <Slot kind="pack" empty label="Pack" />
           ))}
         {showPlayerColor &&
           (player.factionColor ? (
-            <Slot title="In-game colour">{player.factionColor}</Slot>
+            <Slot kind="color" color={player.factionColor} label={player.factionColor} title="In-game colour" />
           ) : (
-            <Slot empty>Colour</Slot>
+            <Slot kind="color" empty label="Colour" />
           ))}
       </div>
     </div>

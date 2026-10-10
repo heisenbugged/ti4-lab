@@ -1,4 +1,4 @@
-.backdrop { position: fixed; inset: 0; z-index: 200; background: var(--scrim); transition: opacity 160ms var(--ease); }
+.backdrop { position: fixed; inset: 0; z-index: 200; background: var(--scrim); transition: opacity var(--dur-state) var(--ease); }
 .backdrop[data-starting-style], .backdrop[data-ending-style] { opacity: 0; }
 .viewport { position: fixed; inset: 0; z-index: 201; display: grid; place-items: center; padding: var(--space-6) var(--space-4); overflow-y: auto; }
 
@@ -13,7 +13,7 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-modal);
   outline: none;
-  transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+  transition: opacity var(--dur-enter) var(--ease), transform var(--dur-enter) var(--ease);
 }
 .modal[data-starting-style], .modal[data-ending-style] { opacity: 0; transform: translateY(6px) scale(0.985); }
 .modal-sm { width: min(420px, 100%); }
@@ -36,7 +36,7 @@
   .foot { padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--sab)); }
 }
 
-.drawer { position: fixed; top: 0; bottom: 0; z-index: 201; display: flex; flex-direction: column; width: min(340px, 88vw); padding-top: var(--sat); background: var(--hull); border: 1px solid var(--rule); box-shadow: var(--shadow-modal); outline: none; transition: transform 200ms var(--ease); }
+.drawer { position: fixed; top: 0; bottom: 0; z-index: 201; display: flex; flex-direction: column; width: min(340px, 88vw); padding-top: var(--sat); background: var(--hull); border: 1px solid var(--rule); box-shadow: var(--shadow-modal); outline: none; transition: transform var(--dur-enter) var(--ease); }
 .drawer-right { right: 0; border-right: 0; }
 .drawer-left { left: 0; border-left: 0; }
 .drawer-right[data-starting-style], .drawer-right[data-ending-style] { transform: translateX(100%); }
@@ -44,15 +44,15 @@
 .drawerBody { flex: 1; overflow-y: auto; padding: 0 var(--space-3) calc(var(--space-4) + var(--sab)); }
 
 .positioner { z-index: 300; outline: none; }
-.pop { max-width: min(360px, calc(100vw - 24px)); background: var(--hull-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); font-size: 13px; color: var(--text); outline: none; transform-origin: var(--transform-origin); transition: opacity 140ms var(--ease), transform 140ms var(--ease); }
+.pop { max-width: min(360px, calc(100vw - 24px)); background: var(--hull-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); font-size: 13px; color: var(--text); outline: none; transform-origin: var(--transform-origin); transition: opacity var(--dur-quick) var(--ease), transform var(--dur-quick) var(--ease); }
 .pop[data-starting-style], .pop[data-ending-style] { opacity: 0; transform: scale(0.97); }
 .popPad { padding: 12px 12px; }
 .popTitle { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
 
-.tooltip { max-width: 280px; padding: 6px 9px; background: var(--hull-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); font-size: 12.5px; line-height: 1.4; color: var(--text); transition: opacity 120ms var(--ease); }
+.tooltip { max-width: 280px; padding: 6px 9px; background: var(--hull-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); font-size: 12.5px; line-height: 1.4; color: var(--text); transition: opacity var(--dur-quick) var(--ease); }
 .tooltip[data-starting-style], .tooltip[data-ending-style] { opacity: 0; }
 
-.menu { display: grid; gap: 2px; padding: 6px; background: var(--hull-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); outline: none; transition: opacity 120ms var(--ease), transform 120ms var(--ease); transform-origin: var(--transform-origin); }
+.menu { display: grid; gap: 2px; padding: 6px; background: var(--hull-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); outline: none; transition: opacity var(--dur-quick) var(--ease), transform var(--dur-quick) var(--ease); transform-origin: var(--transform-origin); }
 .menu[data-starting-style], .menu[data-ending-style] { opacity: 0; transform: scale(0.98); }
 .menuItem { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 8px 10px; border-radius: 2px; color: var(--text); font: 500 13.5px/1.3 var(--font); cursor: pointer; outline: none; user-select: none; }
 .menuItem[data-highlighted] { background: var(--hull); }
@@ -63,5 +63,5 @@
 .menuText small { margin-top: 2px; font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .menuDanger, .menuDanger .menuIcon { color: var(--danger); }
 .menuState { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
-.menuOn { color: var(--gold); }
+.menuOn { color: var(--gold-text); }
 .menuSep { margin: 4px 6px; border: 0; border-top: 1px solid var(--rule); }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DraftPick, HydratedPlayer } from "~/types";
 import { DraftOrderChip } from "./DraftOrderChip";
 import { getDraftOrderEntries } from "./draftOrderUtils";
@@ -26,21 +26,12 @@ export function RollingDraftOrder({ pickOrder, currentPick, players }: Props) {
     return () => ro.disconnect();
   }, []);
 
-  const recalculateOffset = useCallback(() => {
-    if (!containerRef.current || !trackRef.current) return;
-    const activeElement = trackRef.current.querySelector(
-      '[data-active="true"]',
-    ) as HTMLElement | null;
-    if (!activeElement) return;
-    // Center the active element in the container
-    setOffset(
-      containerWidth / 2 - activeElement.offsetLeft - activeElement.offsetWidth / 2,
-    );
-  }, [containerWidth]);
-
+  // Center the active pick, which needs its measured position.
   useEffect(() => {
-    recalculateOffset();
-  }, [currentPick, pickOrder, recalculateOffset]);
+    const active = trackRef.current?.querySelector<HTMLElement>('[data-active="true"]');
+    if (!active) return;
+    setOffset(containerWidth / 2 - active.offsetLeft - active.offsetWidth / 2);
+  }, [containerWidth, currentPick, pickOrder]);
 
   return (
     <div ref={containerRef} className={classes.container}>

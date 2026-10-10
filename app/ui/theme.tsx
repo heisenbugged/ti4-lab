@@ -14,13 +14,11 @@ export function ThemeProvider({ forced, children }: { forced?: Theme | null; chi
     const t = document.documentElement.dataset.theme;
     if (t === "light" || t === "dark") setThemeState(t);
   }, [forced]);
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
   const setTheme = useCallback(
     (t: Theme) => {
       if (forced) return;
       setThemeState(t);
+      document.documentElement.dataset.theme = t;
       try {
         localStorage.setItem(KEY, t);
       } catch {

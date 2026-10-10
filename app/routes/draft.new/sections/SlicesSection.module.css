@@ -25,7 +25,7 @@
   color: var(--ion);
   font: 600 13.5px/1 var(--font);
   cursor: pointer;
-  transition: background-color 120ms var(--ease), border-color 120ms var(--ease);
+  transition: background-color var(--dur-quick) var(--ease), border-color var(--dur-quick) var(--ease);
 }
 
 .addSlice:hover {

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation } from "react-router";
 import { IconBrandDiscordFilled, IconMenu2 } from "@tabler/icons-react";
 import { ButtonAnchor, Drawer, IconButton, cx } from "~/ui";
 import { Logo } from "~/components/Logo";
@@ -13,11 +13,12 @@ type Props = {
   headerRightSection?: ReactNode;
   /** Full-bleed pages (map generator) manage their own padding. */
   flush?: boolean;
+  /** No max width (live drafts use the whole screen, as before). */
+  wide?: boolean;
 };
 
-export function MainAppShell({ children, headerRightSection, flush }: Props) {
+export function MainAppShell({ children, headerRightSection, flush, wide }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const items = [
@@ -28,11 +29,9 @@ export function MainAppShell({ children, headerRightSection, flush }: Props) {
     { to: "/voices", label: "Soundboard", active: pathname.startsWith("/voices") },
   ];
 
-  const go = (to: string) => (e: React.MouseEvent) => {
+  const go = (to: string) => () => {
     if (to === "/voices") {
-      e.preventDefault();
       trackButtonClick({ buttonType: "load_soundboard", context: "main_app_shell" });
-      navigate("/voices");
     }
     setMenuOpen(false);
   };
@@ -75,7 +74,7 @@ export function MainAppShell({ children, headerRightSection, flush }: Props) {
         {headerRightSection && <div className={classes.drawerExtra}>{headerRightSection}</div>}
       </Drawer>
 
-      <main className={cx(classes.main, flush && classes.flush)}>{children}</main>
+      <main className={cx(classes.main, wide && classes.wide, flush && classes.flush)}>{children}</main>
     </div>
   );
 }

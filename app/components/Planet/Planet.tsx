@@ -7,12 +7,6 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { TradeStation } from "../features/TradeStation";
 import { LegendaryPopover } from "./LegendaryPopover";
 
-export type PlanetFormat =
-  | "STREAMLINED"
-  | "STREAMLINED_WITH_NAME"
-  | "COLORBLIND_FRIENDLY"
-  | "COLORBLIND_FRIENDLY_WITH_NAME";
-
 type Props = {
   planet: PlanetType;
   showName?: boolean;

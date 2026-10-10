@@ -34,7 +34,7 @@ type Props = {
   onToggleTileClosed?: (idx: number) => void;
 };
 
-export type MapInteractions = {
+type MapInteractions = {
   editable: boolean;
   droppable: boolean;
   hoverEffects: boolean;
@@ -81,15 +81,6 @@ export const MAP_INTERACTIONS: Record<string, MapInteractions> = {
     allowHomeSelect: false,
     allowSystemDelete: false,
   },
-  rawDraft: {
-    editable: false,
-    droppable: true,
-    hoverEffects: true,
-    allowSystemSelect: false,
-    allowOpenSelect: false,
-    allowHomeSelect: false,
-    allowSystemDelete: false,
-  },
 };
 
 export function Map({
@@ -121,13 +112,12 @@ export function Map({
   return (
     <MapContext.Provider
       value={{
-        width,
-        height,
         radius,
         gap,
         hOffset: -radius + height * 0.5,
         wOffset: -radius + width * 0.5,
         disabled,
+        animateChanges: true,
       }}
     >
       <div ref={ref} style={{ width: "100%", height: "100%", position: "relative" }}>
@@ -213,9 +203,6 @@ export function Map({
                   tileContributions
                     ? tileContributions[hoveredHomeIdx]?.get(tile.idx)
                     : undefined
-                }
-                isHomeHovered={
-                  tile.type === "HOME" && tile.idx === hoveredHomeIdx
                 }
                 hoveredHomeIdx={hoveredHomeIdx}
                 onHomeHover={tile.type === "HOME" ? onHomeHover : undefined}

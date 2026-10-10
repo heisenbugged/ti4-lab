@@ -25,7 +25,7 @@ export function DraftablePlayerColorsSection() {
   const { selectPlayerColor } = useDraft((state) => state.draftActions);
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
-  const { toggle, isPending } = usePendingPick();
+  const { select, isPending } = usePendingPick();
 
   const { syncDraft } = useSyncDraft();
   const canSelect =
@@ -44,13 +44,11 @@ export function DraftablePlayerColorsSection() {
       <div className={classes.colors}>
         {colors.map((color) => {
           const player = hydratedPlayers.find((p) => p.factionColor === color);
-          const disabled =
-            !!player?.factionColor && player.factionColor !== color;
           const key = `color-${color}`;
 
           const handleSelect = canSelect
             ? () =>
-                toggle({
+                select({
                   key,
                   label: `${color} plastic`,
                   commit: () => {
@@ -65,7 +63,6 @@ export function DraftablePlayerColorsSection() {
               key={color}
               selected={!!player}
               selectedColor={player ? playerColorOf(player.id) : undefined}
-              disabled={disabled}
               pending={isPending(key)}
               onSelect={!player ? handleSelect : undefined}
               header={
@@ -74,8 +71,7 @@ export function DraftablePlayerColorsSection() {
                   <PlayerChipOrSelect
                     player={player}
                     selected={isPending(key)}
-                    onSelect={handleSelect ? () => handleSelect() : undefined}
-                    disabled={disabled}
+                    onSelect={handleSelect}
                   />
                 </>
               }

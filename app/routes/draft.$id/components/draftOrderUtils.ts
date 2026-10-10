@@ -6,8 +6,7 @@ import {
   HOME_PHASE,
   PRIORITY_PHASE,
 } from "~/types";
-import { factions } from "~/data/factionData";
-import { playerColors } from "~/data/factionData";
+import { factions, playerColors } from "~/data/factionData";
 import type { PlayerColor } from "~/ui";
 
 export type DraftOrderEntry = {
@@ -70,11 +69,9 @@ export function shortFactionName(name: string) {
   return plain.split(" ")[0];
 }
 
-const ordinal = (n: number) => {
-  if (n === 1) return "Speaker";
-  const suffix = n === 2 ? "nd" : n === 3 ? "rd" : "th";
-  return `${n}${suffix}`;
-};
+/** Speaker order position: "Speaker", "2nd", "3rd", "4th"… */
+export const speakerOrdinal = (n: number) =>
+  n === 1 ? "Speaker" : `${n}${n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
 
 /** Short label for what a pick took, for the pick order strip. */
 export function shortSelectionLabel(
@@ -92,7 +89,7 @@ export function shortSelectionLabel(
     case "SELECT_SLICE":
       return draft.slices[selection.sliceIdx]?.name ?? `Slice ${selection.sliceIdx + 1}`;
     case "SELECT_SPEAKER_ORDER":
-      return ordinal(selection.speakerOrder + 1);
+      return speakerOrdinal(selection.speakerOrder + 1);
     case "SELECT_SEAT":
       return `Seat ${selection.seatIdx + 1}`;
     case "SELECT_PLAYER_COLOR":
@@ -129,7 +126,7 @@ export function describeSelection(
     case "SELECT_SPEAKER_ORDER":
       return selection.speakerOrder === 0
         ? `${who} took speaker.`
-        : `${who} took ${ordinal(selection.speakerOrder + 1)} in speaker order.`;
+        : `${who} took ${speakerOrdinal(selection.speakerOrder + 1)} in speaker order.`;
     case "SELECT_SEAT":
       return `${who} took seat ${selection.seatIdx + 1}.`;
     case "SELECT_PLAYER_COLOR":

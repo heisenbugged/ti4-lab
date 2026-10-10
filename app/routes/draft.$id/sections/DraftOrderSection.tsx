@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   IconArrowBackUp,
@@ -30,8 +29,8 @@ import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
 import { useAdminControls } from "../components/useAdminControls";
 import { getDraftOrderEntries, shortSelectionLabel } from "../components/draftOrderUtils";
-import { isAudioAlertEnabled,
-  AUDIO_ALERT_CHANGE_EVENT, setAudioAlertEnabled } from "~/utils/audioAlert";
+import { setAudioAlertEnabled } from "~/utils/audioAlert";
+import { useAudioAlertPreference } from "../components/useAudioAlertPreference";
 import classes from "../components/DraftLayout.module.css";
 
 /** Pick order with every round, the draft link and the draft tools. */
@@ -57,14 +56,7 @@ export function DraftOrderSection() {
   const { hydratedPlayers, currentPick } = useHydratedDraft();
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const selections = useDraft((state) => state.draft.selections);
-  const [audioAlertEnabled, setAudioAlertEnabledState] = useState(false);
-  // Read the stored preference after hydration (the server has no localStorage).
-  useEffect(() => {
-    const sync = () => setAudioAlertEnabledState(isAudioAlertEnabled());
-    sync();
-    window.addEventListener(AUDIO_ALERT_CHANGE_EVENT, sync);
-    return () => window.removeEventListener(AUDIO_ALERT_CHANGE_EVENT, sync);
-  }, []);
+  const { enabled: audioAlertEnabled } = useAudioAlertPreference();
   const { copy } = useClipboard();
 
   const link = `https://tidraft.com/draft/${draftUrl}`;
@@ -83,7 +75,6 @@ export function DraftOrderSection() {
   const handleAudioToggle = () => {
     const newValue = !audioAlertEnabled;
     setAudioAlertEnabled(newValue);
-    setAudioAlertEnabledState(newValue);
     notify({
       title: newValue ? "Sound alerts on" : "Sound alerts off",
       message: newValue

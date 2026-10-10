@@ -3,6 +3,7 @@ import { Toast } from "@base-ui/react/toast";
 import { Progress as BaseProgress } from "@base-ui/react/progress";
 import { IconAlertTriangle, IconCircleCheck, IconInfoCircle, IconX } from "@tabler/icons-react";
 import { cx } from "./utils";
+import { toastManager, notify } from "./notify";
 import classes from "./Feedback.module.css";
 
 /* ── Spinner, loading overlay, progress ─────────────────────────── */
@@ -90,8 +91,7 @@ export function Notice({
 
 /* ── Toasts ─────────────────────────────────────────────────────── */
 
-export { toastManager, notify } from "./notify";
-import { toastManager } from "./notify";
+export { toastManager, notify };
 
 const toastIcon = { info: IconInfoCircle, success: IconCircleCheck, warning: IconAlertTriangle, danger: IconAlertTriangle };
 

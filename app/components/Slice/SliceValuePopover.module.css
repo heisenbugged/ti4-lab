@@ -1,5 +1,10 @@
 .trigger { display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--text-muted); cursor: help; }
 .trigger:hover { color: var(--ion); }
+/* Value + icon as one hover/tap target. */
+.withValue { display: inline-flex; align-items: baseline; gap: 6px; width: auto; height: auto; padding: 2px 4px; margin: -2px -4px; border-radius: 2px; color: inherit; font: inherit; }
+.withValue svg { align-self: center; color: var(--text-muted); }
+.withValue:hover { color: inherit; background: var(--hull-raised); }
+.withValue:hover svg { color: var(--ion); }
 .dark { color: rgb(255 255 255 / 0.75); filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.35)); }
 .head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--rule); font-size: 12px; font-weight: 600; color: var(--text-muted); }
 .head b { font-size: 15px; color: var(--resource); font-variant-numeric: tabular-nums; }

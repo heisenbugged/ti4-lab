@@ -4,37 +4,27 @@ import { DraftableSpeakerOrder } from "../components/DraftableSpeakerOrder";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { usePendingPick } from "../components/pendingPick";
+import { speakerOrdinal } from "../components/draftOrderUtils";
 import classes from "../components/DraftLayout.module.css";
-
-export const playerSpeakerOrder = [
-  "Speaker",
-  "2nd",
-  "3rd",
-  "4th",
-  "5th",
-  "6th",
-  "7th",
-  "8th",
-];
 
 export function SpeakerOrderSection() {
   const { hydratedPlayers, activePlayer, currentlyPicking } =
     useHydratedDraft();
   const { selectSpeakerOrder } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
-  const { toggle, isPending } = usePendingPick();
+  const { select, isPending } = usePendingPick();
   const canSelect =
     currentlyPicking &&
     !!activePlayer &&
     activePlayer.speakerOrder === undefined;
 
-  const positions = playerSpeakerOrder.slice(0, hydratedPlayers.length);
+  const positions = hydratedPlayers.map((_, idx) => speakerOrdinal(idx + 1));
   const open = positions.filter(
     (_, idx) => !hydratedPlayers.some((p) => p.speakerOrder === idx),
   ).length;
   const youHave =
     currentlyPicking && activePlayer?.speakerOrder !== undefined
-      ? playerSpeakerOrder[activePlayer.speakerOrder]
+      ? speakerOrdinal(activePlayer.speakerOrder + 1)
       : undefined;
   const meta = youHave
     ? `You have ${youHave === "Speaker" ? "speaker" : youHave}.`
@@ -55,10 +45,9 @@ export function SpeakerOrderSection() {
               speakerOrder={so}
               player={player}
               selected={isPending(key)}
-              openNote="Open"
               onSelect={() => {
                 if (!activePlayer || !canSelect) return;
-                toggle({
+                select({
                   key,
                   label: so === "Speaker" ? "Speaker" : `${so} in speaker order`,
                   commit: () => {

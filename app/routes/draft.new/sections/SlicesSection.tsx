@@ -138,7 +138,7 @@ export function SlicesSection() {
                 onSelectTile={(tile) => openPlanetFinderForSlice(idx, tile.idx)}
                 onDeleteTile={(tile) => removeSystemFromSlice(idx, tile.idx)}
                 onRandomizeSlice={() => randomizeSlice(idx)}
-                onClearSlize={() => clearSlice(idx)}
+                onClearSlice={() => clearSlice(idx)}
                 canRemove={slices.length > numPlayers}
                 onRemoveSlice={() => removeSlice(idx)}
                 onNameChange={(name) => updateSliceName(idx, name)}

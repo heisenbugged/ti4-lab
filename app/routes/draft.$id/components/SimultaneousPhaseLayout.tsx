@@ -86,7 +86,7 @@ export function SimultaneousPhaseLayout({
 
       {phase.isSpectatorMode && (
         <div className={classes.notice}>
-          <SpectatorModeNotice isSpectatorMode={phase.isSpectatorMode} />
+          <SpectatorModeNotice />
         </div>
       )}
 

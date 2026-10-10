@@ -1,7 +1,6 @@
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import { Button, Checkbox, Code, Modal, Stack, Text, notify } from "~/ui";
-import { useEffect, useState } from "react";
-import { useFetcher } from "react-router";
+import { useState } from "react";
 import { Draft } from "~/types";
 import { draftToPresetData } from "~/utils/draftPreset";
 import type {
@@ -16,48 +15,54 @@ type Props = {
   onClose: () => void;
 };
 
+async function savePreset(
+  input: SaveDraftPresetInput,
+): Promise<SaveDraftPresetResponse> {
+  try {
+    const response = await fetch("/api/draft-presets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    return (await response.json()) as SaveDraftPresetResponse;
+  } catch {
+    return { success: false, error: "Something went wrong. Try again." };
+  }
+}
+
 export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
-  const fetcher = useFetcher<SaveDraftPresetResponse>();
   const presetName = usePresetName();
-  const { setValue: setPresetName } = presetName;
   const [keepFactions, setKeepFactions] = useState(true);
-  const saving = fetcher.state !== "idle";
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (fetcher.state !== "idle" || !fetcher.data) return;
-    const result = fetcher.data;
+  const handleSave = async () => {
+    if (!presetName.isValid || saving) return;
+    setSaving(true);
+    const result = await savePreset({
+      name: presetName.name,
+      keepFactions,
+      playerCount: draft.players.length,
+      data: draftToPresetData(draft),
+    });
+    setSaving(false);
 
-    if (result.success) {
-      notify({
-        tone: "success",
-        title: "Preset saved",
-        message: `Continue from preset ${result.name} in TI4 Lab, or start it with /labdraft preset:${result.name} in Discord.`,
-      });
-      setPresetName("");
-      setKeepFactions(true);
-      onClose();
-    } else {
+    if (!result.success) {
       notify({
         tone: "danger",
         title: "Could not save preset",
         message: result.error,
       });
+      return;
     }
-  }, [fetcher.state, fetcher.data, onClose, setPresetName]);
 
-  const handleSave = () => {
-    if (!presetName.isValid || saving) return;
-    const input: SaveDraftPresetInput = {
-      name: presetName.name,
-      keepFactions,
-      playerCount: draft.players.length,
-      data: draftToPresetData(draft),
-    };
-    fetcher.submit(input, {
-      method: "POST",
-      encType: "application/json",
-      action: "/api/draft-presets",
+    notify({
+      tone: "success",
+      title: "Preset saved",
+      message: `Continue from preset ${result.name} in TI4 Lab, or start it with /labdraft preset:${result.name} in Discord.`,
     });
+    presetName.setValue("");
+    setKeepFactions(true);
+    onClose();
   };
 
   return (

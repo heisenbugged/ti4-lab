@@ -1,12 +1,12 @@
 import { useState } from "react";
 import type { DraftPreset } from "~/drizzle/draftPreset.server";
 import type { LoadDraftPresetResponse } from "~/routes/api.draft-presets";
-import { usePresetName } from "~/routes/draft.new/components/PresetNameInput";
 import {
-  DRAFT_PRESET_NAME_MAX_LENGTH,
-  sanitizeDraftPresetName,
-} from "~/utils/draftPresetName";
-import { Button, Modal, Stack, Text, TextInput, notify } from "~/ui";
+  PresetNameInput,
+  usePresetName,
+} from "~/routes/draft.new/components/PresetNameInput";
+import { DRAFT_PRESET_NAME_MAX_LENGTH } from "~/utils/draftPresetName";
+import { Button, Modal, Stack, Text, notify } from "~/ui";
 
 type Props = {
   opened: boolean;
@@ -78,20 +78,11 @@ export function ContinueFromPresetModal({
           will open in the draft builder so you can review or change it before
           you create a draft.
         </Text>
-        <TextInput
-          label="Preset name"
-          hint={`Lowercase with hyphens, up to ${DRAFT_PRESET_NAME_MAX_LENGTH} characters. Press Enter to continue.`}
+        <PresetNameInput
+          preset={presetName}
+          onSubmit={handleContinue}
+          description={`Lowercase with hyphens, up to ${DRAFT_PRESET_NAME_MAX_LENGTH} characters. Press Enter to continue.`}
           placeholder="my-game"
-          value={presetName.value}
-          onChange={(e) =>
-            presetName.setValue(sanitizeDraftPresetName(e.currentTarget.value))
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleContinue();
-          }}
-          // The field is the whole point of this dialog, as before.
-          // eslint-disable-next-line jsx-a11y/no-autofocus
-          autoFocus
         />
       </Stack>
     </Modal>

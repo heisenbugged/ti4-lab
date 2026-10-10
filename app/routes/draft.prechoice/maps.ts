@@ -6,7 +6,7 @@ import type { DraftFormatDescriptionData } from "./components/DraftFormatDescrip
 
 export type ChoosableDraftType = DraftType;
 
-export type PrechoiceMap = {
+type PrechoiceMap = {
   title: string;
   description: string;
   descriptionData: DraftFormatDescriptionData;

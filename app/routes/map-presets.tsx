@@ -217,7 +217,11 @@ function Spotlight({
   const techSkips = parseTechSkips(preset.techSkips);
   return (
     <section className={classes.hero} aria-labelledby="map-of-the-day">
-      <Link to={`/maps/${preset.slug}`} className={classes.heroMap} tabIndex={-1}>
+      <Link
+        to={`/maps/${preset.slug}`}
+        className={classes.heroMap}
+        tabIndex={-1}
+      >
         <img src={presetImageUrl(preset)} alt={preset.name} />
       </Link>
       <div className={classes.heroInfo}>
@@ -355,15 +359,18 @@ function MapGrid({
     fetcher.load(`/api/preset-maps?${params}`);
   };
 
-  useEffect(() => {
+  // Append each page once as it lands.
+  const [appendedPage, setAppendedPage] = useState(fetcher.data);
+  if (fetcher.data && fetcher.data !== appendedPage) {
     const page = fetcher.data;
-    if (!page) return;
+    setAppendedPage(page);
     setHasMore(page.hasMore);
-    setItems((prev) => {
-      const seen = new Set(prev.map((preset) => preset.id));
-      return [...prev, ...page.items.filter((preset) => !seen.has(preset.id))];
-    });
-  }, [fetcher.data]);
+    const seen = new Set(items.map((preset) => preset.id));
+    setItems([
+      ...items,
+      ...page.items.filter((preset) => !seen.has(preset.id)),
+    ]);
+  }
 
   // Re-observed whenever the list grows so a sentinel that is still on screen
   // after a page lands (tall viewports) triggers the next page immediately.

@@ -22,7 +22,6 @@ type MapStats = {
 
 type Props = {
   stats: MapStats;
-  mobile?: boolean;
   className?: string;
 };
 
@@ -54,10 +53,10 @@ const SKIPS: Array<{
   { key: "cyberneticSkips", tech: "CYBERNETIC", label: "cybernetic" },
 ];
 
-export function MapStatsOverlay({ stats, mobile = false, className }: Props) {
+export function MapStatsOverlay({ stats, className }: Props) {
   const skips = SKIPS.filter(({ key }) => (stats[key] ?? 0) > 0);
   return (
-    <dl className={cx(classes.stats, mobile && classes.mobile, className)}>
+    <dl className={cx(classes.stats, className)}>
       <div>
         <dt>Blue/red</dt>
         <dd>

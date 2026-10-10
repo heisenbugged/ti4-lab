@@ -1,0 +1,101 @@
+/*
+ * Pick tokens. Kind is carried three ways at once so it reads at a glance and without colour:
+ * glyph (faction icon, hex cluster, seat hex, speaker token, swatch, card),
+ * accent (--k), and outline (rect, cut corners, hex ends, pill).
+ */
+.token {
+  --k: var(--text-muted);
+  /* Chrome stays neutral; only the glyph takes the kind colour, so slots don't compete for attention. */
+  --edge: color-mix(in oklab, var(--rule-strong) 75%, var(--rule));
+  /* Filled slots sit a step above the card, not in a hole below it. */
+  --fill: var(--hull-raised);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text);
+  white-space: nowrap;
+  --flash: var(--k);
+  transition: color var(--dur-state) var(--ease);
+}
+.text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.faction { --k: var(--text-muted); }
+.minor { --k: var(--kind-minor); }
+.ban { --k: var(--danger); }
+.slice { --k: var(--kind-slice); }
+.seat { --k: var(--kind-seat); }
+.speaker { --k: var(--kind-speaker); }
+.pack { --k: var(--kind-pack); }
+.color { --k: var(--text-muted); }
+
+/* Chip: a slot in a player card. Two layers so non-rectangular outlines keep a 1px edge. */
+.chip {
+  position: relative;
+  isolation: isolate;
+  height: 28px;
+  padding: 0 7px;
+  font-size: 12px;
+  font-weight: 600;
+  --shape: none;
+}
+.chip::before, .chip::after { content: ""; position: absolute; z-index: -1; clip-path: var(--shape); border-radius: 2px; }
+.chip::before, .chip::after { transition: background-color var(--dur-state) var(--ease); }
+.chip::before { inset: 0; background: var(--edge); }
+.chip::after { inset: 1px; background: var(--fill); border-radius: 1px; }
+
+/* Outlines per kind */
+.chip.slice { --shape: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+.chip.seat { --shape: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%); padding: 0 11px; }
+.chip.speaker, .chip.speaker::before, .chip.speaker::after { border-radius: 999px; }
+.chip.speaker { padding: 0 9px; }
+.chip.pack { --shape: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%); }
+
+/* Empty: outline and glyph only, no fill, so open slots read as holes of the right shape. */
+.empty { color: var(--text-muted); font-weight: 500; --edge: var(--rule); --fill: var(--hull); }
+.glyph, .seatHex, .speakerDot, .swatch, .icon { transition: opacity var(--dur-state) var(--ease), filter var(--dur-state) var(--ease); }
+.empty .glyph, .empty .seatHex, .empty .speakerDot, .empty .swatch { opacity: 0.35; filter: grayscale(1); }
+
+/* Inline: glyph + label inside a pick order cell. */
+.inline { font-size: 11.5px; line-height: 1.2; gap: 4px; max-width: 100%; }
+
+/* Glyphs */
+.glyph { width: 13px; height: 12px; flex: none; fill: var(--k); }
+.outlineGlyph { fill: none; stroke: var(--k); stroke-width: 1.3; }
+.pack .glyph { fill: none; stroke: var(--k); stroke-width: 1.4; }
+.cut { fill: none; stroke: var(--k); stroke-width: 1.2; }
+.icon img { display: block; width: 16px; height: 16px; object-fit: contain; }
+.inline .faction img, .inline img { width: 14px; height: 14px; }
+.icon { display: inline-flex; flex: none; }
+.banned { position: relative; }
+.banned img { opacity: 0.55; filter: grayscale(0.6); }
+.banned::after { content: ""; position: absolute; left: -2px; right: -2px; top: 50%; height: 1.5px; background: var(--danger); transform: rotate(-35deg); }
+
+.seatHex {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 17px;
+  height: 15px;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: color-mix(in oklab, var(--k) 80%, var(--hull));
+  color: var(--void);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+.speakerDot {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid var(--k);
+  color: var(--k);
+  font-size: 9.5px;
+  font-weight: 800;
+  line-height: 1;
+}
+.swatch { flex: none; width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 1px color-mix(in oklab, var(--text) 35%, transparent); }

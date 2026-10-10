@@ -10,7 +10,7 @@ type Props = {
   color: string;
 };
 
-function points(radius: number, scale = 0.95) {
+function points(radius: number, scale = 0.99) {
   return hexVertices(radius * scale)
     .map((p) => `${p.x},${p.y}`)
     .join(" ");
@@ -28,7 +28,7 @@ export function PlayerDemoTile({ tile, title, color }: Props) {
         ) : (
           <>
             <polygon points={points(radius)} className={classes.ring} />
-            <polygon points={points(radius, 0.83)} className={classes.inner} />
+            <polygon points={points(radius, 0.88)} className={classes.inner} />
           </>
         )}
       </svg>
@@ -50,7 +50,7 @@ export function PresetDemoHex({ radius }: { radius: number }) {
           </pattern>
         </defs>
         <polygon points={points(radius)} className={classes.presetEdge} />
-        <polygon points={points(radius, 0.9)} fill={`url(#hatch-${id})`} />
+        <polygon points={points(radius, 0.93)} fill={`url(#hatch-${id})`} />
       </svg>
     </div>
   );

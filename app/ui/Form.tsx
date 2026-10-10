@@ -1,4 +1,4 @@
-import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes, type MouseEvent } from "react";
+import { forwardRef, useId, useRef, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes, type MouseEvent } from "react";
 import { Field as BaseField } from "@base-ui/react/field";
 import { Select as BaseSelect } from "@base-ui/react/select";
 import { Checkbox as BaseCheckbox } from "@base-ui/react/checkbox";
@@ -391,6 +391,16 @@ export function NumberStepper({
   /** Custom text in place of the number (e.g. "off", "3 rings"). */
   display?: ReactNode;
 }) {
+  // Tick the number in the direction it moved, only after the first change.
+  const shown = display ?? value;
+  const prev = useRef(shown);
+  const ticked = useRef(false);
+  const dir = useRef(1);
+  if (prev.current !== shown) {
+    ticked.current = true;
+    if (typeof shown === "number" && typeof prev.current === "number") dir.current = shown > prev.current ? 1 : -1;
+    prev.current = shown;
+  }
   return (
     <div className={cx(classes.stepper, size === "sm" && classes.stepperSm)} role="group" aria-label={label}>
       <button type="button" className={classes.stepBtn} disabled={decreaseDisabled} aria-label={label ? `Fewer ${label}` : "Decrease"} {...pressHandlers(decrease)}>
@@ -398,7 +408,14 @@ export function NumberStepper({
       </button>
       {(value !== undefined || display !== undefined) && (
         <output className={cx(classes.stepVal, display !== undefined && typeof display !== "number" && classes.stepText)} aria-live="polite">
-          {display ?? value}
+          {/* Re-keyed on change so the new value ticks in (not on first render). */}
+          <span
+            key={String(shown)}
+            className={ticked.current ? classes.tick : undefined}
+            style={{ "--tick-from": `${dir.current * 6}px` } as React.CSSProperties}
+          >
+            {display ?? value}
+          </span>
         </output>
       )}
       <button type="button" className={classes.stepBtn} disabled={increaseDisabled} aria-label={label ? `More ${label}` : "Increase"} {...pressHandlers(increase)}>

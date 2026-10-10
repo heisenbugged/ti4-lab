@@ -1,2 +1,2 @@
 .border { /*  */ stroke: var(--pal-dark-3) }
-:global([data-theme="light"]) .border { stroke: #e5e5e5; }
+:global([data-theme="light"]) .border { stroke: #c9d1df; }

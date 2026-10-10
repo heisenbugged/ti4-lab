@@ -66,7 +66,7 @@ function selectSystemPool(
   }
 
   // 3. Count red tiles already selected (wormholes can be red)
-  let currentRedCount = selected.filter((id) => {
+  const currentRedCount = selected.filter((id) => {
     const sys = systemData[id];
     return sys?.type === "RED";
   }).length;

@@ -16,7 +16,7 @@ export function DraftableReferenceCardPacksSection() {
   const { selectReferenceCardPack } = useDraft((state) => state.draftActions);
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
-  const { toggle, isPending } = usePendingPick();
+  const { select, isPending } = usePendingPick();
 
   const { syncDraft } = useSyncDraft();
   const canSelect =
@@ -49,24 +49,24 @@ export function DraftableReferenceCardPacksSection() {
 
           return (
             <Bracket key={packIdx} active={isPending(`pack-${packIdx}`)}>
-            <ReferenceCardPack
-              pack={pack}
-              packIdx={packIdx}
-              player={player}
-              onSelect={
-                canSelect
-                  ? () =>
-                      toggle({
-                        key: `pack-${packIdx}`,
-                        label: `Reference card pack ${packIdx + 1}`,
-                        commit: () => {
-                          selectReferenceCardPack(activePlayer.id, packIdx);
-                          syncDraft();
-                        },
-                      })
-                  : undefined
-              }
-            />
+              <ReferenceCardPack
+                pack={pack}
+                packIdx={packIdx}
+                player={player}
+                onSelect={
+                  canSelect
+                    ? () =>
+                        select({
+                          key: `pack-${packIdx}`,
+                          label: `Reference card pack ${packIdx + 1}`,
+                          commit: () => {
+                            selectReferenceCardPack(activePlayer.id, packIdx);
+                            syncDraft();
+                          },
+                        })
+                    : undefined
+                }
+              />
             </Bracket>
           );
         })}

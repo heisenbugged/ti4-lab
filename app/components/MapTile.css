@@ -11,7 +11,7 @@
 
 .tile-dimmed {
     opacity: 0.25;
-    transition: opacity 150ms ease;
+    transition: opacity var(--dur-quick) var(--ease);
 }
 
 .map-tile-button {

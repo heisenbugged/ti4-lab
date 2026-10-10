@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { IconArrowBackUp } from "@tabler/icons-react";
 import {
   Button,
@@ -23,10 +23,10 @@ import {
 } from "~/utils/texasMapBuild";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { systemData } from "~/data/systemData";
-import { playerColors } from "~/data/factionData";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { useAdminControls } from "../components/useAdminControls";
 import { PhaseBanner } from "../components/SimultaneousPhaseHeader";
+import { playerColorOf, playerLetter } from "../components/draftOrderUtils";
 import { TexasTile } from "./TexasTileDraftPhase";
 import classes from "./TexasMapBuildPhase.module.css";
 
@@ -60,7 +60,6 @@ export function TexasMapBuildPhase() {
     handleAdminPasswordSubmit,
     handleAdminToggle,
   } = useAdminControls();
-  const selections = useDraft((state) => state.draft.selections);
 
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>(null);
   const [pendingPlacement, setPendingPlacement] = useState<{
@@ -79,20 +78,13 @@ export function TexasMapBuildPhase() {
   const ringName = ringNames[currentRing as 1 | 2 | 3 | 4];
 
   // All tiles in the current ring (for subtle highlight)
-  const currentRingTiles = useMemo(
-    () => getPlaceableTileIndices(mapForRender, playerTiles),
-    [mapForRender, playerTiles],
-  );
+  const currentRingTiles = getPlaceableTileIndices(mapForRender, playerTiles);
 
   // Filtered placeable tiles based on selected system (for full highlight)
-  const placeableTileIndices = useMemo(
-    () =>
-      getPlaceableTileIndices(
-        mapForRender,
-        playerTiles,
-        selectedSystemId || undefined,
-      ),
-    [mapForRender, playerTiles, selectedSystemId],
+  const placeableTileIndices = getPlaceableTileIndices(
+    mapForRender,
+    playerTiles,
+    selectedSystemId || undefined,
   );
 
   const sortedPlayerTiles = [...playerTiles].sort((a, b) => {
@@ -134,22 +126,12 @@ export function TexasMapBuildPhase() {
     setSelectedSystemId(null);
   };
 
-  const activeColor =
-    activePlayer !== undefined ? playerColors[activePlayer.id] : undefined;
+  const activeColor = activePlayer ? playerColorOf(activePlayer.id) : undefined;
   const instruction = !canSelect
     ? "Waiting for this player to place a tile."
     : selectedSystemId
       ? `Place tile ${selectedSystemId} on a highlighted hex.`
       : "Select a tile, then a highlighted hex on the map.";
-
-  const pickAnyChip = (
-    <Chip
-      pressed={pickForAnyone}
-      onChange={() => setPickForAnyone(!pickForAnyone)}
-    >
-      Pick for any player
-    </Chip>
-  );
 
   return (
     <div className={classes.shell}>
@@ -165,7 +147,7 @@ export function TexasMapBuildPhase() {
             <PlayerTag
               color={activeColor}
               name={activePlayer.name}
-              letter={String.fromCharCode(65 + activePlayer.id)}
+              letter={playerLetter(activePlayer.id)}
             />
           ) : (
             <Text size="sm" weight={600}>
@@ -204,7 +186,7 @@ export function TexasMapBuildPhase() {
             badge={
               activePlayer ? (
                 <PlayerHex color={activeColor} size="lg">
-                  {String.fromCharCode(65 + activePlayer.id)}
+                  {playerLetter(activePlayer.id)}
                 </PlayerHex>
               ) : (
                 String(currentRing)
@@ -226,7 +208,12 @@ export function TexasMapBuildPhase() {
                 label="Reveals hidden tile information. Use with caution."
                 side="bottom"
               >
-                {pickAnyChip}
+                <Chip
+                  pressed={pickForAnyone}
+                  onChange={() => setPickForAnyone(!pickForAnyone)}
+                >
+                  Pick for any player
+                </Chip>
               </Tooltip>
             )}
             {showUndoLastSelection && (
@@ -235,7 +222,7 @@ export function TexasMapBuildPhase() {
                 variant="tertiary"
                 icon={<IconArrowBackUp size={15} />}
                 onClick={undoLastPick}
-                disabled={selections.length === 0}
+                disabled={draft.selections.length === 0}
               >
                 Undo
               </Button>

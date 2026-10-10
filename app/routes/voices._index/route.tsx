@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Button,
   ButtonAnchor,
@@ -61,7 +61,6 @@ import {
 } from "~/components/voices/SpotifyDeviceSelector";
 import { SpotifyPlaylistUI } from "~/components/voices/SpotifyPlaylistUI";
 
-// Line type display names dictionary
 const LINE_TYPE_DISPLAY_NAMES: Record<LineType, string> = {
   battleLines: "Battle line",
   homeDefense: "Home defense",
@@ -87,6 +86,11 @@ const LINE_TYPE_DISPLAY_NAMES: Record<LineType, string> = {
   announcerCriticalhit: "Critical hit",
   announcerAgenda: "Agenda phase",
 };
+
+const DEFAULT_PLAYLIST_ID = "6O6izIEToh3JI4sAtHQn6J";
+
+const readStoredPlaylistId = () =>
+  localStorage.getItem("spotifyPlaylistId") || DEFAULT_PLAYLIST_ID;
 
 const DEFAULT_FACTION_SLOTS: FactionId[] = [
   "arborec",
@@ -179,7 +183,6 @@ function SourceIcon({
   );
 }
 
-// Voice Line Queue Display
 interface VoiceLineQueueProps {
   queue: Array<{
     factionId: FactionId | "announcer";
@@ -246,20 +249,12 @@ const VoiceLineQueue = ({ queue, onRemove, onClear }: VoiceLineQueueProps) => {
   );
 };
 
-// Closed Captions Display Component
 interface ClosedCaptionsProps {
   caption: string;
-  visible: boolean;
   factionId: FactionId | "announcer";
 }
 
-const ClosedCaptions = ({
-  caption,
-  visible,
-  factionId,
-}: ClosedCaptionsProps) => {
-  if (!visible || !caption) return null;
-
+const ClosedCaptions = ({ caption, factionId }: ClosedCaptionsProps) => {
   return (
     <div className={ccStyles.container} role="status" aria-live="polite">
       <div className={ccStyles.caption}>
@@ -270,7 +265,6 @@ const ClosedCaptions = ({
   );
 };
 
-// Client-only component for closed captions toggle
 const ClosedCaptionsToggle = ({
   sessionId,
   checked,
@@ -281,10 +275,7 @@ const ClosedCaptionsToggle = ({
   onChange: (enabled: boolean) => void;
 }) => {
   const handleToggle = (newValue: boolean) => {
-    // Notify parent component
     onChange(newValue);
-
-    // Analytics: Track CC toggle
     trackButtonClick({
       buttonType: "closed_captions_toggle",
       context: newValue ? "cc_on" : "cc_off",
@@ -302,7 +293,7 @@ const ClosedCaptionsToggle = ({
   );
 };
 
-// Helper function to calculate the remaining line count for a specific faction and line type
+/** Lines of this type not yet played this session. */
 const getRemainingLineCount = (
   factionId: FactionId,
   type: LineType,
@@ -344,7 +335,7 @@ const getRemainingLineCount = (
   // Return remaining count
   return Math.max(0, totalCount - playedCount);
 };
-// Announcer Voice Line Button Component
+
 interface AnnouncerVoiceLineButtonProps {
   type: LineType;
   loadingAudio: string | null;
@@ -407,15 +398,29 @@ export default function VoicesMaster() {
   const [volume, setVolume] = useState(1);
   const { accessToken } = useSpotifyLogin();
   const [playlistId, setPlaylistId] = useState<string | undefined>(undefined);
-  const timeOnPageTracker = useRef<(() => void) | null>(null);
-  const [qrModalOpened, setQrModalOpened] = useState(false);
+
+  // Read after hydration; the server has no localStorage.
   useEffect(() => {
-    if (!playlistId) {
-      const stored = localStorage.getItem("spotifyPlaylistId");
-      setPlaylistId(stored || "6O6izIEToh3JI4sAtHQn6J");
+    setPlaylistId(readStoredPlaylistId());
+  }, []);
+
+  // Clearing the field falls back to the last saved playlist.
+  const changePlaylistId = (id: string) => {
+    if (!id) {
+      setPlaylistId(readStoredPlaylistId());
+      return;
     }
-    if (playlistId) localStorage.setItem("spotifyPlaylistId", playlistId);
-  }, [playlistId]);
+    localStorage.setItem("spotifyPlaylistId", id);
+    setPlaylistId(id);
+  };
+
+  // Opens whenever a session starts (creating one redirects back here).
+  const [qrModalOpened, setQrModalOpened] = useState(!!sessionId);
+  const [qrForSession, setQrForSession] = useState(sessionId);
+  if (sessionId !== qrForSession) {
+    setQrForSession(sessionId);
+    if (sessionId) setQrModalOpened(true);
+  }
 
   const [closedCaptionsEnabled, setClosedCaptionsEnabled] = useState(() => {
     if (typeof window !== "undefined") {
@@ -453,7 +458,7 @@ export default function VoicesMaster() {
     voiceLineMemory,
   } = useAudioPlayer({
     accessToken,
-    playlistId: playlistId || "6O6izIEToh3JI4sAtHQn6J",
+    playlistId: playlistId || DEFAULT_PLAYLIST_ID,
     lineFinished: () => {
       if (!socket) return;
       socket.emit("lineFinished", sessionId);
@@ -461,7 +466,6 @@ export default function VoicesMaster() {
     },
   });
 
-  // Derive current caption from playing audio state - much simpler now!
   const currentCaption =
     closedCaptionsEnabled && currentAudio?.caption
       ? currentAudio.caption
@@ -472,40 +476,16 @@ export default function VoicesMaster() {
       ? (loadingAudio.split("-")[0] as FactionId | "announcer")
       : null;
 
-  // Analytics: Track page view and time on page
   useEffect(() => {
     trackPageView({
       route: "/voices",
       sessionId: sessionId || undefined,
     });
-
-    // Start tracking time on page
-    const tracker = trackTimeOnPage("/voices", sessionId || undefined);
-    timeOnPageTracker.current = tracker || null;
-
-    // Track time on page when component unmounts
-    return () => {
-      if (timeOnPageTracker.current) {
-        timeOnPageTracker.current();
-      }
-    };
-  }, [sessionId]);
-
-  // Show QR modal when session is first created
-  useEffect(() => {
     if (sessionId) {
-      setQrModalOpened(true);
+      trackSessionEvent({ action: "session_joined", sessionId });
     }
-  }, [sessionId]);
-
-  // Track session events
-  useEffect(() => {
-    if (sessionId) {
-      trackSessionEvent({
-        action: "session_joined",
-        sessionId: sessionId,
-      });
-    }
+    const stopTimeOnPage = trackTimeOnPage("/voices", sessionId || undefined);
+    return () => stopTimeOnPage?.();
   }, [sessionId]);
 
   const { socket, isDisconnected, isReconnecting, reconnect } =
@@ -531,7 +511,6 @@ export default function VoicesMaster() {
     socket.on("playLine", handlePlayLine);
     socket.on("stopLine", handleStopLine);
 
-    // CRITICAL: Clean up event listeners when effect re-runs or component unmounts
     return () => {
       socket.off("requestSessionData", handleRequestSessionData);
       socket.off("playLine", handlePlayLine);
@@ -539,38 +518,26 @@ export default function VoicesMaster() {
     };
   }, [sessionId, socket, factionSlots, playAudio, stopAudio]);
 
-  // Create lookup maps for queued voice lines - stores item ID for removal
-  const queuedLinesMap = useMemo(() => {
-    const map = new Map<string, string>(); // key -> item.id
+  // Queue item id by "<faction>-<type>", for queued state and removal.
+  const queuedLines = useMemo(
+    () =>
+      new Map(
+        voiceLineQueue.map((item) => [
+          `${item.factionId}-${item.type}`,
+          item.id,
+        ]),
+      ),
+    [voiceLineQueue],
+  );
 
-    voiceLineQueue.forEach((item) => {
-      const key = `${item.factionId}-${item.type}`;
-      map.set(key, item.id);
-    });
-
-    return map;
-  }, [voiceLineQueue]);
-
-  const isVoiceLineQueued = (factionId: FactionId, type: LineType) => {
-    return queuedLinesMap.has(`${factionId}-${type}`);
-  };
-
-  const getQueuedItemId = (
-    factionId: FactionId | "announcer",
-    type: LineType,
-  ) => {
-    return queuedLinesMap.get(`${factionId}-${type}`);
-  };
-
-  const isAnnouncerLineQueued = (type: LineType) => {
-    return queuedLinesMap.has(`announcer-${type}`);
-  };
+  const isQueued = (factionId: FactionId | "announcer", type: LineType) =>
+    queuedLines.has(`${factionId}-${type}`);
 
   const handleRemoveFromQueue = (
     factionId: FactionId | "announcer",
     type: LineType,
   ) => {
-    const id = getQueuedItemId(factionId, type);
+    const id = queuedLines.get(`${factionId}-${type}`);
     if (id) {
       removeFromQueue(id);
       trackButtonClick({
@@ -604,12 +571,11 @@ export default function VoicesMaster() {
       }
     }
 
-    // Analytics: Track voice line click
     trackVoiceLineClick({
       faction: factionId,
       lineType: type,
       sessionId: sessionId || undefined,
-      isQueued: isVoiceLineQueued(factionId, type),
+      isQueued: isQueued(factionId, type),
     });
 
     playAudio(factionId, type, false);
@@ -619,12 +585,11 @@ export default function VoicesMaster() {
   const handlePlayAnnouncerAudio = async (type: LineType) => {
     if (!socket) return;
 
-    // Analytics: Track voice line click for announcer
     trackVoiceLineClick({
       faction: "announcer",
       lineType: type,
       sessionId: sessionId || undefined,
-      isQueued: isAnnouncerLineQueued(type),
+      isQueued: isQueued("announcer", type),
     });
 
     playAudio("announcer" as FactionId, type, false);
@@ -676,36 +641,20 @@ export default function VoicesMaster() {
     reconnect();
   };
 
-  // New helper method to format the loading audio text
-  const getAudioDisplayText = (loadingAudio: string) => {
-    if (!loadingAudio) return [null, null];
-
-    const [factionId, lineType] = loadingAudio.split("-") as [
-      FactionId,
-      LineType,
-    ];
-    let lineTypeDisplay = LINE_TYPE_DISPLAY_NAMES[lineType];
-    if (lineType === "special") {
-      lineTypeDisplay =
-        factionAudios[factionId]?.special?.title || lineTypeDisplay;
-    } else if (lineType === "special2") {
-      lineTypeDisplay =
-        factionAudios[factionId]?.special2?.title || lineTypeDisplay;
-    }
-
-    return [factionId, lineTypeDisplay];
-  };
-
   const [playingFaction, playingLineType] = loadingAudio
-    ? getAudioDisplayText(loadingAudio)
+    ? (loadingAudio.split("-") as [FactionId | "announcer", LineType])
     : [null, null];
+  const playingTitle =
+    playingFaction && playingLineType
+      ? lineTitle(playingFaction, playingLineType)
+      : null;
 
   const playLine = (faction: FactionId, type: LineType) => ({
     loadingAudio,
     onPlay: () => handlePlayAudio(faction, type),
     onStop: handleStopAudio,
     onRemoveFromQueue: () => handleRemoveFromQueue(faction, type),
-    isQueued: isVoiceLineQueued(faction, type),
+    isQueued: isQueued(faction, type),
     lineCount: getRemainingLineCount(faction, type, voiceLineMemory),
   });
 
@@ -713,7 +662,6 @@ export default function VoicesMaster() {
 
   return (
     <div className={styles.page}>
-      {/* Reconnect button */}
       {socket && isDisconnected && (
         <div className={styles.reconnect}>
           <Button
@@ -726,7 +674,6 @@ export default function VoicesMaster() {
         </div>
       )}
 
-      {/* Page Header */}
       <header className={styles.head}>
         <div className={styles.titleBlock}>
           <Heading variant="title" as="h1">
@@ -769,7 +716,6 @@ export default function VoicesMaster() {
             </ClientOnly>
           </div>
 
-          {/* Session Info */}
           {sessionId && (
             <div className={styles.session}>
               <button
@@ -802,7 +748,6 @@ export default function VoicesMaster() {
           )}
         </div>
 
-        {/* Spotify Panel */}
         <section className={styles.spotify} aria-label="Spotify">
           <div className={styles.spotifyHead}>
             <span className={styles.spotifyTitle}>
@@ -860,7 +805,7 @@ export default function VoicesMaster() {
               )}
               <SpotifyPlaylistUI
                 playlistId={playlistId}
-                setPlaylistId={setPlaylistId}
+                setPlaylistId={changePlaylistId}
                 isWarMode={isWarMode}
                 endWar={endWar}
               />
@@ -869,7 +814,6 @@ export default function VoicesMaster() {
         </section>
       </header>
 
-      {/* Announcer Section */}
       <section className={styles.announcer} aria-labelledby="announcer-title">
         <div className={styles.announcerHead}>
           <AnnouncerBadge />
@@ -890,7 +834,7 @@ export default function VoicesMaster() {
               onPlay={() => handlePlayAnnouncerAudio(type)}
               onStop={handleStopAudio}
               onRemoveFromQueue={() => handleRemoveFromQueue("announcer", type)}
-              isQueued={isAnnouncerLineQueued(type)}
+              isQueued={isQueued("announcer", type)}
               lineCount={getRemainingLineCount(
                 "announcer" as FactionId,
                 type,
@@ -901,7 +845,6 @@ export default function VoicesMaster() {
         </div>
       </section>
 
-      {/* Factions Section */}
       <section className={styles.factions}>
         <SectionHeader
           title="Factions"
@@ -946,7 +889,6 @@ export default function VoicesMaster() {
                 />
               </header>
               <div className={styles.factionCardBody}>
-                {/* Combat voice lines - primary actions */}
                 <span className={styles.groupLabel}>Combat</span>
                 <div className={styles.lineRow}>
                   {COMBAT_LINES.map((line) => (
@@ -961,7 +903,6 @@ export default function VoicesMaster() {
                   ))}
                 </div>
 
-                {/* Special abilities and misc */}
                 {(factionAudios[faction]?.special ||
                   factionAudios[faction]?.special2 ||
                   factionAudios[faction]?.jokes) && (
@@ -1027,7 +968,6 @@ export default function VoicesMaster() {
         </div>
       </section>
 
-      {/* Credits section */}
       <section className={styles.credits}>
         <SectionHeader title="Credits" />
         <div className={styles.creditsGrid}>
@@ -1065,7 +1005,6 @@ export default function VoicesMaster() {
         </div>
       </section>
 
-      {/* Device selector for Spotify when no active device */}
       <SpotifyDeviceSelector
         isOpen={noActiveDeviceError}
         onClose={() => setNoActiveDeviceError(false)}
@@ -1081,13 +1020,12 @@ export default function VoicesMaster() {
         }}
       />
 
-      {/* Audio Player Footer */}
       <footer className={styles.player} aria-label="Player">
         <div className={styles.playerInner}>
           <IconButton
             label={isVoiceLinePlaying ? "Pause" : "Play"}
             onClick={() => {
-              if (playingFaction && playingLineType) {
+              if (playingTitle) {
                 if (voiceLineRef.current?.playing()) {
                   voiceLineRef.current.pause();
                   setIsVoiceLinePlaying(false);
@@ -1107,7 +1045,7 @@ export default function VoicesMaster() {
                 }
               }
             }}
-            disabled={!(playingFaction && playingLineType)}
+            disabled={!playingTitle}
           >
             {isVoiceLinePlaying ? (
               <IconPlayerStop size={18} />
@@ -1138,18 +1076,15 @@ export default function VoicesMaster() {
           </Tooltip>
 
           <div className={styles.nowPlaying}>
-            {playingFaction && playingLineType ? (
+            {playingFaction && playingTitle ? (
               <>
-                <SourceIcon
-                  factionId={playingFaction as FactionId | "announcer"}
-                  size={26}
-                />
+                <SourceIcon factionId={playingFaction} size={26} />
                 <span className={styles.nowPlayingText}>
-                  <b>{playingLineType}</b>
+                  <b>{playingTitle}</b>
                   <small>
                     {playingFaction === "announcer"
                       ? "Announcer"
-                      : factions[playingFaction as FactionId]?.name}
+                      : factions[playingFaction]?.name}
                   </small>
                 </span>
               </>
@@ -1251,7 +1186,6 @@ export default function VoicesMaster() {
         </div>
       </footer>
 
-      {/* QR Code Modal */}
       <Modal
         opened={qrModalOpened}
         onClose={() => setQrModalOpened(false)}
@@ -1279,11 +1213,9 @@ export default function VoicesMaster() {
         </Text>
       </Modal>
 
-      {/* Closed Captions Display */}
       {currentCaption && currentCaptionFaction && (
         <ClosedCaptions
           caption={currentCaption}
-          visible={closedCaptionsEnabled}
           factionId={currentCaptionFaction}
         />
       )}
@@ -1384,18 +1316,8 @@ export const loader = async () => {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await createSession();
 
-  // Parse existing query parameters from the request URL
-  const url = new URL(request.url);
-  const searchParams = new URLSearchParams(url.search);
-
-  // Add the new session parameter
+  // Keep the current faction slots in the session URL.
+  const searchParams = new URL(request.url).searchParams;
   searchParams.set("session", session.id);
-
-  // Redirect with all parameters preserved
   return redirect(`/voices?${searchParams.toString()}`);
-}
-
-export function extractPlaylistId(input: string) {
-  const match = input.match(/playlist[/:]([a-zA-Z0-9]{22})/);
-  return match ? match[1] : input;
 }

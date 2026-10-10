@@ -9,6 +9,7 @@ import { SlicesTable } from "~/routes/draft/SlicesTable";
 import { useDraftedSlices } from "~/hooks/useDraftedSlices";
 import { usePendingPick } from "../components/pendingPick";
 import classes from "../components/DraftLayout.module.css";
+import { playerColorOf, playerLetter } from "../components/draftOrderUtils";
 
 export function SlicesSection() {
   const slices = useDraft((state) => state.draft.slices);
@@ -20,9 +21,8 @@ export function SlicesSection() {
   const { syncDraft } = useSyncDraft();
   const { activePlayer, hydratedPlayers, currentlyPicking } =
     useHydratedDraft();
-  const sortedSlices = useSortedSlices(slices, []);
-  const draftedSlices = useDraftedSlices();
-  const { toggle, isPending } = usePendingPick();
+  const sortedSlices = useSortedSlices(slices);
+  const { select, isPending } = usePendingPick();
 
   const {
     removeSystemFromSlice,
@@ -58,7 +58,7 @@ export function SlicesSection() {
           return (
             <DraftableSlice
               key={idx}
-              id={`slice-${idx}`}
+              id={key}
               slice={slice}
               player={hydratedPlayers.find((p) => p.sliceIdx === idx)}
               modifiable={adminMode}
@@ -66,7 +66,7 @@ export function SlicesSection() {
               onSelect={
                 canSelectSlice
                   ? () =>
-                      toggle({
+                      select({
                         key,
                         label: slice.name,
                         commit: () => {
@@ -95,10 +95,23 @@ export function SlicesSection() {
           );
         })}
       </div>
-
-      <Panel title="Slice summary" collapsible defaultOpen={false} flush summary="Compare every slice">
-        <SlicesTable slices={slices} draftedSlices={draftedSlices} />
-      </Panel>
     </section>
+  );
+}
+
+/** Every slice side by side. Always open: it is the main comparison while picking. */
+export function SliceSummarySection() {
+  const slices = useDraft((state) => state.draft.slices);
+  const draftedSlices = useDraftedSlices();
+  const { hydratedPlayers } = useHydratedDraft();
+  const owners = Object.fromEntries(
+    hydratedPlayers
+      .filter((p) => p.sliceIdx !== undefined)
+      .map((p) => [p.sliceIdx!, { name: p.name, color: playerColorOf(p.id), letter: playerLetter(p.id) }]),
+  );
+  return (
+    <Panel title="Slice summary" flush>
+      <SlicesTable slices={slices} draftedSlices={draftedSlices} owners={owners} />
+    </Panel>
   );
 }

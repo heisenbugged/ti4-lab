@@ -1,5 +1,5 @@
 import { IconCheck, IconLock, IconLockOpen } from "@tabler/icons-react";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { factions } from "~/data/factionData";
 import { FactionId, FactionStratification, GameSet } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -49,23 +49,12 @@ export function FactionSettingsModal({
   onSave,
   onClose,
 }: Props) {
-  const BASE_POK_KEY = useMemo((): keyof FactionStratification => {
-    const baseSets: GameSet[] = [];
-    if (factionGameSets.includes("base")) baseSets.push("base");
-    if (factionGameSets.includes("pok")) baseSets.push("pok");
-    return baseSets.join("|") as keyof FactionStratification;
-  }, [factionGameSets]);
-
-  const TE_KEY: keyof FactionStratification = "te";
-
-  const DISCORDANT_KEY = useMemo((): keyof FactionStratification => {
-    const discordantSets: GameSet[] = [];
-    if (factionGameSets.includes("discordant"))
-      discordantSets.push("discordant");
-    if (factionGameSets.includes("discordantexp"))
-      discordantSets.push("discordantexp");
-    return discordantSets.join("|") as keyof FactionStratification;
-  }, [factionGameSets]);
+  const setsKey = (sets: GameSet[]) =>
+    sets
+      .filter((s) => factionGameSets.includes(s))
+      .join("|") as keyof FactionStratification;
+  const BASE_POK_KEY = setsKey(["base", "pok"]);
+  const DISCORDANT_KEY = setsKey(["discordant", "discordantexp"]);
 
   const [stratifiedConfig, setStratifiedConfig] = useState<
     FactionStratification | undefined
@@ -78,24 +67,23 @@ export function FactionSettingsModal({
     savedAllowedFactions ?? factionPool,
   );
 
-  useEffect(() => {
-    if (!opened) return;
-
-    setAllowedFactions(savedAllowedFactions ?? factionPool);
-    setRequiredFactions(savedRequiredFactions ?? []);
-    setStratifiedConfig(savedStratifiedConfig);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opened]);
+  // Start from the saved settings each time the modal opens.
+  const [wasOpened, setWasOpened] = useState(opened);
+  if (opened !== wasOpened) {
+    setWasOpened(opened);
+    if (opened) {
+      setAllowedFactions(savedAllowedFactions ?? factionPool);
+      setRequiredFactions(savedRequiredFactions ?? []);
+      setStratifiedConfig(savedStratifiedConfig);
+    }
+  }
 
   const handleSave = () => {
-    // Remove any keys that have a value of 0
-    let config = Object.fromEntries(
+    // Drop sets left at 0
+    const nonZero = Object.fromEntries(
       Object.entries(stratifiedConfig ?? {}).filter(([, value]) => value > 0),
-    ) as FactionStratification | undefined;
-
-    if (Object.keys(config!).length === 0) {
-      config = undefined;
-    }
+    ) as FactionStratification;
+    const config = Object.keys(nonZero).length > 0 ? nonZero : undefined;
 
     if (!validateStratifiedConfig(config, numPlayers)) {
       notify({
@@ -111,18 +99,9 @@ export function FactionSettingsModal({
 
   const handleStratifiedDecrease = (key: keyof FactionStratification) => {
     if (!stratifiedConfig) return;
-    const currentCount = stratifiedConfig[key];
-    if (currentCount === undefined) {
-      setStratifiedConfig({
-        ...stratifiedConfig,
-        [key]: 0,
-      });
-      return;
-    }
-
     setStratifiedConfig({
       ...stratifiedConfig,
-      [key]: Math.max(currentCount - 1, 0),
+      [key]: Math.max((stratifiedConfig[key] ?? 0) - 1, 0),
     });
   };
 
@@ -137,26 +116,18 @@ export function FactionSettingsModal({
     });
   };
 
-  const sortedFactionPool = useMemo(() => {
-    const grouped = factionPool.reduce(
-      (acc, factionId) => {
-        const gameSet = factions[factionId].set;
-        if (!acc[gameSet]) {
-          acc[gameSet] = [];
-        }
-        acc[gameSet].push(factionId);
-        return acc;
-      },
-      {} as Record<string, FactionId[]>,
-    );
-
-    return Object.entries(grouped).map(([gameSet, factionIds]) => ({
+  const grouped: Partial<Record<GameSet, FactionId[]>> = {};
+  for (const factionId of factionPool) {
+    (grouped[factions[factionId].set] ??= []).push(factionId);
+  }
+  const sortedFactionPool = Object.entries(grouped).map(
+    ([gameSet, factionIds]) => ({
       gameSet: gameSet as GameSet,
       factionIds: factionIds.sort((a, b) =>
         factions[a].name.localeCompare(factions[b].name),
       ),
-    }));
-  }, [factionPool]);
+    }),
+  );
 
   const hasBasePok =
     factionGameSets.includes("base") || factionGameSets.includes("pok");
@@ -207,7 +178,7 @@ export function FactionSettingsModal({
     show: boolean;
   }[] = [
     { key: BASE_POK_KEY, label: "Base and PoK", max: 25, show: hasBasePok },
-    { key: TE_KEY, label: "Thunder's Edge", max: 10, show: hasTE },
+    { key: "te", label: "Thunder's Edge", max: 10, show: hasTE },
     {
       key: DISCORDANT_KEY,
       label: "Discordant",
@@ -218,7 +189,7 @@ export function FactionSettingsModal({
 
   return (
     <Modal
-      opened={!!opened}
+      opened={opened}
       onClose={onClose}
       size="full"
       className={classes.modal}

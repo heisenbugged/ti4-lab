@@ -14,14 +14,7 @@ export function SelectFaction({ factionIds, onFactionSelected }: Props) {
   const [selectedFaction, setSelectedFaction] = useState<FactionId | undefined>(
     undefined,
   );
-  const handleFactionPressed = (factionId: FactionId) => {
-    setSelectedFaction(factionId);
-  };
 
-  const handleContinuePressed = () => {
-    if (!selectedFaction) return;
-    onFactionSelected(selectedFaction);
-  };
   return (
     <div className={styles.page}>
       <div className={styles.pickerHead}>
@@ -47,7 +40,7 @@ export function SelectFaction({ factionIds, onFactionSelected }: Props) {
                 selected && styles.factionOptionSelected,
                 selected && "ui-bracket",
               )}
-              onClick={() => handleFactionPressed(factionId)}
+              onClick={() => setSelectedFaction(factionId)}
             >
               <FactionIcon
                 faction={factionId}
@@ -64,7 +57,9 @@ export function SelectFaction({ factionIds, onFactionSelected }: Props) {
           <Button
             variant="primary"
             size="lg"
-            onClick={handleContinuePressed}
+            onClick={() =>
+              selectedFaction && onFactionSelected(selectedFaction)
+            }
             disabled={!selectedFaction}
             block
           >

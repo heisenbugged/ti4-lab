@@ -1,9 +1,8 @@
 import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
 import { SliceValuePopover } from "../../Slice/SliceValuePopover";
 import type { SliceStats } from "~/mapgen/utils/sliceScoring";
+import { speakerOrdinal } from "~/utils/map";
 import classes from "./HomeTileContent.module.css";
-
-const seatLabel = ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
 type Props = {
   seat?: number;
@@ -20,7 +19,7 @@ type Props = {
 export function SliceStatsContent({ seat, sliceValue, sliceStats, coreSliceData, fontSize }: Props) {
   return (
     <div className={classes.stack} style={{ fontSize }}>
-      {seat !== undefined && <p className={classes.label}>{seatLabel[seat]}</p>}
+      {seat !== undefined && <p className={classes.label}>{speakerOrdinal(seat + 1)}</p>}
       {sliceValue !== undefined && (
         <div className={classes.row}>
           <p className={classes.value}>{sliceValue.toFixed(1)}</p>

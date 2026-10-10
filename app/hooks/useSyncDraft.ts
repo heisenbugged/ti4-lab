@@ -21,7 +21,6 @@ export const SyncDraftContext = createContext<SyncDraftContextValue>({
 export const useSyncDraft = () => useContext(SyncDraftContext);
 
 function reloadOutOfSync(notification: {
-  id?: string;
   title: string;
   message: string;
 }) {
@@ -99,7 +98,6 @@ export function useSyncDraftFetcher() {
     if (data?.success === false) {
       if (data.error === "out_of_sync") {
         reloadOutOfSync({
-          id: "out-of-sync-error",
           title: "Draft Out of Sync",
           message: `${data.message} (Server: ${data.serverSelectionCount} picks, Your client: ${data.clientSelectionCount} picks).`,
         });

@@ -12,13 +12,14 @@ import {
 import { DraftOrderSection } from "./DraftOrderSection";
 import { useDraft } from "~/draftStore";
 import { DraftableFaction } from "../components/DraftableFaction";
-import { factions as allFactions, playerColors } from "~/data/factionData";
+import { factions as allFactions } from "~/data/factionData";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { FactionId } from "~/types";
 import { PhaseBanner } from "../components/SimultaneousPhaseHeader";
+import { playerColorOf, playerLetter } from "../components/draftOrderUtils";
 import classes from "./BanPhase.module.css";
 
 export function BanPhase() {
@@ -57,8 +58,7 @@ export function BanPhase() {
     syncDraft();
   };
 
-  const activeColor =
-    activePlayer !== undefined ? playerColors[activePlayer.id] : undefined;
+  const activeColor = activePlayer ? playerColorOf(activePlayer.id) : undefined;
 
   return (
     <Stack gap={6} className={classes.page}>
@@ -67,7 +67,7 @@ export function BanPhase() {
           tint={playerVar(activeColor)}
           badge={
             <PlayerHex color={activeColor} size="lg">
-              {String.fromCharCode(65 + activePlayer.id)}
+              {playerLetter(activePlayer.id)}
             </PlayerHex>
           }
           title={
@@ -96,7 +96,7 @@ export function BanPhase() {
                 key={factionId}
                 player={player}
                 disabled={!!player}
-                selectTitle={"Ban"}
+                selectTitle="Ban"
                 faction={allFactions[factionId]}
                 onSelect={
                   canSelect && !player
@@ -113,9 +113,7 @@ export function BanPhase() {
         <div className={classes.admin}>
           <PlayerInputSection
             players={players}
-            onChangeName={(playerIdx, name) => {
-              updatePlayerName(playerIdx, name);
-            }}
+            onChangeName={updatePlayerName}
           />
           <div>
             <Button variant="primary" onClick={syncDraft} loading={syncing}>

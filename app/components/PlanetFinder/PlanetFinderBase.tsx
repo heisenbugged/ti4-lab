@@ -192,16 +192,20 @@ export function PlanetFinderBase({
     }
   };
 
-  useEffect(() => {
+  // Each time it opens: a fresh search with the search box focused.
+  const [wasOpened, setWasOpened] = useState(opened);
+  if (opened !== wasOpened) {
+    setWasOpened(opened);
     if (opened) {
       setCursor(0);
       setSearchString("");
       setActiveFilters([]);
-      setTimeout(() => {
-        itemRefs.current[0]?.focus();
-      }, 150);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
+  useEffect(() => {
+    if (!opened) return;
+    const t = setTimeout(() => itemRefs.current[0]?.focus(), 150);
+    return () => clearTimeout(t);
   }, [opened]);
 
   const hasActiveFilters = activeFilters.length > 0 || searchString.length > 0;

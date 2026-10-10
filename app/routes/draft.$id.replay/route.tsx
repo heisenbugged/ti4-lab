@@ -1,5 +1,4 @@
-import { data } from "react-router";
-import { useLoaderData } from "react-router";
+import { data, useLoaderData } from "react-router";
 import { useEffect } from "react";
 import { useDraft } from "~/draftStore";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
@@ -30,10 +29,7 @@ export default function DraftReplay() {
   return (
     <>
       <ReplayControls />
-      <DraftBoard
-        urlName={result.urlName}
-        stickyTop="calc(var(--header-h) + var(--sat) + 104px)"
-      />
+      <DraftBoard stickyTop="calc(var(--header-h) + var(--sat) + 104px)" />
     </>
   );
 }

@@ -7,36 +7,26 @@ import classes from "./TileSidebar.module.css";
 type Props = {
   systemId: string;
   rotation?: number;
-  selected?: boolean;
-  onSelect?: (systemId: string) => void;
 };
 
-export function DraggableSidebarTile({
-  systemId,
-  rotation,
-  selected = false,
-  onSelect,
-}: Props) {
-  const tileRadius = 46;
+const tileRadius = 46;
+
+export function DraggableSidebarTile({ systemId, rotation }: Props) {
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `sidebar-${systemId}-${rotation ?? 0}`,
     data: { systemId, rotation },
   });
 
-  const system = systemData[systemId];
-  const isRedSystem = system?.type === "RED";
+  const isRedSystem = systemData[systemId]?.type === "RED";
 
   return (
     <div
       className={cx(
         classes.tile,
         isRedSystem && classes.tileRed,
-        selected && "ui-bracket",
         isDragging && classes.dragging,
-        onSelect && classes.selectable,
       )}
-      onClick={onSelect ? () => onSelect(systemId) : undefined}
     >
       <div
         ref={setNodeRef}
@@ -51,12 +41,12 @@ export function DraggableSidebarTile({
           tile={{
             idx: 0,
             type: "SYSTEM",
-            systemId: systemId,
+            systemId,
             rotation,
             position: { x: 0, y: 0 },
           }}
           radius={tileRadius}
-          disablePopover={true}
+          disablePopover
         />
       </div>
       {rotation !== undefined && <small>Rotation {rotation}°</small>}

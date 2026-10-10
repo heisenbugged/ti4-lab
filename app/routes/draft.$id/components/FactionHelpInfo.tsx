@@ -34,26 +34,21 @@ export function FactionHelpInfo({ faction, compact = false }: Props) {
           </IconButton>
         </span>
       ) : (
-      <div className={classes.links}>
-        <button type="button" onClick={open}>
-          <IconEye size={14} />
-          Info
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            window.open(faction.wiki, "_blank");
-          }}
-        >
-          <IconExternalLink size={14} />
-          Wiki
-        </button>
-      </div>
+        <div className={classes.links}>
+          <button type="button" onClick={open}>
+            <IconEye size={14} />
+            Info
+          </button>
+          <button type="button" onClick={() => window.open(faction.wiki, "_blank")}>
+            <IconExternalLink size={14} />
+            Wiki
+          </button>
+        </div>
       )}
       <Modal
         opened={opened}
         onClose={close}
-        size={kingReference ? "xl" : showMonumentImage ? "xl" : "lg"}
+        size={kingReference || showMonumentImage ? "xl" : "lg"}
         title={kingReference ? `${faction.name} reference` : faction.name}
       >
         {kingReference ? (

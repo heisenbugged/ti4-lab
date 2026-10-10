@@ -21,6 +21,7 @@
   background: var(--hull);
   border: 1px solid var(--rule);
   border-radius: 2px;
+  transition: background-color var(--dur-state) var(--ease), border-color var(--dur-state) var(--ease), opacity var(--dur-state) var(--ease);
 }
 .label {
   display: inline-flex;
@@ -35,8 +36,14 @@
   color: var(--text);
 }
 .discord { flex: none; color: var(--discord); }
+/* Who picks: quiet name with a small player-colour dot. Done picks recede; the current pick leads. */
+.who { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; font-weight: 500; line-height: 1.15; color: var(--text-muted); }
+.who::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--p); }
+.cell:not(.now):not(.next) .label { color: color-mix(in oklab, var(--text) 82%, var(--text-muted)); }
+.now .who { color: var(--text); font-weight: 600; }
+
 .now { background: var(--hull-raised); border-color: var(--rule-strong); }
-.now .label { color: var(--gold); font-weight: 600; }
+.now .label { color: var(--gold-text); font-weight: 600; }
 .next { background: transparent; border-style: dashed; border-color: var(--rule-strong); }
 .next > :first-child { opacity: 0.5; }
 .next .label { color: var(--text-muted); }

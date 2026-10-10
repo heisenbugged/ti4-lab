@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { IconCheck } from "@tabler/icons-react";
 import { Button, Modal, PickButton, Stack, Text, cx } from "~/ui";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
@@ -16,12 +16,6 @@ type Props = {
   description: string;
   color: "blue" | "red";
 };
-
-/** Sentence case for titles passed in as "Blue Tile Draft — Round 1". */
-function sentenceTitle(title: string) {
-  const plain = title.replace(/\s+[—–-]\s+/g, ", ");
-  return plain.charAt(0) + plain.slice(1).toLowerCase();
-}
 
 export function TexasTileDraftPhase({
   phase: phaseType,
@@ -63,7 +57,7 @@ export function TexasTileDraftPhase({
   return (
     <SimultaneousPhaseLayout
       phase={phase}
-      phaseName={sentenceTitle(title)}
+      phaseName={title}
       phaseColor={color}
       description={description}
       showPickAnyWarning
@@ -181,7 +175,6 @@ export function TexasTile({
   onClick,
   footer,
   className,
-  style,
 }: {
   systemId: SystemId;
   radius: number;
@@ -191,7 +184,6 @@ export function TexasTile({
   onClick?: () => void;
   footer?: ReactNode;
   className?: string;
-  style?: CSSProperties;
 }) {
   const art = faceDown ? (
     <FaceDownTile
@@ -215,7 +207,7 @@ export function TexasTile({
         className={cx(classes.tile, className)}
         data-selected={selected || undefined}
         onClick={onClick}
-        style={{ cursor: onClick ? "pointer" : undefined, ...style }}
+        style={{ cursor: onClick ? "pointer" : undefined }}
       >
         {art}
         <div className={classes.tileFoot}>{footer}</div>
@@ -231,7 +223,6 @@ export function TexasTile({
         aria-pressed={selected}
         aria-label={faceDown ? "Hidden tile" : `Tile ${systemId}`}
         onClick={onClick}
-        style={style}
       >
         {art}
       </button>
@@ -242,7 +233,6 @@ export function TexasTile({
     <div
       className={cx(classes.tile, className)}
       data-selected={selected || undefined}
-      style={style}
     >
       {art}
     </div>

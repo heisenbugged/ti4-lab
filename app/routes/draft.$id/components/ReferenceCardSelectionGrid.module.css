@@ -20,7 +20,7 @@
   gap: var(--space-2);
   width: 100%;
   min-width: 0;
-  transition: opacity 160ms var(--ease);
+  transition: opacity var(--dur-quick) var(--ease);
 }
 
 .item > :first-child {

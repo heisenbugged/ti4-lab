@@ -25,7 +25,7 @@
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); align-content: start; gap: 8px; padding: 12px 14px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent; }
 
-.card { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; align-items: center; min-width: 0; padding: 8px 10px 8px 8px; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); color: var(--text); cursor: pointer; transition: border-color 120ms var(--ease), background 120ms var(--ease); }
+.card { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; align-items: center; min-width: 0; padding: 8px 10px 8px 8px; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); color: var(--text); cursor: pointer; transition: border-color var(--dur-quick) var(--ease), background var(--dur-quick) var(--ease); }
 .card:hover { border-color: var(--rule-strong); background: var(--hull-raised); }
 .card:focus, .card:focus-visible { outline: none; border-color: var(--ion); box-shadow: inset 0 0 0 1px var(--ion); }
 .inUse { opacity: 0.75; }

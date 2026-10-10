@@ -5,7 +5,7 @@
 .main { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; container-type: inline-size; }
 
 /* Top bar: what the map is, then export */
-.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 14px; background: var(--hull-sunken); border-bottom: 1px solid var(--rule); }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 14px; background: var(--hull); border-bottom: 1px solid var(--rule); }
 .grp { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
 .grp + .grp { padding-left: 16px; border-left: 1px solid var(--rule); }
 .grpEnd { margin-left: auto; }
@@ -25,18 +25,19 @@
 .joined svg { width: 15px; height: 15px; flex: none; }
 
 /* Canvas */
-.canvas { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 12px; padding: 14px 20px; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent; }
+/* Canvas: deep space with a faint glow where the map sits, so the board reads as the focus. */
+.canvas { background: radial-gradient(60% 55% at 50% 46%, color-mix(in oklab, var(--hull) 70%, var(--void)), var(--void) 100%); position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 12px; padding: 14px 20px; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent; }
 .mapBox { align-self: center; width: min(100%, calc((100dvh - var(--header-h) - 160px) * 0.925)); min-width: min(100%, 300px); aspect-ratio: 740 / 800; margin: 0 auto; }
 .closing .mapBox { cursor: crosshair; }
 
 .stats { position: absolute; top: 16px; left: 24px; z-index: 3; }
 
 /* Tool dock on the canvas */
-.dock { position: absolute; top: 16px; right: 24px; z-index: 3; display: grid; gap: 2px; width: 216px; padding: 6px; background: color-mix(in oklab, var(--hull-sunken) 88%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--rule); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); }
+.dock { position: absolute; top: 16px; right: 24px; z-index: 3; display: grid; gap: 2px; width: 216px; padding: 6px; background: color-mix(in oklab, var(--hull-raised) 92%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-pop); }
 .tool { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; align-items: start; width: 100%; padding: 8px; border: 1px solid transparent; border-radius: 2px; background: none; color: var(--text); font: 600 13.5px/1.25 var(--font); text-align: left; cursor: pointer; }
 .tool > svg { width: 17px; height: 17px; margin-top: 1px; color: var(--text-muted); }
 .tool small { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 400; color: var(--text-muted); }
-.tool:hover:not(:disabled) { background: var(--hull-raised); }
+.tool:hover:not(:disabled) { background: var(--hull-hover); }
 .tool:disabled { opacity: 0.5; cursor: not-allowed; }
 .tool:focus-visible, .gapMeter:focus-visible { outline: 2px solid var(--ion); outline-offset: 1px; }
 .toolOn { border-color: color-mix(in oklab, var(--danger) 60%, transparent); background: color-mix(in oklab, var(--danger) 12%, transparent); }
@@ -52,7 +53,7 @@
 .gapRow svg { width: 13px; height: 13px; margin-left: auto; }
 .gapMeter:hover .gapRow svg { color: var(--ion); }
 .gapBar { position: relative; height: 4px; border-radius: 2px; background: linear-gradient(90deg, color-mix(in oklab, var(--success) 40%, transparent), color-mix(in oklab, var(--resource) 40%, transparent) 50%, color-mix(in oklab, var(--danger) 40%, transparent)); }
-.gapBar i { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--text); transition: left 200ms var(--ease); }
+.gapBar i { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--text); transition: left var(--dur-state) var(--ease); }
 .gapScale { display: flex; justify-content: space-between; font-size: 10.5px; }
 
 /* Shipping, under the map */

@@ -9,27 +9,28 @@ import {
 import { useDimensions } from "~/hooks/useDimensions";
 import { useContext } from "react";
 import { MapContext } from "~/contexts/MapContext";
-import { PlayerDemoTile } from "./tiles/PlayerDemoTile";
+import { PlayerDemoTile, PresetDemoHex } from "./tiles/PlayerDemoTile";
 import { Hex } from "./Hex";
 import { MecatolTile } from "./tiles/MecatolTile";
 
 import classes from "./tiles/Tiles.module.css";
 import { SystemTile } from "./tiles/SystemTile";
 import { playerColors } from "~/data/factionData";
-import { PresetDemoHex } from "./tiles/PlayerDemoTile";
 import legend from "./DemoMap.module.css";
 
 type Props = {
+  /** Fade in when mounted (used when switching formats, not on page load). */
+  fadeIn?: boolean;
   id: string;
   map: DemoTile[];
   padding: number;
   titles: string[];
 };
 
-export function DemoMap({ id, map, padding, titles }: Props) {
+export function DemoMap({ id, map, padding, titles, fadeIn = false }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = calculateConcentricCircles(map.length);
-  const gap = 6;
+  const gap = 3;
   const initRadius = calculateMaxHexWidthRadius(n, width, gap);
   const initHeight = calcHexHeight(initRadius) * 7 + 6 * gap;
   const clampedHeight = Math.min(initHeight, 1000);
@@ -38,16 +39,15 @@ export function DemoMap({ id, map, padding, titles }: Props) {
   return (
     <MapContext.Provider
       value={{
-        width,
-        height: clampedHeight,
         radius,
         gap,
         hOffset: -radius + height * 0.5 + padding,
         wOffset: -radius + width * 0.5 + padding,
         disabled: false,
+        animateChanges: false,
       }}
     >
-      <div ref={ref} style={{ width: "100%", height: `${clampedHeight}px` }}>
+      <div ref={ref} className={fadeIn ? "ui-fade-in" : undefined} style={{ width: "100%", height: `${clampedHeight}px` }}>
         {width > 0 &&
           map
             .filter((t) => !!t.position)
@@ -66,7 +66,7 @@ type DemoMapTileProps = {
   titles: string[];
 };
 
-export function DemoMapTile({
+function DemoMapTile({
   mapId,
   tile,
   tile: { position },
@@ -75,7 +75,7 @@ export function DemoMapTile({
   const { radius, gap, hOffset, wOffset } = useContext(MapContext);
   const { x, y } = getHexPosition(position.x, position.y, radius, gap);
 
-  let Tile: React.ReactNode | null;
+  let Tile: React.ReactNode;
   if (tile.type === "PLAYER_DEMO") {
     Tile = (
       <PlayerDemoTile
@@ -113,21 +113,6 @@ export function DemoMapTile({
         top: y + hOffset,
       }}
     >
-      {/* debug information */}
-      {/* <div
-        style={{
-          position: "absolute",
-          top: radius * 0.5,
-          left: radius * 0.5,
-          color: "white",
-          backgroundColor: "black",
-          padding: "2px",
-          zIndex: 1000,
-        }}
-      >
-        {tile.idx}
-      </div> */}
-
       {Tile}
     </div>
   );

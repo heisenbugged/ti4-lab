@@ -3,6 +3,7 @@ import { cx } from "~/ui";
 import { useDraft } from "~/draftStore";
 import {
   SlicesSection,
+  SliceSummarySection,
   SpeakerOrderSection,
   DraftOrderSection,
   DraftableFactionsSection,
@@ -15,7 +16,6 @@ import { DraftableReferenceCardPacksSection } from "../sections/DraftableReferen
 import classes from "./DraftLayout.module.css";
 
 type Props = {
-  urlName: string | null;
   /** Extra panels at the end of the pool (admin player names). */
   children?: ReactNode;
   /** Height of whatever sticks above the board (pick bar or replay controls), for the pinned map. */
@@ -47,19 +47,23 @@ export function DraftBoard({ children, stickyTop }: Props) {
 
       <div className={classes.pool}>
         {settings.draftSpeaker && <SpeakerOrderSection />}
+        <DraftableFactionsSection />
+        <DraftableMinorFactionsSection />
         {!isPresetMapDraft && <SlicesSection />}
+        {!isPresetMapDraft && !showMap && <SliceSummarySection />}
         {settings.draftGameMode === "twilightsFall" && (
           <DraftableReferenceCardPacksSection />
         )}
-        <DraftableFactionsSection />
-        <DraftableMinorFactionsSection />
         <DraftablePlayerColorsSection />
         {children}
       </div>
 
       {showMap && (
         <div className={classes.table}>
-          <MapSection />
+          {!isPresetMapDraft && <SliceSummarySection />}
+          <div className={classes.mapPin}>
+            <MapSection />
+          </div>
         </div>
       )}
     </div>

@@ -40,7 +40,7 @@
 
 button.tile {
   cursor: pointer;
-  transition: border-color 120ms var(--ease), background 120ms var(--ease);
+  transition: border-color var(--dur-quick) var(--ease), background var(--dur-quick) var(--ease);
 }
 
 button.tile:hover:not(:disabled) {

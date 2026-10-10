@@ -16,12 +16,8 @@ export function buildPresetDraftState(input: {
   gameSets: GameSet[];
   playerCount: number;
 }): PresetDraftBuildResult {
-  const compatibleTypes = mapConfigToCompatibleDraftTypes[input.mapConfigId];
-  if (!compatibleTypes || compatibleTypes.length === 0) {
-    return { ok: false, error: "This map type doesn't support draft creation" };
-  }
-
-  const selectedDraftType = compatibleTypes[0];
+  const selectedDraftType =
+    mapConfigToCompatibleDraftTypes[input.mapConfigId]?.[0];
   if (!selectedDraftType) {
     return { ok: false, error: "This map type doesn't support draft creation" };
   }
@@ -50,9 +46,10 @@ export function buildPresetDraftState(input: {
     ok: true,
     value: {
       settings,
-      players: Array(input.playerCount)
-        .fill(null)
-        .map((_, i) => ({ id: i, name: "" })),
+      players: Array.from({ length: input.playerCount }, (_, i) => ({
+        id: i,
+        name: "",
+      })),
     },
   };
 }

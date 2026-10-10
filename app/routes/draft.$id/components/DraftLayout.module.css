@@ -5,7 +5,8 @@
 .board {
   --stack-top: calc(var(--header-h) + var(--sat) + 66px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
+  /* Pool and map split the width evenly, so the map is big enough for planet names. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
     "order order"
     "players players"
@@ -19,7 +20,9 @@
 .orderSection { grid-area: order; display: grid; gap: var(--space-2); min-width: 0; }
 .players { grid-area: players; min-width: 0; }
 .pool { grid-area: pool; display: grid; gap: var(--space-7); min-width: 0; }
-.table { grid-area: table; position: sticky; top: calc(var(--stack-top) + var(--space-4)); display: grid; gap: var(--space-4); min-width: 0; }
+/* The map column: the slice summary scrolls by, the map itself stays pinned. */
+.table { grid-area: table; align-self: stretch; display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+.mapPin { position: sticky; top: calc(var(--stack-top) + var(--space-4)); min-width: 0; }
 
 /* Pick order bar */
 .orderbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-4); min-width: 0; }
@@ -33,20 +36,27 @@
 
 /* Pool sections */
 .sec { display: grid; gap: 12px; min-width: 0; scroll-margin-top: calc(var(--stack-top) + var(--space-4)); }
-.slices { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--space-4); align-items: start; }
+/* Slice columns: 2 beside the map, 3 on very wide screens; 1/2/3 when stacked below 1200px. */
+.slices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
 /* Keep slice cards from growing past their column (long names, admin controls). */
 .slices > * { grid-template-columns: minmax(0, 1fr); }
-.slicesWide { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.slicesWide { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (min-width: 1408px) { .slicesWide { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 1920px) { .slices { grid-template-columns: repeat(3, minmax(0, 1fr)); } .slicesWide { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 .factions { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
 .speakers { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: var(--space-2); }
 .colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-2); }
 .packs { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: var(--space-5); }
 .groupPools { display: grid; gap: var(--space-4); }
 
-.adminSave { display: flex; justify-content: flex-end; margin-top: var(--space-4); }
-
 @media (max-width: 1199.98px) {
-  .board { grid-template-columns: minmax(0, 1fr) 400px; }
+  /* Stacked, as before: the map gets the full width after the pool. */
+  .board { grid-template-columns: minmax(0, 1fr); grid-template-areas: "order" "players" "pool" "table"; }
+  .noTable { grid-template-areas: "order" "players" "pool"; }
+  .table { position: static; }
+  .mapPin { position: static; }
+  .slices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .slicesWide { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .speakers { grid-template-columns: repeat(min(var(--n, 6), 4), minmax(0, 1fr)); }
 }
 
@@ -54,10 +64,15 @@
   .board { --stack-top: calc(var(--header-h) + var(--sat) + 60px); }
 }
 
+@media (max-width: 991.98px) {
+  .slices, .slicesWide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 @media (max-width: 759.98px) {
   .board { grid-template-columns: minmax(0, 1fr); grid-template-areas: "order" "table" "players" "pool"; gap: var(--space-5); }
   .noTable { grid-template-areas: "order" "players" "pool"; }
   .table { position: static; }
+  .mapPin { position: static; }
   .pool { gap: var(--space-6); }
   .progress { display: none; }
   .url { order: 5; flex-basis: 100%; }

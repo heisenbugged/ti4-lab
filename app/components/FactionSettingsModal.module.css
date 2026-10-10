@@ -44,7 +44,7 @@
 }
 
 .gold {
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .summary > .strat {
@@ -224,7 +224,7 @@
 }
 
 .forced .lock {
-  color: var(--gold);
+  color: var(--gold-text);
   background: color-mix(in oklab, var(--gold) 14%, transparent);
 }
 

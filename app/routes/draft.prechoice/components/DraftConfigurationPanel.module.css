@@ -25,7 +25,7 @@
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: border-color 120ms var(--ease);
+  transition: border-color var(--dur-quick) var(--ease);
 }
 
 .rule:hover {
@@ -114,7 +114,7 @@
 }
 
 .nums span:first-child {
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 /* A struck-through faction. */
@@ -212,7 +212,7 @@
 }
 
 .modeOn svg {
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .mode > .modeStep {

@@ -102,26 +102,21 @@ export default function MapDetail() {
   const [likes, setLikes] = useState(preset.likes);
   const [liked, setLiked] = useState(false);
 
-  const decoded = useMemo(() => {
-    return decodeMapString(preset.mapString);
-  }, [preset.mapString]);
+  const decoded = useMemo(
+    () => decodeMapString(preset.mapString),
+    [preset.mapString],
+  );
+  const scoring = useMemo(
+    () =>
+      decoded && {
+        sliceValues: getAllSliceValues(decoded.map),
+        sliceStats: getAllSliceStats(decoded.map),
+        sliceBreakdowns: getAllSliceBreakdowns(decoded.map),
+        tileContributions: getAllTileContributions(decoded.map),
+      },
+    [decoded],
+  );
 
-  const sliceValues = useMemo(
-    () => (decoded ? getAllSliceValues(decoded.map) : {}),
-    [decoded],
-  );
-  const sliceStats = useMemo(
-    () => (decoded ? getAllSliceStats(decoded.map) : {}),
-    [decoded],
-  );
-  const sliceBreakdowns = useMemo(
-    () => (decoded ? getAllSliceBreakdowns(decoded.map) : {}),
-    [decoded],
-  );
-  const tileContributions = useMemo(
-    () => (decoded ? getAllTileContributions(decoded.map) : {}),
-    [decoded],
-  );
   const handleLike = async () => {
     const total = await postPresetMapLike(preset.id);
     if (total == null) return;
@@ -167,7 +162,7 @@ export default function MapDetail() {
     });
   };
 
-  if (!decoded) {
+  if (!decoded || !scoring) {
     return (
       <MainAppShell>
         <Text tone="danger">Failed to decode map data.</Text>
@@ -188,10 +183,7 @@ export default function MapDetail() {
               map={decoded.map}
               disabled
               interactions={MAP_INTERACTIONS.readonly}
-              sliceValues={sliceValues}
-              sliceStats={sliceStats}
-              sliceBreakdowns={sliceBreakdowns}
-              tileContributions={tileContributions}
+              {...scoring}
             />
           </div>
         </div>

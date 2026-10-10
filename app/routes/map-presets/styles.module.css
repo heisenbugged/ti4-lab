@@ -69,7 +69,7 @@
 .emptyIcon { color: var(--text-muted); }
 
 /* Map card */
-.card { position: relative; display: grid; grid-template-rows: auto 1fr auto; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; transition: border-color 120ms var(--ease); }
+.card { position: relative; display: grid; grid-template-rows: auto 1fr auto; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; transition: border-color var(--dur-quick) var(--ease); }
 .card:hover { border-color: var(--rule-strong); }
 .card:has(.cardTitle:focus-visible) { outline: 2px solid var(--ion); outline-offset: 1px; }
 .cardImg { position: relative; display: block; padding: 12px 24px; background: var(--hull-sunken); border-bottom: 1px solid var(--rule); }

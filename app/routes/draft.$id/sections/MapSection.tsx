@@ -9,7 +9,9 @@ import { useDraft } from "~/draftStore";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useCoreSliceValues } from "~/hooks/useCoreSliceValues";
 import { ReactNode } from "react";
-import { Panel, Tag } from "~/ui";
+import { ButtonAnchor, Panel, Tag } from "~/ui";
+import { IconShare } from "@tabler/icons-react";
+import { encodeMapString } from "~/mapgen/utils/mapStringCodec";
 import { usePendingPick } from "../components/pendingPick";
 import classes from "./MapSection.module.css";
 
@@ -33,7 +35,8 @@ export function MapSection({ titleChildren }: Props) {
   const isPhone = width > 0 && width < 600;
   const height = getBoundedMapHeight(
     width,
-    isPhone ? windowHeight : windowHeight - 240,
+    // Same bound as the original layout, so the map is never smaller than it used to be.
+    isPhone ? windowHeight : windowHeight - 150,
   );
 
   const config = useDraftConfig();
@@ -50,7 +53,7 @@ export function MapSection({ titleChildren }: Props) {
   );
   const { syncDraft } = useSyncDraft();
   const { selectSeat } = useDraft((state) => state.draftActions);
-  const { toggle, pending } = usePendingPick();
+  const { select, pending } = usePendingPick();
 
   const isHeisenDraft = draftType === "heisen" || draftType === "heisen8p";
   const coreSliceData = useCoreSliceValues(hydratedMap, sliceValueModifiers);
@@ -61,7 +64,6 @@ export function MapSection({ titleChildren }: Props) {
     ...(canEditMap ? MAP_INTERACTIONS.draftBuild : MAP_INTERACTIONS.readonly),
     allowHomeSelect: canSelect,
   };
-  const pendingSeat = pending?.key.startsWith("seat-") ? pending.label : undefined;
 
   return (
     <Panel
@@ -70,7 +72,20 @@ export function MapSection({ titleChildren }: Props) {
       className={classes.panel}
       title="Full map"
       action={
-        titleChildren ?? (
+        <>
+          {draftFinished && (
+            // Map-only image (the header's Share image is the whole draft summary).
+            <ButtonAnchor
+              size="sm"
+              href={`/map-generator.png?map=${encodeURIComponent(encodeMapString(hydratedMap))}`}
+              target="_blank"
+              rel="noreferrer"
+              icon={<IconShare size={15} />}
+            >
+              Share map
+            </ButtonAnchor>
+          )}
+          {titleChildren ?? (
           <>
             <Tag>{playerCount}P</Tag>
             {draftGameMode === "presetMap" ? (
@@ -79,14 +94,13 @@ export function MapSection({ titleChildren }: Props) {
               <Tag tone="ion">{draftTypeLabel(draftType)}</Tag>
             )}
           </>
-        )
+          )}
+        </>
       }
     >
       {canSelect && !draftFinished && (
         <p className={classes.hint}>
-          {pendingSeat
-            ? `${pendingSeat} selected. Lock in pick to take it.`
-            : "Your seat is still open: select a home system, then Lock in pick."}
+          Your seat is still open: select a home system to pick it.
         </p>
       )}
       <div ref={ref} className={classes.map} style={{ height }}>
@@ -100,7 +114,7 @@ export function MapSection({ titleChildren }: Props) {
               ? (tile) => {
                   if (tile.seat === undefined) return;
                   const seat = tile.seat;
-                  toggle({
+                  select({
                     key: `seat-${seat}`,
                     label: `Seat ${seat + 1}`,
                     commit: () => {

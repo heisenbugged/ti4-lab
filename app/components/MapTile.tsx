@@ -2,7 +2,7 @@ import { Tile } from "~/types";
 import { SystemTile } from "./tiles/SystemTile";
 import { EmptyTile } from "./tiles/EmptyTile";
 import { ClosedTile } from "./tiles/ClosedTile";
-import { useContext, useEffect, useState, useMemo, type JSX } from "react";
+import { useContext, useEffect, useState, type JSX } from "react";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
@@ -17,7 +17,23 @@ import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
 import type { SliceValueBreakdown } from "~/stats";
 import type { TileContribution, SliceStats } from "~/mapgen/utils/sliceScoring";
 import { ContributionBadge } from "./tiles/ContributionBadge";
-import { getSafeWindow } from "~/hooks/useWindowDimensions";
+import { cx, useLanded } from "~/ui";
+
+/** What occupies a hex: when it changes (tile placed, seat taken), the hex settles in. */
+const tileIdentity = (tile: Tile) =>
+  `${tile.type}|${"systemId" in tile ? tile.systemId : ""}|${"playerId" in tile ? (tile.playerId ?? "") : ""}`;
+
+function Landing({
+  tile,
+  children,
+}: {
+  tile: Tile;
+  children: React.ReactNode;
+}) {
+  const { animateChanges } = useContext(MapContext);
+  const landed = useLanded(tileIdentity(tile)) && animateChanges;
+  return <div data-landed={landed ? "soft" : undefined}>{children}</div>;
+}
 
 type Props = {
   mapId: string;
@@ -35,7 +51,6 @@ type Props = {
   sliceBreakdown?: SliceValueBreakdown;
   coreSliceData?: CoreSliceData;
   tileContribution?: TileContribution;
-  isHomeHovered?: boolean;
   hoveredHomeIdx?: number | null;
   onHomeHover?: (idx: number | null) => void;
   closeTileMode?: boolean;
@@ -92,7 +107,7 @@ function OriginalArtMapTile(props: Props) {
         top: y + hOffset,
       }}
     >
-      {Tile}
+      <Landing tile={tile}>{Tile}</Landing>
     </div>
   );
 }
@@ -135,9 +150,13 @@ function AbstractArtMapTile(props: Props) {
     disabled: !(modifiable || droppable) || isTouchDevice(),
   });
 
-  useEffect(() => {
+  // A drag starting or ending over this tile clears the hover state.
+  const dragState = `${isOver}|${isDragging}`;
+  const [prevDragState, setPrevDragState] = useState(dragState);
+  if (dragState !== prevDragState) {
+    setPrevDragState(dragState);
     setHovered(false);
-  }, [isOver, isDragging]);
+  }
 
   const setNodeRef = (node: HTMLElement | null) => {
     setDraggableNodeRef(node);
@@ -152,29 +171,21 @@ function AbstractArtMapTile(props: Props) {
     : undefined;
 
   useEffect(() => {
+    if (!hovered || !onDelete) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Delete") onDelete();
+    };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [hovered]);
+  }, [hovered, onDelete]);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!hovered) return;
-    if (e.key === "Delete") {
-      onDelete?.();
-    }
-  };
-
-  // Convert sliceBreakdown to coreSliceData format if provided
-  const derivedCoreSliceData: CoreSliceData | undefined = useMemo(() => {
-    if (props.coreSliceData) return props.coreSliceData;
-    if (props.sliceBreakdown) {
-      return {
-        value: props.sliceBreakdown.total,
-        systems: [],
-        breakdown: props.sliceBreakdown,
-      };
-    }
-    return undefined;
-  }, [props.coreSliceData, props.sliceBreakdown]);
+  const derivedCoreSliceData: CoreSliceData | undefined =
+    props.coreSliceData ??
+    (props.sliceBreakdown && {
+      value: props.sliceBreakdown.total,
+      systems: [],
+      breakdown: props.sliceBreakdown,
+    });
 
   let Tile: JSX.Element | null;
 
@@ -263,85 +274,67 @@ function AbstractArtMapTile(props: Props) {
       : undefined;
 
   return (
-    <>
-      <div
-        ref={setNodeRef}
-        className={[shouldDim ? "tile-dimmed" : undefined, "map-tile-button"]
-          .filter(Boolean)
-          .join(" ")}
-        style={{
-          position: "absolute",
-          left: x + wOffset,
-          top: y + hOffset,
-          ...dragStyle,
-          ...cursorStyle,
-        }}
-        onMouseOver={() => setHovered(true)}
-        onMouseOut={() => setHovered(false)}
-        onFocus={() => setHovered(true)}
-        onBlur={() => setHovered(false)}
-        onClick={closeTileMode ? onSelect : undefined}
-        {...listeners}
-        {...attributes}
-      >
-        {Tile}
+    <div
+      ref={setNodeRef}
+      className={cx(shouldDim && "tile-dimmed", "map-tile-button")}
+      style={{
+        position: "absolute",
+        left: x + wOffset,
+        top: y + hOffset,
+        ...dragStyle,
+        ...cursorStyle,
+      }}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
+      onClick={closeTileMode ? onSelect : undefined}
+      {...listeners}
+      {...attributes}
+    >
+      <Landing tile={tile}>{Tile}</Landing>
 
-        {/* Contribution badge for equidistant tiles */}
-        {showContributionBadge && tileContribution && (
-          <ContributionBadge percentage={tileContribution.percentage} />
-        )}
+      {/* Contribution badge for equidistant tiles */}
+      {showContributionBadge && tileContribution && (
+        <ContributionBadge percentage={tileContribution.percentage} />
+      )}
 
-        {/* debug information */}
-        {/* <div
-          style={{
-            position: "absolute",
-            top: radius * 0.5,
-            left: radius * 0.5,
-            color: "white",
-            backgroundColor: "black",
-            padding: "2px",
-          }}
-        >
-          {tile.idx}
-        </div> */}
-
-        {showOverlay && !isDragging && !isOver && (
-          <div className="modify-tile-overlay" onMouseUp={onSelect}>
-            <Hex
-              id={`${props.mapId}-${tile.idx}-overlay`}
-              color={overlayColor}
-              radius={radius}
-            >
-              <div className="map-tile-tools">
-                <button type="button" className="map-tile-tool" aria-label="Add or replace a system">
-                  +
+      {showOverlay && !isDragging && !isOver && (
+        <div className="modify-tile-overlay" onMouseUp={onSelect}>
+          <Hex
+            id={`${props.mapId}-${tile.idx}-overlay`}
+            color={overlayColor}
+            radius={radius}
+          >
+            <div className="map-tile-tools">
+              <button
+                type="button"
+                className="map-tile-tool"
+                aria-label="Add or replace a system"
+              >
+                +
+              </button>
+              {tile.type === "SYSTEM" && (
+                <button
+                  type="button"
+                  className="map-tile-tool map-tile-tool--danger"
+                  onMouseUp={(e) => {
+                    e.stopPropagation();
+                    onDelete?.();
+                  }}
+                >
+                  Del
                 </button>
-                {tile.type === "SYSTEM" && (
-                  <button
-                    type="button"
-                    className="map-tile-tool map-tile-tool--danger"
-                    onMouseUp={(e) => {
-                      e.stopPropagation();
-                      onDelete?.();
-                    }}
-                  >
-                    Del
-                  </button>
-                )}
-              </div>
-            </Hex>
-          </div>
-        )}
-      </div>
-    </>
+              )}
+            </div>
+          </Hex>
+        </div>
+      )}
+    </div>
   );
 }
 
 function isTouchDevice() {
-  const safeWindow = getSafeWindow();
-  if (!safeWindow) return false;
-  return (
-    "ontouchstart" in safeWindow ||
-    (safeWindow.navigator?.maxTouchPoints ?? 0) > 0
-  );
+  if (typeof window === "undefined") return false;
+  return "ontouchstart" in window || navigator.maxTouchPoints > 0;
 }

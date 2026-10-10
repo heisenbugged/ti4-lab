@@ -37,6 +37,7 @@
   font: 600 14px/1 var(--font);
   text-align: left;
   cursor: pointer;
+  transition: color var(--dur-quick) var(--ease), background-color var(--dur-state) var(--ease), border-color var(--dur-state) var(--ease), box-shadow var(--dur-state) var(--ease);
 }
 
 .pick span {
@@ -53,7 +54,9 @@
   height: 8px;
   border-radius: 50%;
   background: var(--rule-strong);
+  transition: background-color var(--dur-state) var(--ease), box-shadow var(--dur-enter) var(--ease), transform var(--dur-state) var(--ease-settle);
 }
+.on .pick i { transform: scale(1.15); }
 
 .pick svg {
   flex: none;

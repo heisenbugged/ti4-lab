@@ -1,5 +1,5 @@
 .container { position: relative; overflow: hidden; width: 100%; padding: 6px 0; }
-.track { display: flex; gap: 4px; flex-wrap: nowrap; transition: transform 300ms var(--ease); }
+.track { display: flex; gap: 4px; flex-wrap: nowrap; transition: transform var(--dur-enter) var(--ease); }
 .fadeLeft,
 .fadeRight { position: absolute; top: 0; bottom: 0; width: 40px; z-index: 3; pointer-events: none; }
 .fadeLeft { left: 0; background: linear-gradient(to right, var(--void), transparent); }

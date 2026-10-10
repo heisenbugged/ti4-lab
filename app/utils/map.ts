@@ -14,14 +14,9 @@ import {
   PlayerDemoTile,
 } from "~/types";
 
-export const playerSpeakerOrder = [
-  "Speaker",
-  "2nd",
-  "3rd",
-  "4th",
-  "5th",
-  "6th",
-];
+/** Speaker order position, 1-based: "Speaker", "2nd", "3rd", "4th"… */
+export const speakerOrdinal = (n: number) =>
+  n === 1 ? "Speaker" : `${n}${n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
 
 export const isTileModifiable = (config: DraftConfig, tileIdx: number) =>
   config.modifiableMapTiles.includes(tileIdx);

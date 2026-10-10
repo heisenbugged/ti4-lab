@@ -1,57 +1,33 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 
-interface SpotifyTokens {
-  accessToken: string | null;
-  refreshToken: string | null;
-}
+const getCookie = (name: string): string | null => {
+  const parts = `; ${document.cookie}`.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(";").shift() || null;
+  }
+  return null;
+};
 
 export function useSpotifyLogin() {
-  const [tokens, setTokens] = useState<SpotifyTokens>({
-    accessToken: null,
-    refreshToken: null,
-  });
+  const [cookieToken, setCookieToken] = useState<string | null>(null);
   const refreshFetcher = useFetcher<{ accessToken: string }>();
+  const { submit } = refreshFetcher;
 
-  // Function to handle refresh
-  // Memoize the refresh function with useCallback
-  const refreshSpotifyToken = useCallback(() => {
-    refreshFetcher.submit(null, {
-      method: "get",
-      action: "/voices/refresh",
-    });
-  }, [refreshFetcher]);
-
-  // Set up automatic refresh every 15 minutes
+  // Refresh the access token every 15 minutes.
   useEffect(() => {
-    const refreshInterval = setInterval(refreshSpotifyToken, 15 * 60 * 1000);
+    const refresh = () =>
+      submit(null, { method: "get", action: "/voices/refresh" });
+    const refreshInterval = setInterval(refresh, 15 * 60 * 1000);
     return () => clearInterval(refreshInterval);
-  }, [refreshSpotifyToken]);
+  }, [submit]);
 
-  // handle refresh response
+  // Read after hydration; the server render has no cookie.
   useEffect(() => {
-    if (refreshFetcher.data !== undefined) {
-      const accessToken = refreshFetcher.data.accessToken;
-      setTokens((prev) => ({ ...prev, accessToken }));
-    }
-  }, [refreshFetcher.data]);
-
-  // use effect is so it's done client side only
-  useEffect(() => {
-    const getCookie = (name: string): string | null => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) {
-        return parts.pop()?.split(";").shift() || null;
-      }
-      return null;
-    };
-
-    setTokens({
-      accessToken: getCookie("spotifyAccessToken"),
-      refreshToken: getCookie("spotifyRefreshToken"),
-    });
+    setCookieToken(getCookie("spotifyAccessToken"));
   }, []);
 
-  return { ...tokens, refreshSpotifyToken };
+  return {
+    accessToken: refreshFetcher.data?.accessToken ?? cookieToken,
+  };
 }

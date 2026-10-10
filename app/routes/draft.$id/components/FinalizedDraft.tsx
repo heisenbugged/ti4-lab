@@ -17,7 +17,7 @@ import {
 } from "~/ui";
 import { useDraft } from "~/draftStore";
 import { SummaryRow } from "./SummaryRow";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import {
@@ -37,9 +37,6 @@ import { PlayerChip } from "./PlayerChip";
 import { factions as allFactions } from "~/data/factionData";
 import classes from "./FinalizedDraft.module.css";
 
-const ordinal = (n: number) =>
-  n === 1 ? "Speaker" : `${n}${n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
-
 export function FinalizedDraft() {
   const navigate = useNavigate();
   const { adminMode, originalArt, setOriginalArt } = useSafeOutletContext();
@@ -47,10 +44,10 @@ export function FinalizedDraft() {
   const draftUrl = useDraft((state) => state.draftUrl);
   const draft = useDraft((state) => state.draft);
   const { updatePlayerName } = useDraft((state) => state.actions);
-  const selections = useDraft((state) => state.draft.selections);
   const {
     slices,
     players,
+    selections,
     settings: { draftSpeaker, draftPlayerColors, draftGameMode },
   } = draft;
   const showSeat = draftSpeaker || draftGameMode === "texasStyle";
@@ -59,15 +56,17 @@ export function FinalizedDraft() {
   const { hydratedPlayers } = useHydratedDraft();
   const { syncDraft, undoLastPick } = useSyncDraft();
 
-  const sortedPlayers = useMemo(
-    () =>
-      [...hydratedPlayers].sort((a, b) => a.speakerOrder! - b.speakerOrder!),
-    [hydratedPlayers],
+  const sortedPlayers = [...hydratedPlayers].sort(
+    (a, b) => a.speakerOrder! - b.speakerOrder!,
   );
   const [mapStrings] = useAtom(hydratedMapStringsAtom);
   const [mapStringFormat, setMapStringFormat] =
     useState<ExternalMapStringFormat>("ttpg");
   const mapString = mapStrings[mapStringFormat];
+  const usedTiles = mapStrings.ttpg
+    .split(" ")
+    .filter((id) => id && id !== "0")
+    .sort((a, b) => Number(a) - Number(b) || a.localeCompare(b));
 
   const handleSoundboardClick = () => {
     const factionIds = hydratedPlayers
@@ -131,87 +130,17 @@ export function FinalizedDraft() {
         <div className={classes.left}>
           <section className={classes.sec}>
             <SectionHeader title="Draft summary" />
-            {showSliceSummary ? (
-              <Table minWidth={760}>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Player</Table.Th>
-                    <Table.Th>Faction</Table.Th>
-                    <Table.Th>Speaker</Table.Th>
-                    {showSeat && <Table.Th>Seat</Table.Th>}
-                    <Table.Th>SV</Table.Th>
-                    <Table.Th>Optimal</Table.Th>
-                    <Table.Th>Features</Table.Th>
-                    {draftPlayerColors && <Table.Th>Colour</Table.Th>}
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {sortedPlayers.map((p) => (
-                    <SummaryRow
-                      key={p.id}
-                      player={p}
-                      slice={slices[p.sliceIdx!]}
-                      draftSpeaker={showSeat}
-                      showPlayerColor={!!draftPlayerColors}
-                    />
-                  ))}
-                </Table.Tbody>
-              </Table>
-            ) : (
-              <Table minWidth={480}>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Player</Table.Th>
-                    <Table.Th>Faction</Table.Th>
-                    <Table.Th>Speaker</Table.Th>
-                    {showSeat && <Table.Th>Seat</Table.Th>}
-                    {draftPlayerColors && <Table.Th>Colour</Table.Th>}
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {sortedPlayers.map((player) => {
-                    const faction =
-                      player.faction !== undefined
-                        ? allFactions[player.faction]
-                        : undefined;
-                    return (
-                      <Table.Tr key={player.id}>
-                        <Table.Td className={classes.playerCell}>
-                          <PlayerChip player={player} size="sm" />
-                        </Table.Td>
-                        <Table.Td>
-                          {faction ? (
-                            <span className={classes.faction}>
-                              <FactionIcon faction={faction.id} style={{ width: 22, height: 22, flex: "none" }} />
-                              <span className={classes.factionName}>{faction.name}</span>
-                            </span>
-                          ) : (
-                            <Text as="span" size="sm" tone="muted">
-                              Not chosen
-                            </Text>
-                          )}
-                        </Table.Td>
-                        <Table.Td>
-                          {player.speakerOrder !== undefined
-                            ? ordinal(player.speakerOrder + 1)
-                            : "-"}
-                        </Table.Td>
-                        {showSeat && (
-                          <Table.Td numeric>
-                            {player.seatIdx !== undefined
-                              ? player.seatIdx + 1
-                              : "-"}
-                          </Table.Td>
-                        )}
-                        {draftPlayerColors && (
-                          <Table.Td>{player.factionColor}</Table.Td>
-                        )}
-                      </Table.Tr>
-                    );
-                  })}
-                </Table.Tbody>
-              </Table>
-            )}
+            <ol className={classes.results}>
+              {sortedPlayers.map((p) => (
+                <SummaryRow
+                  key={p.id}
+                  player={p}
+                  slice={showSliceSummary && p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined}
+                  showSeat={showSeat}
+                  showPlayerColor={!!draftPlayerColors}
+                />
+              ))}
+            </ol>
           </section>
 
           {draftGameMode === "twilightsFall" && (
@@ -232,8 +161,7 @@ export function FinalizedDraft() {
                       : undefined;
                     const fleetComposition =
                       startingUnitsFaction?.fleetComposition;
-
-                    if (!fleetComposition) return null;
+                    if (!startingUnitsFaction || !fleetComposition) return null;
 
                     return (
                       <Table.Tr key={player.id}>
@@ -241,18 +169,15 @@ export function FinalizedDraft() {
                           <PlayerChip player={player} size="sm" />
                         </Table.Td>
                         <Table.Td>
-                          {player.startingUnitsFactionId &&
-                            startingUnitsFaction && (
-                              <span className={classes.faction}>
-                                <FactionIcon
-                                  faction={player.startingUnitsFactionId}
-                                  style={{ width: 22, height: 22, flex: "none" }}
-                                />
-                                <span className={classes.factionName}>
-                                  {startingUnitsFaction.name}
-                                </span>
-                              </span>
-                            )}
+                          <span className={classes.faction}>
+                            <FactionIcon
+                              faction={startingUnitsFaction.id}
+                              style={{ width: 22, height: 22, flex: "none" }}
+                            />
+                            <span className={classes.factionName}>
+                              {startingUnitsFaction.name}
+                            </span>
+                          </span>
                         </Table.Td>
                         <Table.Td>
                           <StartingUnitsTable
@@ -270,12 +195,11 @@ export function FinalizedDraft() {
 
           <section className={classes.sec}>
             <SectionHeader title="Tiles" />
-            <Text size="sm" tone="muted" className={classes.tiles}>
-              {mapString
-                .split(" ")
-                .sort((a, b) => Number(a) - Number(b))
-                .join(", ")}
-            </Text>
+            <ul className={classes.tiles} aria-label="Tiles used">
+              {usedTiles.map((id) => (
+                <li key={id}>{id}</li>
+              ))}
+            </ul>
           </section>
 
           <section className={classes.sec}>
@@ -309,9 +233,7 @@ export function FinalizedDraft() {
             <Panel aria-label="Player names">
               <PlayerInputSection
                 players={players}
-                onChangeName={(playerIdx, name) => {
-                  updatePlayerName(playerIdx, name);
-                }}
+                onChangeName={updatePlayerName}
               />
               <div className={classes.adminSave}>
                 <Button variant="primary" onClick={syncDraft}>

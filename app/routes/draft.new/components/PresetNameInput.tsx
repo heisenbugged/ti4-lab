@@ -37,8 +37,9 @@ export function PresetNameInput({
       onKeyDown={(e) => {
         if (e.key === "Enter") onSubmit();
       }}
+      // The field is the whole point of both preset dialogs.
+      // eslint-disable-next-line jsx-a11y/no-autofocus
       autoFocus
-      data-autofocus
     />
   );
 }

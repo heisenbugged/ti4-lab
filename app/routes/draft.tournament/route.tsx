@@ -25,17 +25,12 @@ const configByPlayerCount: Record<number, DraftConfig> = {
 export default function DraftTournament() {
   const [searchParams] = useSearchParams();
   const [tableName, setTableName] = useState("");
-  const [players, setPlayers] = useState<Player[]>([
-    ...[0, 1, 2, 3, 4, 5].map((i) => ({
-      id: i,
-      name: "",
-    })),
-  ]);
+  const [players, setPlayers] = useState<Player[]>(() =>
+    Array.from({ length: 6 }, (_, id) => ({ id, name: "" })),
+  );
   const createDraft = useCreateDraft();
 
   const config = configByPlayerCount[players.length] as DraftConfig;
-  const draftDisabled =
-    players.some((player) => player.name === "") || !tableName;
 
   const slicesParam = searchParams.get("slices")!;
   const slices = slicesParam
@@ -110,6 +105,7 @@ export default function DraftTournament() {
   ]
     .filter(Boolean)
     .join(", ");
+  const draftDisabled = errorMessages !== "";
 
   const maxPlayers = Math.min(8, slices.length);
 

@@ -1,4 +1,5 @@
 .card {
+  transition: background-color var(--dur-state) var(--ease), border-color var(--dur-state) var(--ease), opacity var(--dur-state) var(--ease);
   position: relative;
   display: grid;
   justify-items: center;
@@ -14,6 +15,7 @@
 }
 .available { cursor: pointer; }
 .available:hover { background: var(--hull-raised); border-color: var(--rule-strong); }
+/* Taken: the owner's colour wash, matching taken factions and slices. */
 .taken { border-color: color-mix(in oklab, var(--p) 65%, transparent); background: color-mix(in oklab, var(--p) 8%, var(--hull)); }
 .label { font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
 .number { font-size: 26px; line-height: 1.1; font-weight: 600; font-stretch: var(--wide); font-variant-numeric: tabular-nums; }

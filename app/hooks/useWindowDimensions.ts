@@ -1,37 +1,18 @@
 import { useEffect, useState } from "react";
 
+const readWindow = () =>
+  typeof window === "undefined"
+    ? { width: 0, height: 0 }
+    : { width: window.innerWidth, height: window.innerHeight };
+
 export function useWindowDimensions() {
-  const window = getSafeWindow();
-  const [windowDimensions, setWindowDimensions] = useState({
-    width: window?.innerWidth ?? 0,
-    height: window?.innerHeight ?? 0,
-  });
+  const [dimensions, setDimensions] = useState(readWindow);
 
   useEffect(() => {
-    if (!window) return;
-
-    const handleResize = () => {
-      setWindowDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    // Add event listener to window resize
+    const handleResize = () => setDimensions(readWindow());
     window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    // Clean up the event listener on component unmount
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [window]);
-
-  return { width: windowDimensions.width, height: windowDimensions.height };
+  return dimensions;
 }
-
-export const getSafeWindow = () => {
-  if (typeof window !== "undefined") {
-    return window;
-  }
-  return undefined;
-};

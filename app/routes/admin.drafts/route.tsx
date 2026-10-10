@@ -14,6 +14,7 @@ import {
   Text,
   TextInput,
   Tooltip,
+  cx,
 } from "~/ui";
 import type { TagTone } from "~/ui";
 import {
@@ -30,7 +31,7 @@ import { DraftMode, DraftPhase, findDrafts } from "~/drizzle/draft.server";
 import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { eq } from "drizzle-orm";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import {
   IconChevronDown,
@@ -193,13 +194,14 @@ export default function AdminDraftsIndex() {
   } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
-  const [searchValue, setSearchValue] = useState(
-    searchParams.get("search") || "",
-  );
-
-  useEffect(() => {
-    setSearchValue(searchParams.get("search") || "");
-  }, [searchParams]);
+  // The box follows the URL (back/forward, clear all) but edits stay local until Enter.
+  const searchParam = searchParams.get("search") || "";
+  const [searchValue, setSearchValue] = useState(searchParam);
+  const [syncedSearch, setSyncedSearch] = useState(searchParam);
+  if (searchParam !== syncedSearch) {
+    setSyncedSearch(searchParam);
+    setSearchValue(searchParam);
+  }
 
   const updateParams = (
     updates: Record<string, string | undefined>,
@@ -232,9 +234,6 @@ export default function AdminDraftsIndex() {
     }
   };
 
-  const applyQuickFilter = (updates: Record<string, string | undefined>) =>
-    updateParams(updates);
-
   const clearAllFilters = () => {
     const params = new URLSearchParams();
     params.set("page", "1");
@@ -245,26 +244,11 @@ export default function AdminDraftsIndex() {
     setSearchValue("");
   };
 
-  const typeOptions = useMemo(
-    () =>
-      Object.entries(stats.draftsByType)
-        .sort(([, a], [, b]) => b - a)
-        .map(([type, count]) => ({
-          value: type,
-          label: `${type} (${count})`,
-        })),
-    [stats.draftsByType],
-  );
-
-  const modeOptions = useMemo(
-    () => withCounts(MODE_FILTER_OPTIONS, stats.draftsByMode),
-    [stats.draftsByMode],
-  );
-
-  const phaseOptions = useMemo(
-    () => withCounts(PHASE_FILTER_OPTIONS, stats.draftsByPhase),
-    [stats.draftsByPhase],
-  );
+  const typeOptions = Object.entries(stats.draftsByType)
+    .sort(([, a], [, b]) => b - a)
+    .map(([type, count]) => ({ value: type, label: `${type} (${count})` }));
+  const modeOptions = withCounts(MODE_FILTER_OPTIONS, stats.draftsByMode);
+  const phaseOptions = withCounts(PHASE_FILTER_OPTIONS, stats.draftsByPhase);
 
   const renderSortIcon = (column: SortBy) => {
     if (searchParams.get("sortBy") !== column) return null;
@@ -280,16 +264,14 @@ export default function AdminDraftsIndex() {
     }
   };
 
-  const hasActiveFilters =
-    searchParams.has("modeFilter") ||
-    searchParams.has("typeFilter") ||
-    searchParams.has("phaseFilter") ||
-    searchParams.has("isCompleteFilter") ||
-    searchParams.has("search") ||
-    searchParams.has("createdAfter") ||
-    searchParams.has("createdBefore") ||
-    searchParams.has("updatedAfter") ||
-    searchParams.has("updatedBefore");
+  const hasActiveFilters = [
+    "modeFilter",
+    "typeFilter",
+    "phaseFilter",
+    "isCompleteFilter",
+    "search",
+    ...DATE_FILTERS.map((filter) => filter.param),
+  ].some((param) => searchParams.has(param));
 
   return (
     <Stack gap={5}>
@@ -324,7 +306,7 @@ export default function AdminDraftsIndex() {
               <Button
                 key={filter.label}
                 size="sm"
-                onClick={() => applyQuickFilter(filter.updates)}
+                onClick={() => updateParams(filter.updates)}
               >
                 {filter.label}
               </Button>
@@ -633,11 +615,7 @@ function SortTh({
     <Table.Th aria-sort={isActive ? "other" : undefined}>
       <button
         type="button"
-        className={
-          isActive
-            ? `${classes.sortBtn} ${classes.sortActive}`
-            : classes.sortBtn
-        }
+        className={cx(classes.sortBtn, isActive && classes.sortActive)}
         onClick={() => onClick(column)}
       >
         {label}
@@ -657,51 +635,21 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 function parseMode(value: string | null): DraftMode | undefined {
-  if (!value) return undefined;
-  if (
-    value === "base" ||
-    value === "twilightsFall" ||
-    value === "texasStyle" ||
-    value === "presetMap"
-  ) {
-    return value;
-  }
-  return undefined;
+  return value && Object.hasOwn(MODE_LABELS, value)
+    ? (value as DraftMode)
+    : undefined;
 }
 
 function parsePhase(value: string | null): DraftPhase | undefined {
-  if (!value) return undefined;
-  if (
-    value === "ban" ||
-    value === "priorityValue" ||
-    value === "homeSystem" ||
-    value === "texasFaction" ||
-    value === "texasBlueKeep1" ||
-    value === "texasBlueKeep2" ||
-    value === "texasRedKeep" ||
-    value === "texasMapBuild" ||
-    value === "standardPick" ||
-    value === "complete"
-  ) {
-    return value;
-  }
-  return undefined;
+  return value && Object.hasOwn(PHASE_LABELS, value)
+    ? (value as DraftPhase)
+    : undefined;
 }
 
 function parseSortBy(value: string | null): SortBy {
-  if (
-    value === "createdAt" ||
-    value === "updatedAt" ||
-    value === "type" ||
-    value === "isComplete" ||
-    value === "mode" ||
-    value === "phase" ||
-    value === "progress" ||
-    value === "players"
-  ) {
-    return value;
-  }
-  return "createdAt";
+  return SORT_COLUMNS.some(({ column }) => column === value)
+    ? (value as SortBy)
+    : "createdAt";
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

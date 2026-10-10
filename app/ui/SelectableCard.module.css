@@ -1,4 +1,5 @@
-.card { position: relative; display: grid; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.card { position: relative; display: grid; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); box-shadow: var(--shadow-card); transition: background-color var(--dur-state) var(--ease), border-color var(--dur-state) var(--ease), opacity var(--dur-state) var(--ease); }
+.header { transition: background-color var(--dur-quick) var(--ease); }
 .header { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 10px 8px 12px; min-width: 0; border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
 .interactive { cursor: pointer; }
 .interactive:hover { background: var(--hull-raised); }

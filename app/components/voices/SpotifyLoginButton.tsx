@@ -1,5 +1,5 @@
 import { Button } from "~/ui";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { EULAModal } from "./EULAModal";
 import { PrivacyPolicyModal } from "./PrivacyPolicyModal";
 
@@ -16,16 +16,6 @@ export function SpotifyLoginButton({
 }: Props) {
   const [eulaOpened, setEulaOpened] = useState(false);
   const [privacyOpened, setPrivacyOpened] = useState(false);
-  const [hasAcceptedEula, setHasAcceptedEula] = useState(false);
-  const [hasAcceptedPrivacy, setHasAcceptedPrivacy] = useState(false);
-
-  useEffect(() => {
-    const acceptedEula = localStorage.getItem("acceptedEula");
-    const acceptedPrivacy = localStorage.getItem("acceptedPrivacy");
-    setHasAcceptedEula(acceptedEula === "true");
-    setHasAcceptedPrivacy(acceptedPrivacy === "true");
-  }, []);
-
   const spotifyAuthParams = {
     response_type: "code",
     client_id: spotifyClientId,
@@ -37,51 +27,51 @@ export function SpotifyLoginButton({
     redirect_uri: spotifyCallbackUrl,
   };
 
+  const goToSpotify = () => {
+    window.location.href = `https://accounts.spotify.com/authorize?${new URLSearchParams(spotifyAuthParams)}`;
+  };
+
   const handleEulaAccept = () => {
     localStorage.setItem("acceptedEula", "true");
-    setHasAcceptedEula(true);
     setEulaOpened(false);
     setPrivacyOpened(true);
   };
 
   const handlePrivacyAccept = () => {
     localStorage.setItem("acceptedPrivacy", "true");
-    setHasAcceptedPrivacy(true);
     setPrivacyOpened(false);
-    window.location.href = `https://accounts.spotify.com/authorize?${new URLSearchParams(spotifyAuthParams)}`;
+    goToSpotify();
   };
 
   const handleLoginClick = () => {
-    if (!hasAcceptedEula) {
+    if (localStorage.getItem("acceptedEula") !== "true") {
       setEulaOpened(true);
-    } else if (!hasAcceptedPrivacy) {
+    } else if (localStorage.getItem("acceptedPrivacy") !== "true") {
       setPrivacyOpened(true);
     } else {
-      window.location.href = `https://accounts.spotify.com/authorize?${new URLSearchParams(spotifyAuthParams)}`;
+      goToSpotify();
     }
   };
 
+  if (accessToken) return null;
+
   return (
     <>
-      {!accessToken ? (
-        <>
-          <Button size="sm" onClick={handleLoginClick}>
-            Log in
-          </Button>
+      <Button size="sm" onClick={handleLoginClick}>
+        Log in
+      </Button>
 
-          <EULAModal
-            opened={eulaOpened}
-            onClose={() => setEulaOpened(false)}
-            onAccept={handleEulaAccept}
-          />
+      <EULAModal
+        opened={eulaOpened}
+        onClose={() => setEulaOpened(false)}
+        onAccept={handleEulaAccept}
+      />
 
-          <PrivacyPolicyModal
-            opened={privacyOpened}
-            onClose={() => setPrivacyOpened(false)}
-            onAccept={handlePrivacyAccept}
-          />
-        </>
-      ) : undefined}
+      <PrivacyPolicyModal
+        opened={privacyOpened}
+        onClose={() => setPrivacyOpened(false)}
+        onAccept={handlePrivacyAccept}
+      />
     </>
   );
 }

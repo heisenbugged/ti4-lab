@@ -32,13 +32,12 @@ export function SliceMap({
   return (
     <MapContext.Provider
       value={{
-        width,
-        height,
         radius,
         gap,
         hOffset: height - calcHexHeight(radius) - 10, //padding
         wOffset: width * 0.5 - radius + radius * wOffsetMultiplier,
         disabled: false,
+        animateChanges: false,
       }}
     >
       <div

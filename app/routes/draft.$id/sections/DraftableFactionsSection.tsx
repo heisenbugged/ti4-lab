@@ -51,7 +51,7 @@ function PoolFactionSelection() {
   );
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
-  const { toggle, isPending } = usePendingPick();
+  const { select, isPending } = usePendingPick();
 
   const { syncDraft } = useSyncDraft();
   const canSelect =
@@ -80,7 +80,7 @@ function PoolFactionSelection() {
             onSelect={
               canSelect
                 ? () =>
-                    toggle({
+                    select({
                       key: `faction-${factionId}`,
                       label: name,
                       commit: () => {
@@ -93,7 +93,7 @@ function PoolFactionSelection() {
             onSelectMinor={
               canSelectMinor && minorFactionsInSharedPool
                 ? () =>
-                    toggle({
+                    select({
                       key: `minor-${factionId}`,
                       label: `${name} as your minor faction`,
                       commit: () => {
@@ -121,7 +121,7 @@ function GroupedFactionSelection({
     useHydratedDraft();
   const { selectFaction } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
-  const { toggle, isPending } = usePendingPick();
+  const { select, isPending } = usePendingPick();
   const canSelect =
     currentlyPicking && !!activePlayer && activePlayer.faction === undefined;
 
@@ -152,7 +152,7 @@ function GroupedFactionSelection({
                   onSelect={
                     canSelect && player.id === activePlayer.id
                       ? () =>
-                          toggle({
+                          select({
                             key: `faction-${factionId}`,
                             label: allFactions[factionId].name,
                             commit: () => {

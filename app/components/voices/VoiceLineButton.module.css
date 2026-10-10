@@ -14,7 +14,7 @@
   font: 600 13px/1 var(--font);
   white-space: nowrap;
   cursor: pointer;
-  transition: border-color 120ms var(--ease), background 120ms var(--ease);
+  transition: border-color var(--dur-quick) var(--ease), background var(--dur-quick) var(--ease);
 }
 .vbtn:hover:not(:disabled) {
   border-color: var(--rule-hover);

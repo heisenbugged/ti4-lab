@@ -6,7 +6,6 @@ import {
   IconCircleDot,
   IconLayoutGrid,
 } from "@tabler/icons-react";
-import { ChoosableDraftType } from "../maps";
 import styles from "./DraftFormatDescription.module.css";
 
 type Feature = {
@@ -21,7 +20,8 @@ export type DraftFormatDescriptionData = {
 };
 
 type Props = {
-  mapType: ChoosableDraftType;
+  /** Fade in when mounted (format switch only, not page load). */
+  fadeIn?: boolean;
   data: DraftFormatDescriptionData;
   title: string;
 };
@@ -36,9 +36,9 @@ const ICONS = {
 };
 
 /** What the hovered or chosen style plays like, with four feature chips. */
-export function DraftFormatDescription({ data, title }: Props) {
+export function DraftFormatDescription({ data, title, fadeIn = false }: Props) {
   return (
-    <div className={styles.desc}>
+    <div className={fadeIn ? `${styles.desc} ui-fade-in` : styles.desc}>
       <h3 className={styles.title}>{title}</h3>
       <p className={styles.text}>{data.description}</p>
       <ul className={styles.chips}>

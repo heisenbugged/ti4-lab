@@ -1,3 +1,4 @@
+import { useLanded } from "~/ui";
 import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { SliceHeader } from "./SliceHeader";
@@ -41,10 +42,12 @@ export function BaseSlice({
   className,
 }: Props) {
   const { optimal, sliceValue } = useSlice(slice);
+  const landed = useLanded(selectedColor ?? null) && !!selectedColor;
   return (
     <article
+      data-landed={landed ? "glow" : undefined}
       className={[classes.slice, selectedColor && classes.taken, pending && "ui-bracket", className].filter(Boolean).join(" ")}
-      style={selectedColor ? ({ "--p": `var(--player-${selectedColor})` } as React.CSSProperties) : undefined}
+      style={selectedColor ? ({ "--p": `var(--player-${selectedColor})`, "--flash": `var(--player-${selectedColor})` } as React.CSSProperties) : undefined}
     >
       <SliceHeader right={titleRight}>
         {mapModifiable && onNameChange ? (
@@ -64,9 +67,10 @@ export function BaseSlice({
 
       <div className={classes.stats}>
         <span className={classes.sv}>
-          <small>SV</small>
-          <b>{sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}</b>
-          <SliceValuePopover slice={slice} />
+          <SliceValuePopover slice={slice}>
+            <small>SV</small>
+            <b>{sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}</b>
+          </SliceValuePopover>
         </span>
         <span className={classes.opt}>
           <small>Optimal</small>

@@ -13,8 +13,6 @@ const phaseTints: Record<PhaseColor, string> = {
   orange: "var(--wormhole-alpha)",
 };
 
-export const phaseTint = (color: PhaseColor) => phaseTints[color];
-
 type PhaseBannerProps = {
   /** Any CSS colour: a phase tint or a player colour. */
   tint: string;
@@ -104,7 +102,7 @@ export function SimultaneousPhaseHeader({
       style={maw ? ({ "--maw": `${maw}px` } as CSSProperties) : undefined}
     >
       <PhaseBanner
-        tint={phaseTint(phaseColor)}
+        tint={phaseTints[phaseColor]}
         badge={phaseName.charAt(0).toUpperCase()}
         title={phaseName}
         description={description}

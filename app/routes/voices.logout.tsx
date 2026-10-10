@@ -1,6 +1,6 @@
-import { LoaderFunctionArgs, redirect } from "react-router";
+import { redirect } from "react-router";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader() {
   const response = redirect("/voices");
 
   response.headers.append(

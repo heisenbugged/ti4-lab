@@ -32,7 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: 200,
       },
     );
-  } catch (error) {
+  } catch {
     const headers = new Headers();
     headers.append(
       "Set-Cookie",

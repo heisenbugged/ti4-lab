@@ -61,8 +61,8 @@ export function DraftableFaction({
             selectTitle={selectTitle}
             selected={pending}
             selectedMinor={pendingMinor}
-            onSelect={onSelect ? () => onSelect() : undefined}
-            onSelectMinor={onSelectMinor ? () => onSelectMinor() : undefined}
+            onSelect={onSelect}
+            onSelectMinor={onSelectMinor}
             disabled={disabled}
             isMinor={player?.minorFaction === faction.id}
           />

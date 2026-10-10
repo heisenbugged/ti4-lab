@@ -5,7 +5,7 @@
 }
 
 .item {
-  transition: opacity 300ms var(--ease), transform 300ms var(--ease);
+  transition: opacity var(--dur-enter) var(--ease), transform var(--dur-enter) var(--ease);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

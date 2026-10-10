@@ -23,7 +23,7 @@
 
 button.player {
   cursor: pointer;
-  transition: background 120ms var(--ease), border-color 120ms var(--ease);
+  transition: background var(--dur-quick) var(--ease), border-color var(--dur-quick) var(--ease);
 }
 
 button.player:hover {

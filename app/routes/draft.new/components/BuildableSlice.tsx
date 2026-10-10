@@ -12,7 +12,7 @@ type Props = {
   onSelectTile?: (tile: Tile) => void;
   onDeleteTile?: (tile: Tile) => void;
   onRandomizeSlice?: () => void;
-  onClearSlize?: () => void;
+  onClearSlice?: () => void;
   onRemoveSlice?: () => void;
   onNameChange?: (name: string) => void;
 };
@@ -24,7 +24,7 @@ export function BuildableSlice({
   onSelectTile,
   onDeleteTile,
   onRandomizeSlice,
-  onClearSlize,
+  onClearSlice,
   onRemoveSlice,
   onNameChange,
 }: Props) {
@@ -44,7 +44,7 @@ export function BuildableSlice({
           >
             <IconDice5 />
           </IconButton>
-          <IconButton size="sm" label="Clear tiles" onMouseDown={onClearSlize}>
+          <IconButton size="sm" label="Clear tiles" onMouseDown={onClearSlice}>
             <IconEraser />
           </IconButton>
           {onRemoveSlice && (

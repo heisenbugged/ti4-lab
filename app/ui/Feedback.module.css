@@ -19,7 +19,7 @@
   gap: var(--space-3);
   background: color-mix(in oklab, var(--void) 70%, transparent);
   backdrop-filter: blur(2px);
-  color: var(--gold);
+  color: var(--gold-text);
 }
 .overlayLabel { font-size: 13px; color: var(--text-muted); }
 
@@ -27,7 +27,7 @@
 .track { position: relative; overflow: hidden; height: 4px; border-radius: 2px; background: var(--hull-sunken); }
 .progress-xs .track { height: 3px; }
 .progress-md .track { height: 6px; border-radius: 3px; }
-.indicator { display: block; height: 100%; border-radius: inherit; transition: width 300ms var(--ease); }
+.indicator { display: block; height: 100%; border-radius: inherit; transition: width var(--dur-enter) var(--ease); }
 .indicator-ion { background: var(--ion); }
 .indicator-gold { background: var(--gold); }
 .indicator-success { background: var(--success); }
@@ -98,7 +98,7 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-pop);
   transform: translateX(var(--toast-swipe-movement-x, 0));
-  transition: opacity 200ms var(--ease), transform 200ms var(--ease);
+  transition: opacity var(--dur-state) var(--ease), transform var(--dur-state) var(--ease);
 }
 .toast[data-starting-style], .toast[data-ending-style] { opacity: 0; transform: translateY(8px); }
 .toastContent { display: flex; align-items: flex-start; gap: 12px; }

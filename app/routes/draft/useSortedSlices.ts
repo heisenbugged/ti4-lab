@@ -5,7 +5,10 @@ import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
 import { useDraft } from "~/draftStore";
 
-export function useSortedSlices(slices: Slice[], draftedSlices: number[]) {
+const none: number[] = [];
+
+/** Slices by slice value, best first; drafted slices go last. */
+export function useSortedSlices(slices: Slice[], draftedSlices = none) {
   const sliceValueModifiers = useDraft(
     (state) => state.draft.settings.sliceGenerationConfig?.sliceValueModifiers,
   );

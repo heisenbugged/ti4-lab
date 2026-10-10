@@ -16,9 +16,9 @@
 .accHeader { margin: 0; }
 .accTrigger { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 46px; padding: 0 var(--space-4); border: 0; background: none; color: var(--text); font: 600 14px/1.3 var(--font); text-align: left; cursor: pointer; }
 .accTrigger:hover { background: var(--hull-raised); }
-.accChev { color: var(--text-muted); transition: transform 160ms var(--ease); }
+.accChev { color: var(--text-muted); transition: transform var(--dur-quick) var(--ease); }
 .accTrigger[data-panel-open] .accChev { transform: rotate(180deg); }
-.accPanel { overflow: hidden; height: var(--accordion-panel-height); transition: height 180ms var(--ease); }
+.accPanel { overflow: hidden; height: var(--accordion-panel-height); transition: height var(--dur-state) var(--ease); }
 .accPanel[data-starting-style], .accPanel[data-ending-style] { height: 0; }
 .accBody { padding: 0 var(--space-4) var(--space-4); font-size: 14px; color: var(--text-muted); }
 

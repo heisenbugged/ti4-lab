@@ -21,14 +21,14 @@
   text-decoration: none;
   cursor: pointer;
   user-select: none;
-  transition: color 120ms var(--ease);
+  transition: color var(--dur-quick) var(--ease);
 }
 .btn::before, .btn::after {
   content: "";
   position: absolute;
   z-index: -1;
   clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
-  transition: background-color 120ms var(--ease);
+  transition: background-color var(--dur-quick) var(--ease);
 }
 .btn::before { inset: 0; background: var(--edge); }
 .btn::after { inset: 1px; background: var(--fill); }
@@ -80,12 +80,12 @@
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: background-color 120ms var(--ease), color 120ms var(--ease);
+  transition: background-color var(--dur-quick) var(--ease), color var(--dur-quick) var(--ease);
 }
 .icon svg { width: 18px; height: 18px; }
 .icon:hover { background: var(--hull-raised); color: var(--text); }
 .icon:disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
-.icon[aria-pressed="true"] { color: var(--gold); background: color-mix(in oklab, var(--gold) 12%, transparent); }
+.icon[aria-pressed="true"] { color: var(--gold-text); background: color-mix(in oklab, var(--gold) 12%, transparent); }
 .icon-outline { border-color: var(--rule-strong); color: var(--text); background: var(--hull); }
 .icon-outline:hover { border-color: var(--rule-hover); }
 .icon-danger { color: var(--danger); }
@@ -117,7 +117,7 @@
 .pick:hover::after { background: color-mix(in oklab, var(--tint) 22%, var(--hull)); }
 .pick svg { width: 13px; height: 13px; }
 /* Selected is gold as a line, never a fill: the fill belongs to Lock in pick. */
-.pick[aria-pressed="true"] { color: var(--gold); }
+.pick[aria-pressed="true"] { color: var(--gold-text); }
 .pick[aria-pressed="true"]::before { background: var(--gold); }
 .pick[aria-pressed="true"]::after { background: color-mix(in oklab, var(--gold) 14%, var(--hull)); }
 .pick:disabled { opacity: 0.45; cursor: not-allowed; }

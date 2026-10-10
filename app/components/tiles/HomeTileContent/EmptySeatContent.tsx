@@ -2,9 +2,8 @@ import { PickButton } from "~/ui";
 import { useDraft } from "~/draftStore";
 import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
 import { SliceValuePopover } from "../../Slice/SliceValuePopover";
+import { speakerOrdinal } from "~/utils/map";
 import classes from "./HomeTileContent.module.css";
-
-const seatLabel = ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
 type Props = {
   seat?: number;
@@ -25,7 +24,7 @@ export function EmptySeatContent({ seat, coreSliceData, selectable, selected, on
 
   return (
     <div className={classes.stack}>
-      {!draftSpeaker && hydrated && seat !== undefined && <p className={classes.seat}>{seatLabel[seat]}</p>}
+      {!draftSpeaker && hydrated && seat !== undefined && <p className={classes.seat}>{speakerOrdinal(seat + 1)}</p>}
       {coreSliceData && (
         <div className={classes.row}>
           <p className={classes.value}>{coreSliceData.value.toFixed(1)}</p>
@@ -33,7 +32,17 @@ export function EmptySeatContent({ seat, coreSliceData, selectable, selected, on
         </div>
       )}
       {selectable && (
-        <PickButton className={classes.select} onMouseDown={onSelect} disabled={disabled} selected={selected}>
+        <PickButton
+          className={classes.select}
+          // Mouse-down (not click) so map drag handling can't swallow it; preventDefault stops the
+          // browser moving focus back here, which would steal it from the confirm dialog (Enter).
+          onMouseDown={(e) => {
+            e.preventDefault();
+            onSelect?.();
+          }}
+          disabled={disabled}
+          selected={selected}
+        >
           Select seat
         </PickButton>
       )}

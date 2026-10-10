@@ -1,37 +1,16 @@
 import { Button, Modal, Text } from "~/ui";
-import {
-  hasAudioAlertConsent,
-  setAudioAlertEnabled,
-  markAudioAlertConsentGiven,
-} from "~/utils/audioAlert";
-import { useState, useEffect } from "react";
+import { setAudioAlertEnabled } from "~/utils/audioAlert";
+import { useAudioAlertPreference } from "./useAudioAlertPreference";
 
 /** Asked once: play a sound when it's your turn? */
 export function AudioAlertConsentModal() {
-  const [opened, setOpened] = useState(false);
-
-  useEffect(() => {
-    // Show modal only if user hasn't given consent yet
-    if (!hasAudioAlertConsent()) {
-      setOpened(true);
-    }
-  }, []);
-
-  const handleEnable = () => {
-    setAudioAlertEnabled(true);
-    markAudioAlertConsentGiven();
-    setOpened(false);
-  };
-
-  const handleDisable = () => {
-    setAudioAlertEnabled(false);
-    markAudioAlertConsentGiven();
-    setOpened(false);
-  };
+  const { consentGiven } = useAudioAlertPreference();
+  // Saving either answer records consent, which closes the modal.
+  const handleDisable = () => setAudioAlertEnabled(false);
 
   return (
     <Modal
-      opened={opened}
+      opened={!consentGiven}
       onClose={handleDisable}
       title="Sound alerts"
       dismissible={false}
@@ -41,7 +20,7 @@ export function AudioAlertConsentModal() {
           <Button variant="tertiary" onClick={handleDisable}>
             No sound
           </Button>
-          <Button variant="primary" onClick={handleEnable}>
+          <Button variant="primary" onClick={() => setAudioAlertEnabled(true)}>
             Turn on alerts
           </Button>
         </>

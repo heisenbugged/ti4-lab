@@ -5,6 +5,8 @@ export function TradeStation() {
       viewBox="0 0 400 229"
       width="75"
       height="50"
+      // Wider than the planet on purpose: opt out of the global svg max-width reset.
+      style={{ maxWidth: "none" }}
     >
       <g fillRule="evenodd">
         <path

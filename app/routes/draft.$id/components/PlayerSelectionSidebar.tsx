@@ -1,9 +1,10 @@
 import { IconCheck } from "@tabler/icons-react";
-import { Bracket, Panel, PlayerHex, Tag, cx } from "~/ui";
+import { Bracket, Panel, PlayerHex, Tag, cx, playerVar } from "~/ui";
 import type { CSSProperties } from "react";
-import { factions as allFactions, playerColors } from "~/data/factionData";
+import { factions as allFactions } from "~/data/factionData";
 import { HydratedPlayer } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
+import { playerColorOf, playerLetter, speakerOrdinal } from "./draftOrderUtils";
 import classes from "./PlayerSelectionSidebar.module.css";
 
 interface PlayerSelectionSidebarProps {
@@ -61,10 +62,10 @@ export function PlayerSelectionSidebar({
 
           const speakerOrderLabel =
             player.speakerOrder !== undefined
-              ? speakerOrderLabels[player.speakerOrder]
+              ? speakerOrdinal(player.speakerOrder + 1)
               : undefined;
 
-          const color = playerColors[player.id];
+          const color = playerColorOf(player.id);
           const Element = canClick ? "button" : "div";
 
           return (
@@ -72,7 +73,7 @@ export function PlayerSelectionSidebar({
               <Element
                 type={canClick ? "button" : undefined}
                 className={cx(classes.player, isReady && classes.ready)}
-                style={{ "--p": `var(--player-${color})` } as CSSProperties}
+                style={{ "--p": playerVar(color) } as CSSProperties}
                 aria-pressed={canClick ? isSelected : undefined}
                 onMouseEnter={() => canClick && onPlayerHover(player.id)}
                 onMouseLeave={() => onPlayerHover(null)}
@@ -87,7 +88,7 @@ export function PlayerSelectionSidebar({
                     />
                   ) : (
                     <PlayerHex color={color}>
-                      {String.fromCharCode(65 + player.id)}
+                      {playerLetter(player.id)}
                     </PlayerHex>
                   )}
                   <span className={classes.name} title={player.name}>
@@ -125,14 +126,3 @@ export function PlayerSelectionSidebar({
   );
 }
 
-const speakerOrderLabels = [
-  "Speaker",
-  "1st",
-  "2nd",
-  "3rd",
-  "4th",
-  "5th",
-  "6th",
-  "7th",
-  "8th",
-];

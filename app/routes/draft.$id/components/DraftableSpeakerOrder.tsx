@@ -1,4 +1,4 @@
-import { PickButton, cx } from "~/ui";
+import { PickButton, cx, playerVar, useLanded } from "~/ui";
 import { Player } from "~/types";
 import { PlayerChip } from "./PlayerChip";
 import { playerColorOf } from "./draftOrderUtils";
@@ -11,8 +11,6 @@ type Props = {
   disabled?: boolean;
   /** Selected, waiting for Lock in pick. */
   selected?: boolean;
-  /** Shown on open positions when the picker already has one, e.g. "You have 3rd". */
-  openNote?: string;
   onSelect: () => void;
 };
 
@@ -28,10 +26,10 @@ export function DraftableSpeakerOrder({
   canSelectSpeakerOrder,
   disabled = false,
   selected = false,
-  openNote = "Open",
   onSelect,
 }: Props) {
   const isAvailable = !player && canSelectSpeakerOrder;
+  const landed = useLanded(player?.id ?? null) && !!player;
 
   return (
     <div
@@ -43,9 +41,10 @@ export function DraftableSpeakerOrder({
       )}
       style={
         player
-          ? ({ "--p": `var(--player-${playerColorOf(player.id)})` } as React.CSSProperties)
+          ? ({ "--p": playerVar(playerColorOf(player.id)), "--flash": playerVar(playerColorOf(player.id)) } as React.CSSProperties)
           : undefined
       }
+      data-landed={landed ? "glow" : undefined}
       onClick={isAvailable && !disabled ? onSelect : undefined}
     >
       <small className={classes.label}>{speakerOrder}</small>
@@ -61,7 +60,7 @@ export function DraftableSpeakerOrder({
         />
       )}
       {player && <PlayerChip player={player} size="sm" />}
-      {!player && !isAvailable && <span className={classes.open}>{openNote}</span>}
+      {!player && !isAvailable && <span className={classes.open}>Open</span>}
     </div>
   );
 }

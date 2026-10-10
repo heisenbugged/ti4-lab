@@ -1,9 +1,9 @@
 /* Slice card: header, value line, the slice map (production lab art), features */
-.slice { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.slice { transition: background-color var(--dur-state) var(--ease), border-color var(--dur-state) var(--ease), opacity var(--dur-state) var(--ease); position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); box-shadow: var(--shadow-card); }
 .taken { border-color: color-mix(in oklab, var(--p) 65%, transparent); }
 .taken .header { background: color-mix(in oklab, var(--p) 14%, var(--hull-raised)); }
 
-.header { display: flex; align-items: center; gap: var(--space-2); min-height: 46px; padding: 6px var(--space-3) 6px var(--space-4); background: var(--hull-raised); border-bottom: 1px solid var(--rule); border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.header { transition: background-color var(--dur-state) var(--ease); display: flex; align-items: center; gap: var(--space-2); min-height: 46px; padding: 6px var(--space-3) 6px var(--space-4); background: var(--hull-raised); border-bottom: 1px solid var(--rule); border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
 .headerMain { display: flex; align-items: center; gap: var(--space-2); flex: 1; min-width: 0; }
 .headerRight { display: flex; align-items: center; gap: 6px; flex: none; max-width: 60%; min-width: 0; }
 .name { flex: 1; min-width: 0; margin: 0; font-size: 16px; font-weight: 600; font-stretch: var(--semi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

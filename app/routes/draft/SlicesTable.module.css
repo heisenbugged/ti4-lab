@@ -1,13 +1,13 @@
-.drafted {
-  opacity: 0.6;
-}
-
 .name {
-  max-width: 18ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 0;
+  width: 42%;
 }
+.nameRow { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.nameText { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+
+/* Taken: a quiet byline, not a badge. Row stays fully legible. */
+.owner { display: inline-flex; align-items: center; gap: 5px; min-width: 0; align-self: center; font-size: 12px; color: var(--text-muted); }
+.ownerName { min-width: 0; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .sv {
   font-weight: 700;

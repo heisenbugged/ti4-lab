@@ -54,7 +54,7 @@ import {
 } from "../utils/mapToDraft";
 import { autoCompleteMap } from "../utils/mapCompletion";
 import { shuffle } from "~/draft/helpers/randomization";
-import { useMapStats } from "../utils/mapStats";
+import { calculateMapStats } from "~/utils/mapStats";
 import { encodeMapString, decodeMapString } from "../utils/mapStringCodec";
 import {
   encodeAsyncMapString,
@@ -81,6 +81,7 @@ import { mapConfigs } from "~/mapgen/mapConfigs";
 import { DraftTypeSelectionModal } from "./DraftTypeSelectionModal";
 import { MapStringImportExportModal } from "./MapStringImportExportModal";
 import { DraftType } from "~/draft/types";
+import { buildPresetDraftState } from "../utils/presetDraft";
 import classes from "./MapGenerator.module.css";
 
 /** Game sets for the top bar; the trigger shows the short name, the list the full one. */
@@ -100,7 +101,6 @@ const GAME_SET_OPTIONS: { value: GameSet; label: React.ReactNode }[] = [
     </>
   ),
 }));
-import { buildPresetDraftState } from "../utils/presetDraft";
 
 function MapGeneratorContent() {
   const navigate = useNavigate();
@@ -128,23 +128,15 @@ function MapGeneratorContent() {
     removeHomeSystem,
     loadDecodedMap,
   } = useMapBuilder((state) => state.actions);
-  const stats = useMapStats();
+  const stats = useMemo(() => calculateMapStats([], map), [map]);
 
-  // Calculate player count from HOME tiles
-  const playerCount = useMemo(
-    () => map.filter((tile) => tile.type === "HOME").length,
-    [map],
-  );
+  const playerCount = map.filter((tile) => tile.type === "HOME").length;
 
-  // Calculate slice values, stats, breakdowns, tile contributions, and balance gap
   const sliceValues = useMemo(() => getAllSliceValues(map), [map]);
   const sliceStats = useMemo(() => getAllSliceStats(map), [map]);
   const sliceBreakdowns = useMemo(() => getAllSliceBreakdowns(map), [map]);
   const tileContributions = useMemo(() => getAllTileContributions(map), [map]);
-  const balanceGap = useMemo(
-    () => calculateBalanceGap(sliceValues),
-    [sliceValues],
-  );
+  const balanceGap = calculateBalanceGap(sliceValues);
 
   const duplicateHyperlanes = useMemo(() => {
     const counts = new globalThis.Map<string, number>();
@@ -167,17 +159,13 @@ function MapGeneratorContent() {
     useDisclosure(false);
   const [publishOpened, { open: openPublish, close: closePublish }] =
     useDisclosure(false);
-  const [compatibleDraftTypes, setCompatibleDraftTypes] = useState<DraftType[]>(
-    [],
-  );
+  const compatibleDraftTypes = mapConfigToCompatibleDraftTypes[mapConfigId];
   const [publishName, setPublishName] = useState("");
   const [publishDescription, setPublishDescription] = useState("");
   const [publishAuthor, setPublishAuthor] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [publishTried, setPublishTried] = useState(false);
-  const mapString = useMemo(() => {
-    return encodeMapString(map);
-  }, [map]);
+  const mapString = useMemo(() => encodeMapString(map), [map]);
 
   const externalMapStrings = useMemo(
     () => ({
@@ -187,17 +175,15 @@ function MapGeneratorContent() {
     [map],
   );
 
-  const hasSystems = useMemo(() => {
-    return map.some((tile) => tile.type === "SYSTEM" && tile.idx !== 0);
-  }, [map]);
+  const hasSystems = map.some(
+    (tile) => tile.type === "SYSTEM" && tile.idx !== 0,
+  );
 
   const shareUrl = mapGeneratorHref(mapString, "https://tidraft.com");
   const imageUrl = `https://tidraft.com/map-generator.png?map=${encodeURIComponent(mapString)}`;
 
-  // Check if map is complete (no OPEN tiles)
-  const isMapComplete = useMemo(() => {
-    return !map.some((tile) => tile.type === "OPEN");
-  }, [map]);
+  const openHexCount = map.filter((tile) => tile.type === "OPEN").length;
+  const isMapComplete = openHexCount === 0;
 
   // Make all tiles except Mecatol Rex and closed tiles modifiable.
   const modifiableMapTiles = Array.from(
@@ -309,8 +295,7 @@ function MapGeneratorContent() {
   };
 
   const handleCreateDraft = () => {
-    const compatibleTypes = mapConfigToCompatibleDraftTypes[mapConfigId];
-    if (!compatibleTypes || compatibleTypes.length === 0) {
+    if (!compatibleDraftTypes || compatibleDraftTypes.length === 0) {
       notify({
         title: "Unsupported",
         message: "This map type doesn't support draft creation",
@@ -319,15 +304,12 @@ function MapGeneratorContent() {
       return;
     }
 
-    // If multiple compatible types, show selection modal
-    if (compatibleTypes.length > 1) {
-      setCompatibleDraftTypes(compatibleTypes);
+    if (compatibleDraftTypes.length > 1) {
       openDraftType();
       return;
     }
 
-    // Single compatible type - navigate directly
-    navigateToDraft(compatibleTypes[0]);
+    navigateToDraft(compatibleDraftTypes[0]);
   };
 
   const handleCreatePresetDraft = () => {
@@ -358,7 +340,6 @@ function MapGeneratorContent() {
   };
 
   const navigateToDraft = (selectedDraftType: DraftType) => {
-    const compatibleTypes = mapConfigToCompatibleDraftTypes[mapConfigId];
     const config = draftConfig[selectedDraftType];
     const mapConfig = mapConfigs[mapConfigId];
     const { slices, sliceTileIndices } = extractSlicesFromMap(
@@ -373,7 +354,7 @@ function MapGeneratorContent() {
       presetMap,
       mapConfigId,
       // Pass all compatible types so user can switch between them in prechoice
-      compatibleDraftTypes: compatibleTypes,
+      compatibleDraftTypes,
       gameSets,
     };
 
@@ -387,6 +368,11 @@ function MapGeneratorContent() {
   const handleDraftTypeSelect = (draftType: DraftType) => {
     closeDraftType();
     navigateToDraft(draftType);
+  };
+
+  const closePublishModal = () => {
+    setPublishTried(false);
+    closePublish();
   };
 
   const handlePublish = async () => {
@@ -448,22 +434,15 @@ function MapGeneratorContent() {
     number | undefined
   >(undefined);
 
-  // Parse URL parameters and seed map on page load
+  // Seed the builder store from a shared `?map=` link once on mount.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const params = new URLSearchParams(window.location.search);
-    const mapParam = params.get("map");
-
-    if (mapParam) {
-      // New format: single `map` parameter with complete map encoding
-      const decoded = decodeMapString(mapParam);
-      if (decoded) {
-        loadDecodedMap(decoded.map, decoded.ringCount, decoded.gameSets);
-      }
+    const mapParam = new URLSearchParams(window.location.search).get("map");
+    const decoded = mapParam ? decodeMapString(mapParam) : null;
+    if (decoded) {
+      loadDecodedMap(decoded.map, decoded.ringCount, decoded.gameSets);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, []);
 
   const handleDragStart = (event: DragStartEvent) => {
     const activeId = event.active.id as string;
@@ -531,7 +510,6 @@ function MapGeneratorContent() {
 
   const tileRadius = 60;
 
-  const openHexCount = map.filter((tile) => tile.type === "OPEN").length;
   const publishMissing =
     publishTried &&
     (!publishName.trim() ||
@@ -555,27 +533,18 @@ function MapGeneratorContent() {
       />
       <DraftTypeSelectionModal
         opened={draftTypeOpened}
-        compatibleTypes={compatibleDraftTypes}
+        compatibleTypes={compatibleDraftTypes ?? []}
         onClose={closeDraftType}
         onSelect={handleDraftTypeSelect}
       />
       <Modal
         opened={publishOpened}
-        onClose={() => {
-          setPublishTried(false);
-          closePublish();
-        }}
+        onClose={closePublishModal}
         title="Publish map"
         size="lg"
         footer={
           <>
-            <Button
-              variant="tertiary"
-              onClick={() => {
-                setPublishTried(false);
-                closePublish();
-              }}
-            >
+            <Button variant="tertiary" onClick={closePublishModal}>
               Cancel
             </Button>
             <Button
@@ -736,9 +705,7 @@ function MapGeneratorContent() {
             </div>
 
             <div className={classes.canvas}>
-              {stats && (
-                <MapStatsOverlay stats={stats} className={classes.stats} />
-              )}
+              <MapStatsOverlay stats={stats} className={classes.stats} />
 
               <div
                 className={classes.dock}

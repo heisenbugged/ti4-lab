@@ -1,10 +1,7 @@
 import { Draft, DraftPick, HydratedPlayer } from "~/types";
 import { DraftOrderChip } from "./DraftOrderChip";
-import {
-  getDraftOrderEntries,
-  getDraftOrderRounds,
-  shortSelectionLabel,
-} from "./draftOrderUtils";
+import { getDraftOrderEntries, getDraftOrderRounds } from "./draftOrderUtils";
+import { SelectionToken, selectionKind } from "./PickToken";
 import classes from "./DraftOrder.module.css";
 import { useEffect, useRef } from "react";
 
@@ -42,11 +39,12 @@ export function DraftOrder({ pickOrder, currentPick, players, draft }: Props) {
                 key={`${entry.player.id}-${entry.idx}`}
                 entry={entry}
                 showDiscord
+                kind={entry.isPassed && draft ? selectionKind(draft.selections[entry.idx]) : undefined}
                 label={
                   entry.isActive
                     ? "Picking"
                     : entry.isPassed
-                      ? (draft && shortSelectionLabel(draft.selections[entry.idx], draft)) ?? entry.player.name
+                      ? (draft && <SelectionToken selection={draft.selections[entry.idx]} draft={draft} />) ?? entry.player.name
                       : String(entry.idx + 1)
                 }
               />

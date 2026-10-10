@@ -1,7 +1,8 @@
 import { IconChevronRight, IconSettings } from "@tabler/icons-react";
 import { IconButton, cx } from "~/ui";
 import { MAPS, ChoosableDraftType } from "../maps";
-import { SliceSettingsFormatType } from "~/components/SliceSettingsModal";
+import type { SliceSettingsFormatType } from "~/draft/sliceSettings";
+import { getSettingsFormatType } from "../utils";
 import classes from "./MapStyleSelector.module.css";
 
 type Props = {
@@ -12,16 +13,6 @@ type Props = {
   onOpenSettings: (formatType: SliceSettingsFormatType) => void;
   onOpenMinorFactionsInfo: () => void;
 };
-
-// Map draft types to their settings format type
-function getSettingsFormatType(
-  draftType: ChoosableDraftType,
-): SliceSettingsFormatType | undefined {
-  if (draftType.startsWith("miltyeq")) return "miltyeq";
-  if (draftType.startsWith("milty")) return "milty";
-  if (draftType.startsWith("heisen")) return "heisen";
-  return undefined;
-}
 
 /** The styles available for the current player count. Hover previews, press picks. */
 export function MapStyleSelector({

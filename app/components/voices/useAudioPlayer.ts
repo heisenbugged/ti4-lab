@@ -1,7 +1,6 @@
 import { Howl } from "howler";
 import { useEffect, useRef, useState } from "react";
 import {
-  announcerAudios,
   factionAudios,
   getAllSrcs,
   getRandomAudioEntry,
@@ -60,7 +59,7 @@ export function useAudioPlayer({
   const [isWarMode, setIsWarMode] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const progressIntervalRef = useRef<number | null>(null);
-  const isWarModeRef = useRef(isWarMode);
+  const isWarModeRef = useRef(false);
 
   // Track the last time a voice line was triggered
   const lastVoiceLineTriggerTime = useRef<number>(0);
@@ -70,15 +69,6 @@ export function useAudioPlayer({
   // Keep a ref to the queue to access current values in callbacks
   const voiceLineQueueRef = useRef<QueuedVoiceLine[]>([]);
 
-  // Update the ref whenever the queue state changes
-  useEffect(() => {
-    voiceLineQueueRef.current = voiceLineQueue;
-  }, [voiceLineQueue]);
-
-  useEffect(() => {
-    isWarModeRef.current = isWarMode;
-  }, [isWarMode]);
-
   useEffect(() => {
     return () => {
       if (progressIntervalRef.current) {
@@ -86,8 +76,6 @@ export function useAudioPlayer({
       }
     };
   }, []);
-
-  // Remove the effect for checking queue items when audio stops playing
 
   const stopAudio = () => {
     voiceLineRef.current?.stop();
@@ -134,6 +122,7 @@ export function useAudioPlayer({
         await startBattleAnthem(selectedUri, selectedDelay);
 
         // Only set war mode if we successfully started the battle anthem
+        isWarModeRef.current = true;
         setIsWarMode(true);
       } catch (error) {
         console.error("Error starting battle mode:", error);
@@ -146,6 +135,7 @@ export function useAudioPlayer({
     if (!accessToken) return;
     await restoreLastPosition();
     stopAudio();
+    isWarModeRef.current = false;
     setIsWarMode(false);
   };
 
@@ -239,101 +229,44 @@ export function useAudioPlayer({
     voiceLineRef.current?.stop();
     setLoadingAudio(`${factionId}-${type}`);
 
-    // Handle announcer types differently
-    if (factionId === "announcer") {
-      // Get all possible lines for this announcer type
-      const allPossibleLines =
-        announcerAudios[type as keyof typeof announcerAudios]?.map(
-          (entry: any) => entry.url,
-        ) || [];
-      if (!allPossibleLines?.length) return;
-
-      // Get previously played lines for announcer
-      const playedLines = voiceLineMemory["announcer"]?.[type] || [];
-
-      // Filter out previously played lines
-      const availableLines = allPossibleLines.filter(
-        (line: string) => !playedLines.includes(line),
-      );
-
-      const shouldResetMemory = availableLines.length === 0;
-
-      // If no new lines available, reset memory and use all lines again
-      // Otherwise, select from available lines
-      const selectedEntry = shouldResetMemory
-        ? getRandomAudioEntry("announcer" as any, type)
-        : getRandomAudioEntry("announcer" as any, type, availableLines);
-      if (!selectedEntry) return;
-
-      // Determine what the new voice line list should be
-      const existingLinesForType = voiceLineMemory["announcer"]?.[type] || [];
-      let newVoiceLineList: string[];
-      if (shouldResetMemory) {
-        newVoiceLineList = [selectedEntry.url];
-      } else {
-        newVoiceLineList = [...existingLinesForType, selectedEntry.url];
-      }
-
-      setVoiceLineMemory((prev) => ({
-        ...prev,
-        ["announcer"]: {
-          ...prev["announcer"],
-          [type]: newVoiceLineList,
-        },
-      }));
-
-      setCurrentAudio(selectedEntry);
-      playLine(selectedEntry.url, false); // announcer never starts battle
-      return;
-    }
-
-    const shouldStartBattle = [
-      "battleLines",
-      "homeInvasion",
-      "homeDefense",
-      "defenseOutnumbered",
-      "offenseSuperior",
-    ].includes(type);
+    const shouldStartBattle =
+      factionId !== "announcer" &&
+      [
+        "battleLines",
+        "homeInvasion",
+        "homeDefense",
+        "defenseOutnumbered",
+        "offenseSuperior",
+      ].includes(type);
 
     // Start battle for specific voice lines
     if (shouldStartBattle) startBattle(factionId as FactionId);
 
-    // Get all possible lines for this faction/type
-    const allPossibleLines = getAllSrcs(factionId as FactionId, type);
-    if (!allPossibleLines?.length) return;
+    // Announcer lines are looked up by type, so the "announcer" key passes through.
+    const memoryKey = factionId as FactionId;
+    const allPossibleLines = getAllSrcs(memoryKey, type);
+    if (!allPossibleLines.length) return;
 
-    const factionIdKey = factionId as FactionId;
-
-    // Get previously played lines
-    const playedLines = voiceLineMemory[factionIdKey]?.[type] || [];
-
-    // Filter out previously played lines
+    // Prefer lines not played yet; once all have played, start over.
+    const playedLines = voiceLineMemory[memoryKey]?.[type] || [];
     const availableLines = allPossibleLines.filter(
       (line) => !playedLines.includes(line),
     );
-
     const shouldResetMemory = availableLines.length === 0;
 
-    // If no new lines available, reset memory and use all lines again
-    // Otherwise, select from available lines
     const selectedEntry = shouldResetMemory
-      ? getRandomAudioEntry(factionIdKey, type)
-      : getRandomAudioEntry(factionIdKey, type, availableLines);
+      ? getRandomAudioEntry(memoryKey, type)
+      : getRandomAudioEntry(memoryKey, type, availableLines);
     if (!selectedEntry) return;
 
-    // Determine what the new voice line list should be
-    const existingLinesForType = voiceLineMemory[factionIdKey]?.[type] || [];
-    let newVoiceLineList: string[];
-    if (shouldResetMemory) {
-      newVoiceLineList = [selectedEntry.url];
-    } else {
-      newVoiceLineList = [...existingLinesForType, selectedEntry.url];
-    }
+    const newVoiceLineList = shouldResetMemory
+      ? [selectedEntry.url]
+      : [...playedLines, selectedEntry.url];
 
     setVoiceLineMemory((prev) => ({
       ...prev,
-      [factionIdKey]: {
-        ...prev[factionIdKey],
+      [memoryKey]: {
+        ...prev[memoryKey],
         [type]: newVoiceLineList,
       },
     }));
@@ -418,7 +351,6 @@ export function useAudioPlayer({
     isWarMode,
     voiceLineRef,
     currentPlayback,
-    startBattle,
     audioProgress,
     getDevices: getAndUpdateDevices,
     availableDevices,
@@ -431,7 +363,6 @@ export function useAudioPlayer({
     removeFromQueue,
     clearQueue,
     voiceLineQueue,
-    isPlayingQueue: voiceLineQueue.length > 0,
     // Voice line memory for tracking played lines
     voiceLineMemory,
   };

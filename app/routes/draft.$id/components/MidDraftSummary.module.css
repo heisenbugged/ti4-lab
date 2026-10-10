@@ -1,16 +1,16 @@
 .players { display: grid; grid-template-columns: repeat(var(--cols, 6), minmax(0, 1fr)); gap: var(--space-2); }
 
 .card { display: grid; align-content: start; gap: var(--space-2); min-width: 0; padding: 10px 10px 10px 12px; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
-.now { border-color: color-mix(in oklab, var(--gold) 55%, transparent); box-shadow: inset 0 2px 0 var(--gold); }
+.card { transition: background-color var(--dur-state) var(--ease), border-color var(--dur-state) var(--ease), opacity var(--dur-state) var(--ease); }
+/* Gold bar drawn as a background so the "now" breathe (box-shadow) can run on top of it. */
+.now { border-color: color-mix(in oklab, var(--gold) 55%, transparent); background-image: linear-gradient(var(--gold), var(--gold)); background-size: 100% 2px; background-repeat: no-repeat; }
 .head { display: flex; align-items: center; gap: var(--space-2); min-width: 0; font-size: 14px; font-weight: 600; }
 .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.picking { margin-left: auto; flex: none; font-size: 12px; font-weight: 600; color: var(--gold); }
+.picking { margin-left: auto; flex: none; font-size: 12px; font-weight: 600; color: var(--gold-text); }
 
 .slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
-.slot { display: flex; align-items: center; justify-content: center; gap: 5px; height: 28px; min-width: 0; padding: 0 5px; overflow: hidden; background: var(--hull-sunken); border: 1px solid var(--rule); border-radius: 2px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-.slot img { width: 18px; height: 18px; object-fit: contain; flex: none; }
-.slotText { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.empty { background: transparent; border: 1px dashed var(--rule-strong); color: var(--text-muted); font-weight: 500; }
+/* Slots are PickTokens; they only need to fill their grid cell. */
+.slot { display: flex; width: 100%; }
 
 @media (max-width: 1199.98px) {
   .players { grid-template-columns: repeat(min(var(--cols, 6), 3), minmax(0, 1fr)); }
@@ -20,10 +20,17 @@
   .players { grid-template-columns: minmax(0, 1fr); gap: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; }
   .card { grid-template-columns: 84px minmax(0, 1fr); align-items: center; padding: 6px 8px; border: 0; border-top: 1px solid var(--rule); border-radius: 0; }
   .card:first-child { border-top: 0; }
-  .now { box-shadow: inset 2px 0 0 var(--gold); background: color-mix(in oklab, var(--gold) 6%, var(--hull)); }
+  .now { background-color: color-mix(in oklab, var(--gold) 6%, var(--hull)); background-size: 2px 100%; }
   .head { font-size: 13px; gap: 6px; }
   .picking { display: none; }
-  .slots { grid-template-columns: repeat(auto-fit, minmax(58px, 1fr)); gap: 3px; }
-  .slot { font-size: 11px; padding: 0 3px; }
-  .slot img { width: 16px; height: 16px; }
+  .slots { display: flex; gap: 3px; }
+  .slot { flex: 1 1 0; min-width: 0; }
+  /* Number-carrying kinds are glyph-only and narrow, filled or not, so rows line up. */
+  .slot[data-kind="seat"], .slot[data-kind="speaker"], .slot[data-kind="color"], .slot[data-kind="pack"] { flex: 0 0 38px; }
+  .slot { font-size: 11px; }
+  /* Tight rows: the glyph alone says what an open slot is, and the seat hex and speaker token carry their number. */
+  .slot[data-kind="seat"] [data-part="text"],
+  .slot[data-kind="speaker"] [data-part="text"],
+  .slot[data-kind="color"] [data-part="text"],
+  .slot[data-kind="pack"] [data-part="text"] { display: none; }
 }

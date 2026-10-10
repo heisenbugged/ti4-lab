@@ -6,6 +6,8 @@ import { useSliceValueBreakdown } from "~/hooks/useSliceValueBreakdown";
 import type { SliceValueBreakdown } from "~/stats";
 
 type Props = {
+  /** Shown inside the trigger before the icon (e.g. "SV 12.8") so the whole value is the hover target. */
+  children?: React.ReactNode;
   slice?: Slice;
   breakdown?: SliceValueBreakdown;
   title?: string;
@@ -25,6 +27,7 @@ export function SliceValuePopover({
   breakdown: providedBreakdown,
   title = "Slice value",
   variant = "light",
+  children,
 }: Props) {
   const computedBreakdown = useSliceValueBreakdown(slice);
   const breakdown = providedBreakdown ?? computedBreakdown;
@@ -46,7 +49,12 @@ export function SliceValuePopover({
       side="top"
       width={260}
       trigger={
-        <button type="button" className={variant === "dark" ? `${classes.trigger} ${classes.dark}` : classes.trigger} aria-label={`${title} breakdown`}>
+        <button
+          type="button"
+          className={[classes.trigger, variant === "dark" && classes.dark, children !== undefined && classes.withValue].filter(Boolean).join(" ")}
+          aria-label={`${title} breakdown`}
+        >
+          {children}
           <IconInfoCircleFilled size={14} />
         </button>
       }

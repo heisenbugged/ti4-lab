@@ -1,6 +1,5 @@
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -11,85 +10,81 @@ import { Button, Modal, Text } from "~/ui";
 import { useDraft } from "~/draftStore";
 
 /**
- * Select, then Lock in pick.
- * Pickable things put a pending pick here; the pick bar names it and its
- * Lock in pick button asks for confirmation before committing.
+ * One click to pick: Select on anything opens a confirmation, and Lock in pick commits it.
+ * Cancel drops the selection.
  */
 export type PendingPick = {
   /** Unique per pickable thing, e.g. "slice-3", "faction-hacan", "seat-2". */
   key: string;
-  /** What the pick bar shows, e.g. "Slice Quiver". */
+  /** What the confirmation names, e.g. "Slice Quiver". */
   label: string;
   commit: () => void;
 };
 
 type PendingPickContextValue = {
   pending: PendingPick | undefined;
-  /** Select (or unselect when it is already selected). */
-  toggle: (pick: PendingPick) => void;
-  clear: () => void;
+  /** Select something: opens the confirmation straight away. */
+  select: (pick: PendingPick) => void;
   isPending: (key: string) => boolean;
-  /** Open the confirmation for the pending pick. */
-  requestLockIn: () => void;
 };
 
 const PendingPickContext = createContext<PendingPickContextValue | null>(null);
 
 export function PendingPickProvider({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState<PendingPick | undefined>();
-  const [confirming, setConfirming] = useState(false);
   const selectionCount = useDraft((state) => state.draft.selections.length);
 
   // A new pick (by anyone) clears whatever was selected.
-  useEffect(() => {
+  const [seenSelectionCount, setSeenSelectionCount] = useState(selectionCount);
+  if (seenSelectionCount !== selectionCount) {
+    setSeenSelectionCount(selectionCount);
     setPending(undefined);
-    setConfirming(false);
-  }, [selectionCount]);
+  }
 
-  const toggle = useCallback(
-    (pick: PendingPick) =>
-      setPending((prev) => (prev?.key === pick.key ? undefined : pick)),
-    [],
-  );
-  const clear = useCallback(() => setPending(undefined), []);
-
+  const cancel = () => setPending(undefined);
   const lockIn = () => {
     if (!pending) return;
     pending.commit();
     setPending(undefined);
-    setConfirming(false);
   };
+
+  // Enter confirms wherever focus ended up (e.g. a pick opened from the map), except in text fields.
+  useEffect(() => {
+    if (!pending) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Enter" || event.defaultPrevented) return;
+      const el = event.target as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      // A focused button inside the dialog handles Enter itself (Cancel must stay Cancel).
+      if (el?.closest("[role=dialog]") && el.tagName === "BUTTON") return;
+      event.preventDefault();
+      pending.commit();
+      setPending(undefined);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pending]);
 
   const value = useMemo<PendingPickContextValue>(
     () => ({
       pending,
-      toggle,
-      clear,
+      select: setPending,
       isPending: (key) => pending?.key === key,
-      requestLockIn: () => pending && setConfirming(true),
     }),
-    [pending, toggle, clear],
+    [pending],
   );
 
   return (
     <PendingPickContext.Provider value={value}>
       {children}
       <Modal
-        opened={confirming && !!pending}
-        onClose={() => setConfirming(false)}
+        opened={!!pending}
+        onClose={cancel}
         size="sm"
         title={pending ? `Lock in ${pending.label}?` : "Lock in pick?"}
-        popupProps={{
-          onKeyDown: (event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              lockIn();
-            }
-          },
-        }}
         footer={
           <>
-            <Button variant="tertiary" onClick={() => setConfirming(false)}>
+            <Button variant="tertiary" onClick={cancel}>
               Cancel
             </Button>
             <Button variant="primary" onClick={lockIn} autoFocus>
@@ -108,17 +103,11 @@ export function PendingPickProvider({ children }: { children: ReactNode }) {
 
 const noop: PendingPickContextValue = {
   pending: undefined,
-  toggle: () => {},
-  clear: () => {},
+  select: () => {},
   isPending: () => false,
-  requestLockIn: () => {},
 };
 
 /** Outside a provider (replay, other phases) nothing can be pending. */
 export function usePendingPick() {
   return useContext(PendingPickContext) ?? noop;
-}
-
-export function useHasPendingPickProvider() {
-  return useContext(PendingPickContext) !== null;
 }

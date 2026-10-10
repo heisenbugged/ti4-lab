@@ -22,7 +22,7 @@ export type FactionNotification = {
 };
 
 // Validation result type
-export type FactionValidationResult = {
+type FactionValidationResult = {
   numFactions: number;
   stratifiedConfig: FactionStratification | undefined;
   preassignedFactions: number | undefined;
@@ -31,7 +31,7 @@ export type FactionValidationResult = {
 };
 
 // Faction state types
-export type FactionCountState = {
+type FactionCountState = {
   numFactions: number;
   minorFactionsMode: MinorFactionsMode | undefined;
   preassignedFactions: number | undefined;
@@ -55,7 +55,7 @@ export type FactionConstraints = {
 };
 
 // Helper: Calculate stratified total
-export const getStratifiedTotal = (
+const getStratifiedTotal = (
   config: FactionStratification | undefined,
 ): number => {
   if (!config) return 0;
@@ -63,7 +63,7 @@ export const getStratifiedTotal = (
 };
 
 // Helper: Validate stratification keys against current game sets
-export const areStratificationKeysValid = (
+const areStratificationKeysValid = (
   config: FactionStratification,
   currentGameSets: GameSet[],
 ): boolean => {

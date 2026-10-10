@@ -19,10 +19,7 @@ export function TileSidebar() {
   const [view, setView] = useState<"tiles" | "hyperlanes">("tiles");
 
   const usedSystemIds = new Set(
-    map
-      .filter((tile) => tile.type === "SYSTEM")
-      .map((tile) => (tile.type === "SYSTEM" ? tile.systemId : null))
-      .filter(Boolean),
+    map.flatMap((tile) => (tile.type === "SYSTEM" ? [tile.systemId] : [])),
   );
 
   const filterSystems = (systemList: typeof systems) => {

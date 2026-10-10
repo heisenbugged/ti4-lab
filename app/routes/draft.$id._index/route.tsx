@@ -1,13 +1,14 @@
 import { Button, Panel } from "~/ui";
-import { ActionFunctionArgs, data, MetaFunction } from "react-router";
-import { useLoaderData } from "react-router";
+import {
+  ActionFunctionArgs,
+  data,
+  MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { useEffect } from "react";
 import { useDraft } from "~/draftStore";
 import { banPhaseLength, Draft } from "~/types";
-import {
-  CurrentPickBanner,
-  PickLockBar,
-} from "../draft.$id/components/CurrentPickBanner";
+import { CurrentPickBanner } from "../draft.$id/components/CurrentPickBanner";
 import { PendingPickProvider } from "../draft.$id/components/pendingPick";
 import classes from "./route.module.css";
 import { PlayerSelectionScreen } from "../draft.$id/components/PlayerSelectionScreen";
@@ -44,7 +45,7 @@ export default function RunningDraft() {
   const result = useLoaderData<typeof loader>();
   const syncDraftContextValue = useSyncDraftFetcher();
   const draftStore = useDraft();
-  const draftActions = draftStore.draftActions;
+  const { draftActions } = draftStore;
 
   // Real-time socket connection to push and receive state updates.
   const { socket, isDisconnected, isReconnecting, reconnect } =
@@ -55,8 +56,7 @@ export default function RunningDraft() {
     if (!socket) return;
     const handleSyncDraft = (data: string) => {
       const draft = JSON.parse(data) as Draft;
-
-      draftStore.draftActions.update(result.id!, draft);
+      draftActions.update(result.id!, draft);
     };
     socket.on("syncDraft", handleSyncDraft);
     return () => {
@@ -66,7 +66,7 @@ export default function RunningDraft() {
 
   // pre-seed store with loaded persisted draft
   useEffect(() => {
-    draftStore.draftActions.hydrate(result.id!, result.urlName!, result.data);
+    draftActions.hydrate(result.id!, result.urlName!, result.data);
     draftStore.replayActions.disableReplayMode();
 
     const storedSelectedPlayer = localStorage.getItem(
@@ -93,18 +93,12 @@ export default function RunningDraft() {
           </Button>
         </div>
       )}
-      <DraftPhase draftId={result.id} urlName={result.urlName} />
+      <DraftPhase draftId={result.id} />
     </SyncDraftContext.Provider>
   );
 }
 
-function DraftPhase({
-  draftId,
-  urlName,
-}: {
-  draftId: string;
-  urlName: string | null;
-}) {
+function DraftPhase({ draftId }: { draftId: string }) {
   const { adminMode } = useSafeOutletContext();
   const { syncDraft, syncing } = useSyncDraft();
   const draftStore = useDraft();
@@ -178,14 +172,12 @@ function DraftPhase({
       </audio>
       <CurrentPickBanner />
 
-      <DraftBoard urlName={urlName}>
+      <DraftBoard>
         {adminMode && (
           <Panel aria-label="Player names">
             <PlayerInputSection
               players={draft.players}
-              onChangeName={(playerIdx, name) => {
-                draftStore.actions.updatePlayerName(playerIdx, name);
-              }}
+              onChangeName={draftStore.actions.updatePlayerName}
             />
             <div className={classes.adminSave}>
               <Button variant="primary" onClick={syncDraft} loading={syncing}>
@@ -195,7 +187,6 @@ function DraftPhase({
           </Panel>
         )}
       </DraftBoard>
-      <PickLockBar />
     </PendingPickProvider>
   );
 }

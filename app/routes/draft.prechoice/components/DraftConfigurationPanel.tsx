@@ -314,7 +314,7 @@ export function DraftConfigurationPanel({ maxSlices }: Props) {
               </span>
             }
             checked={bagsOn}
-            onToggle={() => faction.togglePreassignedFactions()}
+            onToggle={faction.togglePreassignedFactions}
             disabled={sharedMinorPool}
             disabledReason={sharedPoolReason}
             extra={
@@ -355,7 +355,7 @@ export function DraftConfigurationPanel({ maxSlices }: Props) {
               <Switch
                 aria-label="Enable minor factions"
                 checked={!!faction.minorFactionsMode}
-                onChange={() => faction.toggleMinorFactions()}
+                onChange={faction.toggleMinorFactions}
               />
             </ListRow>
             {faction.minorFactionsMode && isMiltyEqVariant(mapType) && (
@@ -462,9 +462,7 @@ export function DraftConfigurationPanel({ maxSlices }: Props) {
             <Switch
               aria-label="Allow home planets"
               checked={format.allowHomePlanetSearch}
-              onChange={() =>
-                format.setAllowHomePlanetSearch(!format.allowHomePlanetSearch)
-              }
+              onChange={format.setAllowHomePlanetSearch}
             />
           </ListRow>
           <ListRow
@@ -474,11 +472,7 @@ export function DraftConfigurationPanel({ maxSlices }: Props) {
             <Switch
               aria-label="Show monument cards"
               checked={format.showMonumentImagesInFactionInfo}
-              onChange={() =>
-                format.setShowMonumentImagesInFactionInfo(
-                  !format.showMonumentImagesInFactionInfo,
-                )
-              }
+              onChange={format.setShowMonumentImagesInFactionInfo}
             />
           </ListRow>
           <ListRow
@@ -488,7 +482,7 @@ export function DraftConfigurationPanel({ maxSlices }: Props) {
             <Switch
               aria-label="Drahn variant"
               checked={withDrahn}
-              onChange={() => content.setWithDrahn(!withDrahn)}
+              onChange={content.setWithDrahn}
             />
           </ListRow>
         </Rows>

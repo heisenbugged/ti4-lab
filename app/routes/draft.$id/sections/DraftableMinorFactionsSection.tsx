@@ -12,7 +12,7 @@ export function DraftableMinorFactionsSection() {
   const { selectMinorFaction } = useDraft((state) => state.draftActions);
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
-  const { toggle, isPending } = usePendingPick();
+  const { select, isPending } = usePendingPick();
 
   const { syncDraft } = useSyncDraft();
   const canSelect =
@@ -47,7 +47,7 @@ export function DraftableMinorFactionsSection() {
               onSelect={
                 canSelect
                   ? () =>
-                      toggle({
+                      select({
                         key,
                         label: `${allFactions[factionId].name} as your minor faction`,
                         commit: () => {

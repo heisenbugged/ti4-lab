@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { PlayerColor } from "./types";
-import { cx } from "./utils";
+import { cx, useLanded } from "./utils";
 import classes from "./SelectableCard.module.css";
 
 export interface SelectableCardProps {
@@ -20,11 +20,13 @@ export interface SelectableCardProps {
 
 /** Card for a draftable thing: header with the name and a pick control, optional footer actions. */
 export function SelectableCard({ selected, selectedColor, pending, disabled, onSelect, header, body, className }: SelectableCardProps) {
+  const landed = useLanded(selected ? selectedColor ?? "taken" : null) && selected;
   const interactive = !!onSelect && !selected && !disabled;
   return (
     <div
       className={cx(classes.card, selected && classes.taken, disabled && !selected && classes.off, pending && "ui-bracket", className)}
-      style={selected && selectedColor ? ({ "--p": `var(--player-${selectedColor})` } as React.CSSProperties) : undefined}
+      style={selected && selectedColor ? ({ "--p": `var(--player-${selectedColor})`, "--flash": `var(--player-${selectedColor})` } as React.CSSProperties) : undefined}
+      data-landed={landed ? "glow" : undefined}
     >
       <div
         className={cx(classes.header, interactive && classes.interactive)}

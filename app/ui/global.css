@@ -30,8 +30,50 @@ code, kbd, pre { font-family: var(--mono); }
 /* Tabler icons inherit the stroke weight the design uses */
 .tabler-icon { stroke-width: 1.75; flex: none; }
 
+/* ── Motion system ─────────────────────────────────────────────────────────
+ * 1 Feedback  colour, border, fill changes ease (quick / state).
+ * 2 Selection gold brackets draw in.
+ * 3 Landing   something just picked settles in with a glow in its own colour (data-landed, set only on change).
+ * 4 Now       the current pick breathes in gold; nothing else loops.
+ */
+@keyframes ui-land {
+  0% { opacity: 0; transform: scale(0.92); }
+  55% { opacity: 1; transform: scale(1.025); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes ui-flash {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--flash, var(--gold)) 70%, transparent); }
+  100% { box-shadow: 0 0 0 10px color-mix(in oklab, var(--flash, var(--gold)) 0%, transparent); }
+}
+@keyframes ui-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--gold) 0%, transparent), inset 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 18px -2px color-mix(in oklab, var(--gold) 38%, transparent), inset 0 0 0 0 transparent; }
+}
+@keyframes ui-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ui-bracket-in {
+  from { opacity: 0; transform: scale(1.06); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ui-tick {
+  from { opacity: 0; transform: translateY(var(--tick-from, 5px)); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Landing: set by useLanded() after a real change, never on first render. */
+/* "" small things (slots, chips): settle in + glow.  "glow" big things (cards): glow only.  "soft" map hexes: settle only. */
+[data-landed=""] { animation: ui-land var(--dur-land) var(--ease-settle) both, ui-flash var(--dur-land) var(--ease) both; }
+[data-landed="glow"] { animation: ui-flash calc(var(--dur-land) * 1.4) var(--ease) both; }
+[data-landed="soft"] { animation: ui-land var(--dur-land) var(--ease-settle) both; }
+/* Now: the one thing that is happening. */
+.ui-now { animation: ui-breathe var(--dur-breathe) var(--ease-in-out) infinite; }
+/* New content swapping in (format descriptions, tab panels…). */
+.ui-fade-in { animation: ui-fade-in var(--dur-enter) var(--ease) both; }
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
 
 .visually-hidden {
@@ -50,5 +92,7 @@ code, kbd, pre { font-family: var(--mono); }
   z-index: 2;
   -webkit-mask: conic-gradient(at 12px 12px, transparent 75%, #000 0) 0 0 / calc(100% - 12px) calc(100% - 12px);
   mask: conic-gradient(at 12px 12px, transparent 75%, #000 0) 0 0 / calc(100% - 12px) calc(100% - 12px);
+  /* Brackets close in on whatever was just selected. */
+  animation: ui-bracket-in var(--dur-state) var(--ease) both;
 }
 [hidden] { display: none !important; }

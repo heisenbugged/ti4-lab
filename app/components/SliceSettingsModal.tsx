@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { IconArrowBackUp } from "@tabler/icons-react";
 import {
   Button,
@@ -14,12 +14,6 @@ import {
   type SliceSettingsFormatType,
 } from "~/draft/sliceSettings";
 import classes from "./SliceSettingsModal.module.css";
-
-export { DEFAULT_SLICE_SETTINGS } from "~/draft/sliceSettings";
-export type {
-  SliceGenerationSettings,
-  SliceSettingsFormatType,
-} from "~/draft/sliceSettings";
 
 // Fields to disable (hide) per format type
 const DISABLED_FIELDS: Record<
@@ -231,10 +225,12 @@ export function SliceSettingsModal({
   const [localSettings, setLocalSettings] =
     useState<SliceGenerationSettings>(settings);
 
-  // Sync local state when settings or formatType changes
-  useEffect(() => {
+  // Start over from the saved settings when they (or the format) change.
+  const [source, setSource] = useState({ settings, formatType });
+  if (source.settings !== settings || source.formatType !== formatType) {
+    setSource({ settings, formatType });
     setLocalSettings(settings);
-  }, [settings, formatType]);
+  }
 
   const defaults = DEFAULT_SLICE_SETTINGS[formatType];
   const disabledFields = DISABLED_FIELDS[formatType];

@@ -12,9 +12,28 @@
 
 .playerCell { max-width: 180px; }
 .faction { display: inline-flex; align-items: center; gap: 8px; min-width: 0; max-width: 260px; }
-.factionName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.features { display: inline-flex; align-items: center; gap: 6px; }
-.tiles { line-height: 1.7; font-variant-numeric: tabular-nums; }
+
+/* Draft summary: one result row per player, in speaker order. */
+.results { display: grid; margin: 0; padding: 0; list-style: none; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); box-shadow: var(--shadow-card); }
+.result { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 20px; min-width: 0; padding: 10px 14px 10px 12px; border-top: 1px solid var(--rule); box-shadow: inset 2px 0 0 var(--p); }
+.result:first-child { border-top: 0; }
+.who { display: flex; align-items: center; gap: 12px; flex: 1 1 280px; min-width: 0; }
+.noFaction { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px dashed var(--rule-strong); }
+.whoText { display: grid; gap: 4px; min-width: 0; }
+.factionLine { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.factionName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 600; }
+.picks { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; min-width: 0; font-size: 12.5px; color: var(--text-muted); }
+.byline { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--text); font-weight: 500; }
+.playerName { max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.numbers { display: flex; align-items: center; gap: 14px; flex: 0 1 auto; margin-left: auto; }
+.sv { display: inline-flex; align-items: baseline; gap: 4px; min-width: 52px; justify-content: flex-end; }
+.sv b { font-size: 20px; font-weight: 700; font-stretch: var(--wide); font-variant-numeric: tabular-nums; }
+.sv small { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.features { display: inline-flex; align-items: center; gap: 6px; min-width: 96px; }
+
+/* Tiles used: a grid of small id chips, easy to scan for a number. */
+.tiles { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.tiles li { min-width: 34px; padding: 3px 6px; text-align: center; background: var(--hull-raised); border: 1px solid var(--rule); border-radius: 2px; font: 600 12px/1.2 var(--font); font-variant-numeric: tabular-nums; color: var(--text-muted); }
 
 .mapString { display: flex; gap: var(--space-2); min-width: 0; }
 .mapStringInput {
@@ -36,6 +55,7 @@
   .right { position: static; order: -1; }
 }
 @media (max-width: 759.98px) {
+  .numbers { margin-left: 44px; flex-wrap: wrap; }
   .header { align-items: stretch; }
   .actions { width: 100%; }
   .divider { display: none; }

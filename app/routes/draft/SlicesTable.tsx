@@ -4,23 +4,40 @@ import { useSortedSlices } from "./useSortedSlices";
 import { Slice } from "~/types";
 import { systemsInSlice } from "~/utils/slice";
 import { useSliceValue } from "~/hooks/useSliceValue";
-import { Table, ValuePill } from "~/ui";
-
+import { PlayerHex, Table, ValuePill } from "~/ui";
 import classes from "./SlicesTable.module.css";
+
+export type SliceOwner = { name: string; color: string; letter?: string };
 
 type Props = {
   slices: Slice[];
   draftedSlices?: number[];
+  /** Who took each slice, by slice index. Picked rows show the owner instead of fading. */
+  owners?: Record<number, SliceOwner>;
 };
 
-function SliceRow({ slice, isDrafted }: { slice: Slice; isDrafted: boolean }) {
+function SliceRow({ slice, isDrafted, owner }: { slice: Slice; isDrafted: boolean; owner?: SliceOwner }) {
   const systems = systemsInSlice(slice);
   const optimal = optimalStatsForSystems(systems);
   const sliceValue = useSliceValue(slice);
 
   return (
     <Table.Tr className={isDrafted ? classes.drafted : undefined}>
-      <Table.Td className={classes.name}>{slice.name}</Table.Td>
+      <Table.Td className={classes.name}>
+        <span className={classes.nameRow}>
+          <span className={classes.nameText} title={slice.name}>
+            {slice.name.replace(/^Slice\s+/i, "")}
+          </span>
+          {owner && (
+            <span className={classes.owner} title={`Taken by ${owner.name}`}>
+              <PlayerHex color={owner.color} size="sm">
+                {owner.letter}
+              </PlayerHex>
+              <span className={classes.ownerName}>{owner.name}</span>
+            </span>
+          )}
+        </span>
+      </Table.Td>
       <Table.Td numeric className={classes.sv}>
         {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
       </Table.Td>
@@ -40,7 +57,7 @@ function SliceRow({ slice, isDrafted }: { slice: Slice; isDrafted: boolean }) {
   );
 }
 
-export function SlicesTable({ slices, draftedSlices = [] }: Props) {
+export function SlicesTable({ slices, draftedSlices, owners }: Props) {
   const sortedSlices = useSortedSlices(slices, draftedSlices);
   return (
     <Table>
@@ -57,7 +74,8 @@ export function SlicesTable({ slices, draftedSlices = [] }: Props) {
           <SliceRow
             key={idx}
             slice={slice}
-            isDrafted={draftedSlices.includes(idx)}
+            isDrafted={!!draftedSlices?.includes(idx)}
+            owner={owners?.[idx]}
           />
         ))}
       </Table.Tbody>

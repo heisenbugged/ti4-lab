@@ -1,5 +1,4 @@
-import { MetaFunction } from "react-router";
-import { Outlet } from "react-router";
+import { MetaFunction, Outlet, useLocation } from "react-router";
 import { useEffect, useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
 import { HeaderControls } from "~/components/HeaderControls";
@@ -26,8 +25,13 @@ export default function Draft() {
     document.documentElement.dataset.a11y = accessibleColors ? "true" : "false";
   }, [accessibleColors]);
 
+  // Draft pages (live, finished, replay) use the full width; the setup pages keep the page cap.
+  const { pathname } = useLocation();
+  const wide = /^\/draft\/(?!new$|prechoice$|tournament$)[^/]+/.test(pathname);
+
   return (
     <MainAppShell
+      wide={wide}
       headerRightSection={
         <HeaderControls
           accessibleColors={accessibleColors}

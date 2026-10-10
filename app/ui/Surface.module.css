@@ -1,12 +1,12 @@
 /* Panel */
-.panel { background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); min-width: 0; }
+.panel { background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); box-shadow: var(--shadow-card); min-width: 0; }
 .well { background: var(--hull-sunken); }
 .well > .head { background: var(--hull); }
 .head { display: flex; align-items: center; gap: var(--space-3); min-height: 38px; padding: 3px var(--space-4); border-bottom: 1px solid var(--rule); }
 .trigger { width: 100%; border: 0; border-bottom: 1px solid var(--rule); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .panel[data-closed] .trigger { border-bottom-color: transparent; }
 .trigger:hover .title { color: var(--text); }
-.chev { flex: none; color: var(--text-muted); transition: transform 160ms var(--ease); }
+.chev { flex: none; color: var(--text-muted); transition: transform var(--dur-quick) var(--ease); }
 .panel[data-closed] .chev { transform: rotate(-90deg); }
 .title { flex: 1; min-width: 0; margin: 0; font-size: 16px; line-height: 1.35; font-weight: 600; flex-shrink: 0; }
 .trigger .title { flex: none; }
@@ -14,7 +14,7 @@
 .action { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }
 .body { padding: var(--space-4); }
 .flush { padding: 0; }
-.collapse { overflow: hidden; height: var(--collapsible-panel-height); transition: height 180ms var(--ease); }
+.collapse { overflow: hidden; height: var(--collapsible-panel-height); transition: height var(--dur-state) var(--ease); }
 .collapse[data-starting-style], .collapse[data-ending-style] { height: 0; }
 
 .iconSquare { display: grid; place-items: center; flex: none; border-radius: 2px; background: color-mix(in oklab, var(--t) 16%, transparent); color: var(--t); }
@@ -31,8 +31,8 @@
 .rowDisabled .rowLabel { color: var(--text-muted); }
 
 /* Card */
-.card { position: relative; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
-.interactive { cursor: pointer; transition: border-color 120ms var(--ease), background-color 120ms var(--ease); }
+.card { position: relative; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); box-shadow: var(--shadow-card); }
+.interactive { cursor: pointer; transition: border-color var(--dur-quick) var(--ease), background-color var(--dur-quick) var(--ease); }
 .interactive:hover { border-color: var(--rule-strong); background: var(--hull-raised); }
 .interactive:focus-visible { outline: 2px solid var(--ion); outline-offset: 2px; }
 .taken { border-color: color-mix(in oklab, var(--p) 65%, transparent); background: color-mix(in oklab, var(--p) 9%, var(--hull)); }
@@ -49,7 +49,7 @@
 /* Table */
 .tableWrap { width: 100%; overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--hull); }
 .table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-.table th { position: sticky; top: 0; padding: 5px 8px; background: var(--hull-sunken); color: var(--text-muted); font-size: 12px; font-weight: 600; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--rule); }
+.table th { position: sticky; top: 0; padding: 5px 8px; background: var(--hull-raised); color: var(--text-muted); font-size: 12px; font-weight: 600; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--rule); }
 .table td { padding: 6px 8px; border-top: 1px solid var(--rule); vertical-align: middle; }
 .table tbody tr:first-child td { border-top: 0; }
 .dense th { padding: 4px 8px; }

@@ -23,9 +23,17 @@
   --gold-hi: #f0c46a;
   --gold-deep: #b98a2c;
   --gold-line: #e3b04b;
+  /* Gold used as text (labels like "Picking"); darker in light for contrast. */
+  --gold-text: #e3b04b;
   --on-gold: #0b0f1a;
   --ion: #6ec1f0;
   --danger: #f0645a;
+  /* Pick kinds: what a pick is (never who made it, that is the player colour). */
+  --kind-slice: #6ec1f0;
+  --kind-seat: #6cc28a;
+  --kind-speaker: #d9b878;
+  --kind-pack: #a3aefc;
+  --kind-minor: #d97ab4;
   --danger-fill: #c8372f;
   --danger-fill-hi: #d9443b;
   --on-danger: #ffffff;
@@ -81,9 +89,22 @@
   --chamfer-sm: 5px;
   --chamfer-lg: 10px;
 
+  --shadow-card: none;
   --shadow-pop: 0 10px 28px -8px rgb(0 0 0 / 0.6);
   --shadow-modal: 0 30px 80px -20px rgb(0 0 0 / 0.75), 0 0 0 1px rgb(255 255 255 / 0.03);
+  /*
+   * Motion. One decelerating curve for almost everything; "settle" (tiny overshoot) only when a pick lands.
+   * press < quick < state < enter < land; breathe is the slow pulse on whatever is happening now.
+   */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-settle: cubic-bezier(0.34, 1.32, 0.64, 1);
+  --dur-press: 90ms;
+  --dur-quick: 140ms;
+  --dur-state: 220ms;
+  --dur-enter: 320ms;
+  --dur-land: 560ms;
+  --dur-breathe: 2400ms;
 
   --header-h: 46px;
   --sat: env(safe-area-inset-top, 0px);
@@ -92,31 +113,38 @@
 
 [data-theme="light"] {
   color-scheme: light;
-  --void: #eef1f6;
+  --void: #eceff5;
   --hull: #ffffff;
-  --hull-raised: #f7f9fc;
-  --hull-hover: #eef2f8;
-  --hull-sunken: #e6eaf1;
-  --rule: #d8dee8;
-  --rule-strong: #7f8dab;
-  --rule-hover: #5f6f92;
+  --hull-raised: #f8f9fc;
+  --hull-hover: #eef1f7;
+  --hull-sunken: #f2f4f8;
+  --rule: #dce1ea;
+  --rule-strong: #b3bdce;
+  --rule-hover: #8693ad;
   --text: #0f1626;
-  --text-muted: #4f5b73;
+  --text-muted: #536079;
   --text-faint: #6b768c;
   --gold: #dca63a;
   --gold-hi: #e8b752;
   --gold-deep: #b98a2c;
   --gold-line: #8a6110;
+  --gold-text: #8a6110;
   --on-gold: #0f1626;
   --ion: #1f6cb0;
   --danger: #be3328;
+  --kind-slice: #1f6cb0;
+  --kind-seat: #2a8a4c;
+  --kind-speaker: #8f6a22;
+  --kind-pack: #4655c9;
+  --kind-minor: #b03d82;
   --danger-fill: #be3328;
   --danger-fill-hi: #a92c25;
   --success: #1b7d4b;
   --warning: #9a6a00;
   --scrim: rgb(15 22 38 / 0.45);
-  --glass: rgb(255 255 255 / 0.92);
-  --shadow-pop: 0 10px 28px -10px rgb(15 22 38 / 0.25);
+  --glass: rgb(255 255 255 / 0.9);
+  --shadow-card: 0 1px 2px rgb(15 22 38 / 0.05), 0 1px 1px rgb(15 22 38 / 0.03);
+  --shadow-pop: 0 12px 30px -12px rgb(15 22 38 / 0.28), 0 2px 6px -2px rgb(15 22 38 / 0.08);
   --shadow-modal: 0 30px 80px -24px rgb(15 22 38 / 0.35);
 }
 
