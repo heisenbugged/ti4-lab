@@ -29,6 +29,7 @@ import {
   AvailableFactionsSection,
   MapSection,
   SlicesSection,
+  PlayersSection,
 } from "./sections";
 import { useDraftValidationErrors } from "~/hooks/useDraftValidationErrors";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
@@ -228,6 +229,7 @@ export default function DraftNew() {
       </Box>
 
       <Stack>
+        <PlayersSection />
         {draft.settings.draftGameMode !== "texasStyle" && (
           <>
             <AvailableReferenceCardPacksSection />

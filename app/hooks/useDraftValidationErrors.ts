@@ -27,6 +27,10 @@ export function useDraftValidationErrors() {
       );
     }
 
+    if (slices.length < players.length) {
+      errors.push("Add slices so every player has one");
+    }
+
     slices.forEach((slice) => {
       if (slice.tiles.some((t) => t.type === "OPEN")) {
         errors.push(`${slice.name} has empty tiles`);

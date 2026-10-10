@@ -4,6 +4,7 @@ import {
   DraftIntegrations,
   Player,
   DraftSettings,
+  DraftType,
   FactionId,
   PlayerId,
   System,
@@ -48,6 +49,7 @@ import {
 } from "./draft/buildInitialDraft";
 import { dealFactionBags } from "./utils/factionBags";
 import { getRandomSliceNames } from "./data/sliceWords";
+import { formatForPlayerCount } from "./draft/playerCountFormats";
 
 type SelectionType = PlayerDraftSelection["type"];
 
@@ -126,6 +128,8 @@ type DraftV2State = {
 
     setDraftSpeaker: (draftSpeaker: boolean) => void;
     updatePlayerName: (playerIdx: number, name: string) => void;
+    addPlayer: () => void;
+    removePlayer: (playerIdx: number) => void;
 
     // faction settings
     openFactionSettings: () => void;
@@ -181,6 +185,36 @@ type DraftV2State = {
     randomizeSlices: () => void;
   };
 };
+
+/**
+ * Moves a draft being built to the same format at a different player count.
+ * Slices carry over unchanged; the board is rebuilt for the new layout.
+ */
+function switchFormat(draft: Draft, type: DraftType) {
+  if (type === draft.settings.type) return;
+  const oldConfig = draftConfig[draft.settings.type];
+  const newConfig = draftConfig[type];
+  const boardWasFilled = oldConfig.modifiableMapTiles.some(
+    (idx) => draft.presetMap[idx]?.type === "SYSTEM",
+  );
+
+  draft.settings.type = type;
+  draft.presetMap = generateEmptyMap(newConfig);
+  if (!boardWasFilled || newConfig.modifiableMapTiles.length === 0) return;
+
+  const result = coreRerollMap(
+    draft.settings,
+    draft.slices.map((slice) => systemIdsInSlice(slice)),
+  );
+  if (result) {
+    draft.presetMap = result.map;
+  } else {
+    notifications.show({
+      message: "Could not fill the new map. Randomize it or add tiles by hand.",
+      color: "yellow",
+    });
+  }
+}
 
 const emptyDraft = (): Draft => ({
   settings: {
@@ -567,6 +601,30 @@ export const draftStore = createStore<DraftV2State>()(
       updatePlayerName: (playerIdx: number, name: string) =>
         set(({ draft }) => {
           draft.players[playerIdx].name = name;
+        }),
+      addPlayer: () =>
+        set(({ draft }) => {
+          const type = formatForPlayerCount(
+            draft.settings.type,
+            draft.players.length + 1,
+          );
+          if (!type) return;
+          draft.players.push({ id: draft.players.length, name: "" });
+          switchFormat(draft, type);
+        }),
+      removePlayer: (playerIdx: number) =>
+        set(({ draft }) => {
+          const type = formatForPlayerCount(
+            draft.settings.type,
+            draft.players.length - 1,
+          );
+          if (!type) return;
+          draft.players.splice(playerIdx, 1);
+          // Player ids drive seat colors, so keep them sequential.
+          draft.players.forEach((player, idx) => {
+            player.id = idx;
+          });
+          switchFormat(draft, type);
         }),
 
       // minor faction actions

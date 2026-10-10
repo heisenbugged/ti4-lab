@@ -1,0 +1,52 @@
+.addPlayer {
+  flex: 1;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  font-size: var(--mantine-font-size-xs);
+  border: 1px dashed;
+  border-radius: var(--mantine-radius-sm);
+  transition:
+    border-color 120ms ease,
+    color 120ms ease;
+
+  @mixin light {
+    border-color: var(--mantine-color-gray-4);
+    color: var(--mantine-color-gray-6);
+  }
+  @mixin dark {
+    border-color: var(--mantine-color-dark-4);
+    color: var(--mantine-color-dark-2);
+  }
+
+  &:hover {
+    @mixin light {
+      border-color: var(--mantine-color-spaceBlue-filled);
+      color: var(--mantine-color-spaceBlue-filled);
+    }
+    @mixin dark {
+      border-color: var(--mantine-color-dark-2);
+      color: var(--mantine-color-dark-0);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mantine-primary-color-filled);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .addPlayer {
+    transition: none;
+  }
+}
+
+/* With a mouse, only show the remove button for the row being used. */
+@media (hover: hover) {
+    .playerRow:not(:hover):not(:focus-within) .removePlayer {
+        opacity: 0;
+    }
+}
