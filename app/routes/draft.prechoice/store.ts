@@ -34,6 +34,8 @@ type ContentFlags = {
   // Discordant Stars
   withDiscordantTiles: boolean;
   withDiscordantFactions: boolean;
+  // Lost Star Charts of Ixth
+  withLscoiTiles: boolean;
   // Legacy flags for compatibility
   excludeBaseFactions: boolean;
   excludePokFactions: boolean;
@@ -100,6 +102,7 @@ type DraftSetupStore = {
     setWithTEFactions: (v: boolean) => void;
     setWithDiscordantTiles: (v: boolean) => void;
     setWithDiscordantFactions: (v: boolean) => void;
+    setWithLscoiTiles: (v: boolean) => void;
     // Legacy setters (kept for compatibility)
     setExcludeBaseFactions: (v: boolean) => void;
     setExcludePokFactions: (v: boolean) => void;
@@ -432,6 +435,7 @@ export const useDraftSetup = create<DraftSetupStore>()(
           withPokFactions: true,
           withTETiles: true,
           withTEFactions: true,
+          withLscoiTiles: false,
           withDiscordantTiles: false,
           withDiscordantFactions: false,
           // Legacy flags
@@ -514,6 +518,12 @@ export const useDraftSetup = create<DraftSetupStore>()(
           });
         },
 
+        setWithLscoiTiles: (v: boolean) => {
+          setAndValidate((state) => {
+            state.content.flags.withLscoiTiles = v;
+          });
+        },
+
         // Legacy setters
         setExcludeBaseFactions: (v: boolean) => {
           setAndValidate((state) => {
@@ -584,6 +594,7 @@ export const useDraftSetup = create<DraftSetupStore>()(
           if (flags.withBaseTiles) tileGameSets.push("base");
           if (flags.withPokTiles) tileGameSets.push("pok");
           if (flags.withTETiles) tileGameSets.push("te");
+          if (flags.withLscoiTiles) tileGameSets.push("lscoi");
           if (flags.withDiscordantTiles) {
             tileGameSets.push("discordant");
             if (flags.withDiscordantExp) tileGameSets.push("discordantexp");

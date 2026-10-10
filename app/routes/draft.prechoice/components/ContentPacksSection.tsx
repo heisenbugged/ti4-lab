@@ -5,9 +5,9 @@ import { useDraftSetup } from "../store";
 type ContentRowProps = {
   label: string;
   tilesChecked: boolean;
-  factionsChecked: boolean;
+  factionsChecked?: boolean;
   onTilesChange: (checked: boolean) => void;
-  onFactionsChange: (checked: boolean) => void;
+  onFactionsChange?: (checked: boolean) => void;
   dimmed?: boolean;
 };
 
@@ -56,23 +56,25 @@ function ContentRow({
             input: { cursor: "pointer" },
           }}
         />
-        <Checkbox
-          size="xs"
-          label={
-            <Group gap={4}>
-              <IconAlien size={12} />
-              <Text size="xs" c="dimmed">
-                Factions
-              </Text>
-            </Group>
-          }
-          checked={factionsChecked}
-          onChange={(e) => onFactionsChange(e.currentTarget.checked)}
-          styles={{
-            label: { paddingLeft: 6, cursor: "pointer" },
-            input: { cursor: "pointer" },
-          }}
-        />
+        {onFactionsChange && factionsChecked !== undefined ? (
+          <Checkbox
+            size="xs"
+            label={
+              <Group gap={4}>
+                <IconAlien size={12} />
+                <Text size="xs" c="dimmed">
+                  Factions
+                </Text>
+              </Group>
+            }
+            checked={factionsChecked}
+            onChange={(e) => onFactionsChange(e.currentTarget.checked)}
+            styles={{
+              label: { paddingLeft: 6, cursor: "pointer" },
+              input: { cursor: "pointer" },
+            }}
+          />
+        ) : null}
       </Group>
     </Group>
   );
@@ -89,6 +91,7 @@ export function ContentPacksSection() {
     withTEFactions,
     withDiscordantTiles,
     withDiscordantFactions,
+    withLscoiTiles,
   } = content.flags;
 
   return (
@@ -156,6 +159,11 @@ export function ContentPacksSection() {
           factionsChecked={withDiscordantFactions}
           onTilesChange={content.setWithDiscordantTiles}
           onFactionsChange={content.setWithDiscordantFactions}
+        />
+        <ContentRow
+          label="Lost Star Charts of Ixth"
+          tilesChecked={withLscoiTiles}
+          onTilesChange={content.setWithLscoiTiles}
         />
       </Stack>
     </Box>
