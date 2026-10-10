@@ -1,4 +1,12 @@
-import { Button, Group, SimpleGrid } from "@mantine/core";
+import {
+  Button,
+  Group,
+  SimpleGrid,
+  Stack,
+  Text,
+  UnstyledButton,
+} from "@mantine/core";
+import { IconPlus } from "@tabler/icons-react";
 import {
   DndContext,
   DragEndEvent,
@@ -15,10 +23,20 @@ import { BuildableSlice } from "../components/BuildableSlice";
 import { Tile } from "~/types";
 import { systemData } from "~/data/systemData";
 import { useState } from "react";
+import { getMaxAvailableSlices } from "~/routes/draft.prechoice/utils";
+import classes from "./SlicesSection.module.css";
 
 export function SlicesSection() {
   const config = useDraft((state) => draftConfig[state.draft.settings.type]);
   const slices = useDraft((state) => state.draft.slices);
+  const numPlayers = useDraft((state) => state.draft.players.length);
+  const maxSlices = useDraft((state) =>
+    getMaxAvailableSlices(
+      state.draft.settings.type,
+      state.draft.settings.tileGameSets,
+      !!state.draft.settings.sliceGenerationConfig?.hasMinorFactions,
+    ),
+  );
   const {
     removeSystemFromSlice,
     addSystemToSlice,
@@ -28,6 +46,8 @@ export function SlicesSection() {
     randomizeAll,
     openPlanetFinderForSlice,
     updateSliceName,
+    addSlice,
+    removeSlice,
   } = useDraft((state) => state.actions);
 
   const [draggingSlice, setDraggingSlice] = useState<number | undefined>(
@@ -39,7 +59,9 @@ export function SlicesSection() {
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const [, originSliceIdx, originTileIdx] = String(event.active!.id).split("-");
+    const [, originSliceIdx, originTileIdx] = String(event.active!.id).split(
+      "-",
+    );
     const [, destSliceIdx, destTileIdx] = String(event.over!.id).split("-");
 
     const destTile: Tile = event.over!.data.current!.tile;
@@ -54,8 +76,16 @@ export function SlicesSection() {
 
     removeSystemFromSlice(parseInt(originSliceIdx), parseInt(originTileIdx));
     removeSystemFromSlice(parseInt(destSliceIdx), parseInt(destTileIdx));
-    addSystemToSlice(parseInt(destSliceIdx), parseInt(destTileIdx), originSystem);
-    addSystemToSlice(parseInt(originSliceIdx), parseInt(originTileIdx), destinationSystem);
+    addSystemToSlice(
+      parseInt(destSliceIdx),
+      parseInt(destTileIdx),
+      originSystem,
+    );
+    addSystemToSlice(
+      parseInt(originSliceIdx),
+      parseInt(originTileIdx),
+      destinationSystem,
+    );
     setDraggingSlice(undefined);
   };
 
@@ -113,11 +143,24 @@ export function SlicesSection() {
                 onDeleteTile={(tile) => removeSystemFromSlice(idx, tile.idx)}
                 onRandomizeSlice={() => randomizeSlice(idx)}
                 onClearSlize={() => clearSlice(idx)}
+                canRemove={slices.length > numPlayers}
+                onRemoveSlice={() => removeSlice(idx)}
                 onNameChange={(name) => updateSliceName(idx, name)}
               />
             </div>
           ))}
         </DndContext>
+        {slices.length < maxSlices && (
+          <UnstyledButton className={classes.addSlice} onClick={addSlice}>
+            <Stack align="center" gap={6}>
+              <IconPlus size={28} stroke={1.5} />
+              <Text fw={600}>Add slice</Text>
+              <Text size="xs" c="dimmed" ta="center" maw={180}>
+                Generated from unused systems with this format's rules
+              </Text>
+            </Stack>
+          </UnstyledButton>
+        )}
       </SimpleGrid>
     </Section>
   );

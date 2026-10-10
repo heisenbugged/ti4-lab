@@ -47,6 +47,7 @@ import {
   setSliceNames,
 } from "./draft/buildInitialDraft";
 import { dealFactionBags } from "./utils/factionBags";
+import { getRandomSliceNames } from "./data/sliceWords";
 
 type SelectionType = PlayerDraftSelection["type"];
 
@@ -167,6 +168,8 @@ type DraftV2State = {
     removeSystemFromSlice: (sliceIdx: number, tileIdx: number) => void;
     clearSlice: (sliceIdx: number) => void;
     updateSliceName: (sliceIdx: number, name: string) => void;
+    addSlice: () => void;
+    removeSlice: (sliceIdx: number) => void;
 
     // map actions
     clearMap: () => void;
@@ -747,6 +750,61 @@ export const draftStore = createStore<DraftV2State>()(
       updateSliceName: (sliceIdx: number, name: string) =>
         set(({ draft }) => {
           draft.slices[sliceIdx].name = name;
+        }),
+      addSlice: () =>
+        set(({ draft, factionPool }) => {
+          const minorFactionPool = getDraftableFactions(
+            factionPool,
+            draft.availableFactions,
+          );
+
+          // Rerolling one past the end generates a new slice from the unused
+          // systems, using the format's slice generator and map validation.
+          const result = coreRerollSlice(
+            draft.settings,
+            draft.presetMap,
+            draft.slices.map((slice) => systemIdsInSlice(slice)),
+            draft.slices.length,
+            minorFactionPool,
+          );
+
+          if (!result) {
+            notifications.show({
+              message:
+                "Could not generate a valid slice with the given parameters",
+              color: "red",
+            });
+            return;
+          }
+
+          const usedNames = new Set(draft.slices.map((slice) => slice.name));
+          const name =
+            getRandomSliceNames(10)
+              .map((word) => `Slice ${word}`)
+              .find((candidate) => !usedNames.has(candidate)) ??
+            `Slice ${draft.slices.length + 1}`;
+
+          draft.slices.push(
+            systemIdsToSlice(
+              draftConfig[draft.settings.type],
+              name,
+              result.slice,
+            ),
+          );
+          draft.settings.numSlices = draft.slices.length;
+
+          if (!result.valid) {
+            notifications.show({
+              message: "Generated slice may not be optimal",
+              color: "yellow",
+            });
+          }
+        }),
+      removeSlice: (sliceIdx: number) =>
+        set(({ draft }) => {
+          if (draft.slices.length <= draft.players.length) return;
+          draft.slices.splice(sliceIdx, 1);
+          draft.settings.numSlices = draft.slices.length;
         }),
 
       // map actions
