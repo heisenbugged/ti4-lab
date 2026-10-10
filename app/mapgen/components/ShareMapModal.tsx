@@ -1,5 +1,6 @@
-import { Modal, Stack, TextInput, Button, CopyButton, Text, Anchor } from "@mantine/core";
-import { IconCheck, IconCopy } from "@tabler/icons-react";
+import { IconExternalLink } from "@tabler/icons-react";
+import { ButtonAnchor, CopyButton, Field, Modal, TextInput } from "~/ui";
+import classes from "./MapGenerator.module.css";
 
 type Props = {
   mapString: string;
@@ -10,62 +11,40 @@ type Props = {
 
 export function ShareMapModal({ mapString, shareUrl, opened, onClose }: Props) {
   return (
-    <Modal
-      opened={opened}
-      onClose={onClose}
-      size="lg"
-      title="Share Map"
-    >
-      <Stack gap="md">
-        <div>
-          <Text size="sm" fw={500} mb="xs">Map String</Text>
+    <Modal opened={opened} onClose={onClose} size="lg" title="Share map">
+      <Field label="Map string">
+        <div className={classes.copyField}>
           <TextInput
             value={mapString}
             readOnly
-            rightSection={
-              <CopyButton value={mapString}>
-                {({ copied, copy }) => (
-                  <Button
-                    size="xs"
-                    color={copied ? "teal" : "gray"}
-                    onClick={copy}
-                    leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-                  >
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
-                )}
-              </CopyButton>
-            }
-            rightSectionWidth={100}
+            aria-label="Map string"
+            onFocus={(e) => e.currentTarget.select()}
           />
+          <CopyButton value={mapString} />
         </div>
-
-        <div>
-          <Text size="sm" fw={500} mb="xs">Shareable Link</Text>
+      </Field>
+      <Field label="Shareable link">
+        <div className={classes.copyField}>
           <TextInput
             value={shareUrl}
             readOnly
-            rightSection={
-              <CopyButton value={shareUrl}>
-                {({ copied, copy }) => (
-                  <Button
-                    size="xs"
-                    color={copied ? "teal" : "gray"}
-                    onClick={copy}
-                    leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-                  >
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
-                )}
-              </CopyButton>
-            }
-            rightSectionWidth={100}
+            aria-label="Shareable link"
+            onFocus={(e) => e.currentTarget.select()}
           />
-          <Anchor href={shareUrl} target="_blank" size="sm" mt="xs">
-            Open in new tab
-          </Anchor>
+          <CopyButton value={shareUrl} />
         </div>
-      </Stack>
+      </Field>
+      <ButtonAnchor
+        href={shareUrl}
+        target="_blank"
+        rel="noreferrer"
+        variant="tertiary"
+        size="sm"
+        iconRight={<IconExternalLink size={14} />}
+        className={classes.selfStart}
+      >
+        Open in new tab
+      </ButtonAnchor>
     </Modal>
   );
 }

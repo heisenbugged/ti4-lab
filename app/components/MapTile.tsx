@@ -6,7 +6,6 @@ import { useContext, useEffect, useState, useMemo, type JSX } from "react";
 import { getHexPosition } from "~/utils/positioning";
 import { MecatolTile } from "./tiles/MecatolTile";
 import { HomeTile } from "./tiles/HomeTile";
-import { Button, Stack, alpha } from "@mantine/core";
 import { Hex } from "./Hex";
 
 import "./MapTile.css";
@@ -28,6 +27,7 @@ type Props = {
   hoverEffects?: boolean;
   ringHighlight?: boolean;
   homeSelectable?: boolean;
+  homeSelected?: boolean;
   onSelect?: () => void;
   onDelete?: () => void;
   sliceValue?: number;
@@ -65,6 +65,7 @@ function OriginalArtMapTile(props: Props) {
           mapId={mapId}
           tile={tile}
           selectable={!!props.homeSelectable}
+          selected={!!props.homeSelected}
           onSelect={props.onSelect}
           sliceValue={props.sliceValue}
           sliceStats={props.sliceStats}
@@ -184,6 +185,7 @@ function AbstractArtMapTile(props: Props) {
           mapId={props.mapId}
           tile={tile}
           selectable={!!props.homeSelectable}
+          selected={!!props.homeSelected}
           onSelect={props.onSelect}
           sliceValue={props.sliceValue}
           sliceStats={props.sliceStats}
@@ -233,9 +235,9 @@ function AbstractArtMapTile(props: Props) {
     (hovered || tile.type === "OPEN" || isOver);
 
   const overlayColor = hovered
-    ? alpha("var(--mantine-primary-color-filled)", 0.7)
+    ? "color-mix(in srgb, var(--ion) 45%, transparent)"
     : isOver
-      ? alpha("var(--mantine-primary-color-filled)", 0.3)
+      ? "color-mix(in srgb, var(--ion) 22%, transparent)"
       : "rgba(0, 0, 0, 0)";
 
   // Determine if tile should be dimmed when a home is being hovered
@@ -300,7 +302,7 @@ function AbstractArtMapTile(props: Props) {
             padding: "2px",
           }}
         >
-          <Text>{tile.idx}</Text>
+          {tile.idx}
         </div> */}
 
         {showOverlay && !isDragging && !isOver && (
@@ -310,27 +312,23 @@ function AbstractArtMapTile(props: Props) {
               color={overlayColor}
               radius={radius}
             >
-              <Stack gap={2}>
-                <Button px="6" py="4" h="auto" variant="filled">
+              <div className="map-tile-tools">
+                <button type="button" className="map-tile-tool" aria-label="Add or replace a system">
                   +
-                </Button>
+                </button>
                 {tile.type === "SYSTEM" && (
-                  <Button
-                    px="6"
-                    py="4"
-                    h="auto"
-                    variant="filled"
-                    bg="red"
-                    size="xs"
+                  <button
+                    type="button"
+                    className="map-tile-tool map-tile-tool--danger"
                     onMouseUp={(e) => {
                       e.stopPropagation();
                       onDelete?.();
                     }}
                   >
                     Del
-                  </Button>
+                  </button>
                 )}
-              </Stack>
+              </div>
             </Hex>
           </div>
         )}

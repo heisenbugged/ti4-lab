@@ -1,0 +1,13 @@
+.authorize {
+  justify-self: start;
+  margin-top: 4px;
+}
+
+.shot {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-top: 6px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}

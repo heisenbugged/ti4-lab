@@ -1,6 +1,6 @@
 export function MiniWormhole() {
   const size = 16;
-  const swirlColor = "var(--mantine-color-orange-5)";
+  const swirlColor = "var(--wormhole-alpha)";
 
   return (
     <svg

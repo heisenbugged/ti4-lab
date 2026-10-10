@@ -1,0 +1,21 @@
+.search {
+  width: 280px;
+  max-width: 100%;
+}
+.num {
+  text-align: right;
+}
+.nameCell {
+  max-width: 320px;
+}
+.link {
+  color: var(--ion);
+  font-weight: 500;
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+}
+.hiddenRow {
+  opacity: 0.55;
+}

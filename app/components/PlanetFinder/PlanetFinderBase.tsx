@@ -1,30 +1,38 @@
 import {
-  Badge,
-  Box,
-  Button,
-  Chip,
-  Group,
-  Modal,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
-import { Fragment, useEffect, useMemo, useState } from "react";
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
+import { IconHexagon, IconSearch, IconX } from "@tabler/icons-react";
 import {
   getSystemGameSet,
   searchableSystemData,
   systemData,
   systemGameSetLabels,
 } from "~/data/systemData";
-import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { FactionId, System, SystemId } from "~/types";
-import { useArrowFocus } from "~/hooks/useArrowFocus";
 import { TechIcon } from "~/components/icons/TechIcon";
+import { LegendaryIcon } from "~/components/icons/LegendaryIcon";
+import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { factions } from "~/data/factionData";
 import { useUsedSystemIds } from "~/hooks/useUsedSystemIds";
+import {
+  Button,
+  Chip,
+  Kbd,
+  Modal,
+  Tag,
+  Text,
+  TextInput,
+  ValuePill,
+  cx,
+} from "~/ui";
 import { FILTER_CATEGORIES } from "./filterCategories";
-
-import styles from "../../routes/draft.$id/components/PlanetFinder/PlanetFinder.module.css";
+import styles from "./PlanetFinder.module.css";
 
 export type PlanetFinderBaseProps = {
   opened: boolean;
@@ -34,6 +42,49 @@ export type PlanetFinderBaseProps = {
   factionPool?: FactionId[];
   allowHomePlanetSearch?: boolean;
 };
+
+const WORMHOLE_GLYPH: Record<string, { letter: string; color: string }> = {
+  alpha: { letter: "α", color: "var(--wormhole-alpha)" },
+  beta: { letter: "β", color: "var(--wormhole-beta)" },
+  gamma: { letter: "γ", color: "var(--wormhole-gamma)" },
+  delta: { letter: "δ", color: "var(--wormhole-delta)" },
+};
+
+const TRAIT_COLOR: Record<string, string> = {
+  cultural: "var(--influence)",
+  hazardous: "var(--tech-warfare)",
+  industrial: "var(--tech-biotic)",
+};
+
+const ANY_LABEL: Record<string, string> = {
+  Wormholes: "Any wormhole",
+  Anomalies: "Any anomaly",
+  Hyperlanes: "Any hyperlane",
+};
+
+function Dot({ color }: { color: string }) {
+  return <i className={styles.dot} style={{ background: color }} />;
+}
+
+function WormholeGlyph({ type }: { type: string }) {
+  const glyph = WORMHOLE_GLYPH[type.toLowerCase()];
+  if (!glyph) return null;
+  return (
+    <i className={styles.wh} style={{ borderColor: glyph.color }}>
+      {glyph.letter}
+    </i>
+  );
+}
+
+/** A small picture for the chips that have one. */
+function filterIcon(id: string): ReactNode {
+  if (TRAIT_COLOR[id]) return <Dot color={TRAIT_COLOR[id]} />;
+  if (["biotic", "propulsion", "cybernetic", "warfare"].includes(id))
+    return <TechIcon techSpecialty={id.toUpperCase() as "BIOTIC"} size={14} />;
+  if (id === "legendary") return <LegendaryIcon size={14} />;
+  if (WORMHOLE_GLYPH[id]) return <WormholeGlyph type={id} />;
+  return null;
+}
 
 export function PlanetFinderBase({
   opened,
@@ -52,6 +103,11 @@ export function PlanetFinderBase({
     setActiveFilters([]);
     setSearchString("");
   };
+
+  const toggleFilter = (id: string, on: boolean) =>
+    setActiveFilters((prev) =>
+      on ? [...prev, id] : prev.filter((f) => f !== id),
+    );
 
   const combinedSearchTerms = useMemo(() => {
     const terms: string[] = [];
@@ -111,325 +167,320 @@ export function PlanetFinderBase({
           return -1;
         return 0;
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [combinedSearchTerms, availableSystemIds, usedSystemIds]);
 
-  const { itemRefs, resetFocus } = useArrowFocus(systems, (idx) => {
-    if (idx <= 0) return;
-    onSystemSelected(systems[idx - 1]);
-  });
+  // Keyboard: index 0 is the search box, 1..n the result cards.
+  // Handled on the modal itself; the dialog keeps key events from reaching window.
+  const itemRefs = useRef<(HTMLElement | null)[]>([]);
+  const [cursor, setCursor] = useState(0);
+  const focusItem = (idx: number) => {
+    setCursor(idx);
+    itemRefs.current[idx]?.focus();
+  };
+  const resetFocus = () => setCursor(0);
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      focusItem(Math.min(cursor + 1, systems.length));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      focusItem(Math.max(cursor - 1, 0));
+    } else if (e.key === "Enter" && cursor > 0 && systems[cursor - 1]) {
+      e.preventDefault();
+      onSystemSelected(systems[cursor - 1]);
+    }
+  };
 
   useEffect(() => {
     if (opened) {
+      setCursor(0);
       setSearchString("");
       setActiveFilters([]);
       setTimeout(() => {
         itemRefs.current[0]?.focus();
       }, 150);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened]);
 
   const hasActiveFilters = activeFilters.length > 0 || searchString.length > 0;
+  const allFilters = FILTER_CATEGORIES.flatMap((c) =>
+    c.filters.map((f) => ({ ...f, category: c.label })),
+  );
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      size="900"
-      title={
-        <Text
-          size="sm"
-          fw={600}
-          tt="uppercase"
-          style={{ letterSpacing: "0.05em" }}
-        >
-          System Database
-        </Text>
-      }
-      styles={{
-        content: { maxWidth: "95vw" },
-      }}
+      size="xl"
+      flush
+      title="System database"
+      description="Search by ID, planet, resources or influence, or narrow it down with the filters."
     >
-      <Stack gap="sm">
-        <Box className={styles.stickyHeader}>
-          <Stack gap="sm">
+      <div className={styles.sdb} onKeyDown={handleKeyDown}>
+        <div className={styles.filters}>
+          <div className={styles.search}>
             <TextInput
               ref={(el) => {
                 if (!itemRefs.current || !el) return;
                 itemRefs.current[0] = el;
               }}
-              placeholder="Search by ID, planet name, resources, influence..."
+              aria-label="Search systems"
+              onFocus={() => setCursor(0)}
+              leftIcon={<IconSearch size={15} />}
+              placeholder="Search ID, planet, resources…"
               value={searchString}
               onChange={(e) => {
                 resetFocus();
                 setSearchString(e.target.value.toLowerCase());
               }}
             />
-
-            <Group
-              gap="xs"
-              p="xs"
-              wrap="wrap"
-              mih={36}
-              className={styles.activeFiltersBar}
-            >
-              {hasActiveFilters ? (
-                <>
-                  {activeFilters.map((filterId) => {
-                    const filter = FILTER_CATEGORIES.flatMap(
-                      (c) => c.filters,
-                    ).find((f) => f.id === filterId);
-                    if (!filter) return null;
-                    return (
-                      <Badge
-                        key={filterId}
-                        color={filter.color}
-                        variant="light"
-                        size="sm"
-                        style={{ cursor: "pointer" }}
-                        onClick={() =>
-                          setActiveFilters((prev) =>
-                            prev.filter((f) => f !== filterId),
-                          )
-                        }
-                      >
-                        {filter.label} ×
-                      </Badge>
-                    );
-                  })}
-                  {searchString && (
-                    <Badge
-                      variant="light"
-                      size="sm"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => setSearchString("")}
-                    >
-                      "{searchString}" ×
-                    </Badge>
-                  )}
-                  <Button
-                    variant="subtle"
-                    size="compact-xs"
-                    color="red"
-                    onClick={clearFilters}
-                  >
-                    Clear All
-                  </Button>
-                </>
-              ) : (
-                <Text size="xs" c="dimmed">
-                  Select filters or type to search
-                </Text>
-              )}
-            </Group>
-          </Stack>
-        </Box>
-
-        <Box className={styles.layout}>
-          <Box className={styles.filterPanel}>
+          </div>
+          <div className={styles.groups}>
             {FILTER_CATEGORIES.map((category) => (
-              <Box key={category.id} className={styles.filterSection}>
-                <Text size="xs" fw={600} tt="uppercase" c="dimmed" mb={6}>
-                  {category.label}
-                </Text>
-                <Chip.Group
-                  multiple
-                  value={activeFilters}
-                  onChange={setActiveFilters}
-                >
-                  <Group gap={4}>
-                    {category.filters.map((filter) => (
-                      <Chip
-                        key={filter.id}
-                        value={filter.id}
-                        size="xs"
-                        color={filter.color}
-                        variant="light"
-                      >
-                        {filter.label}
-                      </Chip>
-                    ))}
-                  </Group>
-                </Chip.Group>
-              </Box>
+              <div
+                key={category.id}
+                className={styles.group}
+                role="group"
+                aria-labelledby={`sdb-${category.id}`}
+              >
+                <h5 id={`sdb-${category.id}`}>{category.label}</h5>
+                <div className={styles.chips}>
+                  {category.filters.map((filter) => (
+                    <Chip
+                      key={filter.id}
+                      pressed={activeFilters.includes(filter.id)}
+                      onChange={(on) => toggleFilter(filter.id, on)}
+                      icon={filterIcon(filter.id)}
+                    >
+                      {filter.label}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
             ))}
-          </Box>
+          </div>
+        </div>
 
-          <Box pr="xs" style={{ overflowY: "auto" }}>
-            {systems.length > 0 && (
-              <Text size="xs" c="dimmed" mb="xs">
-                {systems.length} systems found
-              </Text>
-            )}
-
-            {systems.length === 0 && hasActiveFilters && (
-              <Stack
-                align="center"
-                justify="center"
-                p="xl"
-                mih={200}
-                ta="center"
+        <div className={styles.results}>
+          <div className={styles.rhead}>
+            <b>
+              {systems.length} {systems.length === 1 ? "system" : "systems"}
+            </b>
+            <div className={styles.active}>
+              {activeFilters.map((filterId) => {
+                const filter = allFilters.find((f) => f.id === filterId);
+                if (!filter) return null;
+                const label =
+                  filter.label === "Any"
+                    ? (ANY_LABEL[filter.category] ?? "Any")
+                    : filter.label;
+                return (
+                  <button
+                    key={filterId}
+                    type="button"
+                    className={styles.activeTag}
+                    aria-label={`Remove filter ${label}`}
+                    onClick={() => toggleFilter(filterId, false)}
+                  >
+                    {label}
+                    <IconX size={12} />
+                  </button>
+                );
+              })}
+              {searchString && (
+                <button
+                  type="button"
+                  className={styles.activeTag}
+                  aria-label="Clear search"
+                  onClick={() => setSearchString("")}
+                >
+                  “{searchString}”
+                  <IconX size={12} />
+                </button>
+              )}
+            </div>
+            {hasActiveFilters && (
+              <Button
+                variant="tertiary"
+                size="sm"
+                className={styles.clear}
+                onClick={clearFilters}
               >
-                <Text size="xl" mb="xs">
-                  ∅
-                </Text>
-                <Text size="sm">No systems match your filters</Text>
-              </Stack>
+                Clear all
+              </Button>
+            )}
+          </div>
+
+          <div className={styles.grid}>
+            {systems.length === 0 && (
+              <div className={styles.empty}>
+                <IconHexagon size={28} />
+                {hasActiveFilters ? (
+                  <>
+                    <Text weight={600}>No systems match your filters</Text>
+                    <Text size="sm" tone="muted">
+                      Remove a filter or change the search.
+                    </Text>
+                    <Button size="sm" onClick={clearFilters}>
+                      Clear all
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Text weight={600}>
+                      Select filters or search to find systems
+                    </Text>
+                    <Text size="sm" tone="muted">
+                      Try a planet name, a system number like 26, or a value
+                      like “3 resources”.
+                    </Text>
+                  </>
+                )}
+              </div>
             )}
 
-            {systems.length === 0 && !hasActiveFilters && (
-              <Stack
-                align="center"
-                justify="center"
-                p="xl"
-                mih={200}
-                ta="center"
-              >
-                <Text size="xl" mb="xs">
-                  ⬡
-                </Text>
-                <Text size="sm">Select filters or search to find systems</Text>
-              </Stack>
-            )}
-
-            <Stack gap={2}>
-              {systems.map((system, idx) => (
-                <Box
+            {systems.map((system, idx) => {
+              const inUse = usedSystemIds.includes(system.id);
+              const gameSet = getSystemGameSet(system.id);
+              return (
+                <div
                   key={`${system.id}-${system.rotation ?? 0}`}
-                  className={`${styles.systemRow} ${usedSystemIds.includes(system.id) ? styles.inUse : ""}`}
+                  className={cx(styles.card, inUse && styles.inUse)}
+                  role="button"
                   tabIndex={idx + 1}
+                  aria-label={`System ${system.id}${inUse ? ", in use" : ""}`}
                   ref={(el) => {
                     if (!itemRefs.current || !el) return;
                     itemRefs.current[idx + 1] = el;
                   }}
                   onMouseDown={() => onSystemSelected(system)}
+                  onFocus={() => setCursor(idx + 1)}
+                  onKeyDown={(e) => {
+                    if (e.key !== " ") return;
+                    e.preventDefault();
+                    onSystemSelected(system);
+                  }}
                 >
-                  <Group gap="sm" wrap="wrap" style={{ flex: 1 }}>
-                    <Group gap={4} wrap="nowrap">
-                      <Badge
-                        variant="default"
-                        size="sm"
-                        radius="sm"
-                        style={{ minWidth: 36, textAlign: "center" }}
-                      >
-                        {system.id}
-                      </Badge>
-                      {getSystemGameSet(system.id) && (
-                        <Text
-                          size="xs"
-                          c="dimmed"
-                          style={{ width: 28, opacity: 0.6, flexShrink: 0 }}
-                        >
-                          {systemGameSetLabels[getSystemGameSet(system.id)!]}
-                        </Text>
-                      )}
-                    </Group>
+                  <span className={styles.tile} aria-hidden>
+                    <RawSystemTile
+                      mapId={`sdb-${system.id}-${system.rotation ?? 0}`}
+                      tile={{
+                        idx: 0,
+                        type: "SYSTEM",
+                        systemId: system.id,
+                        rotation: system.rotation,
+                        position: { x: 0, y: 0 },
+                      }}
+                      radius={40}
+                      disablePopover
+                    />
+                  </span>
+                  <div className={styles.body}>
+                    <div className={styles.top}>
+                      <b>{system.id}</b>
+                      {gameSet && <small>{systemGameSetLabels[gameSet]}</small>}
+                      {inUse && <Tag className={styles.inUseTag}>In use</Tag>}
+                    </div>
 
-                    {system.planets.map((planet, pIdx) => (
+                    {system.planets.map((planet) => (
                       <Fragment key={planet.name}>
-                        {pIdx > 0 && <span className={styles.planetDivider} />}
-                        <Group gap={6} wrap="nowrap">
-                          <span
-                            className={`${styles.traitDot} ${
+                        <div className={styles.planet}>
+                          <Dot
+                            color={
                               planet.trait?.[0]
-                                ? styles[planet.trait[0].toLowerCase()]
-                                : styles.neutral
-                            }`}
+                                ? TRAIT_COLOR[planet.trait[0].toLowerCase()]
+                                : "var(--text-faint)"
+                            }
                           />
-                          <Text size="sm">{planet.name}</Text>
-                          <PlanetStatsPill
-                            resources={planet.resources}
-                            influence={planet.influence}
+                          <span className={styles.name}>{planet.name}</span>
+                          <ValuePill
+                            size="sm"
+                            r={planet.resources}
+                            i={planet.influence}
                           />
-                          {planet.tech?.map((tech) => (
+                          {planet.tech?.map((tech, techIdx) => (
                             <TechIcon
-                              key={tech}
+                              key={`${tech}-${techIdx}`}
                               techSpecialty={tech}
-                              size={14}
+                              size={15}
                             />
                           ))}
-                          {planet.legendary && (
-                            <Badge size="xs" color="yellow" variant="light">
-                              ★
-                            </Badge>
-                          )}
+                          {planet.legendary && <LegendaryIcon size={15} />}
                           {planet.tradeStation && (
-                            <Badge size="xs" color="cyan" variant="light">
+                            <Tag tone="ion" className={styles.smallTag}>
                               Station
-                            </Badge>
+                            </Tag>
                           )}
-                        </Group>
+                        </div>
                       </Fragment>
                     ))}
 
-                    {system.wormholes.map((wormhole) => {
-                      const wormholeColor: Record<string, string> = {
-                        ALPHA: "orange",
-                        BETA: "green",
-                        GAMMA: "violet",
-                        DELTA: "blue",
-                      };
-                      return (
-                        <Badge
+                    <div className={styles.extra}>
+                      {system.wormholes.map((wormhole) => (
+                        <Tag
                           key={wormhole}
-                          size="xs"
-                          color={wormholeColor[wormhole] ?? "gray"}
-                          variant="light"
+                          className={styles.smallTag}
+                          icon={<WormholeGlyph type={wormhole} />}
                         >
-                          {wormhole}
-                        </Badge>
-                      );
-                    })}
+                          {wormhole.charAt(0) + wormhole.slice(1).toLowerCase()}
+                        </Tag>
+                      ))}
 
-                    {system.anomalies.map((anomaly) => (
-                      <Badge
-                        key={anomaly}
-                        size="xs"
-                        color="orange"
-                        variant="light"
-                      >
-                        {anomaly.replace(/_/g, " ")}
-                      </Badge>
-                    ))}
+                      {system.anomalies.map((anomaly) => (
+                        <Tag
+                          key={anomaly}
+                          tone="danger"
+                          className={styles.smallTag}
+                        >
+                          {anomaly.charAt(0) +
+                            anomaly.slice(1).toLowerCase().replace(/_/g, " ")}
+                        </Tag>
+                      ))}
 
-                    {system.planets.length === 0 && (
-                      <Badge size="xs" color="red" variant="light">
-                        NO PLANETS
-                      </Badge>
-                    )}
-
-                    {system.planets.length === 0 &&
-                      system.anomalies.length === 0 &&
-                      system.wormholes.length === 0 &&
-                      !system.hyperlanes && (
-                        <Badge size="xs" color="gray" variant="light">
-                          EMPTY
-                        </Badge>
+                      {system.planets.length === 0 && (
+                        <Tag className={styles.smallTag}>No planets</Tag>
                       )}
 
-                    {system.hyperlanes && (
-                      <Badge size="xs" color="gray" variant="light">
-                        HYPERLANE {system.rotation}°
-                      </Badge>
-                    )}
+                      {system.planets.length === 0 &&
+                        system.anomalies.length === 0 &&
+                        system.wormholes.length === 0 &&
+                        !system.hyperlanes && (
+                          <Tag className={styles.smallTag}>Empty</Tag>
+                        )}
 
-                    {system.faction && (
-                      <Badge size="xs" color="gray" variant="outline">
-                        {factions[system.faction].name}
-                      </Badge>
-                    )}
-                  </Group>
+                      {system.hyperlanes && (
+                        <Tag tone="ion" className={styles.smallTag}>
+                          Hyperlane {system.rotation}°
+                        </Tag>
+                      )}
 
-                  {usedSystemIds.includes(system.id) && (
-                    <Badge size="xs" color="violet" variant="filled">
-                      In Use
-                    </Badge>
-                  )}
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-        </Box>
-      </Stack>
+                      {system.faction && (
+                        <Tag className={styles.smallTag}>
+                          {factions[system.faction].name}
+                        </Tag>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className={styles.keys} aria-hidden>
+            <span>
+              <Kbd>↑</Kbd> <Kbd>↓</Kbd> move
+            </span>
+            <span>
+              <Kbd>Enter</Kbd> place on the map
+            </span>
+            <span>
+              <Kbd>Esc</Kbd> close
+            </span>
+          </div>
+        </div>
+      </div>
     </Modal>
   );
 }

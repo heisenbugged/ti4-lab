@@ -1,25 +1,15 @@
-import {
-  Box,
-  Button,
-  CopyButton,
-  Divider,
-  Group,
-  Modal,
-  SegmentedControl,
-  Stack,
-  Text,
-  Textarea,
-  ThemeIcon,
-} from "@mantine/core";
-import {
-  IconCheck,
-  IconCopy,
-  IconDownload,
-  IconFileExport,
-  IconUpload,
-} from "@tabler/icons-react";
+import { IconCheck, IconCopy, IconDownload } from "@tabler/icons-react";
 import { useState } from "react";
+import {
+  Button,
+  Divider,
+  Modal,
+  Segmented,
+  Textarea,
+  useClipboard,
+} from "~/ui";
 import type { ExternalMapStringFormat } from "../utils/externalMapStringCodec";
+import classes from "./MapGenerator.module.css";
 
 type Props = {
   exportStrings: Record<ExternalMapStringFormat, string>;
@@ -28,10 +18,13 @@ type Props = {
   onImport: (mapString: string, format: ExternalMapStringFormat) => boolean;
 };
 
-const FORMAT_OPTIONS = [
+const FORMAT_OPTIONS: { label: string; value: ExternalMapStringFormat }[] = [
   { label: "TTPG", value: "ttpg" },
   { label: "Async", value: "async" },
 ];
+
+const formatLabel = (format: ExternalMapStringFormat) =>
+  format === "ttpg" ? "TTPG" : "Async";
 
 export function MapStringImportExportModal({
   exportStrings,
@@ -44,6 +37,7 @@ export function MapStringImportExportModal({
   const [importFormat, setImportFormat] =
     useState<ExternalMapStringFormat>("ttpg");
   const [importString, setImportString] = useState("");
+  const { copied, copy } = useClipboard();
 
   const exportString = exportStrings[exportFormat];
 
@@ -63,119 +57,79 @@ export function MapStringImportExportModal({
       opened={opened}
       onClose={resetAndClose}
       size="lg"
-      title={
-        <Group gap="xs">
-          <ThemeIcon variant="light" color="violet" size="sm">
-            <IconFileExport size={14} />
-          </ThemeIcon>
-          <Text fw={600} size="sm">
-            Map String Import / Export
-          </Text>
-        </Group>
+      title="Map string import and export"
+      footer={
+        <>
+          <Button variant="tertiary" onClick={resetAndClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            icon={<IconDownload size={16} />}
+            onClick={handleImport}
+            disabled={!importString.trim()}
+          >
+            Import {formatLabel(importFormat)} map
+          </Button>
+        </>
       }
     >
-      <Stack gap="xl">
-        <Box>
-          <Group justify="space-between" align="end" mb="sm">
-            <Group gap="xs">
-              <ThemeIcon variant="subtle" color="teal" size="xs">
-                <IconUpload size={12} />
-              </ThemeIcon>
-              <Text size="xs" fw={600} tt="uppercase" c="teal.4">
-                Export for
-              </Text>
-            </Group>
-            <SegmentedControl
-              size="xs"
-              data={FORMAT_OPTIONS}
-              value={exportFormat}
-              onChange={(value) =>
-                setExportFormat(value as ExternalMapStringFormat)
-              }
-            />
-          </Group>
-
-          <Box p="sm" bg="dark.7" style={{ borderRadius: 6 }}>
-            <Textarea
-              value={exportString || "No map data to export"}
-              readOnly
-              variant="unstyled"
-              autosize
-              minRows={2}
-              maxRows={5}
-              styles={{ input: { fontFamily: "monospace", fontSize: 12 } }}
-            />
-            <Group justify="flex-end" mt="xs">
-              <CopyButton value={exportString}>
-                {({ copied, copy }) => (
-                  <Button
-                    size="xs"
-                    variant={copied ? "light" : "subtle"}
-                    color={copied ? "teal" : "gray"}
-                    onClick={copy}
-                    disabled={!exportString}
-                    leftSection={
-                      copied ? <IconCheck size={14} /> : <IconCopy size={14} />
-                    }
-                  >
-                    {copied ? "Copied" : `Copy ${exportFormat === "ttpg" ? "TTPG" : "Async"} String`}
-                  </Button>
-                )}
-              </CopyButton>
-            </Group>
-          </Box>
-        </Box>
-
-        <Divider />
-
-        <Box>
-          <Group justify="space-between" align="end" mb="sm">
-            <Group gap="xs">
-              <ThemeIcon variant="subtle" color="blue" size="xs">
-                <IconDownload size={12} />
-              </ThemeIcon>
-              <Text size="xs" fw={600} tt="uppercase" c="blue.4">
-                Import from
-              </Text>
-            </Group>
-            <SegmentedControl
-              size="xs"
-              data={FORMAT_OPTIONS}
-              value={importFormat}
-              onChange={(value) =>
-                setImportFormat(value as ExternalMapStringFormat)
-              }
-            />
-          </Group>
-
-          <Textarea
-            placeholder={
-              importFormat === "ttpg"
-                ? "Paste a TTPG map string…"
-                : "Paste an Async map string…"
-            }
-            value={importString}
-            onChange={(event) => setImportString(event.currentTarget.value)}
-            minRows={3}
-            autosize
-            maxRows={6}
-            styles={{ input: { fontFamily: "monospace", fontSize: 12 } }}
+      <div className={classes.stringBlock}>
+        <div className={classes.stringHead}>
+          <label htmlFor="map-string-export">Export for</label>
+          <Segmented
+            size="sm"
+            label="Export format"
+            options={FORMAT_OPTIONS}
+            value={exportFormat}
+            onChange={setExportFormat}
           />
+        </div>
+        <Textarea
+          id="map-string-export"
+          mono
+          readOnly
+          rows={3}
+          value={exportString || "No map data to export"}
+          onFocus={(e) => e.currentTarget.select()}
+        />
+        <Button
+          size="sm"
+          className={classes.selfStart}
+          disabled={!exportString}
+          onClick={() => copy(exportString)}
+          icon={copied ? <IconCheck size={15} /> : <IconCopy size={15} />}
+        >
+          {copied ? "Copied" : `Copy ${formatLabel(exportFormat)} string`}
+        </Button>
+      </div>
 
-          <Group justify="flex-end" mt="md">
-            <Button variant="subtle" color="gray" onClick={resetAndClose}>
-              Cancel
-            </Button>
-            <Button
-              leftSection={<IconDownload size={16} />}
-              onClick={handleImport}
-              disabled={!importString.trim()}
-            >
-              Import {importFormat === "ttpg" ? "TTPG" : "Async"} Map
-            </Button>
-          </Group>
-        </Box>
-      </Stack>
+      <Divider />
+
+      <div className={classes.stringBlock}>
+        <div className={classes.stringHead}>
+          <label htmlFor="map-string-import">Import from</label>
+          <Segmented
+            size="sm"
+            label="Import format"
+            options={FORMAT_OPTIONS}
+            value={importFormat}
+            onChange={setImportFormat}
+          />
+        </div>
+        <Textarea
+          id="map-string-import"
+          mono
+          rows={3}
+          placeholder={
+            importFormat === "ttpg"
+              ? "Paste a TTPG map string…"
+              : "Paste an Async map string…"
+          }
+          value={importString}
+          onChange={(event) => setImportString(event.currentTarget.value)}
+        />
+      </div>
     </Modal>
   );
 }

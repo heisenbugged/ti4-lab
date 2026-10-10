@@ -17,7 +17,7 @@ import {
   coreGenerateSlices,
   postProcessSlices,
 } from "../common/sliceGenerator";
-import { DEFAULT_SLICE_SETTINGS } from "~/components/SliceSettingsModal";
+import { DEFAULT_SLICE_SETTINGS } from "~/draft/sliceSettings";
 import { draftConfig } from "../draftConfig";
 import { getFactionPool } from "~/utils/factions";
 import { mapStringOrder } from "~/data/mapStringOrder";

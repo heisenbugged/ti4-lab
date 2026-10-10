@@ -2,7 +2,7 @@ import { DemoTile, DraftType } from "~/types";
 import { draftConfig } from "~/draft";
 import { hydrateDemoMap } from "~/utils/map";
 import { std4p } from "~/draft/std4p";
-import { DraftFormatDescriptionData } from "./components/DraftFormatDescription";
+import type { DraftFormatDescriptionData } from "./components/DraftFormatDescription";
 
 export type ChoosableDraftType = DraftType;
 

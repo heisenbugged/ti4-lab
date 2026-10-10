@@ -1,6 +1,6 @@
-import { Button, Group, Image, Modal, Stack, Stepper, Text } from "@mantine/core";
-import { Link } from "react-router";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
+import { ButtonAnchor, Code, Modal, Stack, Steps, Text } from "~/ui";
+import classes from "./DiscordIntegrationModal.module.css";
 
 type Props = {
   opened: boolean;
@@ -18,57 +18,66 @@ export function DiscordIntegrationModal({
       size="lg"
       opened={opened}
       onClose={onClose}
-      title={
-        <Group>
-          <IconBrandDiscordFilled />
-          <Text>Integrate with Discord</Text>
-        </Group>
-      }
+      title="Integrate with Discord"
     >
-      <Stack mb="lg" gap="xs">
-        <Text>
-          The TI4 Lab robot will notify players via the chosen channel when it
-          is their turn to draft.
-        </Text>
-        <Text c="dimmed" size="sm">
-          NOTE: Any players that you <code>@mention</code> during{" "}
-          <code>/labdraft</code> will be mentioned in the notification when
-          it&apos;s their turn.
-        </Text>
-      </Stack>
+      <Stack gap={5}>
+        <Stack gap={2}>
+          <Text>
+            The TI4 Lab robot will notify players via the chosen channel when
+            it is their turn to draft.
+          </Text>
+          <Text size="sm" tone="muted">
+            Any players that you <Code>@mention</Code> during{" "}
+            <Code>/labdraft</Code> will be mentioned in the notification when
+            it&apos;s their turn.
+          </Text>
+        </Stack>
 
-      <Stepper orientation="vertical" active={0}>
-        <Stepper.Step
-          label="Add the discord bot to your server"
-          description={
-            <Link to={discordOauthUrl} reloadDocument>
-              <Button
-                mt={4}
-                size="sm"
-                leftSection={<IconBrandDiscordFilled />}
-                variant="filled"
-                color="discordBlue.5"
-              >
-                Authorize
-              </Button>
-            </Link>
-          }
+        <Steps
+          active={0}
+          items={[
+            {
+              title: "Add the Discord bot to your server",
+              content: (
+                <ButtonAnchor
+                  href={discordOauthUrl}
+                  variant="discord"
+                  size="sm"
+                  icon={<IconBrandDiscordFilled size={16} />}
+                  className={classes.authorize}
+                >
+                  Authorize
+                </ButtonAnchor>
+              ),
+            },
+            {
+              title: "Start a draft via /labdraft",
+              content: (
+                <img
+                  className={classes.shot}
+                  src="/discorddraft.png"
+                  alt="The /labdraft command in Discord"
+                />
+              ),
+            },
+            {
+              title: "Set up the draft on TI4 Lab",
+              content: (
+                <>
+                  <Text size="sm" tone="muted">
+                    Follow the created draft link.
+                  </Text>
+                  <img
+                    className={classes.shot}
+                    src="/discorddraftresponse.png"
+                    alt="The bot's reply with a draft link"
+                  />
+                </>
+              ),
+            },
+          ]}
         />
-        <Stepper.Step
-          label="Start a draft via /labdraft"
-          description={<Image src="/discorddraft.png" />}
-        />
-        <Stepper.Step
-          label="Setup draft on TI4 Lab"
-          description={
-            <Stack>
-              <Text>Follow the created draft link.</Text>
-              <Image src="/discorddraftresponse.png" />
-            </Stack>
-          }
-          mt="lg"
-        />
-      </Stepper>
+      </Stack>
     </Modal>
   );
 }

@@ -1,29 +1,140 @@
-import { Badge, Box, Button, Group, SimpleGrid, Stack, Text } from "@mantine/core";
+import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 import {
-  IconAlienFilled,
+  IconAdjustmentsHorizontal,
+  IconAlien,
   IconDice,
   IconHexagons,
-  IconSettings,
   IconUser,
   IconUsers,
   IconUsersGroup,
 } from "@tabler/icons-react";
-import { useDisclosure } from "@mantine/hooks";
-import { ConfigSection } from "~/components/ConfigSection";
-import { CompactSwitch } from "~/components/CompactSwitch";
 import { FactionSettingsModal } from "~/components/FactionSettingsModal";
 import { getFactionPool } from "~/utils/factions";
+import { factions } from "~/data/factionData";
 import { FactionId, FactionStratification } from "~/types";
+import {
+  Button,
+  ListRow,
+  NumberStepper,
+  Panel,
+  Rows,
+  Switch,
+  cx,
+  useDisclosure,
+} from "~/ui";
 import { useDraftSetup } from "../store";
 import { isMiltyVariant, isMiltyEqVariant } from "../maps";
-import { HoverRadioCard } from "~/components/HoverRadioCard";
-import { NumberStepper } from "~/components/NumberStepper";
 import { ContentPacksSection } from "./ContentPacksSection";
-import classes from "../prechoice.module.css";
+import layout from "../prechoice.module.css";
+import classes from "./DraftConfigurationPanel.module.css";
 
 type Props = {
   maxSlices: number;
 };
+
+/** Clicks on the switch or a stepper inside a card shouldn't toggle the card too. */
+const fromControl = (e: MouseEvent) =>
+  !!(e.target as HTMLElement).closest("button, label, input, [role='switch']");
+
+type RuleCardProps = {
+  title: string;
+  description: string;
+  art: ReactNode;
+  checked: boolean;
+  onToggle: () => void;
+  disabled?: boolean;
+  disabledReason?: string;
+  /** Shown under the description while the rule is on. */
+  extra?: ReactNode;
+};
+
+function RuleCard({
+  title,
+  description,
+  art,
+  checked,
+  onToggle,
+  disabled,
+  disabledReason,
+  extra,
+}: RuleCardProps) {
+  return (
+    // The whole card is a mouse target; the switch inside is the keyboard control.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div
+      className={cx(
+        classes.rule,
+        checked && classes.ruleOn,
+        disabled && classes.ruleDisabled,
+      )}
+      onClick={(e) => {
+        if (disabled || fromControl(e)) return;
+        onToggle();
+      }}
+    >
+      <span className={classes.art} aria-hidden>
+        {art}
+      </span>
+      <span className={classes.ruleTxt}>
+        <b>{title}</b>
+        <small>{disabled && disabledReason ? disabledReason : description}</small>
+        {checked && extra && <span className={classes.extra}>{extra}</span>}
+      </span>
+      <Switch
+        aria-label={title}
+        checked={checked}
+        onChange={() => onToggle()}
+        disabled={disabled}
+      />
+    </div>
+  );
+}
+
+type ModeCardProps = {
+  title: string;
+  description: string;
+  icon: ReactNode;
+  checked: boolean;
+  onSelect: () => void;
+  children?: ReactNode;
+};
+
+function ModeCard({
+  title,
+  description,
+  icon,
+  checked,
+  onSelect,
+  children,
+}: ModeCardProps) {
+  return (
+    <div
+      role="radio"
+      aria-checked={checked}
+      tabIndex={checked ? 0 : -1}
+      className={cx(classes.mode, checked && classes.modeOn)}
+      onMouseDown={(e) => {
+        if (e.button !== 0 || fromControl(e)) return;
+        onSelect();
+      }}
+      onKeyDown={(e: KeyboardEvent) => {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+    >
+      {icon}
+      <b>{title}</b>
+      <span>{description}</span>
+      {children}
+    </div>
+  );
+}
+
+const factionArt = (id: FactionId) => (
+  <img src={factions[id].iconPath} alt="" />
+);
 
 export function DraftConfigurationPanel({ maxSlices }: Props) {
   const faction = useDraftSetup((state) => state.faction);
@@ -59,12 +170,27 @@ export function DraftConfigurationPanel({ maxSlices }: Props) {
 
   const { withDrahn } = content.flags;
 
-  const showMinorFactions = isMiltyVariant(mapType) || isMiltyEqVariant(mapType);
+  const showMinorFactions =
+    isMiltyVariant(mapType) || isMiltyEqVariant(mapType);
+  const sharedMinorPool = faction.minorFactionsMode?.mode === "sharedPool";
+  const sharedPoolReason = "Not available with a shared minor faction pool.";
+  const bagsOn = Number(faction.preassignedFactions) > 0;
+
+  const moreOptions = [
+    { label: "Multidraft", on: multidraft.isMultidraft },
+    { label: "Home planets", on: format.allowHomePlanetSearch },
+    { label: "Monuments", on: format.showMonumentImagesInFactionInfo },
+    { label: "Drahn", on: withDrahn },
+  ];
+  const moreOn = moreOptions.filter((o) => o.on);
+  const moreSummary = moreOn.length
+    ? `${moreOn.map((o) => o.label).join(", ")} on`
+    : "Multidraft, home planets, monuments, Drahn";
 
   return (
     <>
       <FactionSettingsModal
-        buttonText="Save"
+        buttonText="Save pool"
         opened={factionSettingsOpened}
         numPlayers={playerCount}
         factionPool={getFactionPool(factionGameSets)}
@@ -76,254 +202,297 @@ export function DraftConfigurationPanel({ maxSlices }: Props) {
         onSave={handleSaveFactionSettings}
       />
 
-      <Stack gap="sm">
-        {/* Core Draft Settings - Factions & Slices side by side */}
-        <div className={classes.twoColGrid}>
-          <ConfigSection title="Factions" icon={<IconAlienFilled size={12} />}>
-            <Box py={6} style={{ borderBottom: "1px dashed var(--mantine-color-default-border)" }}>
-              <Group justify="space-between" wrap="nowrap" gap="xs">
-                <Box style={{ flex: 1 }}>
-                  <Text size="sm" fw={500}>In Pool</Text>
-                </Box>
-                <Group gap={2}>
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    color="gray"
-                    disabled={
-                      !!faction.preassignedFactions ||
-                      faction.numFactions <= factionConstraints.minNumFactions
-                    }
-                    onMouseDown={faction.decrementNumFactions}
-                  >
-                    -
-                  </Button>
-                  <Text size="sm" fw={600} miw={24} ta="center" c="purple.3">
-                    {faction.numFactions}
-                  </Text>
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    color="gray"
-                    disabled={
-                      !!faction.preassignedFactions ||
-                      faction.numFactions >= factionConstraints.maxNumFactions
-                    }
-                    onMouseDown={faction.incrementNumFactions}
-                  >
-                    +
-                  </Button>
-                </Group>
-              </Group>
-            </Box>
-            <Box pt="xs">
-              <Button
-                variant="light"
-                color="orange"
-                size="xs"
-                fullWidth
-                onMouseDown={openFactionSettings}
-              >
-                Configure Pool
-              </Button>
-            </Box>
-          </ConfigSection>
-
-          <ConfigSection title="Slices" icon={<IconHexagons size={12} />}>
-            <Box py={6}>
-              <Group justify="space-between" wrap="nowrap" gap="xs">
-                <Box style={{ flex: 1 }}>
-                  <Text size="sm" fw={500}>In Pool</Text>
-                  <Text size="xs" c="dimmed">Up to {maxSlices} with current tiles</Text>
-                </Box>
-                <Group gap={2}>
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    color="gray"
-                    disabled={slices.numSlices <= playerCount}
-                    onMouseDown={() => slices.setNumSlices(slices.numSlices - 1)}
-                  >
-                    -
-                  </Button>
-                  <Text size="sm" fw={600} miw={24} ta="center" c="purple.3">
-                    {slices.numSlices}
-                  </Text>
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    color="gray"
-                    disabled={slices.numSlices >= maxSlices}
-                    onMouseDown={() => slices.setNumSlices(slices.numSlices + 1)}
-                  >
-                    +
-                  </Button>
-                </Group>
-              </Group>
-            </Box>
-          </ConfigSection>
-        </div>
-
-        {/* Content Packs */}
-        <ContentPacksSection />
-
-        {/* Minor Factions - Only for Milty variants */}
-        {showMinorFactions && (
-          <ConfigSection
-            title="Minor Factions"
-            icon={<IconUsers size={12} />}
-            color="teal"
-          >
-            <CompactSwitch
-              label="Enable Minor Factions"
-              checked={!!faction.minorFactionsMode}
-              onChange={() => faction.toggleMinorFactions()}
-            >
-              {isMiltyEqVariant(mapType) && (
-                <Box mt="xs">
-                  <Text size="xs" c="dimmed" mb="xs">
-                    Mode:
-                  </Text>
-                  <SimpleGrid cols={3} spacing="xs">
-                    <HoverRadioCard
-                      title="Random"
-                      icon={<IconDice size={18} />}
-                      description="Random placement"
-                      checked={faction.minorFactionsMode?.mode === "random"}
-                      onMouseDown={() => faction.setMinorFactionsMode("random")}
-                      compact
-                    />
-                    <HoverRadioCard
-                      title="Shared"
-                      icon={<IconUsersGroup size={18} />}
-                      description="Same pool as majors"
-                      checked={faction.minorFactionsMode?.mode === "sharedPool"}
-                      onMouseDown={() => faction.setMinorFactionsMode("shared")}
-                      compact
-                    />
-                    <HoverRadioCard
-                      title="Separate"
-                      icon={<IconUser size={18} />}
-                      description="Own faction pool"
-                      checked={faction.minorFactionsMode?.mode === "separatePool"}
-                      onMouseDown={() => faction.setMinorFactionsMode("separate")}
-                      compact
-                    >
-                      {faction.minorFactionsMode?.mode === "separatePool" && (
-                        <Box mt="xs">
-                          <NumberStepper
-                            value={faction.minorFactionsMode.numMinorFactions}
-                            decrease={(e) => {
-                              e.stopPropagation();
-                              faction.decrementMinorFactions();
-                            }}
-                            increase={(e) => {
-                              e.stopPropagation();
-                              faction.incrementMinorFactions();
-                            }}
-                            decreaseDisabled={
-                              faction.minorFactionsMode.numMinorFactions <=
-                              factionConstraints.minMinorFactions
-                            }
-                            increaseDisabled={
-                              faction.minorFactionsMode.numMinorFactions >=
-                              factionConstraints.maxMinorFactions
-                            }
-                          />
-                        </Box>
-                      )}
-                    </HoverRadioCard>
-                  </SimpleGrid>
-                </Box>
-              )}
-            </CompactSwitch>
-          </ConfigSection>
-        )}
-
-        {/* Advanced Settings - Collapsible */}
-        <ConfigSection
-          title="Advanced Options"
-          icon={<IconSettings size={12} />}
-          color="gray"
-          collapsible
-          defaultCollapsed
-          badge={
-            <Badge size="xs" variant="light" color="gray">
-              Optional
-            </Badge>
-          }
+      {/* Factions and slices side by side */}
+      <div className={layout.two}>
+        <Panel
+          title="Factions"
+          icon={<IconAlien />}
+          iconTint="var(--legendary)"
         >
-          <CompactSwitch
-            label="Multidraft"
-            description="Create multiple drafts with same settings"
-            checked={multidraft.isMultidraft}
-            onChange={multidraft.setIsMultidraft}
-            numericValue={multidraft.isMultidraft ? multidraft.numDrafts : undefined}
-            onIncrease={() => multidraft.setNumDrafts(multidraft.numDrafts + 1)}
-            onDecrease={() => multidraft.setNumDrafts(Math.max(2, multidraft.numDrafts - 1))}
-            increaseDisabled={multidraft.numDrafts >= 9}
-            decreaseDisabled={multidraft.numDrafts <= 2}
-          />
-          <CompactSwitch
-            label="Draft Speaker Order"
+          <div className={classes.panelBody}>
+            <ListRow label="In pool">
+              <NumberStepper
+                value={faction.numFactions}
+                label="factions in pool"
+                decrease={faction.decrementNumFactions}
+                increase={faction.incrementNumFactions}
+                decreaseDisabled={
+                  !!faction.preassignedFactions ||
+                  faction.numFactions <= factionConstraints.minNumFactions
+                }
+                increaseDisabled={
+                  !!faction.preassignedFactions ||
+                  faction.numFactions >= factionConstraints.maxNumFactions
+                }
+              />
+            </ListRow>
+            <Button
+              size="sm"
+              block
+              icon={<IconAdjustmentsHorizontal size={16} />}
+              onClick={openFactionSettings}
+            >
+              Configure pool
+            </Button>
+          </div>
+        </Panel>
+
+        <Panel
+          title="Slices"
+          icon={<IconHexagons />}
+          iconTint="var(--legendary)"
+        >
+          <ListRow
+            label="In pool"
+            hint={`Up to ${maxSlices} with current tiles`}
+          >
+            <NumberStepper
+              value={slices.numSlices}
+              label="slices in pool"
+              decrease={() => slices.setNumSlices(slices.numSlices - 1)}
+              increase={() => slices.setNumSlices(slices.numSlices + 1)}
+              decreaseDisabled={slices.numSlices <= playerCount}
+              increaseDisabled={slices.numSlices >= maxSlices}
+            />
+          </ListRow>
+        </Panel>
+      </div>
+
+      <ContentPacksSection />
+
+      <Panel
+        title="Draft rules"
+        icon={<IconAdjustmentsHorizontal />}
+        iconTint="var(--gold)"
+        action={<span className={classes.optional}>Optional</span>}
+      >
+        <div className={classes.rules}>
+          <RuleCard
+            title="Draft speaker order"
             description="Separate speaker order from seat selection"
+            art={
+              <span className={classes.nums}>
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+              </span>
+            }
             checked={format.draftSpeaker}
-            onChange={() => format.setDraftSpeaker(!format.draftSpeaker)}
+            onToggle={() => format.setDraftSpeaker(!format.draftSpeaker)}
           />
-          <CompactSwitch
-            label="Faction Ban Phase"
+          <RuleCard
+            title="Faction ban phase"
             description="Players ban one faction each before rolling"
+            art={<span className={classes.ban}>{factionArt("nekro")}</span>}
             checked={format.banFactions}
-            onChange={() => format.setBanFactions(!format.banFactions)}
-            disabled={faction.minorFactionsMode?.mode === "sharedPool"}
+            onToggle={() => format.setBanFactions(!format.banFactions)}
+            disabled={sharedMinorPool}
+            disabledReason={sharedPoolReason}
           />
-          <CompactSwitch
-            label="Faction Bags"
-            description="Pre-assign faction choices to each player"
-            checked={Number(faction.preassignedFactions) > 0}
-            onChange={() => faction.togglePreassignedFactions()}
-            disabled={faction.minorFactionsMode?.mode === "sharedPool"}
-            numericValue={faction.preassignedFactions}
-            onIncrease={() => faction.incrementPreassignedFactions()}
-            onDecrease={() => faction.decrementPreassignedFactions()}
-            increaseDisabled={
-              faction.preassignedFactions !== undefined &&
-              faction.preassignedFactions >= factionConstraints.maxPreassignedFactions
-            }
-            decreaseDisabled={
-              faction.preassignedFactions !== undefined &&
-              faction.preassignedFactions <= factionConstraints.minPreassignedFactions
-            }
-          />
-          <CompactSwitch
-            label="Draft Player Colors"
+          <RuleCard
+            title="Draft player colors"
             description="Choose in-game color via draft"
+            art={
+              <>
+                <i style={{ background: "var(--player-red)" }} />
+                <i style={{ background: "var(--player-orange)" }} />
+                <i style={{ background: "var(--player-blue)" }} />
+              </>
+            }
             checked={format.draftPlayerColors}
-            onChange={() => format.setDraftPlayerColors(!format.draftPlayerColors)}
+            onToggle={() =>
+              format.setDraftPlayerColors(!format.draftPlayerColors)
+            }
           />
-          <CompactSwitch
-            label="Show Monument Cards"
-            description="Display faction monument cards beside the faction card in Info modals"
-            checked={format.showMonumentImagesInFactionInfo}
-            onChange={() =>
-              format.setShowMonumentImagesInFactionInfo(
-                !format.showMonumentImagesInFactionInfo,
+          <RuleCard
+            title="Faction bags"
+            description="Pre-assign faction choices to each player"
+            art={
+              <span className={classes.bag}>
+                {factionArt("hacan")}
+                {factionArt("sol")}
+              </span>
+            }
+            checked={bagsOn}
+            onToggle={() => faction.togglePreassignedFactions()}
+            disabled={sharedMinorPool}
+            disabledReason={sharedPoolReason}
+            extra={
+              faction.preassignedFactions !== undefined && (
+                <span className={classes.inline}>
+                  Factions per player
+                  <NumberStepper
+                    size="sm"
+                    value={faction.preassignedFactions}
+                    label="factions per player"
+                    decrease={() => faction.decrementPreassignedFactions()}
+                    increase={() => faction.incrementPreassignedFactions()}
+                    decreaseDisabled={
+                      faction.preassignedFactions <=
+                      factionConstraints.minPreassignedFactions
+                    }
+                    increaseDisabled={
+                      faction.preassignedFactions >=
+                      factionConstraints.maxPreassignedFactions
+                    }
+                  />
+                </span>
               )
             }
           />
-          <CompactSwitch
-            label="Allow Home Planets"
-            description="Enable placing home planets on map"
-            checked={format.allowHomePlanetSearch}
-            onChange={() => format.setAllowHomePlanetSearch(!format.allowHomePlanetSearch)}
-          />
-          <CompactSwitch
-            label="Drahn Variant"
-            checked={withDrahn}
-            onChange={() => content.setWithDrahn(!withDrahn)}
-          />
-        </ConfigSection>
-      </Stack>
+        </div>
+      </Panel>
+
+      {/* Minor factions - only for Milty variants */}
+      {showMinorFactions && (
+        <Panel
+          title="Minor factions"
+          icon={<IconUsers />}
+          iconTint="var(--success)"
+        >
+          <div className={classes.panelBody}>
+            <ListRow label="Enable minor factions">
+              <Switch
+                aria-label="Enable minor factions"
+                checked={!!faction.minorFactionsMode}
+                onChange={() => faction.toggleMinorFactions()}
+              />
+            </ListRow>
+            {faction.minorFactionsMode && isMiltyEqVariant(mapType) && (
+              <div
+                className={classes.modes}
+                role="radiogroup"
+                aria-label="Minor faction mode"
+              >
+                <small>Mode</small>
+                <ModeCard
+                  title="Random"
+                  icon={<IconDice size={16} />}
+                  description="Random placement"
+                  checked={faction.minorFactionsMode.mode === "random"}
+                  onSelect={() => faction.setMinorFactionsMode("random")}
+                />
+                <ModeCard
+                  title="Shared"
+                  icon={<IconUsersGroup size={16} />}
+                  description="Same pool as majors"
+                  checked={faction.minorFactionsMode.mode === "sharedPool"}
+                  onSelect={() => faction.setMinorFactionsMode("shared")}
+                />
+                <ModeCard
+                  title="Separate"
+                  icon={<IconUser size={16} />}
+                  description="Own faction pool"
+                  checked={faction.minorFactionsMode.mode === "separatePool"}
+                  onSelect={() => faction.setMinorFactionsMode("separate")}
+                >
+                  {faction.minorFactionsMode.mode === "separatePool" && (
+                    <span className={classes.modeStep}>
+                      <NumberStepper
+                        size="sm"
+                        value={faction.minorFactionsMode.numMinorFactions}
+                        label="minor factions"
+                        decrease={(e) => {
+                          e.stopPropagation();
+                          faction.decrementMinorFactions();
+                        }}
+                        increase={(e) => {
+                          e.stopPropagation();
+                          faction.incrementMinorFactions();
+                        }}
+                        decreaseDisabled={
+                          faction.minorFactionsMode.numMinorFactions <=
+                          factionConstraints.minMinorFactions
+                        }
+                        increaseDisabled={
+                          faction.minorFactionsMode.numMinorFactions >=
+                          factionConstraints.maxMinorFactions
+                        }
+                      />
+                    </span>
+                  )}
+                </ModeCard>
+              </div>
+            )}
+            {faction.minorFactionsMode && !isMiltyEqVariant(mapType) && (
+              <p className={classes.note}>
+                Placed at random in each slice&apos;s left equidistant. Shared
+                and separate pools need a Milty EQ style.
+              </p>
+            )}
+          </div>
+        </Panel>
+      )}
+
+      <Panel
+        title="More options"
+        collapsible
+        defaultOpen={false}
+        summary={moreSummary}
+      >
+        <Rows>
+          <ListRow
+            label="Multidraft"
+            hint="Create multiple drafts with same settings"
+          >
+            {multidraft.isMultidraft && (
+              <NumberStepper
+                value={multidraft.numDrafts}
+                label="drafts"
+                decrease={() =>
+                  multidraft.setNumDrafts(Math.max(2, multidraft.numDrafts - 1))
+                }
+                increase={() =>
+                  multidraft.setNumDrafts(multidraft.numDrafts + 1)
+                }
+                decreaseDisabled={multidraft.numDrafts <= 2}
+                increaseDisabled={multidraft.numDrafts >= 9}
+              />
+            )}
+            <Switch
+              aria-label="Multidraft"
+              checked={multidraft.isMultidraft}
+              onChange={multidraft.setIsMultidraft}
+            />
+          </ListRow>
+          <ListRow
+            label="Allow home planets"
+            hint="Enable placing home planets on map"
+          >
+            <Switch
+              aria-label="Allow home planets"
+              checked={format.allowHomePlanetSearch}
+              onChange={() =>
+                format.setAllowHomePlanetSearch(!format.allowHomePlanetSearch)
+              }
+            />
+          </ListRow>
+          <ListRow
+            label="Show monument cards"
+            hint="Display faction monument cards beside the faction card in Info modals"
+          >
+            <Switch
+              aria-label="Show monument cards"
+              checked={format.showMonumentImagesInFactionInfo}
+              onChange={() =>
+                format.setShowMonumentImagesInFactionInfo(
+                  !format.showMonumentImagesInFactionInfo,
+                )
+              }
+            />
+          </ListRow>
+          <ListRow
+            label="Drahn variant"
+            hint="Adds the Drahn Consortium to the faction pool"
+          >
+            <Switch
+              aria-label="Drahn variant"
+              checked={withDrahn}
+              onChange={() => content.setWithDrahn(!withDrahn)}
+            />
+          </ListRow>
+        </Rows>
+      </Panel>
     </>
   );
 }

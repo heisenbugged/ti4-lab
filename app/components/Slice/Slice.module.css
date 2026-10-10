@@ -1,151 +1,22 @@
-.editableSliceName input {
-    font-family: "Orbitron", sans-serif;
-}
+/* Slice card: header, value line, the slice map (production lab art), features */
+.slice { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.taken { border-color: color-mix(in oklab, var(--p) 65%, transparent); }
+.taken .header { background: color-mix(in oklab, var(--p) 14%, var(--hull-raised)); }
 
-.stats {
-    align-items: center;
-    gap: var(--mantine-spacing-sm);
-    padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-    border-top: 1px solid;
+.header { display: flex; align-items: center; gap: var(--space-2); min-height: 46px; padding: 6px var(--space-3) 6px var(--space-4); background: var(--hull-raised); border-bottom: 1px solid var(--rule); border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.headerMain { display: flex; align-items: center; gap: var(--space-2); flex: 1; min-width: 0; }
+.headerRight { display: flex; align-items: center; gap: 6px; flex: none; max-width: 60%; min-width: 0; }
+.name { flex: 1; min-width: 0; margin: 0; font-size: 16px; font-weight: 600; font-stretch: var(--semi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nameInput { flex: 1; min-width: 0; height: 32px; padding: 0 8px; margin-left: -8px; border: 1px solid transparent; border-radius: 2px; background: none; color: var(--text); font: 600 16px/1 var(--font); font-stretch: var(--semi); }
+.nameInput:hover { border-color: var(--rule); }
+.nameInput:focus { outline: 2px solid var(--ion); outline-offset: -1px; background: var(--hull-sunken); }
 
-    @mixin light {
-        background-color: var(--mantine-color-gray-0);
-        border-color: var(--mantine-color-gray-2);
-    }
-    @mixin dark {
-        background-color: var(--mantine-color-dark-7);
-        border-color: var(--mantine-color-dark-5);
-    }
-}
+.stats { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; padding: 10px var(--space-4); border-bottom: 1px solid var(--rule); }
+.sv, .opt { display: inline-flex; align-items: center; gap: 6px; }
+.sv small, .opt small { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
+.sv b { font-size: 20px; line-height: 1; font-weight: 700; font-stretch: var(--semi); font-variant-numeric: tabular-nums; color: var(--text); }
+.opt em { font-style: normal; font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
-.features {
-    border-top: 1px solid;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-    min-height: 40px;
-    padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-    display: flex;
-    align-items: center;
+.map { padding: var(--space-2) 0 var(--space-3); background: var(--hull); }
 
-    @mixin light {
-        background-color: var(--mantine-color-gray-0);
-        border-color: var(--mantine-color-gray-2);
-    }
-    @mixin dark {
-        background-color: var(--mantine-color-dark-6);
-        border-color: var(--mantine-color-dark-5);
-    }
-}
-
-.map {
-    padding-top: var(--mantine-spacing-xs);
-    padding-bottom: var(--mantine-spacing-sm);
-    @mixin light { background-color: transparent }
-    @mixin dark { background-color: var(--mantine-color-dark-7) }
-}
-
-.slice-text {
-    @mixin light { color: white }
-    @mixin dark { color: var(--mantine-color-dark-0) }
-}
-
-
-.magenta .slice-text,
-.orange .slice-text,
-.blue .slice-text,
-.red .slice-text,
-.green .slice-text,
-.violet .slice-text,
-.gray .slice-text,
-.cyan .slice-text {
-    @mixin light { color: var(--mantine-color-gray-8) }
-    @mixin dark { color: var(--mantine-color-dark-3) }
-}
-
-
-
-.header {
-    gap: 0;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    @mixin light { background-color: var(--mantine-color-spaceBlue-filled); }
-    @mixin dark { background-color: var(--mantine-color-dark-5); }
-}
-
-
-
-.magenta .header, .magenta .features {
-    background-color: color-mix(in srgb, var(--mantine-color-magenta-filled) 10%, transparent);
-
-}
-
-.magenta {
-    border-radius: 8px;
-    border: 1px solid var(--mantine-color-magenta-filled);
-}
-
-.orange .header, .orange .features {
-    background-color: color-mix(in srgb, var(--mantine-color-orange-filled) 10%, transparent);
-}
-
-.orange {
-    border-radius: 8px;
-    border: 1px solid var(--mantine-color-orange-filled);
-}
-
-.blue .header, .blue .features {
-    background-color: color-mix(in srgb, var(--mantine-color-blue-filled) 10%, transparent);
-}
-
-.blue {
-    border-radius: 8px;
-    border: 1px solid var(--mantine-color-blue-filled);
-}
-
-.red .header, .red .features {
-    background-color: color-mix(in srgb, var(--mantine-color-red-filled) 10%, transparent);
-}
-
-.red {
-    border-radius: 8px;
-    border: 1px solid var(--mantine-color-red-filled);
-}
-
-.green .header, .green .features {
-    background-color: color-mix(in srgb, var(--mantine-color-green-filled) 10%, transparent);
-}
-
-.green {
-    border-radius: 8px;
-    border: 1px solid var(--mantine-color-green-filled);
-}
-
-.gray .header, .gray .features {
-    background-color: color-mix(in srgb, var(--mantine-color-gray-4) 10%, transparent);
-}
-
-.gray {
-    border-radius: 8px;
-    border: 1px solid var(--mantine-color-gray-4);
-}
-
-.cyan .header, .cyan .features {
-    background-color: color-mix(in srgb, var(--mantine-color-cyan-filled) 10%, transparent);
-}
-
-.cyan {
-    border-radius: 8px;
-    border: 1px solid var(--mantine-color-cyan-filled);
-}
-
-.violet .header, .violet .features {
-    background-color: color-mix(in srgb, var(--mantine-color-violet-filled) 10%, transparent);
-}
-
-.violet {
-    border-radius: 8px;
-    border: 1px solid var(--mantine-color-violet-filled);
-}
+.features { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 48px; padding: 8px var(--space-4); border-top: 1px solid var(--rule); background: var(--hull-sunken); border-radius: 0 0 var(--radius-sm) var(--radius-sm); }

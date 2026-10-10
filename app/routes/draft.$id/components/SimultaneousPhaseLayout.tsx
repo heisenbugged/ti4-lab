@@ -1,23 +1,23 @@
 import { CSSProperties, ReactNode } from "react";
-import { Box, Center, Grid, GridColProps, MantineColor } from "@mantine/core";
+import { cx } from "~/ui";
 import { useSimultaneousUndo } from "~/hooks/useSimultaneousUndo";
 import { SimultaneousPickPhase } from "~/hooks/useSimultaneousPickPhase";
 import { AdminPasswordModal } from "./AdminPasswordModal";
 import { PlayerSelectionSidebar } from "./PlayerSelectionSidebar";
-import { SimultaneousPhaseHeader } from "./SimultaneousPhaseHeader";
+import { PhaseColor, SimultaneousPhaseHeader } from "./SimultaneousPhaseHeader";
 import { SpectatorModeNotice } from "./SpectatorModeNotice";
 import { useAdminControls } from "./useAdminControls";
+import classes from "./SimultaneousPhaseLayout.module.css";
 
 type Props = {
   phase: SimultaneousPickPhase;
   phaseName: string;
-  phaseColor: MantineColor;
+  phaseColor: PhaseColor;
   description: string;
   showPickAnyWarning?: boolean;
   maw: number;
-  gridStyle?: CSSProperties;
-  sidebarSpan: GridColProps["span"];
-  contentSpan: GridColProps["span"];
+  /** Below this breakpoint the player list stacks above the content. */
+  stackBelow?: "md" | "lg";
   children: ReactNode;
 };
 
@@ -28,9 +28,7 @@ export function SimultaneousPhaseLayout({
   description,
   showPickAnyWarning,
   maw,
-  gridStyle,
-  sidebarSpan,
-  contentSpan,
+  stackBelow = "md",
   children,
 }: Props) {
   const {
@@ -48,8 +46,20 @@ export function SimultaneousPhaseLayout({
     phase.stagingValues,
   );
 
+  const waitingCount = phase.hydratedPlayers.filter(
+    (p) => phase.stagingValues?.[p.id] === undefined,
+  ).length;
+  const sentence = /[.!?]$/.test(description) ? description : `${description}.`;
+  const fullDescription =
+    waitingCount > 0
+      ? `${sentence} ${waitingCount === 1 ? "1 player is" : `${waitingCount} players are`} still choosing.`
+      : sentence;
+
   return (
-    <Box mih="100vh">
+    <div
+      className={classes.page}
+      style={{ "--maw": `${maw}px` } as CSSProperties}
+    >
       <AdminPasswordModal
         opened={passwordModalOpen}
         onClose={() => setPasswordModalOpen(false)}
@@ -59,7 +69,7 @@ export function SimultaneousPhaseLayout({
       <SimultaneousPhaseHeader
         phaseName={phaseName}
         phaseColor={phaseColor}
-        description={description}
+        description={fullDescription}
         adminMode={adminMode}
         onAdminToggle={handleAdminToggle}
         showPickForAnyoneControl={showPickForAnyoneControl}
@@ -71,29 +81,35 @@ export function SimultaneousPhaseLayout({
         undoPickDisabled={undo.undoPickDisabled}
         undoPhaseDisabled={undo.undoPhaseDisabled}
         showPickAnyWarning={showPickAnyWarning}
+        maw={maw}
       />
 
-      <SpectatorModeNotice isSpectatorMode={phase.isSpectatorMode} />
+      {phase.isSpectatorMode && (
+        <div className={classes.notice}>
+          <SpectatorModeNotice isSpectatorMode={phase.isSpectatorMode} />
+        </div>
+      )}
 
-      <Center p="md" pt="lg">
-        <Grid maw={maw} w="100%" gutter="xl" style={gridStyle}>
-          <Grid.Col span={sidebarSpan}>
-            <PlayerSelectionSidebar
-              players={phase.hydratedPlayers}
-              pickForAnyone={phase.pickForAnyone}
-              selectedPlayerId={phase.selectedPlayerId}
-              defaultPlayerId={phase.defaultPlayerId}
-              stagingValues={phase.stagingValues}
-              onPlayerSelect={phase.setSelectedPlayerId}
-              onPlayerHover={phase.setHoveredPlayerId}
-              currentPlayerId={phase.currentPlayer?.id}
-              spectatorMode={phase.isSpectatorMode}
-            />
-          </Grid.Col>
+      <div
+        className={cx(
+          classes.grid,
+          stackBelow === "lg" ? classes.stackBelowLg : classes.stackBelowMd,
+        )}
+      >
+        <PlayerSelectionSidebar
+          players={phase.hydratedPlayers}
+          pickForAnyone={phase.pickForAnyone}
+          selectedPlayerId={phase.selectedPlayerId}
+          defaultPlayerId={phase.defaultPlayerId}
+          stagingValues={phase.stagingValues}
+          onPlayerSelect={phase.setSelectedPlayerId}
+          onPlayerHover={phase.setHoveredPlayerId}
+          currentPlayerId={phase.currentPlayer?.id}
+          spectatorMode={phase.isSpectatorMode}
+        />
 
-          <Grid.Col span={contentSpan}>{children}</Grid.Col>
-        </Grid>
-      </Center>
-    </Box>
+        <div className={classes.content}>{children}</div>
+      </div>
+    </div>
   );
 }

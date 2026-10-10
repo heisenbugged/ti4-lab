@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { Hex } from "../Hex";
 import { SystemTile } from "~/types";
-import { Box, Flex } from "@mantine/core";
 import { MecatolPlanet } from "../features/MecatolPlanet";
 import { calcScale } from "./calcScale";
 import { MapContext } from "~/contexts/MapContext";
@@ -11,7 +10,7 @@ import classes from "./Tiles.module.css";
 
 type Props = { mapId: string; tile: SystemTile; hideValues?: boolean; disablePopover?: boolean };
 
-export function MecatolTile({ mapId, tile, hideValues = false, disablePopover = false }: Props) {
+export function MecatolTile({ mapId, tile, hideValues = false }: Props) {
   const { radius } = useContext(MapContext);
   const scale = calcScale(radius);
   return (
@@ -22,16 +21,12 @@ export function MecatolTile({ mapId, tile, hideValues = false, disablePopover = 
       image={<MecatolPlanet radius={radius} />}
     >
       {!hideValues && (
-        <Box
-          w="75"
-          pos="relative"
-          style={{ scale: scale.toString(), zIndex: 1 }}
-        >
-          <Flex align="center" justify="center">
+        <div style={{ width: 75, position: "relative", scale: scale.toString(), zIndex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
             <PlanetStats resources={1} influence={6} legendary />
-          </Flex>
+          </div>
           <PlanetName size={68}>Mecatol Rex</PlanetName>
-        </Box>
+        </div>
       )}
     </Hex>
   );

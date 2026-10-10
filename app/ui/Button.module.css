@@ -1,0 +1,125 @@
+/* Buttons: a plate with two opposite corners cut */
+.btn {
+  --c: var(--chamfer);
+  --fill: var(--hull-raised);
+  --edge: var(--rule-strong);
+  --ink: var(--text);
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 36px;
+  padding: 0 var(--space-4);
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 600 14px/1 var(--font);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: color 120ms var(--ease);
+}
+.btn::before, .btn::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+  transition: background-color 120ms var(--ease);
+}
+.btn::before { inset: 0; background: var(--edge); }
+.btn::after { inset: 1px; background: var(--fill); }
+.btn svg { width: 16px; height: 16px; flex: none; }
+.label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.sm { height: 30px; padding: 0 var(--space-3); font-size: 13px; --c: var(--chamfer-sm); }
+.sm svg { width: 15px; height: 15px; }
+.lg { height: 46px; padding: 0 var(--space-5); font-size: 16px; --c: var(--chamfer-lg); }
+.lg svg { width: 18px; height: 18px; }
+.block { display: flex; width: 100%; }
+
+.btn:hover { --fill: var(--hull-hover); --edge: var(--rule-hover); }
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 2px solid var(--ion); outline-offset: 3px; }
+
+.primary { --fill: var(--gold); --edge: var(--gold); --ink: var(--on-gold); }
+.primary:hover { --fill: var(--gold-hi); --edge: var(--gold-hi); }
+.primary:active { --fill: var(--gold-deep); --edge: var(--gold-deep); }
+
+.tertiary { --fill: transparent; --edge: transparent; --ink: var(--ion); padding-inline: var(--space-3); }
+.tertiary:hover { --fill: color-mix(in oklab, var(--ion) 12%, transparent); --edge: transparent; }
+
+.danger { --fill: var(--danger-fill); --edge: var(--danger-fill); --ink: var(--on-danger); }
+.danger:hover { --fill: var(--danger-fill-hi); --edge: var(--danger-fill-hi); }
+
+.discord { --fill: var(--discord); --edge: var(--discord); --ink: #fff; }
+.discord:hover { --fill: #6a75f5; --edge: #6a75f5; }
+
+.btn:disabled, .btn[aria-disabled="true"] {
+  --fill: var(--hull-sunken);
+  --edge: var(--rule);
+  --ink: color-mix(in oklab, var(--text-muted) 75%, transparent);
+  cursor: not-allowed;
+  transform: none;
+}
+.tertiary:disabled { --fill: transparent; --edge: transparent; }
+.copied { --ink: var(--success); }
+
+/* Icon buttons */
+.icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 120ms var(--ease), color 120ms var(--ease);
+}
+.icon svg { width: 18px; height: 18px; }
+.icon:hover { background: var(--hull-raised); color: var(--text); }
+.icon:disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
+.icon[aria-pressed="true"] { color: var(--gold); background: color-mix(in oklab, var(--gold) 12%, transparent); }
+.icon-outline { border-color: var(--rule-strong); color: var(--text); background: var(--hull); }
+.icon-outline:hover { border-color: var(--rule-hover); }
+.icon-danger { color: var(--danger); }
+.icon-danger:hover { background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger); }
+.icon-solid { background: var(--hull-raised); border-color: var(--rule); color: var(--text); }
+.icon-xs { width: 22px; height: 22px; }
+.icon-xs svg { width: 13px; height: 13px; }
+.icon-sm { width: 28px; height: 28px; }
+.icon-sm svg { width: 15px; height: 15px; }
+.icon-lg { width: 40px; height: 40px; }
+.icon-lg svg { width: 20px; height: 20px; }
+
+/* Pick: the small Select on anything pickable */
+.pick {
+  --c: 5px;
+  --tint: var(--ion);
+  position: relative; isolation: isolate;
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  height: 28px; padding: 0 11px;
+  border: 0; background: none;
+  color: var(--tint);
+  font: 600 12.5px/1 var(--font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pick::before, .pick::after { content: ""; position: absolute; z-index: -1; clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.pick::before { inset: 0; background: color-mix(in oklab, var(--tint) 70%, transparent); }
+.pick::after { inset: 1px; background: color-mix(in oklab, var(--tint) 12%, var(--hull)); }
+.pick:hover::after { background: color-mix(in oklab, var(--tint) 22%, var(--hull)); }
+.pick svg { width: 13px; height: 13px; }
+/* Selected is gold as a line, never a fill: the fill belongs to Lock in pick. */
+.pick[aria-pressed="true"] { color: var(--gold); }
+.pick[aria-pressed="true"]::before { background: var(--gold); }
+.pick[aria-pressed="true"]::after { background: color-mix(in oklab, var(--gold) 14%, var(--hull)); }
+.pick:disabled { opacity: 0.45; cursor: not-allowed; }
+.pick-minor { --tint: var(--player-magenta); }
+.pick-danger { --tint: var(--danger); }

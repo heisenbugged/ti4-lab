@@ -1,10 +1,11 @@
-import { Box, Button, Group, Stack, Text } from "@mantine/core";
 import { useDimensions } from "~/hooks/useDimensions";
 import { getBoundedMapHeight } from "~/utils/positioning";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 import { Map, MAP_INTERACTIONS } from "~/components/Map";
-import { SectionTitle } from "~/components/Section";
-import { IconDice6Filled } from "@tabler/icons-react";
+import { IconDice5, IconEraser } from "@tabler/icons-react";
+import { Button, IconButton } from "~/ui";
+import { BuilderSection } from "./BuilderSection";
+import classes from "./MapSection.module.css";
 import { useDraft } from "~/draftStore";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useFullMapStats } from "~/hooks/useFullMapStats";
@@ -69,46 +70,59 @@ export function MapSection() {
   const sensors = useSensors(delayedPointerSensor);
 
   return (
-    <div style={{ position: "sticky", width: "auto", top: 60 }}>
-      <SectionTitle title="Full Map">
-        <Group gap={2}>
+    <BuilderSection
+      title="Full map"
+      className={classes.section}
+      actions={
+        <>
           {/* TODO: disable map randomization if not allowed by the draft config */}
           {config.allowIndependentMapRandomization !== false && (
-            <Button size="xs" onMouseDown={randomizeMap} bg="gray">
-              <IconDice6Filled size={24} />
-            </Button>
+            <IconButton
+              variant="outline"
+              label="Randomize map"
+              onMouseDown={randomizeMap}
+            >
+              <IconDice5 />
+            </IconButton>
           )}
-          <Button size="xs" onMouseDown={clearMap} bg="red">
+          <Button
+            size="sm"
+            variant="danger"
+            icon={<IconEraser />}
+            onMouseDown={clearMap}
+          >
             Clear
           </Button>
-        </Group>
-      </SectionTitle>
-      <Box
-        ref={ref}
-        style={{
-          height,
-          width: "100%",
-          position: "relative",
-        }}
-        mt="md"
-      >
-        {stats && (
-          <Stack pos="absolute" top={0} right={0} gap={1} visibleFrom="xs">
-            <Text size="sm" ta="right">
-              Blue/Red: {stats.blueTiles}/{stats.redTiles}
-            </Text>
-            <Text size="sm" ta="right">
-              Resources/Influence: {stats.totalResources}/{stats.totalInfluence}
-            </Text>
-            <Text size="sm" ta="right">
-              Tech: {stats.totalTech}
-            </Text>
-            <Text size="sm" ta="right">
-              Traits R/G/B: {stats.redTraits}/{stats.greenTraits}/
-              {stats.blueTraits}
-            </Text>
-          </Stack>
-        )}
+        </>
+      }
+    >
+      {stats && (
+        <dl className={classes.stats}>
+          <div>
+            <dt>Blue/red</dt>
+            <dd>
+              {stats.blueTiles}/{stats.redTiles}
+            </dd>
+          </div>
+          <div>
+            <dt>Resources/influence</dt>
+            <dd>
+              {stats.totalResources}/{stats.totalInfluence}
+            </dd>
+          </div>
+          <div>
+            <dt>Tech</dt>
+            <dd>{stats.totalTech}</dd>
+          </div>
+          <div>
+            <dt>Traits R/G/B</dt>
+            <dd>
+              {stats.redTraits}/{stats.greenTraits}/{stats.blueTraits}
+            </dd>
+          </div>
+        </dl>
+      )}
+      <div ref={ref} className={classes.map} style={{ height }}>
         <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
           <Map
             id="fullmap"
@@ -120,7 +134,7 @@ export function MapSection() {
             coreSliceData={isHeisenDraft ? coreSliceData : undefined}
           />
         </DndContext>
-      </Box>
-    </div>
+      </div>
+    </BuilderSection>
   );
 }

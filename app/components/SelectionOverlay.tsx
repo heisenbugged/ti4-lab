@@ -1,5 +1,6 @@
-import { Badge, Box, Center } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
+import { Tag } from "~/ui";
+import classes from "./SelectionOverlay.module.css";
 
 type SelectionOverlayProps = {
   visible: boolean;
@@ -8,12 +9,9 @@ type SelectionOverlayProps = {
   badgeLabel?: string;
 };
 
-const sizeConfig = {
-  sm: { checkSize: 24, padding: "xs" },
-  md: { checkSize: 32, padding: "sm" },
-  lg: { checkSize: 48, padding: "md" },
-} as const;
+const checkSizes = { sm: 18, md: 22, lg: 30 } as const;
 
+/** Gold selection over a card or tile: corner brackets, a check and an optional "Selected" tag. */
 export function SelectionOverlay({
   visible,
   size = "md",
@@ -22,38 +20,19 @@ export function SelectionOverlay({
 }: SelectionOverlayProps) {
   if (!visible) return null;
 
-  const { checkSize, padding } = sizeConfig[size];
-
   return (
     <>
-      <Center
-        pos="absolute"
-        top={0}
-        left={0}
-        right={0}
-        bottom={0}
-        bg="rgba(64, 192, 87, 0.15)"
-        style={{ borderRadius: 8, pointerEvents: "none", zIndex: 5 }}
-      >
-        <Box
-          bg="green.6"
-          p={padding}
-          style={{
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <IconCheck size={checkSize} color="white" />
-        </Box>
-      </Center>
+      <div className={`${classes.overlay} ui-bracket`} aria-hidden>
+        <span className={classes.check} data-size={size}>
+          <IconCheck size={checkSizes[size]} stroke={2.5} />
+        </span>
+      </div>
       {showBadge && (
-        <Box pos="absolute" top={-15} right={-10} style={{ zIndex: 10 }}>
-          <Badge size="lg" color="green" variant="filled">
+        <span className={classes.badge}>
+          <Tag tone="gold" icon={<IconCheck size={12} />}>
             {badgeLabel}
-          </Badge>
-        </Box>
+          </Tag>
+        </span>
       )}
     </>
   );

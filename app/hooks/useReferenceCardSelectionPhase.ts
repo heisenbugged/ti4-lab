@@ -60,23 +60,18 @@ export function useReferenceCardSelectionPhase({
     : canSelect
       ? pickForAnyone && selectedPlayerId
         ? `Select ${label} for ${playerToShow.name}`
-        : `Select Your ${label} Card`
+        : `Select your ${label.toLowerCase()} card`
       : hasStaged
         ? "Waiting for other players..."
         : "You have already selected";
 
   const handleSelectCard = useCallback(
     async (factionId: FactionId) => {
+      // Confirmation happens in the UI (a Modal), so this stages directly.
       if (!canSelect || !currentPlayer) return;
-      if (
-        confirm(
-          `Select ${allFactions[factionId].name} as your ${label.toLowerCase()} card?`,
-        )
-      ) {
-        await stageAction(currentPlayer.id, factionId);
-      }
+      await stageAction(currentPlayer.id, factionId);
     },
-    [canSelect, currentPlayer, stageAction, label],
+    [canSelect, currentPlayer, stageAction],
   );
 
   return {

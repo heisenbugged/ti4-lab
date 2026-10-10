@@ -11,7 +11,8 @@ import { getFactionCount } from "~/data/factionData";
 import { MAPS, type ChoosableDraftType } from "./maps";
 import { getFactionPool } from "~/utils/factions";
 import { supportsTexasStyle } from "~/draft/texas/texasCompatibility";
-import { notifications } from "@mantine/notifications";
+import { createElement } from "react";
+import { notify } from "~/ui/notify";
 import {
   validateFactionState,
   calculateFactionConstraints,
@@ -47,11 +48,13 @@ type ContentFlags = {
 const showFactionNotifications = (notifs: FactionNotification[]) => {
   if (notifs.length === 0) return;
 
-  const message = notifs.map((n) => n.message).join("\n");
-  notifications.show({
-    message,
-    color: "blue",
-  });
+  // Several adjustments join into one toast, one line each.
+  const message = createElement(
+    "span",
+    { style: { whiteSpace: "pre-line" } },
+    notifs.map((n) => n.message).join("\n"),
+  );
+  notify({ message, tone: "info" });
 };
 
 export type DraftMode = "base" | "twilightFalls" | "texasStyle";

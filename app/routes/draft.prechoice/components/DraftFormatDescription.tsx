@@ -8,7 +8,6 @@ import {
 } from "@tabler/icons-react";
 import { ChoosableDraftType } from "../maps";
 import styles from "./DraftFormatDescription.module.css";
-import clsx from "clsx";
 
 type Feature = {
   icon: "slices" | "equidistant" | "balanced" | "wormholes" | "nucleus" | "compact";
@@ -36,36 +35,23 @@ const ICONS = {
   compact: IconLayoutGrid,
 };
 
-function getVariantClass(mapType: ChoosableDraftType): string {
-  if (mapType.startsWith("miltyeq")) return styles.miltyeq;
-  if (mapType.startsWith("milty")) return styles.milty;
-  if (mapType.startsWith("heisen")) return styles.nucleus;
-  if (mapType === "std4p") return styles.small;
-  return "";
-}
-
-export function DraftFormatDescription({ mapType, data, title }: Props) {
-  const variantClass = getVariantClass(mapType);
-
+/** What the hovered or chosen style plays like, with four feature chips. */
+export function DraftFormatDescription({ data, title }: Props) {
   return (
-    <div className={clsx(styles.container, variantClass)}>
-      <div className={styles.header}>
-        <span className={styles.formatTitle}>{title}</span>
-      </div>
-      <div className={styles.content}>
-        <p className={styles.description}>{data.description}</p>
-        <div className={styles.featuresGrid}>
-          {data.features.map((feature, idx) => {
-            const Icon = ICONS[feature.icon];
-            return (
-              <div key={idx} className={styles.featureItem}>
-                <Icon size={12} className={styles.featureIcon} />
-                <span>{feature.label}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+    <div className={styles.desc}>
+      <h3 className={styles.title}>{title}</h3>
+      <p className={styles.text}>{data.description}</p>
+      <ul className={styles.chips}>
+        {data.features.map((feature, idx) => {
+          const Icon = ICONS[feature.icon];
+          return (
+            <li key={idx}>
+              <Icon size={15} />
+              <span>{feature.label}</span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

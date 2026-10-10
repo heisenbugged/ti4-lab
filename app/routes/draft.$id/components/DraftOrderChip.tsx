@@ -1,47 +1,46 @@
-import { Group, Text } from "@mantine/core";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
-import { playerColors } from "~/data/factionData";
+import { PlayerHex, cx } from "~/ui";
 import type { DraftOrderEntry } from "./draftOrderUtils";
-
-import classes from "~/components/Surface.module.css";
-import draftClasses from "./DraftOrder.module.css";
+import { playerColorOf, playerLetter } from "./draftOrderUtils";
+import classes from "./DraftOrder.module.css";
 
 type Props = {
   entry: DraftOrderEntry;
   compact?: boolean;
   showDiscord?: boolean;
   chipSize?: "sm" | "md";
+  /** Text under the hex. Defaults to the player's name. */
+  label?: string;
 };
 
+/** One pick in the pick order: done picks are solid, the current pick is gold, upcoming picks are dashed. */
 export function DraftOrderChip({
   entry,
   compact = false,
   showDiscord = false,
-  chipSize = "md",
+  label,
 }: Props) {
-  const padding = compact ? 6 : "xs";
-  const textSize = compact ? "xs" : "sm";
-  const gap = compact ? "xs" : "xs";
-
+  const color = playerColorOf(entry.player.id);
   return (
-    <Group
-      className={[
-        classes.surface,
-        draftClasses[playerColors[entry.player.id]],
-        entry.isActive ? draftClasses.active : "",
-        entry.isPassed ? draftClasses.passed : "",
-      ].join(" ")}
-      p={padding}
-      gap={gap}
-      data-active={entry.isActive ? "true" : undefined}
-      style={chipSize === "sm" ? { borderRadius: "var(--mantine-radius-sm)" } : undefined}
-    >
-      {showDiscord && entry.player.hasDiscord && (
-        <IconBrandDiscordFilled size={14} />
+    <div
+      className={cx(
+        classes.cell,
+        compact && classes.compact,
+        entry.isActive && cx(classes.now, "ui-bracket"),
+        !entry.isActive && !entry.isPassed && classes.next,
       )}
-      <Text ff="heading" size={textSize} fw={"bold"} lh={1}>
-        {entry.player.name}
-      </Text>
-    </Group>
+      data-active={entry.isActive ? "true" : undefined}
+      title={`Pick ${entry.idx + 1}, ${entry.player.name}`}
+    >
+      <PlayerHex color={color} size="sm">
+        {playerLetter(entry.player.id)}
+      </PlayerHex>
+      <span className={classes.label}>
+        {showDiscord && entry.player.hasDiscord && (
+          <IconBrandDiscordFilled size={11} className={classes.discord} aria-label="On Discord" />
+        )}
+        {label ?? entry.player.name}
+      </span>
+    </div>
   );
 }

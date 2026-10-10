@@ -1,34 +1,30 @@
-import { Card, Group, Stack, Table, Text } from "@mantine/core";
 import { useDraft } from "~/draftStore";
-import { PlayerChip } from "./PlayerChip";
 import { factions } from "~/data/factionData";
 import { optimalStatsForSystems } from "~/utils/map";
-import { Slice, Faction, HydratedPlayer, System } from "~/types";
-import { FactionIcon } from "~/components/icons/FactionIcon";
-import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
-import { SliceFeatures } from "~/components/Slice/SliceFeatures";
-import { DraftConfig } from "~/draft";
+import { HydratedPlayer, Slice } from "~/types";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
-import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { systemsInSlice } from "~/utils/slice";
 import { useSliceValue } from "~/hooks/useSliceValue";
-
+import { PlayerHex, cx } from "~/ui";
+import { playerColorOf, playerLetter, shortFactionName } from "./draftOrderUtils";
 import classes from "./MidDraftSummary.module.css";
-import { FactionHelpInfo } from "~/routes/draft.$id/components/FactionHelpInfo";
 
+const ordinal = (n: number) =>
+  n === 1 ? "Speaker" : `${n}${n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
+
+/** One card per player with a slot for each thing they pick. Empty slots are dashed. */
 export function MidDraftSummary() {
-  const config = useDraftConfig();
   const slices = useDraft((state) => state.draft.slices);
   const draftPlayerColors = useDraft(
     (state) => state.draft.settings.draftPlayerColors,
   );
   const draftSpeaker = useDraft((state) => state.draft.settings.draftSpeaker);
   const draftGameMode = useDraft((state) => state.draft.settings.draftGameMode);
-  const { hydratedPlayers } = useHydratedDraft();
+  const { hydratedPlayers, activePlayer } = useHydratedDraft();
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const usingMinorFactions = useDraft(
     (state) =>
-      state.draft.settings.minorFactionsInSharedPool ||
+      !!state.draft.settings.minorFactionsInSharedPool ||
       state.draft.availableMinorFactions !== undefined,
   );
   const showSeat = draftSpeaker || draftGameMode === "texasStyle";
@@ -41,269 +37,138 @@ export function MidDraftSummary() {
           .map((player) => player.id)
       : pickOrder
           .filter((entry): entry is number => typeof entry === "number")
+          .filter((id, i, all) => all.indexOf(id) === i)
           .slice(0, hydratedPlayers.length);
+  const ordered = [
+    ...playerOrder
+      .map((id) => hydratedPlayers.find((p) => p.id === id))
+      .filter((p): p is HydratedPlayer => !!p),
+    ...hydratedPlayers.filter((p) => !playerOrder.includes(p.id)),
+  ];
+  const n = ordered.length;
+  const cols = n <= 6 ? n : Math.ceil(n / 2);
 
   return (
-    <>
-      <Stack mt="lg" hiddenFrom="sm">
-        {hydratedPlayers.map((p) => (
-          <SummaryCard
-            config={config}
-            key={p.id}
-            player={p}
-            slice={p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined}
-            showSeat={showSeat}
-            showMinorFaction={usingMinorFactions}
-            showPlayerColor={!!draftPlayerColors}
-          />
-        ))}
-      </Stack>
-      <Table visibleFrom="sm">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Faction</Table.Th>
-            {usingMinorFactions && <Table.Th>Minor Faction</Table.Th>}
-            <Table.Th>Speaker Order</Table.Th>
-            {showSeat && <Table.Th>Seat</Table.Th>}
-            {showSlice && <Table.Th w="260px">Slice</Table.Th>}
-            {draftPlayerColors && <Table.Th>Color</Table.Th>}
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {playerOrder.map((id) => {
-            const player = hydratedPlayers.find((p) => p.id === id);
-            if (!player) return null;
-            return (
-              <SummaryRow
-                config={config}
-                key={player.id}
-                player={player}
-                slice={
-                  player.sliceIdx !== undefined
-                    ? slices[player.sliceIdx]
-                    : undefined
-                }
-                showSeat={showSeat}
-                showSlice={showSlice}
-                showMinorFaction={usingMinorFactions}
-                showPlayerColor={!!draftPlayerColors}
-              />
-            );
-          })}
-        </Table.Tbody>
-      </Table>
-    </>
+    <div
+      className={classes.players}
+      style={{ "--cols": cols } as React.CSSProperties}
+      aria-label="What each player has"
+    >
+      {ordered.map((player) => (
+        <PlayerCard
+          key={player.id}
+          player={player}
+          isPicking={activePlayer?.id === player.id}
+          slice={player.sliceIdx !== undefined ? slices[player.sliceIdx] : undefined}
+          showSlice={showSlice}
+          showSpeaker={showSeat}
+          showMinorFaction={usingMinorFactions}
+          showPlayerColor={!!draftPlayerColors}
+          showPack={draftGameMode === "twilightsFall"}
+        />
+      ))}
+    </div>
   );
 }
 
-type Props = {
-  config: DraftConfig;
-  player: HydratedPlayer;
-  slice?: Slice;
-  showSeat: boolean;
-  showSlice?: boolean;
-  showMinorFaction: boolean;
-  showPlayerColor: boolean;
-};
+function Slot({ empty, children, title }: { empty?: boolean; children: React.ReactNode; title?: string }) {
+  return (
+    <span className={cx(classes.slot, empty && classes.empty)} title={title}>
+      {children}
+    </span>
+  );
+}
 
-export function SummaryCard({
-  player,
-  slice,
-  showSeat,
-  showPlayerColor,
-}: Props) {
+function SliceSlot({ slice }: { slice: Slice }) {
   const sliceValue = useSliceValue(slice);
-  let faction: Faction | undefined;
-  let minorFaction: Faction | undefined;
-  let systems: System[] | undefined;
-  let optimal:
-    | { resources: number; influence: number; flex: number }
-    | undefined;
-
-  if (player.faction) faction = factions[player.faction];
-  if (player.minorFaction) minorFaction = factions[player.minorFaction];
-  if (slice) {
-    systems = systemsInSlice(slice);
-    optimal = optimalStatsForSystems(systems);
-  }
-
+  const optimal = optimalStatsForSystems(systemsInSlice(slice));
+  const sv = sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1);
   return (
-    <Card shadow="xs" padding="md" withBorder>
-      <Group justify="space-between">
-        <PlayerChip player={player} />
-        <Group gap="sm">
-          {sliceValue !== undefined && (
-            <Text fw={700} c="yellow.5">
-              SV: {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
-            </Text>
-          )}
-          {optimal && (
-            <Group gap={4}>
-              <PlanetStatsPill
-                size="sm"
-                resources={optimal.resources}
-                influence={optimal.influence}
-                flex={optimal.flex}
-              />
-              <Text size="xs" c="dimmed">
-                ({optimal.resources + optimal.influence + optimal.flex})
-              </Text>
-            </Group>
-          )}
-        </Group>
-      </Group>
-      <Group justify="space-between" mt="lg">
-        <Group className={classes.chooseFaction} px="xs">
-          {faction ? (
-            <>
-              <FactionIcon faction={faction.id} style={{ height: 24 }} />
-              <Text size="sm">{faction.name}</Text>
-            </>
-          ) : (
-            <Text size="sm">Faction not chosen</Text>
-          )}
-        </Group>
-      </Group>
-
-      {faction && (
-        <Group mt="xs">
-          <FactionHelpInfo faction={faction} />
-        </Group>
-      )}
-
-      {slice !== undefined && (
-        <Group mt="lg">
-          <SliceFeatures slice={slice} />
-        </Group>
-      )}
-
-      {minorFaction && (
-        <Group justify="space-between" mt="lg">
-          <Stack gap="xs">
-            <Text size="sm" lh={1}>
-              Minor Faction:{" "}
-              {player.minorFaction !== undefined
-                ? minorFaction.name
-                : "Not Chosen"}
-            </Text>
-          </Stack>
-        </Group>
-      )}
-
-      {showPlayerColor && (
-        <Text size="sm" lh={1}>
-          Color: {player.factionColor}
-        </Text>
-      )}
-
-      <Group justify="space-between" mt="lg">
-        <Stack gap="xs">
-          <Text size="sm" lh={1}>
-            Speaker Order:{" "}
-            {player.speakerOrder !== undefined
-              ? player.speakerOrder + 1
-              : "Not Chosen"}
-          </Text>
-          {showSeat && (
-            <Text size="sm" lh={1}>
-              Seat #:{" "}
-              {player.seatIdx !== undefined ? player.seatIdx + 1 : "Not Chosen"}
-            </Text>
-          )}
-        </Stack>
-      </Group>
-    </Card>
+    <Slot
+      title={`Slice ${slice.name}: SV ${sv}, optimal ${optimal.resources} resources, ${optimal.influence} influence, ${optimal.flex} flex`}
+    >
+      <span className={classes.slotText}>{slice.name}</span>
+    </Slot>
   );
 }
 
-function SummaryRow({
+function PlayerCard({
   player,
+  isPicking,
   slice,
-  showSeat,
-  showSlice = true,
+  showSlice,
+  showSpeaker,
   showMinorFaction,
   showPlayerColor,
-}: Props) {
-  const sliceValue = useSliceValue(slice);
-  let faction: Faction | undefined;
-  let minorFaction: Faction | undefined;
-  let systems: System[] | undefined;
-  let optimal:
-    | { resources: number; influence: number; flex: number }
-    | undefined;
-
-  if (player.faction) faction = factions[player.faction];
-  if (player.minorFaction) minorFaction = factions[player.minorFaction];
-  if (slice) {
-    systems = systemsInSlice(slice);
-    optimal = optimalStatsForSystems(systems);
-  }
+  showPack,
+}: {
+  player: HydratedPlayer;
+  isPicking: boolean;
+  slice?: Slice;
+  showSlice: boolean;
+  showSpeaker: boolean;
+  showMinorFaction: boolean;
+  showPlayerColor: boolean;
+  showPack: boolean;
+}) {
+  const faction = player.faction ? factions[player.faction] : undefined;
+  const minor = player.minorFaction ? factions[player.minorFaction] : undefined;
+  const color = playerColorOf(player.id);
 
   return (
-    <Table.Tr>
-      <Table.Td>
-        <PlayerChip player={player} />
-      </Table.Td>
-      <Table.Td>
+    <div className={cx(classes.card, isPicking && classes.now)}>
+      <div className={classes.head}>
+        <PlayerHex color={color} size="sm">
+          {playerLetter(player.id)}
+        </PlayerHex>
+        <span className={classes.name} title={player.name}>
+          {player.name}
+        </span>
+        {isPicking && <small className={classes.picking}>Picking</small>}
+      </div>
+      <div className={classes.slots}>
         {faction ? (
-          <Group>
-            <FactionIcon faction={player.faction!} style={{ height: 18 }} />
-            <Text size="sm" lh={1}>
-              {faction.name}
-            </Text>
-          </Group>
-        ) : undefined}
-      </Table.Td>
-      {showMinorFaction && (
-        <Table.Td>
-          {minorFaction ? (
-            <Group>
-              <FactionIcon
-                faction={player.minorFaction!}
-                style={{ height: 18 }}
-              />
-              <Text size="sm" lh={1}>
-                {minorFaction.name}
-              </Text>
-            </Group>
-          ) : undefined}
-        </Table.Td>
-      )}
-      <Table.Td>
-        {player.speakerOrder !== undefined && player.speakerOrder + 1}
-      </Table.Td>
-      {showSeat && (
-        <Table.Td>
-          {player.seatIdx !== undefined && player.seatIdx + 1}
-        </Table.Td>
-      )}
-      {showSlice && (
-        <Table.Td>
-          <Group>
-            {sliceValue !== undefined && (
-              <Text fw={700} c="yellow.5">
-                {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
-              </Text>
-            )}
-            {optimal && (
-              <Group gap={4}>
-                <PlanetStatsPill
-                  size="sm"
-                  resources={optimal.resources}
-                  influence={optimal.influence}
-                  flex={optimal.flex}
-                />
-                <Text size="xs" c="dimmed">
-                  ({optimal.resources + optimal.influence + optimal.flex})
-                </Text>
-              </Group>
-            )}
-            {slice !== undefined && <SliceFeatures slice={slice} />}
-          </Group>
-        </Table.Td>
-      )}
-      {showPlayerColor && <Table.Td>{player.factionColor}</Table.Td>}
-    </Table.Tr>
+          <Slot title={faction.name}>
+            <img src={faction.iconPath} alt="" />
+            <span className={classes.slotText}>{shortFactionName(faction.name)}</span>
+          </Slot>
+        ) : (
+          <Slot empty>Faction</Slot>
+        )}
+        {showMinorFaction &&
+          (minor ? (
+            <Slot title={`Minor faction: ${minor.name}`}>
+              <img src={minor.iconPath} alt="" />
+              <span className={classes.slotText}>{shortFactionName(minor.name)}</span>
+            </Slot>
+          ) : (
+            <Slot empty>Minor</Slot>
+          ))}
+        {showSlice && (slice ? <SliceSlot slice={slice} /> : <Slot empty>Slice</Slot>)}
+        {showSpeaker &&
+          (player.speakerOrder !== undefined ? (
+            <Slot title="Speaker order">{ordinal(player.speakerOrder + 1)}</Slot>
+          ) : (
+            <Slot empty>Speaker</Slot>
+          ))}
+        {player.seatIdx !== undefined ? (
+          <Slot>Seat {player.seatIdx + 1}</Slot>
+        ) : (
+          <Slot empty>Seat</Slot>
+        )}
+        {showPack &&
+          (player.referenceCardPackIdx !== undefined ? (
+            <Slot title="Reference card pack">Pack {player.referenceCardPackIdx + 1}</Slot>
+          ) : (
+            <Slot empty>Pack</Slot>
+          ))}
+        {showPlayerColor &&
+          (player.factionColor ? (
+            <Slot title="In-game colour">{player.factionColor}</Slot>
+          ) : (
+            <Slot empty>Colour</Slot>
+          ))}
+      </div>
+    </div>
   );
 }

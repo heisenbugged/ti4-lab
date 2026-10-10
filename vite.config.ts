@@ -15,9 +15,6 @@ export default defineConfig({
     reactRouter(),
     tsconfigPaths(),
   ],
-  optimizeDeps: {
-    include: ["react-loading-indicators"],
-  },
   server: {
     warmup: {
       clientFiles: [

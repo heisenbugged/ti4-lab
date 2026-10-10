@@ -1,8 +1,29 @@
-.chooseFaction {
-    padding: 4px var(--mantine-spacing-md);
-    border-radius: var(--mantine-radius-lg);
-    background-color: var(--mantine-color-gray-1);
-    @mixin dark {
-        background-color: var(--mantine-color-dark-7);
-    }
+.players { display: grid; grid-template-columns: repeat(var(--cols, 6), minmax(0, 1fr)); gap: var(--space-2); }
+
+.card { display: grid; align-content: start; gap: var(--space-2); min-width: 0; padding: 10px 10px 10px 12px; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.now { border-color: color-mix(in oklab, var(--gold) 55%, transparent); box-shadow: inset 0 2px 0 var(--gold); }
+.head { display: flex; align-items: center; gap: var(--space-2); min-width: 0; font-size: 14px; font-weight: 600; }
+.name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picking { margin-left: auto; flex: none; font-size: 12px; font-weight: 600; color: var(--gold); }
+
+.slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+.slot { display: flex; align-items: center; justify-content: center; gap: 5px; height: 28px; min-width: 0; padding: 0 5px; overflow: hidden; background: var(--hull-sunken); border: 1px solid var(--rule); border-radius: 2px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.slot img { width: 18px; height: 18px; object-fit: contain; flex: none; }
+.slotText { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.empty { background: transparent; border: 1px dashed var(--rule-strong); color: var(--text-muted); font-weight: 500; }
+
+@media (max-width: 1199.98px) {
+  .players { grid-template-columns: repeat(min(var(--cols, 6), 3), minmax(0, 1fr)); }
+}
+
+@media (max-width: 759.98px) {
+  .players { grid-template-columns: minmax(0, 1fr); gap: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; }
+  .card { grid-template-columns: 84px minmax(0, 1fr); align-items: center; padding: 6px 8px; border: 0; border-top: 1px solid var(--rule); border-radius: 0; }
+  .card:first-child { border-top: 0; }
+  .now { box-shadow: inset 2px 0 0 var(--gold); background: color-mix(in oklab, var(--gold) 6%, var(--hull)); }
+  .head { font-size: 13px; gap: 6px; }
+  .picking { display: none; }
+  .slots { grid-template-columns: repeat(auto-fit, minmax(58px, 1fr)); gap: 3px; }
+  .slot { font-size: 11px; padding: 0 3px; }
+  .slot img { width: 16px; height: 16px; }
 }

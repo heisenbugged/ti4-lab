@@ -1,0 +1,81 @@
+/* Phase banner: tinted with the phase or player colour, title + one-line instruction. */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: color-mix(in oklab, var(--p) 16%, var(--hull));
+  border: 1px solid color-mix(in oklab, var(--p) 60%, transparent);
+}
+
+.badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--p);
+  color: var(--on-gold);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.text {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.description {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex: none;
+}
+
+/* Header strip above a simultaneous phase. */
+.header {
+  width: 100%;
+  max-width: var(--maw, 1400px);
+  margin: 0 auto;
+}
+
+@media (max-width: 767px) {
+  .banner {
+    flex-wrap: wrap;
+  }
+  .text {
+    flex-basis: calc(100% - 52px);
+  }
+  .title {
+    white-space: normal;
+  }
+  .actions {
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+}

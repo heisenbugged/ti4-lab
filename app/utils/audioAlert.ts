@@ -25,7 +25,11 @@ export function setAudioAlertEnabled(enabled: boolean): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(AUDIO_ALERT_CONSENT_KEY, "true");
   localStorage.setItem(AUDIO_ALERT_PREFERENCE_KEY, enabled ? "true" : "false");
+  window.dispatchEvent(new Event(AUDIO_ALERT_CHANGE_EVENT));
 }
+
+/** Fired on window whenever the preference changes, so toggles can stay in sync. */
+export const AUDIO_ALERT_CHANGE_EVENT = "ti4lab:audio-alert";
 
 /**
  * Mark that the user has given consent (shows the prompt)

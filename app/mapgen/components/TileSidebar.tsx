@@ -1,4 +1,3 @@
-import { Box, ScrollArea, SegmentedControl, Stack, Tabs, Text } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { useMapBuilder } from "~/mapBuilderStore";
 import { getSystemGameSet, systemData } from "~/data/systemData";
@@ -6,6 +5,8 @@ import { systemsFromIds } from "~/utils/system";
 import { DraggableSidebarTile } from "./DraggableSidebarTile";
 import { MiniHex } from "./MiniHex";
 import { MiniWormhole } from "./MiniWormhole";
+import { Segmented, Text } from "~/ui";
+import classes from "./TileSidebar.module.css";
 
 type TileFilter = "all" | "blue" | "red" | "wormhole";
 
@@ -15,6 +16,7 @@ export function TileSidebar() {
   const systems = systemsFromIds(systemPool);
   const map = useMapBuilder((state) => state.state.map);
   const [filter, setFilter] = useState<TileFilter>("all");
+  const [view, setView] = useState<"tiles" | "hyperlanes">("tiles");
 
   const usedSystemIds = new Set(
     map
@@ -65,120 +67,120 @@ export function TileSidebar() {
   }, [gameSets]);
 
   return (
-    <Box h="calc(100vh - 60px)" bg="dark.7">
-      <Tabs defaultValue="tiles" variant="outline" h="100%">
-        <Tabs.List grow>
-          <Tabs.Tab value="tiles">Tiles</Tabs.Tab>
-          <Tabs.Tab value="hyperlanes">Hyperlanes</Tabs.Tab>
-        </Tabs.List>
-
-        <Tabs.Panel value="tiles">
-          <Box px="sm" pt="xs" pb="xs">
-            <Text
-              size="xs"
-              fw={600}
-              tt="uppercase"
-              c="dimmed"
-              mb={6}
-              style={{ letterSpacing: "0.05em", fontFamily: "Orbitron" }}
-            >
+    <div className={classes.sidebar}>
+      <div className={classes.head}>
+        <Segmented
+          block
+          label="Sidebar view"
+          value={view}
+          onChange={setView}
+          options={[
+            { value: "tiles", label: "Tiles" },
+            { value: "hyperlanes", label: "Hyperlanes" },
+          ]}
+        />
+        {view === "tiles" ? (
+          <>
+            <Text size="xs" tone="muted" weight={600}>
               Tiles ({availableSystems.length})
             </Text>
-            <SegmentedControl
+            <Segmented
+              block
+              size="sm"
+              label="Filter tiles"
               value={filter}
-              onChange={(value) => setFilter(value as TileFilter)}
-              size="xs"
-              fullWidth
-              data={[
+              onChange={setFilter}
+              className={classes.filter}
+              options={[
                 { value: "all", label: "All" },
                 {
                   value: "blue",
+                  title: "Blue systems",
                   label: (
-                    <Box style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <MiniHex color="#4dabf7" />
-                    </Box>
+                    <>
+                      <MiniHex color="var(--influence)" />
+                      Blue
+                    </>
                   ),
                 },
                 {
                   value: "red",
+                  title: "Red systems",
                   label: (
-                    <Box style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <MiniHex color="#ff6b6b" />
-                    </Box>
+                    <>
+                      <MiniHex color="var(--anomaly)" />
+                      Red
+                    </>
                   ),
                 },
                 {
                   value: "wormhole",
+                  title: "Wormholes",
                   label: (
-                    <Box style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <>
                       <MiniWormhole />
-                    </Box>
+                      Wormholes
+                    </>
                   ),
                 },
               ]}
             />
-          </Box>
+          </>
+        ) : (
+          <Text size="xs" tone="muted" weight={600}>
+            Hyperlanes ({hyperlaneOptions.length})
+          </Text>
+        )}
+      </div>
 
-          <ScrollArea h="calc(100vh - 60px - 110px)" type="scroll">
-            <Stack gap="xs" px="sm" pb="sm">
+      <div className={classes.scroll}>
+        {view === "tiles" ? (
+          <>
+            <div className={classes.grid}>
               {availableSystems.map((system) => (
                 <DraggableSidebarTile key={system.id} systemId={system.id} />
               ))}
-            </Stack>
+            </div>
+            {availableSystems.length === 0 && (
+              <Text size="xs" tone="muted" className={classes.none}>
+                No unused tiles match this filter.
+              </Text>
+            )}
 
             {usedSystems.length > 0 && (
               <>
-                <Box
-                  px="sm"
-                  py={6}
-                  bg="dark.6"
-                  style={{ borderTop: "1px solid var(--mantine-color-dark-5)" }}
-                >
-                  <Text
-                    size="xs"
-                    fw={600}
-                    tt="uppercase"
-                    c="dimmed"
-                    style={{ letterSpacing: "0.05em", fontFamily: "Orbitron" }}
-                  >
+                <div className={classes.used}>
+                  <Text size="xs" weight={600}>
                     Used ({usedSystems.length})
                   </Text>
-                </Box>
-                <Stack gap="xs" px="sm" py="sm">
+                  <Text size="xs" tone="muted">
+                    Systems already on the map stay draggable here. Dropping one
+                    moves it.
+                  </Text>
+                </div>
+                <div className={classes.grid}>
                   {usedSystems.map((system) => (
-                    <DraggableSidebarTile key={system.id} systemId={system.id} />
+                    <DraggableSidebarTile
+                      key={system.id}
+                      systemId={system.id}
+                    />
                   ))}
-                </Stack>
+                </div>
               </>
             )}
-          </ScrollArea>
-        </Tabs.Panel>
-
-        <Tabs.Panel value="hyperlanes">
-          <Box px="sm" pt="xs" pb="xs">
-            <Text
-              size="xs"
-              fw={600}
-              tt="uppercase"
-              c="dimmed"
-              style={{ letterSpacing: "0.05em", fontFamily: "Orbitron" }}
-            >
-              Hyperlanes ({hyperlaneOptions.length})
-            </Text>
-          </Box>
-          <ScrollArea h="calc(100vh - 60px - 86px)" type="scroll">
-            <Stack gap="xs" px="sm" pb="sm">
-              {hyperlaneOptions.map(({ systemId, rotation }) => (
-                <DraggableSidebarTile
-                  key={`${systemId}-${rotation}`}
-                  systemId={systemId}
-                  rotation={rotation}
-                />
-              ))}
-            </Stack>
-          </ScrollArea>
-        </Tabs.Panel>
-      </Tabs>
-    </Box>
+          </>
+        ) : (
+          <div className={classes.grid}>
+            {hyperlaneOptions.map(({ systemId, rotation }) => (
+              <DraggableSidebarTile
+                key={`${systemId}-${rotation}`}
+                systemId={systemId}
+                rotation={rotation}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

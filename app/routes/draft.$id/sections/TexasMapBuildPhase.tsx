@@ -1,17 +1,18 @@
+import { useMemo, useState } from "react";
+import { IconArrowBackUp } from "@tabler/icons-react";
 import {
-  AppShell,
-  Box,
   Button,
-  Group,
+  Chip,
   Modal,
-  ScrollArea,
-  Stack,
+  PlayerHex,
+  PlayerTag,
+  Tag,
   Text,
   Tooltip,
-} from "@mantine/core";
-import { useMemo, useState } from "react";
+  playerVar,
+  useMediaQuery,
+} from "~/ui";
 import { Map, MAP_INTERACTIONS } from "~/components/Map";
-import { useMediaQuery } from "@mantine/hooks";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { RollingDraftOrder } from "../components/RollingDraftOrder";
@@ -22,12 +23,19 @@ import {
 } from "~/utils/texasMapBuild";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { systemData } from "~/data/systemData";
-import { IconArrowBackUp } from "@tabler/icons-react";
-import { SystemTileCard } from "~/components/SystemTileCard";
+import { playerColors } from "~/data/factionData";
+import { RawSystemTile } from "~/components/tiles/SystemTile";
 import { useAdminControls } from "../components/useAdminControls";
+import { PhaseBanner } from "../components/SimultaneousPhaseHeader";
+import { TexasTile } from "./TexasTileDraftPhase";
 import classes from "./TexasMapBuildPhase.module.css";
 
-const SIDEBAR_WIDTH = 180;
+const ringNames = {
+  1: "First ring",
+  2: "Second ring",
+  3: "Third ring",
+  4: "Fourth ring",
+} as const;
 
 export function TexasMapBuildPhase() {
   const draft = useDraft((state) => state.draft);
@@ -59,8 +67,7 @@ export function TexasMapBuildPhase() {
     tileIdx: number;
     systemId: string;
   } | null>(null);
-  const isMobile = useMediaQuery("(max-width: 48em)");
-  const mobileFooterHeight = 160;
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const playerTiles =
     activePlayer && draft.texasDraft?.playerTiles
@@ -69,12 +76,7 @@ export function TexasMapBuildPhase() {
 
   const mapForRender = hydratedMap ?? draft.presetMap;
   const currentRing = getCurrentPlaceableRing(mapForRender);
-  const ringNames = {
-    1: "First Ring",
-    2: "Second Ring",
-    3: "Third Ring",
-    4: "Fourth Ring",
-  } as const;
+  const ringName = ringNames[currentRing as 1 | 2 | 3 | 4];
 
   // All tiles in the current ring (for subtle highlight)
   const currentRingTiles = useMemo(
@@ -132,174 +134,122 @@ export function TexasMapBuildPhase() {
     setSelectedSystemId(null);
   };
 
-  return (
-    <AppShell
-      navbar={{
-        width: SIDEBAR_WIDTH,
-        breakpoint: "sm",
-        collapsed: { mobile: true },
-      }}
-      padding={0}
+  const activeColor =
+    activePlayer !== undefined ? playerColors[activePlayer.id] : undefined;
+  const instruction = !canSelect
+    ? "Waiting for this player to place a tile."
+    : selectedSystemId
+      ? `Place tile ${selectedSystemId} on a highlighted hex.`
+      : "Select a tile, then a highlighted hex on the map.";
+
+  const pickAnyChip = (
+    <Chip
+      pressed={pickForAnyone}
+      onChange={() => setPickForAnyone(!pickForAnyone)}
     >
+      Pick for any player
+    </Chip>
+  );
+
+  return (
+    <div className={classes.shell}>
       <AdminPasswordModal
         opened={passwordModalOpen}
         onClose={() => setPasswordModalOpen(false)}
         onSubmit={handleAdminPasswordSubmit}
       />
 
-      <AppShell.Navbar p={0} visibleFrom="sm">
-        <Box
-          h="calc(100vh - 60px)"
-          style={{ display: "flex", flexDirection: "column" }}
-        >
-          <Box className={classes.sidebarHeader} px="md" pt="sm" pb="xs">
-            <Text size="sm" fw={700} mb="xs">
-              {activePlayer?.name ?? "Waiting"}
-            </Text>
-            <Text
-              size="xs"
-              fw={600}
-              tt="uppercase"
-              className={classes.mutedLabel}
-              mb="xs"
-            >
-              Available Tiles ({sortedPlayerTiles.length}/5)
-            </Text>
-          </Box>
-
-          <Box px="md" py="sm" style={{ overflowY: "auto", flex: "1 1 auto" }}>
-            <TilePickerList
-              tiles={sortedPlayerTiles}
-              selectedSystemId={selectedSystemId}
-              onSelect={handleSelectTile}
-              disabled={!canSelect}
+      <aside className={classes.tray} aria-label="Available tiles">
+        <div className={classes.trayHead}>
+          {activePlayer ? (
+            <PlayerTag
+              color={activeColor}
+              name={activePlayer.name}
+              letter={String.fromCharCode(65 + activePlayer.id)}
             />
-          </Box>
-        </Box>
-      </AppShell.Navbar>
-      <AppShell.Footer
-        p="xs"
-        hiddenFrom="sm"
-        className={classes.footer}
-        style={{ height: mobileFooterHeight }}
-      >
-        <ScrollArea
-          type="auto"
-          scrollbarSize={8}
-          offsetScrollbars
-          style={{ whiteSpace: "nowrap", height: "100%" }}
-        >
-          <TilePickerList
-            tiles={sortedPlayerTiles}
-            selectedSystemId={selectedSystemId}
-            onSelect={handleSelectTile}
-            disabled={!canSelect}
-            compact={true}
-          />
-        </ScrollArea>
-      </AppShell.Footer>
-      <AppShell.Main
-        p={0}
-        h={
-          isMobile
-            ? `calc(100vh - 60px - ${mobileFooterHeight}px)`
-            : "calc(100vh - 60px)"
-        }
-        mih={
-          isMobile
-            ? `calc(100vh - 60px - ${mobileFooterHeight}px)`
-            : "calc(100vh - 60px)"
-        }
-        style={{ overflowY: "auto", display: "flex", flexDirection: "column" }}
-      >
-        <Box className={classes.topBar} style={{ flexShrink: 0 }}>
-          <Group justify="space-between" align="center" px="sm" py={8}>
-            <Group gap="xs">
-              <Text
-                size="xs"
-                fw={700}
-                tt="uppercase"
-                style={{
-                  letterSpacing: "0.05em",
-                  color: "var(--mantine-color-blue-4)",
-                }}
-              >
-                {ringNames[currentRing as 1 | 2 | 3 | 4]}
-              </Text>
-              <Text size="xs" c="dimmed" ff="monospace">
-                {activePlayer?.name ?? "Waiting"}
-              </Text>
-            </Group>
-            <Group gap={4}>
-              <Button
-                size="compact-xs"
-                variant={adminMode ? "filled" : "default"}
-                color={adminMode ? "violet" : "gray"}
-                onClick={handleAdminToggle}
-              >
-                Admin
-              </Button>
-              {showPickForAnyoneControl && (
-                <Tooltip
-                  label="Reveals hidden tile information. Use with caution."
-                  color="orange"
-                  withArrow
-                  position="bottom"
-                >
-                  <Button
-                    size="compact-xs"
-                    variant={pickForAnyone ? "filled" : "default"}
-                    color={pickForAnyone ? "orange" : "gray"}
-                    onClick={() => setPickForAnyone(!pickForAnyone)}
-                  >
-                    Pick Any
-                  </Button>
-                </Tooltip>
-              )}
-              {showUndoLastSelection && (
-                <Button
-                  size="compact-xs"
-                  variant="subtle"
-                  color="red"
-                  leftSection={<IconArrowBackUp size={12} />}
-                  onClick={undoLastPick}
-                  disabled={selections.length === 0}
-                >
-                  Undo
-                </Button>
-              )}
-            </Group>
-          </Group>
-          <Box px="sm" pb="sm" pt={4}>
-            <RollingDraftOrder
-              pickOrder={draft.pickOrder}
-              currentPick={currentPick}
-              players={hydratedPlayers}
+          ) : (
+            <Text size="sm" weight={600}>
+              Waiting
+            </Text>
+          )}
+          <p className={classes.trayLabel}>
+            Available tiles ({sortedPlayerTiles.length}/5)
+          </p>
+        </div>
+        <div className={classes.trayList}>
+          {sortedPlayerTiles.length === 0 && (
+            <p className={classes.trayEmpty}>No tiles left to place.</p>
+          )}
+          {sortedPlayerTiles.map((systemId) => (
+            <TexasTile
+              key={systemId}
+              systemId={systemId}
+              radius={isMobile ? 42 : 56}
+              selected={selectedSystemId === systemId}
+              faceDown={!canSelect}
+              faceDownColor={
+                systemData[systemId]?.type === "RED" ? "red" : "blue"
+              }
+              onClick={canSelect ? () => handleSelectTile(systemId) : undefined}
+              className={!canSelect ? classes.faded : undefined}
             />
-          </Box>
-        </Box>
+          ))}
+        </div>
+      </aside>
 
-        <Box
-          w="100%"
-          pos="relative"
-          pt="md"
-          pb="md"
-          style={{
-            flex: "1 0 auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Box
-            pos="relative"
-            style={{
-              aspectRatio: "740 / 800",
-              height: "100%",
-              maxWidth: "100%",
-              minHeight: 450,
-            }}
+      <main className={classes.main}>
+        <div className={classes.top}>
+          <PhaseBanner
+            tint={playerVar(activeColor)}
+            badge={
+              activePlayer ? (
+                <PlayerHex color={activeColor} size="lg">
+                  {String.fromCharCode(65 + activePlayer.id)}
+                </PlayerHex>
+              ) : (
+                String(currentRing)
+              )
+            }
+            title={
+              activePlayer
+                ? `${activePlayer.name} is building the map`
+                : "Map build"
+            }
+            description={instruction}
           >
+            {ringName && <Tag tone="ion">{ringName}</Tag>}
+            <Chip pressed={adminMode} onChange={handleAdminToggle}>
+              Admin
+            </Chip>
+            {showPickForAnyoneControl && (
+              <Tooltip
+                label="Reveals hidden tile information. Use with caution."
+                side="bottom"
+              >
+                {pickAnyChip}
+              </Tooltip>
+            )}
+            {showUndoLastSelection && (
+              <Button
+                size="sm"
+                variant="tertiary"
+                icon={<IconArrowBackUp size={15} />}
+                onClick={undoLastPick}
+                disabled={selections.length === 0}
+              >
+                Undo
+              </Button>
+            )}
+          </PhaseBanner>
+          <RollingDraftOrder
+            pickOrder={draft.pickOrder}
+            currentPick={currentPick}
+            players={hydratedPlayers}
+          />
+        </div>
+
+        <div className={classes.mapArea}>
+          <div className={classes.mapBox}>
             <Map
               id="texas-map"
               modifiableMapTiles={selectedSystemId ? placeableTileIndices : []}
@@ -309,109 +259,51 @@ export function TexasMapBuildPhase() {
               interactions={MAP_INTERACTIONS.texasBuild}
               onSelectSystemTile={handleMapTileSelect}
             />
-          </Box>
-        </Box>
-      </AppShell.Main>
+          </div>
+        </div>
+      </main>
+
       <Modal
         opened={pendingPlacement !== null}
         onClose={() => setPendingPlacement(null)}
-        title="Confirm placement"
-        centered
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            confirmPlacement();
-          }
-        }}
-      >
-        <Stack gap="md">
-          <Text size="sm">Place tile {pendingPlacement?.systemId} here?</Text>
-          <Group justify="flex-end">
-            <Button variant="default" onClick={() => setPendingPlacement(null)}>
+        title={
+          pendingPlacement
+            ? `Place tile ${pendingPlacement.systemId} here?`
+            : undefined
+        }
+        size="sm"
+        footer={
+          <>
+            <Button variant="tertiary" onClick={() => setPendingPlacement(null)}>
               Cancel
             </Button>
-            <Button color="green" onClick={confirmPlacement}>
-              Confirm
+            <Button variant="primary" onClick={confirmPlacement} autoFocus>
+              Place tile
             </Button>
-          </Group>
-        </Stack>
-      </Modal>
-    </AppShell>
-  );
-}
-
-function SelectableSystemTile({
-  systemId,
-  selected,
-  disabled,
-  onSelect,
-}: {
-  systemId: string;
-  selected: boolean;
-  disabled?: boolean;
-  onSelect: (systemId: string) => void;
-}) {
-  const tileType = systemData[systemId]?.type;
-  const faceDownColor = tileType === "RED" ? "red" : "blue";
-
-  return (
-    <SystemTileCard
-      systemId={systemId}
-      radius={56}
-      padding={8}
-      selected={selected}
-      faceDown={!!disabled}
-      faceDownColor={faceDownColor}
-      onClick={disabled ? undefined : () => onSelect(systemId)}
-      style={{
-        opacity: disabled ? 0.5 : 1,
-      }}
-    />
-  );
-}
-
-function TilePickerList({
-  tiles,
-  selectedSystemId,
-  onSelect,
-  disabled,
-  compact = false,
-}: {
-  tiles: string[];
-  selectedSystemId: string | null;
-  onSelect: (systemId: string) => void;
-  disabled: boolean;
-  compact?: boolean;
-}) {
-  if (compact) {
-    return (
-      <Group gap="sm" wrap="nowrap">
-        {tiles.map((systemId) => (
-          <Box key={`mobile-${systemId}`} style={{ display: "inline-block" }}>
-            <SelectableSystemTile
-              systemId={systemId}
-              selected={selectedSystemId === systemId}
-              onSelect={onSelect}
-              disabled={disabled}
+          </>
+        }
+      >
+        {pendingPlacement && (
+          <div className={classes.preview}>
+            <RawSystemTile
+              mapId={`texas-place-${pendingPlacement.systemId}`}
+              tile={{
+                idx: 0,
+                type: "SYSTEM",
+                systemId: pendingPlacement.systemId,
+                position: { x: 0, y: 0 },
+              }}
+              radius={64}
+              disablePopover
             />
-          </Box>
-        ))}
-      </Group>
-    );
-  }
-
-  return (
-    <Box>
-      {tiles.map((systemId) => (
-        <Box key={systemId} mb="sm">
-          <SelectableSystemTile
-            systemId={systemId}
-            selected={selectedSystemId === systemId}
-            onSelect={onSelect}
-            disabled={disabled}
-          />
-        </Box>
-      ))}
-    </Box>
+          </div>
+        )}
+        {ringName && (
+          <Text size="sm" tone="muted" align="center">
+            {ringName}
+          </Text>
+        )}
+      </Modal>
+    </div>
   );
 }

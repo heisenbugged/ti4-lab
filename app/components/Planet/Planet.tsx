@@ -1,11 +1,9 @@
-import { Box, Flex, useMantineTheme } from "@mantine/core";
 import { Planet as PlanetType, PlanetTrait } from "~/types";
 import { PlanetName } from "./PlanetName";
 import { PlanetStats } from "./PlanetStats";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
-import { TradeStationIcon } from "~/components/icons/TradeStationIcon";
 import { TradeStation } from "../features/TradeStation";
 import { LegendaryPopover } from "./LegendaryPopover";
 
@@ -53,18 +51,16 @@ export function Planet({
   disablePopover = false,
 }: Props) {
   const { accessibleColors } = useSafeOutletContext();
-  const theme = useMantineTheme();
-
   const bgColor: Record<PlanetTrait, string> = {
-    CULTURAL: theme.colors.blue[4],
-    HAZARDOUS: theme.colors.red[5],
-    INDUSTRIAL: theme.colors.green[5],
+    CULTURAL: "var(--pal-blue-4)",
+    HAZARDOUS: "var(--pal-red-5)",
+    INDUSTRIAL: "var(--pal-green-5)",
   };
 
   const accessibleBgColor: Record<PlanetTrait, string> = {
-    CULTURAL: theme.colors.blue[4],
+    CULTURAL: "var(--pal-blue-4)",
     HAZARDOUS: "rgb(255 40 40)",
-    INDUSTRIAL: theme.colors.green[5],
+    INDUSTRIAL: "var(--pal-green-5)",
   };
 
   const bgColors = accessibleColors ? accessibleBgColor : bgColor;
@@ -72,28 +68,27 @@ export function Planet({
 
   const fontSize = largeFonts ? "35px" : "24px";
   const size = 50 + (planet.legendary ? 20 : 0);
-  const planetColor = trait ? getBgColor(bgColors, trait) : "gray.6";
+  const planetColor = trait ? getBgColor(bgColors, trait) : "var(--pal-gray-6)";
 
   const showBg = !hasLegendaryImage && !planet.tradeStation;
 
   const content = (
-    <Flex
-      bg={showBg ? planetColor : undefined}
-      style={{ borderRadius: size, width: size, height: size }}
-      align="center"
-      justify="center"
-      pos="relative"
+    <div
+      style={{
+        background: showBg ? planetColor : undefined,
+        borderRadius: size,
+        width: size,
+        height: size,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+      }}
     >
       {planet.tradeStation && (
-        <Box
-          pos="absolute"
-          bottom="4px"
-          style={{
-            transform: "rotate(-20deg)",
-          }}
-        >
+        <div style={{ position: "absolute", bottom: 4, transform: "rotate(-20deg)" }}>
           <TradeStation />
-        </Box>
+        </div>
       )}
       <PlanetStats
         legendary={planet.legendary || planet.tradeStation}
@@ -112,17 +107,17 @@ export function Planet({
         </PlanetName>
       )}
       {planet.legendary && (
-        <Box pos="absolute" bottom={-4} left={-14}>
+        <div style={{ position: "absolute", bottom: -4, left: -14 }}>
           <LegendaryIcon />
-        </Box>
+        </div>
       )}
 
       {techSpecialty?.map((tech, index) => (
-        <Box key={index} pos="absolute" top={-6} right={-2 + 20 * index}>
+        <div key={index} style={{ position: "absolute", top: -6, right: -2 + 20 * index }}>
           <TechIcon techSpecialty={tech} />
-        </Box>
+        </div>
       ))}
-    </Flex>
+    </div>
   );
 
   return planet.legendary ||

@@ -1,0 +1,19 @@
+.links { display: grid; grid-template-columns: 1fr 1fr; }
+.links button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: 500 13px/1 var(--font);
+  cursor: pointer;
+}
+.links button + button { border-left: 1px solid var(--rule); }
+.links button:hover { background: var(--hull-raised); color: var(--text); }
+.links button:focus-visible { outline: 2px solid var(--ion); outline-offset: -2px; }
+.image { display: block; max-width: 100%; max-height: 500px; margin: 0 auto; object-fit: contain; }
+.compact { display: inline-flex; gap: 2px; flex: none; }

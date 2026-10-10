@@ -1,6 +1,9 @@
-import { Box, Group, Stack, Text } from "@mantine/core";
+import type { ReactNode } from "react";
 import { TechIcon } from "~/components/icons/TechIcon";
 import { LegendaryIcon } from "~/components/icons/LegendaryIcon";
+import type { TechSpecialty } from "~/types";
+import { cx } from "~/ui";
+import classes from "./MapStatsOverlay.module.css";
 
 type MapStats = {
   blueTiles: number;
@@ -20,151 +23,85 @@ type MapStats = {
 type Props = {
   stats: MapStats;
   mobile?: boolean;
+  className?: string;
 };
 
-export function MapStatsOverlay({ stats, mobile = false }: Props) {
+function Glyph({
+  icon,
+  count,
+  title,
+}: {
+  icon: ReactNode;
+  count: number;
+  title: string;
+}) {
   return (
-    <Stack
-      pos={mobile ? "relative" : "absolute"}
-      top={mobile ? undefined : 16}
-      left={mobile ? undefined : 16}
-      gap={1}
-      style={{ zIndex: mobile ? undefined : 10 }}
-    >
-      <Text size="sm" c="gray.0">
-        Blue/Red: {stats.blueTiles}/{stats.redTiles}
-      </Text>
-      <Text size="sm" c="gray.0">
-        Resources/Influence: {stats.totalResources}/{stats.totalInfluence}
-      </Text>
-      <Group gap="xs" align="center">
-        <Text size="sm" c="gray.0">
-          Tech Skips:
-        </Text>
-        {(stats.bioticSkips ?? 0) > 0 && (
-          <Box
-            pos="relative"
-            style={{ display: "inline-flex", alignItems: "center" }}
-          >
-            <TechIcon techSpecialty="BIOTIC" size={24} />
-            <Text
-              size="sm"
-              fw="bold"
-              c="white"
-              pos="absolute"
-              style={{
-                left: "50%",
-                top: "50%",
-                transform: "translate(-50%, -50%)",
-                WebkitTextStroke: "2px black",
-                paintOrder: "stroke fill",
-              }}
-            >
-              {stats.bioticSkips}
-            </Text>
-          </Box>
-        )}
-        {(stats.warfareSkips ?? 0) > 0 && (
-          <Box
-            pos="relative"
-            style={{ display: "inline-flex", alignItems: "center" }}
-          >
-            <TechIcon techSpecialty="WARFARE" size={24} />
-            <Text
-              size="sm"
-              fw="bold"
-              c="white"
-              pos="absolute"
-              style={{
-                left: "50%",
-                top: "50%",
-                transform: "translate(-50%, -50%)",
-                WebkitTextStroke: "2px black",
-                paintOrder: "stroke fill",
-              }}
-            >
-              {stats.warfareSkips}
-            </Text>
-          </Box>
-        )}
-        {(stats.propulsionSkips ?? 0) > 0 && (
-          <Box
-            pos="relative"
-            style={{ display: "inline-flex", alignItems: "center" }}
-          >
-            <TechIcon techSpecialty="PROPULSION" size={24} />
-            <Text
-              size="sm"
-              fw="bold"
-              c="white"
-              pos="absolute"
-              style={{
-                left: "50%",
-                top: "50%",
-                transform: "translate(-50%, -50%)",
-                WebkitTextStroke: "2px black",
-                paintOrder: "stroke fill",
-              }}
-            >
-              {stats.propulsionSkips}
-            </Text>
-          </Box>
-        )}
-        {(stats.cyberneticSkips ?? 0) > 0 && (
-          <Box
-            pos="relative"
-            style={{ display: "inline-flex", alignItems: "center" }}
-          >
-            <TechIcon techSpecialty="CYBERNETIC" size={24} />
-            <Text
-              size="sm"
-              fw="bold"
-              c="white"
-              pos="absolute"
-              style={{
-                left: "50%",
-                top: "50%",
-                transform: "translate(-50%, -50%)",
-                WebkitTextStroke: "2px black",
-                paintOrder: "stroke fill",
-              }}
-            >
-              {stats.cyberneticSkips}
-            </Text>
-          </Box>
-        )}
-      </Group>
+    <span className={classes.glyph} title={title}>
+      {icon}
+      <b>{count}</b>
+    </span>
+  );
+}
+
+const SKIPS: Array<{
+  key: keyof MapStats;
+  tech: TechSpecialty;
+  label: string;
+}> = [
+  { key: "bioticSkips", tech: "BIOTIC", label: "biotic" },
+  { key: "warfareSkips", tech: "WARFARE", label: "warfare" },
+  { key: "propulsionSkips", tech: "PROPULSION", label: "propulsion" },
+  { key: "cyberneticSkips", tech: "CYBERNETIC", label: "cybernetic" },
+];
+
+export function MapStatsOverlay({ stats, mobile = false, className }: Props) {
+  const skips = SKIPS.filter(({ key }) => (stats[key] ?? 0) > 0);
+  return (
+    <dl className={cx(classes.stats, mobile && classes.mobile, className)}>
+      <div>
+        <dt>Blue/red</dt>
+        <dd>
+          {stats.blueTiles}/{stats.redTiles}
+        </dd>
+      </div>
+      <div>
+        <dt>Resources/influence</dt>
+        <dd>
+          {stats.totalResources}/{stats.totalInfluence}
+        </dd>
+      </div>
+      <div>
+        <dt>Tech skips</dt>
+        <dd className={classes.glyphs}>
+          {skips.length === 0 && <span className={classes.none}>None</span>}
+          {skips.map(({ key, tech, label }) => (
+            <Glyph
+              key={key}
+              icon={<TechIcon techSpecialty={tech} size={20} />}
+              count={stats[key]}
+              title={`${stats[key]} ${label}`}
+            />
+          ))}
+        </dd>
+      </div>
       {(stats.totalLegendary ?? 0) > 0 && (
-        <Group gap="xs" align="center">
-          <Text size="sm" c="gray.0">
-            Legendaries:
-          </Text>
-          <Box
-            pos="relative"
-            style={{ display: "inline-flex", alignItems: "center" }}
-          >
-            <LegendaryIcon />
-            <Text
-              size="sm"
-              fw="bold"
-              c="white"
-              pos="absolute"
-              style={{
-                left: "50%",
-                top: "50%",
-                transform: "translate(-50%, -50%)",
-                WebkitTextStroke: "2px black",
-                paintOrder: "stroke fill",
-              }}
-            >
-              {stats.totalLegendary}
-            </Text>
-          </Box>
-        </Group>
+        <div>
+          <dt>Legendaries</dt>
+          <dd className={classes.glyphs}>
+            <Glyph
+              icon={<LegendaryIcon size={20} />}
+              count={stats.totalLegendary}
+              title={`${stats.totalLegendary} legendary`}
+            />
+          </dd>
+        </div>
       )}
-      <Text size="sm" c="gray.0">
-        Traits R/G/B: {stats.redTraits}/{stats.greenTraits}/{stats.blueTraits}
-      </Text>
-    </Stack>
+      <div>
+        <dt>Traits R/G/B</dt>
+        <dd>
+          {stats.redTraits}/{stats.greenTraits}/{stats.blueTraits}
+        </dd>
+      </div>
+    </dl>
   );
 }

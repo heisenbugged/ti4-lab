@@ -1,0 +1,7 @@
+.panel { min-width: 0; }
+.hint { margin: 0; padding: 10px var(--space-4) 0; font-size: 13px; color: var(--text-muted); }
+.map { position: relative; width: calc(100% - var(--space-5)); margin: var(--space-2) auto var(--space-3); }
+
+@media (max-width: 759.98px) {
+  .map { width: calc(100% - var(--space-2)); }
+}

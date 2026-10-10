@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { Surface } from "~/ui";
+import { Card } from "~/ui";
 import type { PlayerColor } from "~/ui";
 import type { SystemId } from "~/types";
 import { RawSystemTile } from "~/components/tiles/SystemTile";
@@ -28,7 +28,7 @@ export function SystemTileCard({
   selected = false,
   selectedColor = "green",
   padding = 8,
-  borderRadius = "var(--mantine-radius-md)",
+  borderRadius = "var(--radius-sm)",
   hideValues = false,
   showOverlay = false,
   overlaySize = "sm",
@@ -40,10 +40,24 @@ export function SystemTileCard({
   const isInteractive = !!onClick;
 
   return (
-    <Surface
-      variant={isInteractive && !selected ? "interactive" : "card"}
-      color={selected ? selectedColor : undefined}
+    <Card
+      interactive={isInteractive && !selected}
+      selected={selected}
+      playerColor={selected ? selectedColor : undefined}
+      padding={0}
       onClick={onClick}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      onKeyDown={
+        isInteractive
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
       style={{
         padding,
         borderRadius,
@@ -51,7 +65,6 @@ export function SystemTileCard({
         justifyContent: "center",
         cursor: isInteractive ? "pointer" : "default",
         position: "relative",
-        overflow: "hidden",
         ...style,
       }}
     >
@@ -78,6 +91,6 @@ export function SystemTileCard({
       {showOverlay && (
         <SelectionOverlay visible={selected} size={overlaySize} showBadge={false} />
       )}
-    </Surface>
+    </Card>
   );
 }

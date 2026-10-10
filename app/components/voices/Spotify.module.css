@@ -1,0 +1,54 @@
+.playlist {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: start;
+}
+.endWar {
+  margin-top: 23px;
+}
+
+.devices {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.device {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--hull-sunken);
+  color: var(--text);
+  font: 500 14px/1.2 var(--font);
+  text-align: left;
+  cursor: pointer;
+}
+.device:hover {
+  border-color: var(--rule-hover);
+  background: var(--hull-raised);
+}
+.device:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: 2px;
+}
+.device svg {
+  color: var(--text-muted);
+}
+.device span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.deviceActive {
+  border-color: var(--gold-line);
+  box-shadow: inset 2px 0 0 var(--gold);
+}

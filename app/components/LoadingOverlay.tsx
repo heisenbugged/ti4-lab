@@ -1,10 +1,12 @@
-import { Flex } from "@mantine/core";
-import { Commet } from "react-loading-indicators";
+import { Spinner } from "~/ui";
+import classes from "./LoadingOverlay.module.css";
 
-export function LoadingOverlay() {
+/** Full-page loading state. */
+export function LoadingOverlay({ label }: { label?: string }) {
   return (
-    <Flex w="100%" h="calc(100vh - 60px)" align="center" justify="center">
-      <Commet color="#5a73ae" textColor="#5a73ae" size="large" />
-    </Flex>
+    <div className={classes.page}>
+      <Spinner size={32} />
+      {label && <span>{label}</span>}
+    </div>
   );
 }

@@ -1,39 +1,56 @@
-import { Box, Button, Group, Modal, Text } from "@mantine/core";
 import { useDimensions } from "~/hooks/useDimensions";
 import { getBoundedMapHeight } from "~/utils/positioning";
 import { useWindowDimensions } from "~/hooks/useWindowDimensions";
 import { Map, MAP_INTERACTIONS } from "~/components/Map";
-import { SectionTitle } from "~/components/Section";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { useDraft } from "~/draftStore";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useCoreSliceValues } from "~/hooks/useCoreSliceValues";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
+import { Panel, Tag } from "~/ui";
+import { usePendingPick } from "../components/pendingPick";
+import classes from "./MapSection.module.css";
 
 type Props = {
   titleChildren?: ReactNode;
 };
 
+const draftTypeLabel = (type: string) => {
+  if (type.startsWith("miltyeq")) return "Milty EQ";
+  if (type.startsWith("milty")) return "Milty";
+  if (type.startsWith("heisen")) return "Nucleus";
+  if (type.startsWith("std")) return "Standard";
+  return type;
+};
+
+/** The full map. Open home systems are seat picks while you still need a seat. */
 export function MapSection({ titleChildren }: Props) {
   const { adminMode } = useSafeOutletContext();
   const { ref, width } = useDimensions<HTMLDivElement>();
   const { height: windowHeight } = useWindowDimensions();
-  const height = getBoundedMapHeight(width, windowHeight - 150);
+  const isPhone = width > 0 && width < 600;
+  const height = getBoundedMapHeight(
+    width,
+    isPhone ? windowHeight : windowHeight - 240,
+  );
 
   const config = useDraftConfig();
   const draftType = useDraft((state) => state.draft.settings.type);
+  const draftGameMode = useDraft((state) => state.draft.settings.draftGameMode);
+  const playerCount = useDraft((state) => state.draft.players.length);
   const sliceValueModifiers = useDraft(
     (state) => state.draft.settings.sliceGenerationConfig?.sliceValueModifiers,
   );
-  const { activePlayer, currentlyPicking, hydratedMap } = useHydratedDraft();
+  const { activePlayer, currentlyPicking, hydratedMap, draftFinished } =
+    useHydratedDraft();
   const { removeSystemFromMap, openPlanetFinderForMap } = useDraft(
     (state) => state.actions,
   );
   const { syncDraft } = useSyncDraft();
   const { selectSeat } = useDraft((state) => state.draftActions);
-  const [pendingSeat, setPendingSeat] = useState<number | null>(null);
+  const { toggle, pending } = usePendingPick();
 
   const isHeisenDraft = draftType === "heisen" || draftType === "heisen8p";
   const coreSliceData = useCoreSliceValues(hydratedMap, sliceValueModifiers);
@@ -44,62 +61,53 @@ export function MapSection({ titleChildren }: Props) {
     ...(canEditMap ? MAP_INTERACTIONS.draftBuild : MAP_INTERACTIONS.readonly),
     allowHomeSelect: canSelect,
   };
-
-  const handleConfirmSeat = () => {
-    if (!activePlayer || pendingSeat === null) return;
-    selectSeat(activePlayer.id, pendingSeat);
-    syncDraft();
-    setPendingSeat(null);
-  };
+  const pendingSeat = pending?.key.startsWith("seat-") ? pending.label : undefined;
 
   return (
-    <div style={{ position: "sticky", width: "auto", top: 60 }}>
-      <SectionTitle title="Full Map">{titleChildren}</SectionTitle>
-      <Modal
-        opened={pendingSeat !== null}
-        onClose={() => setPendingSeat(null)}
-        title="Confirm seat selection"
-        centered
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            handleConfirmSeat();
-          }
-        }}
-      >
-        <Text size="sm" mb="md">
-          {activePlayer
-            ? `Assign ${activePlayer.name} to seat ${pendingSeat !== null ? pendingSeat + 1 : "-"}?`
-            : "Select this seat?"}
-        </Text>
-        <Group justify="flex-end">
-          <Button variant="default" onClick={() => setPendingSeat(null)}>
-            Cancel
-          </Button>
-          <Button color="green" onClick={handleConfirmSeat} autoFocus>
-            Confirm
-          </Button>
-        </Group>
-      </Modal>
-      <Box
-        ref={ref}
-        style={{
-          height,
-          width: "100%",
-          position: "relative",
-        }}
-        mt="md"
-      >
+    <Panel
+      well
+      flush
+      className={classes.panel}
+      title="Full map"
+      action={
+        titleChildren ?? (
+          <>
+            <Tag>{playerCount}P</Tag>
+            {draftGameMode === "presetMap" ? (
+              <Tag tone="ion">Preset map</Tag>
+            ) : (
+              <Tag tone="ion">{draftTypeLabel(draftType)}</Tag>
+            )}
+          </>
+        )
+      }
+    >
+      {canSelect && !draftFinished && (
+        <p className={classes.hint}>
+          {pendingSeat
+            ? `${pendingSeat} selected. Lock in pick to take it.`
+            : "Your seat is still open: select a home system, then Lock in pick."}
+        </p>
+      )}
+      <div ref={ref} className={classes.map} style={{ height }}>
         <Map
           modifiableMapTiles={config.modifiableMapTiles}
           id="full-map"
           map={hydratedMap}
           interactions={mapInteractions}
           onSelectHomeTile={
-            canSelect
+            canSelect && activePlayer
               ? (tile) => {
                   if (tile.seat === undefined) return;
-                  setPendingSeat(tile.seat);
+                  const seat = tile.seat;
+                  toggle({
+                    key: `seat-${seat}`,
+                    label: `Seat ${seat + 1}`,
+                    commit: () => {
+                      selectSeat(activePlayer.id, seat);
+                      syncDraft();
+                    },
+                  });
                 }
               : undefined
           }
@@ -109,9 +117,10 @@ export function MapSection({ titleChildren }: Props) {
           onDeleteSystemTile={
             canEditMap ? (tile) => removeSystemFromMap(tile.idx) : undefined
           }
+          pendingSeat={pending?.key.startsWith("seat-") ? Number(pending.key.slice(5)) : undefined}
           coreSliceData={isHeisenDraft ? coreSliceData : undefined}
         />
-      </Box>
-    </div>
+      </div>
+    </Panel>
   );
 }

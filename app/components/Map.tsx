@@ -6,7 +6,6 @@ import {
 import { MapTile } from "./MapTile";
 import { EquidistantLines } from "./EquidistantLines";
 import { useDimensions } from "~/hooks/useDimensions";
-import { Box } from "@mantine/core";
 import { MapContext } from "~/contexts/MapContext";
 import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
 import type { SliceValueBreakdown } from "~/stats";
@@ -22,6 +21,8 @@ type Props = {
   onSelectSystemTile?: (tile: Tile) => void;
   onDeleteSystemTile?: (tile: Tile) => void;
   onSelectHomeTile?: (tile: HomeTile) => void;
+  /** Seat selected but not yet locked in; its Select seat button shows as selected. */
+  pendingSeat?: number;
   sliceValues?: Record<number, number>;
   sliceStats?: Record<number, SliceStats>;
   sliceBreakdowns?: Record<number, SliceValueBreakdown>; // Indexed by tile idx
@@ -101,6 +102,7 @@ export function Map({
   onSelectSystemTile,
   onDeleteSystemTile,
   onSelectHomeTile,
+  pendingSeat,
   sliceValues = {},
   sliceStats = {},
   sliceBreakdowns = {},
@@ -128,7 +130,7 @@ export function Map({
         disabled,
       }}
     >
-      <Box ref={ref} w="100%" h="100%" style={{ position: "relative" }}>
+      <div ref={ref} style={{ width: "100%", height: "100%", position: "relative" }}>
         {map
           .filter((t) => !!t.position)
           .map((tile) => {
@@ -188,6 +190,9 @@ export function Map({
                 modifiable={interactions.editable && isTileModifiable}
                 droppable={interactions.droppable && isTileModifiable}
                 ringHighlight={ringHighlightTiles.includes(tile.idx)}
+                homeSelected={
+                  tile.type === "HOME" && pendingSeat !== undefined && tile.seat === pendingSeat
+                }
                 homeSelectable={
                   interactions.allowHomeSelect && !!onSelectHomeTile
                 }
@@ -223,7 +228,7 @@ export function Map({
           hoveredHomeIdx={hoveredHomeIdx ?? null}
           tileContributions={tileContributions}
         />
-      </Box>
+      </div>
     </MapContext.Provider>
   );
 }

@@ -1,0 +1,20 @@
+.drafted {
+  opacity: 0.6;
+}
+
+.name {
+  max-width: 18ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sv {
+  font-weight: 700;
+}
+
+@media (max-width: 575px) {
+  .features {
+    display: none;
+  }
+}

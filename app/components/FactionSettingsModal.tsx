@@ -1,30 +1,10 @@
-import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Checkbox,
-  Group,
-  Modal,
-  ScrollArea,
-  SimpleGrid,
-  Stack,
-  Text,
-  ThemeIcon,
-  Tooltip,
-} from "@mantine/core";
-import { notifications } from "@mantine/notifications";
-import {
-  IconCheck,
-  IconLock,
-  IconLockOpen,
-  IconMinus,
-  IconPlus,
-  IconAlien,
-} from "@tabler/icons-react";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { IconCheck, IconLock, IconLockOpen } from "@tabler/icons-react";
+import { useEffect, useMemo, useState } from "react";
 import { factions } from "~/data/factionData";
 import { FactionId, FactionStratification, GameSet } from "~/types";
+import { FactionIcon } from "~/components/icons/FactionIcon";
+import { Button, Modal, NumberStepper, cx, notify } from "~/ui";
+import classes from "./FactionSettingsModal.module.css";
 
 const gameSetLabel: Record<GameSet, string> = {
   base: "Base",
@@ -110,7 +90,7 @@ export function FactionSettingsModal({
   const handleSave = () => {
     // Remove any keys that have a value of 0
     let config = Object.fromEntries(
-      Object.entries(stratifiedConfig ?? {}).filter(([_, value]) => value > 0),
+      Object.entries(stratifiedConfig ?? {}).filter(([, value]) => value > 0),
     ) as FactionStratification | undefined;
 
     if (Object.keys(config!).length === 0) {
@@ -118,10 +98,10 @@ export function FactionSettingsModal({
     }
 
     if (!validateStratifiedConfig(config, numPlayers)) {
-      notifications.show({
-        title: "Invalid Configuration",
+      notify({
+        title: "Invalid configuration",
         message: "Not enough factions selected for all players.",
-        color: "red",
+        tone: "danger",
       });
       return;
     }
@@ -187,290 +167,217 @@ export function FactionSettingsModal({
 
   const showStratification = hasBasePok && (hasTE || hasDiscordant);
 
-  // Compact inline stepper for stratification
-  const StratStepper = ({
-    label,
-    value,
-    onDecrease,
-    onIncrease,
-    decreaseDisabled,
-    increaseDisabled,
-  }: {
+  const toggleAllowed = (factionId: FactionId) => {
+    if (requiredFactions.includes(factionId)) return;
+    if (allowedFactions.includes(factionId)) {
+      setAllowedFactions((f) => f.filter((id) => id !== factionId));
+    } else {
+      setAllowedFactions((f) => [...f, factionId]);
+    }
+  };
+
+  const toggleRequired = (factionId: FactionId) => {
+    if (requiredFactions.includes(factionId)) {
+      setRequiredFactions((f) => f.filter((id) => id !== factionId));
+    } else {
+      setRequiredFactions((f) => [...f, factionId]);
+      // Also ensure it's in allowed
+      if (!allowedFactions.includes(factionId)) {
+        setAllowedFactions((f) => [...f, factionId]);
+      }
+    }
+  };
+
+  const allowGroup = (factionIds: FactionId[]) =>
+    setAllowedFactions((f) => [
+      ...f,
+      ...factionIds.filter((id) => !f.includes(id)),
+    ]);
+
+  // Forced factions stay in; they're unlocked first.
+  const clearGroup = (factionIds: FactionId[]) =>
+    setAllowedFactions((f) =>
+      f.filter((id) => !factionIds.includes(id) || requiredFactions.includes(id)),
+    );
+
+  const stratRows: {
+    key: keyof FactionStratification;
     label: string;
-    value: number;
-    onDecrease: () => void;
-    onIncrease: () => void;
-    decreaseDisabled: boolean;
-    increaseDisabled: boolean;
-  }) => (
-    <Group gap={4} wrap="nowrap">
-      <Text size="xs" c="dimmed">
-        {label}
-      </Text>
-      <Group gap={2}>
-        <ActionIcon
-          size="xs"
-          variant="subtle"
-          color="gray"
-          disabled={decreaseDisabled}
-          onMouseDown={onDecrease}
-        >
-          <IconMinus size={12} />
-        </ActionIcon>
-        <Text size="xs" fw={600} ta="center" miw={18} c={value > 0 ? "purple.3" : "dimmed"}>
-          {value}
-        </Text>
-        <ActionIcon
-          size="xs"
-          variant="subtle"
-          color="gray"
-          disabled={increaseDisabled}
-          onMouseDown={onIncrease}
-        >
-          <IconPlus size={12} />
-        </ActionIcon>
-      </Group>
-    </Group>
-  );
+    max: number;
+    show: boolean;
+  }[] = [
+    { key: BASE_POK_KEY, label: "Base and PoK", max: 25, show: hasBasePok },
+    { key: TE_KEY, label: "Thunder's Edge", max: 10, show: hasTE },
+    {
+      key: DISCORDANT_KEY,
+      label: "Discordant",
+      max: 35,
+      show: hasDiscordant,
+    },
+  ];
 
   return (
     <Modal
       opened={!!opened}
       onClose={onClose}
-      size="90%"
-      title={
-        <Group gap="xs">
-          <ThemeIcon size="sm" variant="light" color="orange" radius="sm">
-            <IconAlien size={12} />
-          </ThemeIcon>
-          <Text
-            size="sm"
-            fw={600}
-            tt="uppercase"
-            style={{ letterSpacing: "0.05em", fontFamily: "Orbitron" }}
-          >
-            Configure Faction Pool
-          </Text>
-        </Group>
-      }
-      removeScrollProps={{ removeScrollBar: false }}
-      styles={{
-        body: { padding: 0 },
-      }}
-    >
-      <Stack gap={0}>
-        {/* Stratification Controls - Subtle inline row */}
-        {showStratification && (
-          <Group
-            gap="md"
-            px="md"
-            py="xs"
-            style={{
-              borderBottom: "1px dashed var(--mantine-color-default-border)",
-            }}
-          >
-            <Text size="xs" c="dimmed">
-              Stratify by set:
-            </Text>
-            {hasBasePok && (
-              <StratStepper
-                label="Base/POK"
-                value={stratifiedConfig?.[BASE_POK_KEY] ?? 0}
-                onDecrease={() => handleStratifiedDecrease(BASE_POK_KEY)}
-                onIncrease={() => handleStratifiedIncrease(BASE_POK_KEY, 25)}
-                decreaseDisabled={
-                  stratifiedConfig?.[BASE_POK_KEY] === undefined ||
-                  stratifiedConfig?.[BASE_POK_KEY] === 0
-                }
-                increaseDisabled={stratifiedConfig?.[BASE_POK_KEY] === 25}
-              />
-            )}
-            {hasTE && (
-              <StratStepper
-                label="TE"
-                value={stratifiedConfig?.[TE_KEY] ?? 0}
-                onDecrease={() => handleStratifiedDecrease(TE_KEY)}
-                onIncrease={() => handleStratifiedIncrease(TE_KEY, 10)}
-                decreaseDisabled={
-                  stratifiedConfig?.[TE_KEY] === undefined ||
-                  stratifiedConfig?.[TE_KEY] === 0
-                }
-                increaseDisabled={stratifiedConfig?.[TE_KEY] === 10}
-              />
-            )}
-            {hasDiscordant && (
-              <StratStepper
-                label="Discordant"
-                value={stratifiedConfig?.[DISCORDANT_KEY] ?? 0}
-                onDecrease={() => handleStratifiedDecrease(DISCORDANT_KEY)}
-                onIncrease={() => handleStratifiedIncrease(DISCORDANT_KEY, 35)}
-                decreaseDisabled={
-                  stratifiedConfig?.[DISCORDANT_KEY] === undefined ||
-                  stratifiedConfig?.[DISCORDANT_KEY] === 0
-                }
-                increaseDisabled={stratifiedConfig?.[DISCORDANT_KEY] === 35}
-              />
-            )}
-          </Group>
-        )}
-
-        {/* Scrollable Faction List */}
-        <ScrollArea.Autosize mah="60vh" px="md" py="sm">
-          <Stack gap="md">
-            {sortedFactionPool.map(({ gameSet, factionIds }) => (
-              <Box key={gameSet}>
-                {/* Game Set Header */}
-                <Group
-                  gap="xs"
-                  mb="xs"
-                  pb={4}
-                  style={{
-                    borderBottom:
-                      "1px dashed var(--mantine-color-default-border)",
-                  }}
-                >
-                  <Text
-                    size="xs"
-                    fw={600}
-                    tt="uppercase"
-                    c="dimmed"
-                    style={{
-                      letterSpacing: "0.08em",
-                      fontFamily: "Orbitron",
-                    }}
-                  >
-                    {gameSetLabel[gameSet]}
-                  </Text>
-                  <Badge size="xs" variant="light" color="gray">
-                    {factionIds.filter((id) => allowedFactions.includes(id) || requiredFactions.includes(id)).length}/{factionIds.length}
-                  </Badge>
-                </Group>
-
-                {/* Faction Grid - More compact */}
-                <SimpleGrid
-                  cols={{ base: 2, sm: 3, md: 4, lg: 5 }}
-                  spacing="xs"
-                  verticalSpacing={4}
-                >
-                  {factionIds.map((factionId) => {
-                    const required = requiredFactions.includes(factionId);
-                    const allowed = allowedFactions.includes(factionId);
-
-                    return (
-                      <Group
-                        key={factionId}
-                        gap={6}
-                        py={4}
-                        px={6}
-                        wrap="nowrap"
-                        style={{
-                          borderRadius: 4,
-                          border: required
-                            ? "1px solid var(--mantine-color-green-6)"
-                            : "1px solid var(--mantine-color-default-border)",
-                          background: required
-                            ? "var(--mantine-color-green-light)"
-                            : "var(--mantine-color-default)",
-                          opacity: !allowed && !required ? 0.5 : 1,
-                        }}
-                      >
-                        <Checkbox
-                          size="xs"
-                          checked={allowed || required}
-                          disabled={required}
-                          onChange={() => {
-                            if (required) return;
-                            if (allowed) {
-                              setAllowedFactions((f) =>
-                                f.filter((id) => id !== factionId),
-                              );
-                            } else {
-                              setAllowedFactions((f) => [...f, factionId]);
-                            }
-                          }}
-                          styles={{
-                            input: { cursor: required ? "default" : "pointer" },
-                          }}
-                        />
-                        <Text
-                          size="xs"
-                          style={{
-                            flex: 1,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {factions[factionId].name}
-                        </Text>
-                        <Tooltip
-                          label={required ? "Remove from required" : "Force include"}
-                          position="top"
-                          withArrow
-                        >
-                          <ActionIcon
-                            size="xs"
-                            variant={required ? "filled" : "subtle"}
-                            color={required ? "green" : "gray"}
-                            onMouseDown={() => {
-                              if (required) {
-                                setRequiredFactions((f) =>
-                                  f.filter((id) => id !== factionId),
-                                );
-                              } else {
-                                setRequiredFactions((f) => [...f, factionId]);
-                                // Also ensure it's in allowed
-                                if (!allowed) {
-                                  setAllowedFactions((f) => [...f, factionId]);
-                                }
-                              }
-                            }}
-                          >
-                            {required ? (
-                              <IconLock size={10} />
-                            ) : (
-                              <IconLockOpen size={10} />
-                            )}
-                          </ActionIcon>
-                        </Tooltip>
-                      </Group>
-                    );
-                  })}
-                </SimpleGrid>
-              </Box>
-            ))}
-          </Stack>
-        </ScrollArea.Autosize>
-
-        {/* Sticky Footer */}
-        <Group
-          justify="space-between"
-          px="md"
-          py="sm"
-          style={{
-            borderTop: "1px solid var(--mantine-color-default-border)",
-            background: "var(--mantine-color-body)",
-          }}
-        >
-          <Group gap="xs">
-            <Text size="xs" c="dimmed">
-              {allowedFactions.length} allowed
-            </Text>
-            {requiredFactions.length > 0 && (
-              <Badge size="xs" color="green" variant="light">
-                {requiredFactions.length} forced
-              </Badge>
-            )}
-          </Group>
+      size="full"
+      className={classes.modal}
+      title="Faction pool"
+      description="Choose which factions can be rolled. Lock one to make sure it's always offered."
+      footer={
+        <>
+          <span className={classes.count}>
+            {allowedFactions.length} allowed / {requiredFactions.length} forced
+          </span>
+          <Button variant="tertiary" onClick={onClose}>
+            Cancel
+          </Button>
           <Button
-            size="sm"
-            leftSection={<IconCheck size={14} />}
-            onMouseDown={handleSave}
+            variant="primary"
+            icon={<IconCheck size={16} />}
+            onClick={handleSave}
           >
             {buttonText}
           </Button>
-        </Group>
-      </Stack>
+        </>
+      }
+    >
+      <div className={classes.summary}>
+        <div>
+          <b>{allowedFactions.length}</b>
+          <span>can be rolled</span>
+        </div>
+        <div>
+          <b className={classes.gold}>{requiredFactions.length}</b>
+          <span>always in</span>
+        </div>
+        <div>
+          <b>{numPlayers}</b>
+          <span>players</span>
+        </div>
+        {showStratification && (
+          <div className={classes.strat}>
+            <span className={classes.stratTitle}>
+              Stratify by set <small>Guarantee a share from each set</small>
+            </span>
+            <div className={classes.stratRow}>
+              {stratRows
+                .filter((r) => r.show)
+                .map(({ key, label, max }) => {
+                  const value = stratifiedConfig?.[key] ?? 0;
+                  return (
+                    <span key={key} className={classes.stratItem}>
+                      {label}
+                      <NumberStepper
+                        size="sm"
+                        value={value}
+                        label={`${label} minimum`}
+                        decrease={() => handleStratifiedDecrease(key)}
+                        increase={() => handleStratifiedIncrease(key, max)}
+                        decreaseDisabled={
+                          stratifiedConfig?.[key] === undefined ||
+                          stratifiedConfig?.[key] === 0
+                        }
+                        increaseDisabled={stratifiedConfig?.[key] === max}
+                      />
+                    </span>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className={classes.groups}>
+        {sortedFactionPool.map(({ gameSet, factionIds }) => {
+          const inCount = factionIds.filter(
+            (id) => allowedFactions.includes(id) || requiredFactions.includes(id),
+          ).length;
+          return (
+            <section key={gameSet} className={classes.group}>
+              <header className={classes.groupHead}>
+                <h5>{gameSetLabel[gameSet]}</h5>
+                <span className={classes.bar} aria-hidden>
+                  <i style={{ width: `${(inCount / factionIds.length) * 100}%` }} />
+                </span>
+                <span className={classes.of}>
+                  {inCount} of {factionIds.length}
+                </span>
+                <span className={classes.quick}>
+                  <Button
+                    size="sm"
+                    variant="tertiary"
+                    onClick={() => allowGroup(factionIds)}
+                    aria-label={`Allow all ${gameSetLabel[gameSet]} factions`}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="tertiary"
+                    onClick={() => clearGroup(factionIds)}
+                    aria-label={`Allow no ${gameSetLabel[gameSet]} factions`}
+                  >
+                    None
+                  </Button>
+                </span>
+              </header>
+              <div className={classes.grid}>
+                {factionIds.map((factionId) => {
+                  const required = requiredFactions.includes(factionId);
+                  const allowed = allowedFactions.includes(factionId);
+                  const name = factions[factionId].name;
+
+                  return (
+                    <div
+                      key={factionId}
+                      className={cx(
+                        classes.fp,
+                        !allowed && !required && classes.out,
+                        required && classes.forced,
+                      )}
+                    >
+                      <button
+                        type="button"
+                        className={classes.main}
+                        aria-pressed={allowed || required}
+                        aria-disabled={required || undefined}
+                        aria-label={`${name}, ${
+                          required
+                            ? "always in"
+                            : allowed
+                              ? "can be rolled"
+                              : "left out"
+                        }`}
+                        onClick={() => toggleAllowed(factionId)}
+                      >
+                        <FactionIcon faction={factionId} style={{ width: 26, height: 26, flex: "none" }} />
+                        <span>{name}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={classes.lock}
+                        aria-pressed={required}
+                        aria-label={required ? "Remove from required" : "Force include"}
+                        title={required ? "Remove from required" : "Force include"}
+                        onMouseDown={(e) => {
+                          if (e.button === 0) toggleRequired(factionId);
+                        }}
+                        onClick={(e) => {
+                          if (e.detail === 0) toggleRequired(factionId);
+                        }}
+                      >
+                        {required ? <IconLock size={14} /> : <IconLockOpen size={14} />}
+                        {required && <span>Always in</span>}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </div>
     </Modal>
   );
 }

@@ -1,229 +1,81 @@
-import {
-  AppShell,
-  Badge,
-  Box,
-  Burger,
-  Drawer,
-  Group,
-  rem,
-  Stack,
-  Text,
-  UnstyledButton,
-} from "@mantine/core";
-import { IconBrandDiscordFilled } from "@tabler/icons-react";
-
+import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-
-const DISCORD_INVITE_URL = "https://discord.gg/2ezSTQpAVC";
-import { useState } from "react";
+import { IconBrandDiscordFilled, IconMenu2 } from "@tabler/icons-react";
+import { ButtonAnchor, Drawer, IconButton, cx } from "~/ui";
 import { Logo } from "~/components/Logo";
 import { trackButtonClick } from "~/lib/analytics.client";
 import classes from "./MainAppShell.module.css";
 
+const DISCORD_INVITE_URL = "https://discord.gg/2ezSTQpAVC";
+
 type Props = {
-  children: React.ReactNode;
-  headerRightSection?: React.ReactNode;
+  children: ReactNode;
+  headerRightSection?: ReactNode;
+  /** Full-bleed pages (map generator) manage their own padding. */
+  flush?: boolean;
 };
 
-type NavItemProps = {
-  to?: string;
-  label: string;
-  isActive: boolean;
-  onClick?: () => void;
-  badge?: string;
-  badgeColor?: string;
-  mobile?: boolean;
-};
-
-function NavItem({
-  to,
-  label,
-  isActive,
-  onClick,
-  badge,
-  badgeColor = "orange",
-  mobile = false,
-}: NavItemProps) {
-  const content = (
-    <Box
-      className={classes.navItem}
-      data-active={isActive || undefined}
-      data-mobile={mobile || undefined}
-    >
-      <Box className={classes.navItemIndicator} />
-      <Text
-        size="sm"
-        fw={isActive ? 600 : 500}
-      >
-        {label}
-      </Text>
-      {badge && (
-        <Badge
-          size="xs"
-          variant="filled"
-          color={badgeColor}
-          className={classes.navBadge}
-        >
-          {badge}
-        </Badge>
-      )}
-    </Box>
-  );
-
-  if (to) {
-    return (
-      <UnstyledButton component={Link} to={to} onClick={onClick}>
-        {content}
-      </UnstyledButton>
-    );
-  }
-
-  return <UnstyledButton onClick={onClick}>{content}</UnstyledButton>;
-}
-
-export function MainAppShell({ children, headerRightSection }: Props) {
-  const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
+export function MainAppShell({ children, headerRightSection, flush }: Props) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const isMapPresetsActive = location.pathname === "/map-presets";
-  const isAboutActive = location.pathname === "/about";
-  const isSoundboardActive = location.pathname === "/voices";
-  const isMapGeneratorActive = location.pathname === "/map-generator";
+  const { pathname } = useLocation();
 
-  const handleSoundboardClick = () => {
-    trackButtonClick({
-      buttonType: "load_soundboard",
-      context: "main_app_shell",
-    });
-
-    navigate("/voices");
-    setMobileMenuOpened(false);
-  };
-
-  const menuItems = [
-    {
-      to: "/map-generator",
-      label: "Map Generator",
-      isActive: isMapGeneratorActive,
-    },
-    { to: "/map-presets", label: "Map Presets", isActive: isMapPresetsActive },
-    { to: "/about", label: "About", isActive: isAboutActive },
+  const items = [
+    { to: "/draft/prechoice", label: "Draft", active: pathname.startsWith("/draft") },
+    { to: "/map-generator", label: "Map generator", active: pathname === "/map-generator" },
+    { to: "/map-presets", label: "Community maps", active: pathname === "/map-presets" || pathname.startsWith("/maps/") },
+    { to: "/about", label: "About", active: pathname === "/about" },
+    { to: "/voices", label: "Soundboard", active: pathname.startsWith("/voices") },
   ];
 
-  const renderMenuItems = (mobile = false) => (
-    <>
-      {menuItems.map((item) => (
-        <NavItem
-          key={item.to}
-          to={item.to}
-          label={item.label}
-          isActive={item.isActive}
-          onClick={() => setMobileMenuOpened(false)}
-          mobile={mobile}
-        />
-      ))}
-      <NavItem
-        label="Soundboard"
-        isActive={isSoundboardActive}
-        onClick={handleSoundboardClick}
-        mobile={mobile}
-      />
-    </>
-  );
+  const go = (to: string) => (e: React.MouseEvent) => {
+    if (to === "/voices") {
+      e.preventDefault();
+      trackButtonClick({ buttonType: "load_soundboard", context: "main_app_shell" });
+      navigate("/voices");
+    }
+    setMenuOpen(false);
+  };
 
   return (
-    <AppShell header={{ height: 48 }} px="md">
-      <AppShell.Header className={classes.header}>
-        <Group align="center" h="100%" px="sm" gap={0}>
-          <Box className={classes.logoContainer}>
-            <Link
-              to="/draft/prechoice"
-              className="logo"
-              style={{ textDecoration: "none" }}
-            >
-              <Logo />
+    <div className={classes.shell}>
+      <header className={classes.header}>
+        <Link to="/draft/prechoice" className={classes.brand} aria-label="TI4 Lab home">
+          <Logo />
+        </Link>
+        <nav className={classes.nav} aria-label="Main">
+          {items.map((it) => (
+            <Link key={it.to} to={it.to} className={classes.link} aria-current={it.active ? "page" : undefined} onClick={go(it.to)}>
+              {it.label}
             </Link>
-          </Box>
+          ))}
+        </nav>
+        <div className={classes.end}>
+          {headerRightSection && <div className={classes.desktopOnly}>{headerRightSection}</div>}
+          <ButtonAnchor href={DISCORD_INVITE_URL} target="_blank" rel="noreferrer" size="sm" icon={<IconBrandDiscordFilled />} className={classes.desktopOnly}>
+            Join Discord
+          </ButtonAnchor>
+          <IconButton label="Menu" className={classes.burger} onClick={() => setMenuOpen(true)}>
+            <IconMenu2 />
+          </IconButton>
+        </div>
+      </header>
 
-          <Box className={classes.navDivider} />
-
-          <Burger
-            opened={mobileMenuOpened}
-            onClick={() => setMobileMenuOpened(!mobileMenuOpened)}
-            size="sm"
-            className={classes.burger}
-          />
-          <nav className={classes.desktopMenu}>
-            <Group gap={0}>{renderMenuItems()}</Group>
-            <div style={{ flex: 1 }} />
-            <Group gap="xs">
-              <UnstyledButton
-                component="a"
-                href={DISCORD_INVITE_URL}
-                target="_blank"
-                className={classes.discordButton}
-              >
-                <IconBrandDiscordFilled size={14} />
-                <Text size="xs" fw={500}>Join Discord</Text>
-              </UnstyledButton>
-              {headerRightSection}
-            </Group>
-          </nav>
-        </Group>
-      </AppShell.Header>
-
-      <Drawer
-        opened={mobileMenuOpened}
-        onClose={() => setMobileMenuOpened(false)}
-        size="100%"
-        padding="md"
-        title={
-          <Text
-            size="xs"
-            fw={600}
-            tt="uppercase"
-            c="dimmed"
-            style={{ fontFamily: "Orbitron", letterSpacing: "0.1em" }}
-          >
-            Navigation
-          </Text>
-        }
-        zIndex={1000}
-        styles={{
-          header: {
-            borderBottom: "1px dashed var(--mantine-color-default-border)",
-          },
-          body: {
-            paddingTop: rem(16),
-          },
-        }}
-      >
-        <Stack gap="xs">
-          {renderMenuItems(true)}
-          <UnstyledButton
-            component="a"
-            href={DISCORD_INVITE_URL}
-            target="_blank"
-            onClick={() => setMobileMenuOpened(false)}
-          >
-            <Box
-              className={classes.navItem}
-              data-mobile
-            >
-              <Box className={classes.navItemIndicator} />
-              <Group gap="xs">
-                <IconBrandDiscordFilled size={16} color="var(--mantine-color-discordBlue-5)" />
-                <Text size="sm" fw={500}>
-                  Discord
-                </Text>
-              </Group>
-            </Box>
-          </UnstyledButton>
-        </Stack>
-        {headerRightSection && <Box mt="xl">{headerRightSection}</Box>}
+      <Drawer opened={menuOpen} onClose={() => setMenuOpen(false)} title="Menu">
+        <nav className={classes.drawerNav} aria-label="Main">
+          {items.map((it) => (
+            <Link key={it.to} to={it.to} className={classes.drawerLink} aria-current={it.active ? "page" : undefined} onClick={go(it.to)}>
+              {it.label}
+            </Link>
+          ))}
+          <a href={DISCORD_INVITE_URL} target="_blank" rel="noreferrer" className={classes.drawerLink} onClick={() => setMenuOpen(false)}>
+            <IconBrandDiscordFilled size={16} color="var(--discord)" /> Discord
+          </a>
+        </nav>
+        {headerRightSection && <div className={classes.drawerExtra}>{headerRightSection}</div>}
       </Drawer>
 
-      <AppShell.Main>{children}</AppShell.Main>
-    </AppShell>
+      <main className={cx(classes.main, flush && classes.flush)}>{children}</main>
+    </div>
   );
 }

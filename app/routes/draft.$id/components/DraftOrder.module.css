@@ -1,126 +1,52 @@
-
-.blue {
-    color: var(--mantine-color-blue-6);
-    @mixin dark { color: var(--mantine-color-blue-4); }
+.order {
+  display: flex;
+  gap: var(--space-4);
+  padding: 6px 6px 8px;
+  margin: 0 -6px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.order::-webkit-scrollbar { display: none; }
+.round { display: grid; gap: 6px; flex: 1 0 auto; }
+.round > small { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.cells { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(40px, 1fr)); gap: 3px; }
 
-.blue.active {
-    border: 4px solid var(--mantine-color-blue-8);
-    background-color: var(--mantine-color-blue-1);
-    @mixin dark {
-        color: white;
-        background-color: var(--mantine-color-blue-9);
-        border-color: var(--mantine-color-blue-5);
-    }
+.cell {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 3px 5px;
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
 }
-
-.red {
-    color: var(--mantine-color-red-6);
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+  line-height: 1.2;
+  color: var(--text);
 }
+.discord { flex: none; color: var(--discord); }
+.now { background: var(--hull-raised); border-color: var(--rule-strong); }
+.now .label { color: var(--gold); font-weight: 600; }
+.next { background: transparent; border-style: dashed; border-color: var(--rule-strong); }
+.next > :first-child { opacity: 0.5; }
+.next .label { color: var(--text-muted); }
 
-.red.active {
-    border: 4px solid var(--mantine-color-red-8);
-    background-color: var(--mantine-color-red-1);
-    @mixin dark {
-        color: white;
-        background-color: var(--mantine-color-red-9);
-        border-color: var(--mantine-color-red-5);
-    }
-}
+/* Compact chips for the rolling order (Texas map build). */
+.compact { grid-auto-flow: column; justify-content: start; align-items: center; gap: 6px; padding: 4px 8px; flex: none; }
+.compact .label { max-width: 110px; font-size: 12px; }
 
-.green {
-    color: var(--mantine-color-green-8);
-    @mixin dark { color: var(--mantine-color-green-4); }
-}
-
-.green.active {
-    border: 4px solid var(--mantine-color-green-8);
-    background-color: var(--mantine-color-green-1);
-    @mixin dark {
-        color: white;
-        background-color: var(--mantine-color-green-9);
-        border-color: var(--mantine-color-green-5);
-    }
-}
-
-.magenta {
-    color: var(--mantine-color-magenta-6);
-    @mixin dark { color: var(--mantine-color-magenta-4); }
-}
-
-.magenta.active {
-    border: 4px solid var(--mantine-color-magenta-8);
-    background-color: var(--mantine-color-magenta-1);
-    @mixin dark {
-        color: white;
-        background-color: var(--mantine-color-magenta-9);
-        border-color: var(--mantine-color-magenta-5);
-    }
-}
-
-.violet {
-    color: var(--mantine-color-violet-8);
-    @mixin dark { color: var(--mantine-color-violet-4); }
-}
-
-.violet.active {
-    border: 4px solid var(--mantine-color-violet-8);
-    background-color: var(--mantine-color-violet-1);
-    @mixin dark {
-        color: white;
-        background-color: var(--mantine-color-violet-9);
-        border-color: var(--mantine-color-violet-5);
-    }
-}
-
-.orange {
-    color: var(--mantine-color-orange-6);
-    @mixin dark { color: var(--mantine-color-orange-4); }
-}
-
-.orange.active {
-    border: 4px solid var(--mantine-color-orange-8);
-    background-color: var(--mantine-color-orange-1);
-    @mixin dark {
-        color: white;
-        background-color: var(--mantine-color-orange-9);
-        border-color: var(--mantine-color-orange-5);
-    }
-}
-
-.gray {
-    color: var(--mantine-color-gray-8);
-    @mixin dark { color: var(--mantine-color-gray-4); }
-}
-
-.gray.active {
-    border: 4px solid var(--mantine-color-gray-8);
-    background-color: var(--mantine-color-gray-5);
-    @mixin dark {
-        color: white;
-        background-color: var(--mantine-color-gray-7);
-        border-color: var(--mantine-color-gray-5);
-    }
-}
-
-.cyan {
-    color: var(--mantine-color-cyan-8);
-    @mixin dark { color: var(--mantine-color-cyan-2); }
-}
-
-.cyan.active {
-    border: 4px solid var(--mantine-color-cyan-8);
-    background-color: var(--mantine-color-cyan-1);
-    @mixin dark {
-        color: white;
-        background-color: var(--mantine-color-cyan-8);
-        border-color: var(--mantine-color-cyan-5);
-    }
-}
-
-.passed {
-    color: var(--mantine-color-gray-6);
-    @mixin dark {
-        color: var(--mantine-color-dark-3);
-    }
+@media (max-width: 759.98px) {
+  .order { gap: var(--space-3); }
+  .round { flex: none; }
+  .cells { grid-template-columns: repeat(var(--n, 6), 54px); }
 }

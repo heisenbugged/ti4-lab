@@ -1,38 +1,105 @@
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--mantine-spacing-sm);
-  margin-bottom: var(--mantine-spacing-lg);
+  gap: var(--space-3);
+}
+.stat {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+}
+.statValue {
+  font-size: 24px;
+  font-weight: 600;
+  font-stretch: var(--semi);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
 
 .filtersGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--mantine-spacing-sm);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
 }
-
 .dateGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--mantine-spacing-sm);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
 }
 
-@media (min-width: 36em) {
+.mono {
+  font-family: var(--mono);
+}
+.progress {
+  display: grid;
+  gap: 4px;
+  min-width: 100px;
+}
+.players {
+  max-width: 160px;
+}
+.empty {
+  padding: var(--space-6) 0;
+  color: var(--text-muted);
+}
+
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.sortBtn:hover {
+  color: var(--text);
+}
+.sortBtn:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: 2px;
+}
+.sortActive {
+  color: var(--ion);
+}
+
+.iconLink {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  color: var(--text-muted);
+}
+.iconLink:hover {
+  border-color: var(--rule-hover);
+  background: var(--hull-raised);
+  color: var(--text);
+}
+.iconLink:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: 2px;
+}
+
+@media (min-width: 576px) {
   .filtersGrid,
   .dateGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
-@media (min-width: 48em) {
+@media (min-width: 768px) {
   .statsGrid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-
   .filtersGrid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
-
   .dateGrid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

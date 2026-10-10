@@ -1,121 +1,62 @@
-.banner {
-    transition: background-color 500ms ease-in-out, border-color 500ms ease-in-out;
-    position: fixed;
-    top: 49px;
-    left: 0;
-    right: 0;
-    z-index: 90;
-    height: 60px;
-    border-bottom: 4px solid;
+/* Sticky pick bar under the app header. Bleeds to the edges of the page padding. */
+.bar {
+  position: sticky;
+  top: calc(var(--header-h) + var(--sat));
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 66px;
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) 0;
+  padding: 10px var(--space-5);
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rule);
+}
+.yours { box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--gold) 70%, transparent); }
+
+.who { display: flex; align-items: center; gap: var(--space-3); flex: 1; min-width: 0; }
+.text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.heading { font-size: 17px; line-height: 1.25; font-weight: 600; font-stretch: var(--semi); color: var(--text); }
+.sub { font-size: 13px; line-height: 1.35; color: var(--text-muted); }
+
+.sel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: none;
+  max-width: 46%;
+  padding: 5px 5px 5px 14px;
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+}
+.selText { display: grid; min-width: 120px; line-height: 1.2; }
+.selText small { font-size: 12px; color: var(--text-muted); }
+.selText b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
+
+.bottom { display: none; }
+
+@media (max-width: 899.98px) {
+  .bar { margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0; padding: 10px var(--space-4); gap: var(--space-3); }
+  .heading { font-size: 15px; }
+  .sub { font-size: 12px; }
 }
 
-.banner.blue {
-    background-color: var(--mantine-color-blue-3);
-    border-color: var(--mantine-color-blue-5);
-
-    @mixin dark {
-        background-color: var(--mantine-color-blue-9);
-        border-color: var(--mantine-color-blue-9);
-    }
-}
-
-.banner.gray {
-    background-color: var(--mantine-color-gray-3);
-    border-color: var(--mantine-color-gray-5);
-
-    @mixin dark {
-        background-color: var(--mantine-color-gray-9);
-        border-color: var(--mantine-color-gray-9);
-    }
-}
-
-.banner.red {
-    background-color: var(--mantine-color-red-5);
-    border-color: var(--mantine-color-red-5);
-
-    @mixin dark {
-        background-color: var(--mantine-color-red-9);
-        border-color: var(--mantine-color-red-9);
-    }
-}
-
-.banner.green {
-    background-color: var(--mantine-color-green-3);
-    border-color: var(--mantine-color-green-5);
-
-    @mixin dark {
-        background-color: var(--mantine-color-green-9);
-        border-color: var(--mantine-color-green-9);
-    }
-}
-
-.banner.magenta {
-    background-color: var(--mantine-color-magenta-3);
-    border-color: var(--mantine-color-magenta-5);
-
-    @mixin dark {
-        background-color: var(--mantine-color-magenta-8);
-        border-color: var(--mantine-color-magenta-8);
-    }
-}
-
-.banner.violet {
-    background-color: var(--mantine-color-violet-3);
-    border-color: var(--mantine-color-violet-5);
-
-    @mixin dark {
-        background-color: var(--mantine-color-violet-9);
-        border-color: var(--mantine-color-violet-9);
-    }
-}
-
-.banner.orange {
-    background-color: var(--mantine-color-orange-3);
-    border-color: var(--mantine-color-orange-5);
-
-    @mixin dark {
-        background-color: var(--mantine-color-orange-9);
-        border-color: var(--mantine-color-orange-9);
-    }
-}
-
-
-.subtext {
-    color: white;
-    font-weight: bold;
-    font-style: italic;
-    border-radius: var(--mantine-radius-lg);
-    transition: background-color 500ms ease-in-out;
-    background-color: var(--mantine-color-blue-5);
-
-
-}
-.subtext.blue {
-    background-color: var(--mantine-color-blue-5);
-    @mixin dark { background-color: var(--mantine-color-blue-7); }
-}
-
-.subtext.red {
-    background-color: var(--mantine-color-red-5);
-    @mixin dark { background-color: var(--mantine-color-red-7); }
-}
-
-.subtext.green {
-    background-color: var(--mantine-color-green-5);
-    @mixin dark { background-color: var(--mantine-color-green-7); }
-}
-
-.subtext.magenta {
-    background-color: var(--mantine-color-magenta-5);
-    @mixin dark { background-color: var(--mantine-color-magenta-7); }
-}
-
-.subtext.violet {
-    background-color: var(--mantine-color-violet-5);
-    @mixin dark { background-color: var(--mantine-color-violet-7); }
-}
-
-.subtext.orange {
-    background-color: var(--mantine-color-orange-5);
-    @mixin dark { background-color: var(--mantine-color-orange-7); }
+@media (max-width: 759.98px) {
+  .bar .sel { display: none; }
+  .bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: var(--space-4) calc(-1 * var(--space-4)) calc(-1 * var(--space-6));
+    padding: 10px var(--space-4) calc(10px + var(--sab));
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--rule);
+  }
+  .bottom .selText { flex: 1; min-width: 0; }
 }

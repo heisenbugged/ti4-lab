@@ -24,6 +24,7 @@ type Props = {
   mapId: string;
   tile: HomeTile;
   selectable?: boolean;
+  selected?: boolean;
   onSelect?: () => void;
   sliceValue?: number;
   sliceStats?: SliceStats;
@@ -36,6 +37,7 @@ export function HomeTile({
   tile,
   onSelect,
   selectable = false,
+  selected = false,
   sliceValue,
   sliceStats,
   coreSliceData,
@@ -151,6 +153,7 @@ export function HomeTile({
             seat={tile.seat}
             coreSliceData={coreSliceData}
             selectable={selectable}
+            selected={selected}
             onSelect={onSelect}
             disabled={disabled}
           />

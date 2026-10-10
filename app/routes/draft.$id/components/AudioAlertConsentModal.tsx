@@ -1,4 +1,4 @@
-import { Button, Modal, Stack, Text } from "@mantine/core";
+import { Button, Modal, Text } from "~/ui";
 import {
   hasAudioAlertConsent,
   setAudioAlertEnabled,
@@ -6,6 +6,7 @@ import {
 } from "~/utils/audioAlert";
 import { useState, useEffect } from "react";
 
+/** Asked once: play a sound when it's your turn? */
 export function AudioAlertConsentModal() {
   const [opened, setOpened] = useState(false);
 
@@ -32,28 +33,24 @@ export function AudioAlertConsentModal() {
     <Modal
       opened={opened}
       onClose={handleDisable}
-      title="Audio Alerts"
-      centered
-      closeOnClickOutside={false}
-      closeOnEscape={false}
+      title="Sound alerts"
+      dismissible={false}
       withCloseButton={false}
+      footer={
+        <>
+          <Button variant="tertiary" onClick={handleDisable}>
+            No sound
+          </Button>
+          <Button variant="primary" onClick={handleEnable}>
+            Turn on alerts
+          </Button>
+        </>
+      }
     >
-      <Stack gap="md">
-        <Text>
-          Would you like to play a sound alert when it&apos;s your turn to draft?
-          You can change this setting anytime using the sound icon in the draft
-          controls.
-        </Text>
-        <Button.Group>
-          <Button onClick={handleEnable} flex={1}>
-            Enable
-          </Button>
-          <Button onClick={handleDisable} variant="outline" flex={1}>
-            Disable
-          </Button>
-        </Button.Group>
-      </Stack>
+      <Text>
+        Play a sound when it&apos;s your turn to pick? You can change this any
+        time with the bell in the draft tools.
+      </Text>
     </Modal>
   );
 }
-

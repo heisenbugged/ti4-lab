@@ -1,4 +1,5 @@
-import { Group, TextInput, Button } from "@mantine/core";
+import { Button, TextInput } from "~/ui";
+import styles from "./Spotify.module.css";
 
 interface SpotifyPlaylistUIProps {
   playlistId: string | undefined;
@@ -19,28 +20,27 @@ export const SpotifyPlaylistUI = ({
   endWar,
 }: SpotifyPlaylistUIProps) => {
   return (
-    <Group align="end" style={{ flex: 1 }}>
+    <div className={styles.playlist}>
       <TextInput
-        size="xl"
+        size="sm"
         label="Playlist ID"
         placeholder="Enter Spotify playlist ID"
-        description="Copy-paste the playlist ID from spotify that will be resumed when the war ends"
+        hint="Copy-paste the Spotify playlist ID that will resume when the war ends."
         value={playlistId || ""}
         onChange={(e) =>
           setPlaylistId(extractPlaylistId(e.currentTarget.value))
         }
-        style={{ flex: 1 }}
       />
       <Button
-        size="xl"
-        color="red"
-        variant="filled"
+        size="sm"
+        variant="danger"
         onClick={endWar}
         disabled={!isWarMode}
+        className={styles.endWar}
       >
-        End War
+        End war
       </Button>
-    </Group>
+    </div>
   );
 };
 

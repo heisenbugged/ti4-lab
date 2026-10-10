@@ -1,0 +1,2 @@
+.page { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); width: 100%; min-height: calc(100vh - var(--header-h) - 80px); color: var(--gold); font-size: 13px; }
+.page span { color: var(--text-muted); }

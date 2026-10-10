@@ -1,0 +1,11 @@
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin: var(--space-3) 0 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--text-muted); }
+.legend li { display: flex; align-items: center; gap: 7px; }
+.off { opacity: 0.55; }
+.swatch { position: relative; width: 18px; height: 16px; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+.swatch::after { content: ""; position: absolute; inset: 2px; clip-path: inherit; }
+.home { background: var(--player-blue); }
+.home::after { display: none; }
+.drafted { background: var(--player-blue); }
+.drafted::after { background: var(--hull-sunken); }
+.preset { background: var(--rule-strong); }
+.preset::after { inset: 1px; background: repeating-linear-gradient(135deg, var(--hull-raised) 0 2px, var(--hull) 2px 4px); }

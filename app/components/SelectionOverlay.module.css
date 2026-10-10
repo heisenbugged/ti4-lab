@@ -1,0 +1,5 @@
+.overlay { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; pointer-events: none; background: color-mix(in oklab, var(--gold) 10%, transparent); border-radius: var(--radius-sm); }
+.check { display: grid; place-items: center; padding: 8px; border-radius: 50%; background: var(--gold); color: var(--on-gold); box-shadow: var(--shadow-pop); }
+.check[data-size="sm"] { padding: 6px; }
+.check[data-size="lg"] { padding: 12px; }
+.badge { position: absolute; top: -11px; right: -6px; z-index: 10; pointer-events: none; }

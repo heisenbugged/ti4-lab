@@ -23,7 +23,11 @@ const viteDevServer =
     ? null
     : await import("vite").then((vite) =>
         vite.createServer({
-          server: { middlewareMode: true },
+          server: {
+            middlewareMode: true,
+            // Separate HMR port per dev server so parallel worktrees don't collide
+            hmr: { port: Number(process.env.HMR_PORT) || 24679 },
+          },
         }),
       );
 
@@ -163,8 +167,9 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(3000, "0.0.0.0", () => {
-  console.log(`Express server listening on port 3000`);
+const port = Number(process.env.PORT) || 3000;
+httpServer.listen(port, "0.0.0.0", () => {
+  console.log(`Express server listening on port ${port}`);
 });
 
 if (process.env.DISCORD_DISABLED !== "true") {

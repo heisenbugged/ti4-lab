@@ -1,33 +1,16 @@
-import { Group, Stack, Text } from "@mantine/core";
-import { ReactNode } from "react";
-import classes from "./Section.module.css";
+import type { ReactNode } from "react";
+import { SectionHeader, Stack } from "~/ui";
 
+/** A page section: heading on top, content below. */
 export function Section({ children }: { children: ReactNode }) {
-  return (
-    <Stack flex={0} gap="md">
-      {children}
-    </Stack>
-  );
+  return <Stack gap={4}>{children}</Stack>;
 }
 
-export function SectionTitle({
-  title,
-  children,
-}: {
-  title: string;
-  children?: ReactNode;
-}) {
+/** Section heading with a hairline under it; children sit on the right (actions, counts). */
+export function SectionTitle({ title, meta, sticky, children }: { title: ReactNode; meta?: ReactNode; sticky?: boolean; children?: ReactNode }) {
   return (
-    <Group className={classes.section} justify="space-between" px="sm" py="sm">
-      <Text
-        size="sm"
-        fw={600}
-        tt="uppercase"
-        style={{ letterSpacing: "0.05em", fontFamily: "Orbitron" }}
-      >
-        {title}
-      </Text>
+    <SectionHeader title={title} meta={meta} sticky={sticky}>
       {children}
-    </Group>
+    </SectionHeader>
   );
 }

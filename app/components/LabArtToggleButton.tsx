@@ -1,5 +1,5 @@
-import { Button } from "@mantine/core";
 import { IconPhoto, IconPhotoOff } from "@tabler/icons-react";
+import { Button } from "~/ui";
 
 type Props = {
   originalArt: boolean;
@@ -9,18 +9,15 @@ type Props = {
 export function LabArtToggleButton({ originalArt, onToggle }: Props) {
   return (
     <Button
-      size="compact-xs"
-      variant="filled"
-      color={originalArt ? "orange" : "violet"}
-      leftSection={
-        originalArt ? <IconPhoto size={14} /> : <IconPhotoOff size={14} />
-      }
+      size="sm"
+      icon={originalArt ? <IconPhoto /> : <IconPhotoOff />}
       onClick={onToggle}
+      aria-pressed={originalArt}
       title={
         originalArt ? "Switch to abstract tiles" : "Switch to original art"
       }
     >
-      {originalArt ? "Original" : "Lab Art"}
+      {originalArt ? "Original art" : "Lab art"}
     </Button>
   );
 }

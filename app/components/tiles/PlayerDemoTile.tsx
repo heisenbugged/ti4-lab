@@ -1,10 +1,8 @@
-import { Hex } from "../Hex";
-import { PlayerDemoTile as TPlayerDemoTile } from "~/types";
-import { useContext } from "react";
+import { useContext, useId } from "react";
 import { MapContext } from "~/contexts/MapContext";
-import { Title } from "@mantine/core";
-
-import classes from "./Tiles.module.css";
+import { PlayerDemoTile as TPlayerDemoTile } from "~/types";
+import { hexVertices } from "../Hex/hexUtils";
+import classes from "./PlayerDemoTile.module.css";
 
 type Props = {
   tile: TPlayerDemoTile;
@@ -12,25 +10,48 @@ type Props = {
   color: string;
 };
 
+function points(radius: number, scale = 0.95) {
+  return hexVertices(radius * scale)
+    .map((p) => `${p.x},${p.y}`)
+    .join(" ");
+}
+
+/** A demo-map hex: solid for a home system, outlined in the seat colour for systems drafted with that seat's slice. */
 export function PlayerDemoTile({ tile, title, color }: Props) {
   const { radius } = useContext(MapContext);
+  const home = tile.isHomeSystem;
   return (
-    <Hex
-      id={`player-demo-${tile.playerNumber}-${tile.idx}`}
-      radius={radius}
-      colorClass={classes[color]}
-      showBorder={tile.playerNumber === 6}
-    >
-      {tile.isHomeSystem && (
-        <Title
-          size={24}
-          fw={600}
-          style={{ zIndex: 1 }}
-          className={classes.title}
-        >
-          {title}
-        </Title>
-      )}
-    </Hex>
+    <div className={classes.tile} style={{ width: radius * 2, height: radius * 2, "--p": `var(--player-${color})` } as React.CSSProperties}>
+      <svg width={radius * 2} height={radius * 2} viewBox={`-${radius} -${radius} ${radius * 2} ${radius * 2}`}>
+        {home ? (
+          <polygon points={points(radius)} className={classes.home} />
+        ) : (
+          <>
+            <polygon points={points(radius)} className={classes.ring} />
+            <polygon points={points(radius, 0.83)} className={classes.inner} />
+          </>
+        )}
+      </svg>
+      {home && <span className={classes.title} style={{ fontSize: Math.max(11, radius * 0.36) }}>{title}</span>}
+    </div>
+  );
+}
+
+/** A hex that is placed for everyone rather than drafted (preset equidistants, the nucleus). */
+export function PresetDemoHex({ radius }: { radius: number }) {
+  const id = useId().replace(/:/g, "");
+  return (
+    <div className={classes.tile} style={{ width: radius * 2, height: radius * 2 }}>
+      <svg width={radius * 2} height={radius * 2} viewBox={`-${radius} -${radius} ${radius * 2} ${radius * 2}`}>
+        <defs>
+          <pattern id={`hatch-${id}`} width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="7" height="7" className={classes.hatchBg} />
+            <rect width="3" height="7" className={classes.hatchLine} />
+          </pattern>
+        </defs>
+        <polygon points={points(radius)} className={classes.presetEdge} />
+        <polygon points={points(radius, 0.9)} fill={`url(#hatch-${id})`} />
+      </svg>
+    </div>
   );
 }

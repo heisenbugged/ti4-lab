@@ -1,4 +1,6 @@
-import { Button, Group, Paper, Text, Title, Progress } from "@mantine/core";
+import { Button, PlayerTag, Progress } from "~/ui";
+import classes from "./ReplayControls.module.css";
+import { playerColorOf, playerLetter } from "~/routes/draft.$id/components/draftOrderUtils";
 import {
   IconPlayerSkipBack,
   IconPlayerTrackPrev,
@@ -35,7 +37,7 @@ export function ReplayControls() {
   const getCurrentPickDescription = () => {
     if (currentPick === 0) return "Draft start";
     if (currentPick >= totalPicks) return "Draft complete";
-    if (!replaySelections) return "Loading...";
+    if (!replaySelections) return "Loading…";
 
     const selection = replaySelections[currentPick - 1];
     const player = getSelectionPlayer(selection, draft.players);
@@ -69,71 +71,66 @@ export function ReplayControls() {
   };
 
   return (
-    <Paper
-      p="lg"
-      shadow="sm"
-      withBorder
-      style={{
-        position: "sticky",
-        top: 75,
-        zIndex: 100,
-        backgroundColor: "var(--mantine-color-body)",
-      }}
-    >
-      <Group justify="space-between" mb="md">
-        <div>
-          <Title order={3}>Draft Replay</Title>
-          <Text size="sm" c="dimmed">
-            Pick {currentPick} of {totalPicks}
-          </Text>
-        </div>
+    <div className={classes.bar}>
+      <div className={classes.head}>
+        <h3 className={classes.title}>Draft replay</h3>
+        <span className={classes.count}>
+          Pick {currentPick} of {totalPicks}
+        </span>
         {activePlayer && (
-          <Text size="sm" fw={500}>
-            Current: {activePlayer.name}
-          </Text>
+          <span className={classes.current}>
+            <span className={classes.currentLabel}>Current</span>
+            <PlayerTag
+              size="sm"
+              color={playerColorOf(activePlayer.id)}
+              letter={playerLetter(activePlayer.id)}
+              name={activePlayer.name}
+            />
+          </span>
         )}
-      </Group>
+      </div>
 
-      <Progress value={progress} size="md" mb="md" />
+      <Progress value={progress} label="Replay progress" size="xs" />
 
-      <Text size="sm" mb="md" ta="center">
-        {getCurrentPickDescription()}
-      </Text>
-
-      <Group justify="center" gap="xs">
-        <Button
-          variant="light"
-          leftSection={<IconPlayerSkipBack size={18} />}
-          onClick={replayActions.jumpToStart}
-          disabled={!canGoBack}
-        >
-          Start
-        </Button>
-        <Button
-          variant="light"
-          leftSection={<IconPlayerTrackPrev size={18} />}
-          onClick={replayActions.stepBackward}
-          disabled={!canGoBack}
-        >
-          Back
-        </Button>
-        <Button
-          variant="light"
-          rightSection={<IconPlayerTrackNext size={18} />}
-          onClick={replayActions.stepForward}
-          disabled={!canGoForward}
-        >
-          Forward
-        </Button>
-        <Button
-          variant="light"
-          rightSection={<IconPlayerSkipForward size={18} />}
-          onClick={replayActions.jumpToEnd}
-          disabled={!canGoForward}
-        >
-          End
-        </Button>
-      </Group>
-    </Paper>
+      <div className={classes.row}>
+        <p className={classes.step} aria-live="polite">
+          {getCurrentPickDescription()}
+        </p>
+        <div className={classes.buttons}>
+          <Button
+            size="sm"
+            icon={<IconPlayerSkipBack size={16} />}
+            onClick={replayActions.jumpToStart}
+            disabled={!canGoBack}
+          >
+            Start
+          </Button>
+          <Button
+            size="sm"
+            icon={<IconPlayerTrackPrev size={16} />}
+            onClick={replayActions.stepBackward}
+            disabled={!canGoBack}
+          >
+            Back
+          </Button>
+          <Button
+            size="sm"
+            iconRight={<IconPlayerTrackNext size={16} />}
+            onClick={replayActions.stepForward}
+            disabled={!canGoForward}
+          >
+            Forward
+          </Button>
+          <Button
+            size="sm"
+            iconRight={<IconPlayerSkipForward size={16} />}
+            onClick={replayActions.jumpToEnd}
+            disabled={!canGoForward}
+          >
+            End
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

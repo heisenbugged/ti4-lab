@@ -1,11 +1,10 @@
-import { Flex, Group, Text } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction, HydratedPlayer } from "~/types";
 import { PlayerChipOrSelect } from "./PlayerChipOrSelect";
-
-import { playerColors } from "~/data/factionData";
 import { FactionHelpInfo } from "~/routes/draft.$id/components/FactionHelpInfo";
 import { SelectableCard, PlayerColor } from "~/ui";
+import { playerColorOf } from "./draftOrderUtils";
+import classes from "./DraftableFaction.module.css";
 
 type Props = {
   faction: Faction;
@@ -14,10 +13,15 @@ type Props = {
   selectTitle?: string;
   selectedOverride?: boolean;
   selectedColorOverride?: PlayerColor;
+  /** Selected (main pick), waiting for Lock in pick. */
+  pending?: boolean;
+  /** Selected as a minor faction, waiting for Lock in pick. */
+  pendingMinor?: boolean;
   onSelect?: () => void;
   onSelectMinor?: () => void;
 };
 
+/** Faction card: icon, name, Select (or Main / Minor) or the owner, and Info / Wiki. */
 export function DraftableFaction({
   selectTitle,
   faction,
@@ -25,13 +29,13 @@ export function DraftableFaction({
   disabled = false,
   selectedOverride,
   selectedColorOverride,
+  pending = false,
+  pendingMinor = false,
   onSelect,
   onSelectMinor,
 }: Props) {
   const playerColor =
-    player?.id !== undefined
-      ? (playerColors[player.id] as PlayerColor)
-      : undefined;
+    player?.id !== undefined ? playerColorOf(player.id) : undefined;
 
   const hasRegularSelectOnly = onSelect && !onSelectMinor;
   const isAlreadySelected = selectedOverride ?? !!player;
@@ -42,61 +46,23 @@ export function DraftableFaction({
       selected={isAlreadySelected}
       selectedColor={selectedColor}
       disabled={disabled}
+      pending={pending || pendingMinor}
       onSelect={
         hasRegularSelectOnly && !isAlreadySelected ? onSelect : undefined
       }
       header={
         <>
-          <Group
-            align="center"
-            flex={1}
-            style={{
-              overflow: "hidden",
-              flexWrap: "nowrap",
-            }}
-            py="sm"
-            px="sm"
-            gap="sm"
-          >
-            <Flex
-              align="center"
-              justify="center"
-              w="28px"
-              h="28px"
-              style={{ flexShrink: 0 }}
-            >
-              <FactionIcon
-                faction={faction.id}
-                style={{ width: 28, height: 28 }}
-              />
-            </Flex>
-            <Text
-              flex={1}
-              size="sm"
-              ff="heading"
-              fw={600}
-              style={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {faction.name}
-            </Text>
-          </Group>
-
+          <FactionIcon faction={faction.id} className={classes.icon} style={{ width: 28, height: 28 }} />
+          <span className={classes.name} title={faction.name}>
+            {faction.name}
+          </span>
           <PlayerChipOrSelect
             player={player}
             selectTitle={selectTitle}
-            onSelect={
-              onSelect
-                ? (e) => {
-                    e.preventDefault();
-                    onSelect();
-                  }
-                : undefined
-            }
-            onSelectMinor={onSelectMinor}
+            selected={pending}
+            selectedMinor={pendingMinor}
+            onSelect={onSelect ? () => onSelect() : undefined}
+            onSelectMinor={onSelectMinor ? () => onSelectMinor() : undefined}
             disabled={disabled}
             isMinor={player?.minorFaction === faction.id}
           />

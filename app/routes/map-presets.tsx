@@ -1,13 +1,4 @@
 import {
-  ActionIcon,
-  Box,
-  Button,
-  Group,
-  Loader,
-  SegmentedControl,
-  Text,
-} from "@mantine/core";
-import {
   Link,
   LoaderFunctionArgs,
   MetaFunction,
@@ -56,6 +47,17 @@ import {
   SortMode,
   spotlightPool,
 } from "~/utils/presetDiscovery";
+import {
+  Button,
+  ButtonAnchor,
+  ButtonLink,
+  Heading,
+  Segmented,
+  Spinner,
+  Tag,
+  Text,
+  cx,
+} from "~/ui";
 
 export const meta: MetaFunction = () => [
   { title: "Community Maps - TI4 Lab" },
@@ -83,9 +85,9 @@ function browseHref(filters: BrowseFilters, changes: Partial<BrowseFilters>) {
 function DraftCount({ count }: { count: number }) {
   if (count <= 0) return null;
   return (
-    <span className={classes.played}>
-      <IconPlayerPlay size={11} />
-      <span className={classes.playedCount}>{count}</span>
+    <span className={classes.drafts}>
+      <IconPlayerPlay size={14} />
+      <b>{count}</b>
       {count === 1 ? "draft" : "drafts"}
     </span>
   );
@@ -93,11 +95,9 @@ function DraftCount({ count }: { count: number }) {
 
 function AuthorTag({ author }: { author: string }) {
   return (
-    <span className={classes.authorTag}>
-      <span className={classes.authorDot}>
-        {author.charAt(0).toUpperCase()}
-      </span>
-      {author}
+    <span className={classes.author}>
+      <i aria-hidden>{author.charAt(0).toUpperCase()}</i>
+      <span className={classes.authorName}>{author}</span>
     </span>
   );
 }
@@ -106,28 +106,23 @@ function LikeButton({
   preset,
   liked,
   onLike,
-  size,
 }: {
   preset: PresetMapListing;
   liked: LikedMaps;
   onLike: (id: string) => void;
-  size: "xs" | "sm";
 }) {
   const isLiked = preset.id in liked;
   return (
-    <Group gap={4} className={classes.likeGroup}>
-      <ActionIcon
-        variant="subtle"
-        color={isLiked ? "red" : "gray"}
-        size={size}
-        className={classes.heartButton}
-        aria-label={isLiked ? "Liked" : `Like ${preset.name}`}
-        onClick={() => onLike(preset.id)}
-      >
-        {isLiked ? <IconHeartFilled size={14} /> : <IconHeart size={14} />}
-      </ActionIcon>
-      <Text size="xs">{liked[preset.id] ?? preset.likes}</Text>
-    </Group>
+    <button
+      type="button"
+      className={cx(classes.like, isLiked && classes.liked)}
+      aria-label={isLiked ? "Liked" : `Like ${preset.name}`}
+      aria-pressed={isLiked}
+      onClick={() => onLike(preset.id)}
+    >
+      {isLiked ? <IconHeartFilled /> : <IconHeart />}
+      <span>{liked[preset.id] ?? preset.likes}</span>
+    </button>
   );
 }
 
@@ -147,68 +142,61 @@ function MapCard({
   const moreByAuthor = "moreByAuthor" in preset ? preset.moreByAuthor : 0;
   return (
     <article className={classes.card}>
-      <div className={classes.mapPreviewWrap}>
-        <Box
-          component="img"
-          src={presetImageUrl(preset)}
-          alt=""
-          loading="lazy"
-          className={classes.mapPreview}
-        />
+      <div className={classes.cardImg}>
+        <img src={presetImageUrl(preset)} alt="" loading="lazy" />
         {preset.playerCount > 0 && (
-          <span className={`${classes.playerTag} ${classes.playerChip}`}>
-            {preset.playerCount}P
-          </span>
+          <Tag className={classes.cardPlayers}>{preset.playerCount}P</Tag>
         )}
-        {isNew && <span className={classes.newBadge}>New</span>}
+        {isNew && (
+          <Tag tone="ion" className={classes.cardNew}>
+            New
+          </Tag>
+        )}
       </div>
-      <div className={classes.cardContent}>
+      <div className={classes.cardBody}>
         {/* Stretched over the whole card; other controls sit above it. */}
-        <Link to={`/maps/${preset.slug}`} className={classes.cardTitleLink}>
+        <Link to={`/maps/${preset.slug}`} className={classes.cardTitle}>
           {preset.name}
         </Link>
         <AuthorTag author={preset.author} />
-        <div className={classes.mapStats}>
+        <div className={classes.cardStats}>
           {preset.avgSliceValue != null && (
-            <span className={classes.stat}>
-              <span className={classes.statValue}>{preset.avgSliceValue}</span>
-              <span className={classes.statLabel}>Avg</span>
+            <span>
+              <b>{preset.avgSliceValue}</b> avg
             </span>
           )}
           {preset.totalResources != null && preset.totalInfluence != null && (
-            <span className={classes.stat}>
-              <span className={classes.statValue}>
+            <span>
+              <b>
                 {preset.totalResources}/{preset.totalInfluence}
-              </span>
-              <span className={classes.statLabel}>R/I</span>
+              </b>{" "}
+              R/I
             </span>
           )}
           <LegendaryDisplay count={preset.legendaries} />
           <TechSkipsDisplay techSkips={preset.techSkips} />
         </div>
         {preset.description && (
-          <div className={classes.description}>{preset.description}</div>
+          <p className={classes.cardDesc}>{preset.description}</p>
         )}
       </div>
-      <div className={classes.statsRow}>
+      <div className={classes.cardFoot}>
         <DraftCount count={preset.draftCount} />
-        <LikeButton preset={preset} liked={liked} onLike={onLike} size="xs" />
-        <Button
-          component="a"
+        <LikeButton preset={preset} liked={liked} onLike={onLike} />
+        <ButtonAnchor
           href={mapGeneratorHref(preset.mapString)}
-          variant="subtle"
-          color="blue"
-          size="compact-xs"
-          leftSection={<IconSparkles size={11} />}
-          className={classes.genButton}
+          variant="tertiary"
+          size="sm"
+          icon={<IconSparkles size={14} />}
+          className={classes.cardGen}
         >
           Generator
-        </Button>
+        </ButtonAnchor>
       </div>
       {moreByAuthor > 0 && (
         <Link
           to={browseHref(filters, { author: preset.author })}
-          className={classes.moreByAuthor}
+          className={classes.cardMore}
         >
           {moreByAuthor} more by {preset.author}
         </Link>
@@ -226,87 +214,78 @@ function Spotlight({
   liked: LikedMaps;
   onLike: (id: string) => void;
 }) {
+  const techSkips = parseTechSkips(preset.techSkips);
   return (
-    <section className={classes.spotlight}>
-      <div className={classes.spotlightImageWrap}>
-        <img
-          src={presetImageUrl(preset)}
-          alt={preset.name}
-          className={classes.spotlightImage}
-        />
-      </div>
-      <div className={classes.spotlightContent}>
-        <div className={classes.spotlightKicker}>
-          <IconPlanet size={13} />
-          <span>Map of the day</span>
-        </div>
-        <h2 className={classes.spotlightName}>{preset.name}</h2>
-        <div className={classes.spotlightAuthorRow}>
+    <section className={classes.hero} aria-labelledby="map-of-the-day">
+      <Link to={`/maps/${preset.slug}`} className={classes.heroMap} tabIndex={-1}>
+        <img src={presetImageUrl(preset)} alt={preset.name} />
+      </Link>
+      <div className={classes.heroInfo}>
+        <p className={classes.heroKicker}>
+          <IconPlanet size={16} />
+          Map of the day
+        </p>
+        <Heading variant="title" as="h2" id="map-of-the-day">
+          {preset.name}
+        </Heading>
+        <div className={classes.heroBy}>
           <AuthorTag author={preset.author} />
-          {preset.playerCount > 0 && (
-            <span className={classes.playerTag}>{preset.playerCount}P</span>
-          )}
+          {preset.playerCount > 0 && <Tag>{preset.playerCount}P</Tag>}
         </div>
         {preset.description && (
-          <p className={classes.spotlightDescription}>{preset.description}</p>
+          <p className={classes.heroDesc}>{preset.description}</p>
         )}
-        <div className={classes.spotlightStats}>
+        <div className={classes.heroStats}>
           {preset.avgSliceValue != null && (
-            <div className={classes.spotlightStat}>
-              <span className={classes.spotlightStatValue}>
-                {preset.avgSliceValue}
-              </span>
-              <span className={classes.spotlightStatLabel}>Avg Slice</span>
+            <div>
+              <b className={classes.statValue}>{preset.avgSliceValue}</b>
+              <span className={classes.statLabel}>Avg slice</span>
             </div>
           )}
           {preset.totalResources != null && preset.totalInfluence != null && (
-            <div className={classes.spotlightStat}>
-              <span className={classes.spotlightStatValue}>
+            <div>
+              <b className={classes.statValue}>
                 {preset.totalResources}/{preset.totalInfluence}
-              </span>
-              <span className={classes.spotlightStatLabel}>R/I</span>
+              </b>
+              <span className={classes.statLabel}>R/I</span>
             </div>
           )}
           {!!preset.legendaries && (
-            <div className={classes.spotlightStat}>
-              <LegendaryDisplay count={preset.legendaries} />
-              <span className={classes.spotlightStatLabel}>Legendary</span>
+            <div>
+              <span className={classes.heroGlyphs}>
+                <LegendaryDisplay count={preset.legendaries} size="md" />
+              </span>
+              <span className={classes.statLabel}>Legendary</span>
             </div>
           )}
-          {parseTechSkips(preset.techSkips) && (
-            <div className={classes.spotlightStat}>
-              <TechSkipsDisplay techSkips={preset.techSkips} />
-              <span className={classes.spotlightStatLabel}>Tech Skips</span>
+          {techSkips && (
+            <div>
+              <span className={classes.heroGlyphs}>
+                <TechSkipsDisplay techSkips={preset.techSkips} size="md" />
+              </span>
+              <span className={classes.statLabel}>Tech skips</span>
             </div>
           )}
-          <div className={classes.spotlightEngagement}>
-            <DraftCount count={preset.draftCount} />
-            <LikeButton
-              preset={preset}
-              liked={liked}
-              onLike={onLike}
-              size="sm"
-            />
-          </div>
         </div>
-        <Group gap="sm" mt="auto" pt="md">
-          <Button
-            component={Link}
+        <div className={classes.heroEng}>
+          <DraftCount count={preset.draftCount} />
+          <LikeButton preset={preset} liked={liked} onLike={onLike} />
+        </div>
+        <div className={classes.heroActions}>
+          <ButtonLink
             to={`/maps/${preset.slug}`}
-            rightSection={<IconArrowRight size={14} />}
+            variant="primary"
+            iconRight={<IconArrowRight size={16} />}
           >
             View map
-          </Button>
-          <Button
-            component="a"
+          </ButtonLink>
+          <ButtonAnchor
             href={mapGeneratorHref(preset.mapString)}
-            variant="light"
-            color="blue"
-            leftSection={<IconSparkles size={14} />}
+            icon={<IconSparkles size={16} />}
           >
             Open in generator
-          </Button>
-        </Group>
+          </ButtonAnchor>
+        </div>
       </div>
     </section>
   );
@@ -321,12 +300,12 @@ function PlayerPicker({
 }) {
   const navigate = useNavigate();
   return (
-    <div className={classes.playerFilter}>
-      <span className={classes.playerFilterLabel}>Players</span>
-      <SegmentedControl
-        size="sm"
-        color="blue"
-        aria-label="Number of players"
+    <div className={classes.filter}>
+      <Text as="span" size="sm" tone="muted" weight={600}>
+        Players
+      </Text>
+      <Segmented
+        label="Number of players"
         value={filters.players == null ? "any" : String(filters.players)}
         onChange={(value) =>
           navigate(
@@ -336,13 +315,14 @@ function PlayerPicker({
             { preventScrollReset: true },
           )
         }
-        data={[
+        options={[
           { label: "Any", value: "any" },
           ...options.map((players) => ({
             label: String(players),
             value: String(players),
           })),
         ]}
+        className={classes.playerSeg}
       />
     </div>
   );
@@ -406,14 +386,19 @@ function MapGrid({
       <div className={classes.grid}>{items.map(renderCard)}</div>
       <div ref={sentinelRef} className={classes.loadMore}>
         {isLoading ? (
-          <Loader size="sm" />
+          <Spinner size={18} />
         ) : hasMore ? (
-          <Button variant="subtle" size="xs" onClick={loadMore}>
-            Load more
-          </Button>
+          <>
+            <Button size="sm" onClick={loadMore}>
+              Load more
+            </Button>
+            <Text as="span" size="xs" tone="muted">
+              Loads on its own as you scroll
+            </Text>
+          </>
         ) : (
           items.length > PRESET_PAGE_SIZE && (
-            <Text size="xs" c="dimmed">
+            <Text size="xs" tone="muted">
               End of the list
             </Text>
           )
@@ -501,27 +486,27 @@ export default function MapPresets() {
   const gridTitle = filters.author
     ? `${filters.players != null ? mapsLabel : "Maps"} by ${filters.author}`
     : filters.players != null
-      ? mapsLabel
+      ? `${filters.players}-player maps`
       : "All maps";
 
   return (
     <MainAppShell>
-      <Box className={classes.page}>
-        <div className={classes.header}>
-          <div className={classes.headerRow}>
-            <h1 className={classes.title}>Community Maps</h1>
-            <span className={classes.badge}>
-              <IconMap size={12} />
+      <div className={classes.page}>
+        <header className={classes.head}>
+          <div className={classes.titleRow}>
+            <Heading variant="title" as="h1">
+              Community maps
+            </Heading>
+            <Tag icon={<IconMap />} title={`${total} maps`}>
               {total}
-            </span>
+            </Tag>
           </div>
-          <p className={classes.subtitle}>
+          <Text size="sm" tone="muted">
             Maps built and shared by the community. Pick a player count to
             start.
-          </p>
-        </div>
-
-        <PlayerPicker filters={filters} options={playerOptions} />
+          </Text>
+          <PlayerPicker filters={filters} options={playerOptions} />
+        </header>
 
         {spotlight && (
           <div className={classes.reveal}>
@@ -530,78 +515,74 @@ export default function MapPresets() {
         )}
 
         {newArrivals.length > 0 && (
-          <section className={classes.shelf}>
-            <div className={classes.shelfHeader}>
-              <span className={classes.shelfIcon}>
+          <section className={classes.shelf} aria-labelledby="new-arrivals">
+            <div className={classes.sectionHead}>
+              <span className={classes.shelfIcon} aria-hidden>
                 <IconSparkles size={14} />
               </span>
-              <h2 className={`${classes.sectionTitle} ${classes.shelfTitle}`}>
-                New Arrivals
-              </h2>
-              <span className={classes.shelfSubtitle}>Hot off the forge</span>
-              <div className={classes.shelfRule} />
+              <Heading variant="section" as="h2" id="new-arrivals">
+                New arrivals
+              </Heading>
+              <Text as="span" size="xs" tone="muted">
+                Hot off the forge
+              </Text>
             </div>
             <div className={classes.shelfRow}>
-              {newArrivals.map((preset) => (
-                <div key={preset.id} className={classes.shelfItem}>
-                  {renderCard(preset)}
-                </div>
-              ))}
+              {newArrivals.map((preset) => renderCard(preset))}
             </div>
           </section>
         )}
 
-        <section className={classes.allMaps}>
-          <div className={classes.allMapsHeader}>
-            <div className={classes.allMapsHeading}>
-              <h2 className={classes.sectionTitle}>{gridTitle}</h2>
-              <span className={classes.allMapsCount}>{matching}</span>
-              {filters.author && (
-                <Button
-                  component={Link}
-                  to={browseHref(filters, { author: null })}
-                  variant="subtle"
-                  color="gray"
-                  size="compact-xs"
-                  leftSection={<IconX size={12} />}
-                >
-                  Show all authors
-                </Button>
-              )}
-            </div>
-            <SegmentedControl
-              size="xs"
+        <section className={classes.allMaps} aria-labelledby="all-maps">
+          <div className={classes.sectionHead}>
+            <Heading variant="section" as="h2" id="all-maps">
+              {gridTitle}
+            </Heading>
+            <Text as="span" size="xs" tone="muted" numeric>
+              {matching}
+            </Text>
+            {filters.author && (
+              <ButtonLink
+                to={browseHref(filters, { author: null })}
+                variant="tertiary"
+                size="sm"
+                icon={<IconX size={14} />}
+              >
+                Show all authors
+              </ButtonLink>
+            )}
+            <Segmented
+              size="sm"
+              label="Sort maps"
               value={filters.sort}
               onChange={(value) =>
                 navigate(browseHref(filters, { sort: value as SortMode }), {
                   preventScrollReset: true,
                 })
               }
-              data={SORT_OPTIONS}
-              className={classes.sortControl}
+              options={SORT_OPTIONS}
+              className={classes.sortSeg}
             />
           </div>
           {!filters.author && (
-            <p className={classes.groupingNote}>
+            <Text size="xs" tone="muted">
               Showing up to two maps per author. Follow “more by” on a card to
               see the rest.
-            </p>
+            </Text>
           )}
           {firstPage.length === 0 ? (
             <div className={classes.empty}>
-              <Text size="sm">
+              <IconMap size={28} className={classes.emptyIcon} />
+              <Text size="md" weight={600}>
                 No {filters.players ? `${filters.players}-player ` : ""}maps
                 yet.
               </Text>
-              <Button
-                component="a"
+              <ButtonAnchor
                 href="/map-generator"
-                variant="light"
-                size="xs"
-                leftSection={<IconSparkles size={12} />}
+                icon={<IconSparkles size={16} />}
               >
                 Build one in the map generator
-              </Button>
+              </ButtonAnchor>
             </div>
           ) : (
             <MapGrid
@@ -613,7 +594,7 @@ export default function MapPresets() {
             />
           )}
         </section>
-      </Box>
+      </div>
     </MainAppShell>
   );
 }

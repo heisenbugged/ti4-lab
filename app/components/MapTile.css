@@ -23,3 +23,21 @@
 .map-tile-button:active {
     outline: none;
 }
+
+.map-tile-tools { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.map-tile-tool {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid color-mix(in srgb, var(--ion) 70%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ion) 22%, var(--hull-sunken));
+  color: #fff;
+  font: 700 14px/1 var(--font);
+  cursor: pointer;
+}
+.map-tile-tool:hover { background: color-mix(in srgb, var(--ion) 40%, var(--hull-sunken)); }
+.map-tile-tool--danger { border-color: color-mix(in srgb, var(--danger) 75%, transparent); background: color-mix(in srgb, var(--danger-fill) 70%, var(--hull-sunken)); font-size: 12px; }
+.map-tile-tool--danger:hover { background: var(--danger-fill); }

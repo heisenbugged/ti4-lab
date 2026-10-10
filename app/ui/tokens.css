@@ -1,0 +1,127 @@
+/*
+ * TI4 Lab design tokens. Every colour, space and radius in the interface comes from here.
+ * Dark ("Deep space") is the default; light ("Survey sheet") is [data-theme="light"].
+ */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --void: #070b16;
+  --hull: #0e1424;
+  --hull-raised: #151d31;
+  --hull-hover: #1c2640;
+  --hull-sunken: #050811;
+  --rule: #1e2840;
+  --rule-strong: #46557a;
+  --rule-hover: #5b6b92;
+  --text: #e7ebf3;
+  --text-muted: #8e99b3;
+  --text-faint: #6b7896;
+
+  /* Signal */
+  --gold: #e3b04b;
+  --gold-hi: #f0c46a;
+  --gold-deep: #b98a2c;
+  --gold-line: #e3b04b;
+  --on-gold: #0b0f1a;
+  --ion: #6ec1f0;
+  --danger: #f0645a;
+  --danger-fill: #c8372f;
+  --danger-fill-hi: #d9443b;
+  --on-danger: #ffffff;
+  --success: #52c98a;
+  --warning: #f0b43c;
+  --discord: #5865f2;
+  --scrim: rgb(3 5 12 / 0.72);
+  --glass: rgb(5 8 17 / 0.92);
+
+  /* Game meaning only */
+  --resource: #f2c230;
+  --influence: #3d9be9;
+  --flex: #9b6ae0;
+  --tech-biotic: #46b85c;
+  --tech-warfare: #e2443c;
+  --tech-propulsion: #3a86e0;
+  --tech-cybernetic: #e0c22c;
+  --wormhole-alpha: #ef8a2c;
+  --wormhole-beta: #3fae5a;
+  --wormhole-gamma: #b062e0;
+  --wormhole-delta: #3d9be9;
+  --anomaly: #e0342b;
+  --legendary: #b88cf0;
+
+  /* Player seat colours (the app's eight) */
+  --player-blue: #3a7be0;
+  --player-red: #d9423b;
+  --player-green: #36a85a;
+  --player-magenta: #d6559a;
+  --player-violet: #8b5cd9;
+  --player-orange: #ee8a2e;
+  --player-gray: #7d8698;
+  --player-cyan: #1fb3c9;
+
+  /* Type */
+  --font: "Saira", "Eurostile", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --wide: 125%;
+  --semi: 112%;
+
+  /* Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-sm: 3px;
+  --radius-full: 999px;
+  --chamfer: 6px;
+  --chamfer-sm: 5px;
+  --chamfer-lg: 10px;
+
+  --shadow-pop: 0 10px 28px -8px rgb(0 0 0 / 0.6);
+  --shadow-modal: 0 30px 80px -20px rgb(0 0 0 / 0.75), 0 0 0 1px rgb(255 255 255 / 0.03);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --header-h: 52px;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --void: #eef1f6;
+  --hull: #ffffff;
+  --hull-raised: #f7f9fc;
+  --hull-hover: #eef2f8;
+  --hull-sunken: #e6eaf1;
+  --rule: #d8dee8;
+  --rule-strong: #7f8dab;
+  --rule-hover: #5f6f92;
+  --text: #0f1626;
+  --text-muted: #4f5b73;
+  --text-faint: #6b768c;
+  --gold: #dca63a;
+  --gold-hi: #e8b752;
+  --gold-deep: #b98a2c;
+  --gold-line: #8a6110;
+  --on-gold: #0f1626;
+  --ion: #1f6cb0;
+  --danger: #be3328;
+  --danger-fill: #be3328;
+  --danger-fill-hi: #a92c25;
+  --success: #1b7d4b;
+  --warning: #9a6a00;
+  --scrim: rgb(15 22 38 / 0.45);
+  --glass: rgb(255 255 255 / 0.92);
+  --shadow-pop: 0 10px 28px -10px rgb(15 22 38 / 0.25);
+  --shadow-modal: 0 30px 80px -24px rgb(15 22 38 / 0.35);
+}
+
+/* Accessible colours: stronger hazard red and focus contrast, as the old A11Y switch did. */
+[data-a11y="true"] {
+  --tech-warfare: rgb(255 40 40);
+  --anomaly: rgb(255 40 40);
+}

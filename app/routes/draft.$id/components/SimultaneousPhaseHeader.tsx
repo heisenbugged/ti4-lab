@@ -1,9 +1,65 @@
-import { Box, Button, Group, Text, MantineColor, Tooltip } from "@mantine/core";
+import type { CSSProperties, ReactNode } from "react";
 import { IconArrowBackUp } from "@tabler/icons-react";
+import { Button, Chip, Tooltip, cx } from "~/ui";
+import classes from "./SimultaneousPhaseHeader.module.css";
+
+/** Phase colours, mapped to the game's own colours. */
+export type PhaseColor = "blue" | "red" | "green" | "orange";
+
+const phaseTints: Record<PhaseColor, string> = {
+  blue: "var(--influence)",
+  red: "var(--anomaly)",
+  green: "var(--tech-biotic)",
+  orange: "var(--wormhole-alpha)",
+};
+
+export const phaseTint = (color: PhaseColor) => phaseTints[color];
+
+type PhaseBannerProps = {
+  /** Any CSS colour: a phase tint or a player colour. */
+  tint: string;
+  /** Content of the round badge (a letter or number), or a custom node such as a PlayerHex. */
+  badge?: ReactNode;
+  title: ReactNode;
+  description?: ReactNode;
+  /** Controls on the right (wrap under the text on phones). */
+  children?: ReactNode;
+  className?: string;
+};
+
+/** Tinted banner naming the phase (or the player on the clock) with a one-line instruction. */
+export function PhaseBanner({
+  tint,
+  badge,
+  title,
+  description,
+  children,
+  className,
+}: PhaseBannerProps) {
+  return (
+    <div
+      className={cx(classes.banner, className)}
+      style={{ "--p": tint } as CSSProperties}
+    >
+      {typeof badge === "string" || typeof badge === "number" ? (
+        <span className={classes.badge} aria-hidden>
+          {badge}
+        </span>
+      ) : (
+        badge
+      )}
+      <div className={classes.text}>
+        <h2 className={classes.title}>{title}</h2>
+        {description && <p className={classes.description}>{description}</p>}
+      </div>
+      {children && <div className={classes.actions}>{children}</div>}
+    </div>
+  );
+}
 
 type SimultaneousPhaseHeaderProps = {
   phaseName: string;
-  phaseColor: MantineColor;
+  phaseColor: PhaseColor;
   description: string;
   adminMode: boolean;
   onAdminToggle: () => void;
@@ -16,6 +72,7 @@ type SimultaneousPhaseHeaderProps = {
   undoPickDisabled: boolean;
   undoPhaseDisabled: boolean;
   showPickAnyWarning?: boolean;
+  maw?: number;
 };
 
 export function SimultaneousPhaseHeader({
@@ -33,83 +90,62 @@ export function SimultaneousPhaseHeader({
   undoPickDisabled,
   undoPhaseDisabled,
   showPickAnyWarning = false,
+  maw,
 }: SimultaneousPhaseHeaderProps) {
+  const pickAnyChip = (
+    <Chip pressed={pickForAnyone} onChange={onTogglePickForAnyone}>
+      Pick for any player
+    </Chip>
+  );
+
   return (
-    <Box
-      style={{
-        borderBottom: "1px solid var(--mantine-color-dark-4)",
-      }}
+    <div
+      className={classes.header}
+      style={maw ? ({ "--maw": `${maw}px` } as CSSProperties) : undefined}
     >
-      <Group justify="space-between" align="center" px="md" py="sm">
-        <Group gap="sm">
-          <Text
-            size="sm"
-            fw={600}
-            tt="uppercase"
-            style={{
-              letterSpacing: "0.04em",
-              color: `var(--mantine-color-${phaseColor}-4)`,
-            }}
-          >
-            {phaseName}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {description}
-          </Text>
-        </Group>
-        <Group gap={4}>
-          <Button
-            size="compact-xs"
-            variant={adminMode ? "filled" : "default"}
-            color={adminMode ? "violet" : "gray"}
-            onClick={onAdminToggle}
-          >
-            Admin
-          </Button>
-          {showPickForAnyoneControl && (
+      <PhaseBanner
+        tint={phaseTint(phaseColor)}
+        badge={phaseName.charAt(0).toUpperCase()}
+        title={phaseName}
+        description={description}
+      >
+        <Chip pressed={adminMode} onChange={onAdminToggle}>
+          Admin
+        </Chip>
+        {showPickForAnyoneControl &&
+          (showPickAnyWarning ? (
             <Tooltip
               label="Reveals hidden information. Use with caution."
-              color="orange"
-              withArrow
-              position="bottom"
-              disabled={!showPickAnyWarning}
+              side="bottom"
             >
-              <Button
-                size="compact-xs"
-                variant={pickForAnyone ? "filled" : "default"}
-                color={pickForAnyone ? (showPickAnyWarning ? "orange" : "violet") : "gray"}
-                onClick={onTogglePickForAnyone}
-              >
-                Pick Any
-              </Button>
+              {pickAnyChip}
             </Tooltip>
-          )}
-          {showUndo && (
-            <>
-              <Button
-                size="compact-xs"
-                variant="subtle"
-                color="red"
-                leftSection={<IconArrowBackUp size={12} />}
-                onClick={onUndoPick}
-                disabled={undoPickDisabled}
-              >
-                Undo Pick
-              </Button>
-              <Button
-                size="compact-xs"
-                variant="subtle"
-                color="red"
-                leftSection={<IconArrowBackUp size={12} />}
-                onClick={onUndoPhase}
-                disabled={undoPhaseDisabled}
-              >
-                Undo Phase
-              </Button>
-            </>
-          )}
-        </Group>
-      </Group>
-    </Box>
+          ) : (
+            pickAnyChip
+          ))}
+        {showUndo && (
+          <>
+            <Button
+              size="sm"
+              variant="tertiary"
+              icon={<IconArrowBackUp size={15} />}
+              onClick={onUndoPick}
+              disabled={undoPickDisabled}
+            >
+              Undo pick
+            </Button>
+            <Button
+              size="sm"
+              variant="tertiary"
+              icon={<IconArrowBackUp size={15} />}
+              onClick={onUndoPhase}
+              disabled={undoPhaseDisabled}
+            >
+              Undo phase
+            </Button>
+          </>
+        )}
+      </PhaseBanner>
+    </div>
   );
 }

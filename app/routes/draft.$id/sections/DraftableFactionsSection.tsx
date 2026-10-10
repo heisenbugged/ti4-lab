@@ -1,26 +1,43 @@
-import { Badge, Box, Group, SimpleGrid, Stack } from "@mantine/core";
-import { factions as allFactions, playerColors } from "~/data/factionData";
-import { Section, SectionTitle } from "~/components/Section";
+import { factions as allFactions } from "~/data/factionData";
 import { DraftableFaction } from "../components/DraftableFaction";
+import { PlayerChip } from "../components/PlayerChip";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { FactionId, PlayerId } from "~/types";
-import { Surface, PlayerColor } from "~/ui";
+import { Card, SectionHeader, Text } from "~/ui";
+import { playerColorOf } from "../components/draftOrderUtils";
+import { usePendingPick } from "../components/pendingPick";
+import classes from "../components/DraftLayout.module.css";
 
 export function DraftableFactionsSection() {
   const playerFactionPool = useDraft((state) => state.draft.playerFactionPool);
+  const factions = useDraft((state) => state.draft.availableFactions);
+  const { hydratedPlayers, currentlyPicking, activePlayer } = useHydratedDraft();
+
+  const taken = factions.filter((f) =>
+    hydratedPlayers.some((p) => p.faction === f || p.minorFaction === f),
+  ).length;
+  const canSelect =
+    currentlyPicking && !!activePlayer && activePlayer.faction === undefined;
+  const youHave =
+    currentlyPicking && activePlayer?.faction
+      ? allFactions[activePlayer.faction].name
+      : undefined;
+  const meta = playerFactionPool
+    ? "Each player picks from their own factions."
+    : youHave
+      ? `You have ${youHave}.`
+      : `${factions.length - taken} of ${factions.length} open.${canSelect ? " Select one." : ""}`;
 
   return (
-    <Section>
-      <SectionTitle title="Available Factions" />
-      <Box pt={4}>
-        {!!playerFactionPool && (
-          <GroupedFactionSelection playerFactionPools={playerFactionPool} />
-        )}
-        {!playerFactionPool && <PoolFactionSelection />}
-      </Box>
-    </Section>
+    <section className={classes.sec}>
+      <SectionHeader title="Factions" meta={meta} />
+      {!!playerFactionPool && (
+        <GroupedFactionSelection playerFactionPools={playerFactionPool} />
+      )}
+      {!playerFactionPool && <PoolFactionSelection />}
+    </section>
   );
 }
 
@@ -34,6 +51,7 @@ function PoolFactionSelection() {
   );
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
+  const { toggle, isPending } = usePendingPick();
 
   const { syncDraft } = useSyncDraft();
   const canSelect =
@@ -44,11 +62,12 @@ function PoolFactionSelection() {
     activePlayer.minorFaction === undefined;
 
   return (
-    <SimpleGrid cols={{ base: 2, sm: 3, md: 4, lg: 3, xl: 4 }}>
+    <div className={classes.factions}>
       {factions.map((factionId) => {
         const player = hydratedPlayers.find(
           (p) => p.faction === factionId || p.minorFaction === factionId,
         );
+        const name = allFactions[factionId].name;
 
         return (
           <DraftableFaction
@@ -56,38 +75,38 @@ function PoolFactionSelection() {
             player={player}
             disabled={!!player}
             faction={allFactions[factionId]}
+            pending={isPending(`faction-${factionId}`)}
+            pendingMinor={isPending(`minor-${factionId}`)}
             onSelect={
               canSelect
-                ? () => {
-                    if (
-                      confirm(
-                        `Selecting faction ${allFactions[factionId].name}`,
-                      )
-                    ) {
-                      selectFaction(activePlayer.id, factionId);
-                      syncDraft();
-                    }
-                  }
+                ? () =>
+                    toggle({
+                      key: `faction-${factionId}`,
+                      label: name,
+                      commit: () => {
+                        selectFaction(activePlayer.id, factionId);
+                        syncDraft();
+                      },
+                    })
                 : undefined
             }
             onSelectMinor={
               canSelectMinor && minorFactionsInSharedPool
-                ? () => {
-                    if (
-                      confirm(
-                        `Selecting minor faction ${allFactions[factionId].name}`,
-                      )
-                    ) {
-                      selectMinorFaction(activePlayer.id, factionId);
-                      syncDraft();
-                    }
-                  }
+                ? () =>
+                    toggle({
+                      key: `minor-${factionId}`,
+                      label: `${name} as your minor faction`,
+                      commit: () => {
+                        selectMinorFaction(activePlayer.id, factionId);
+                        syncDraft();
+                      },
+                    })
                 : undefined
             }
           />
         );
       })}
-    </SimpleGrid>
+    </div>
   );
 }
 
@@ -102,58 +121,53 @@ function GroupedFactionSelection({
     useHydratedDraft();
   const { selectFaction } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
+  const { toggle, isPending } = usePendingPick();
   const canSelect =
     currentlyPicking && !!activePlayer && activePlayer.faction === undefined;
 
-  return Object.entries(playerFactionPools).map(([playerId, factions]) => {
-    const player = hydratedPlayers.find((p) => p.id === Number(playerId))!;
-    const color = playerColors[player.id] as PlayerColor;
-    return (
-      <Stack key={playerId} gap="xs" style={{ position: "relative" }}>
-        {!player.faction && (
-          <Badge
-            color={color}
-            size="md"
-            style={{ position: "absolute", right: 0 }}
+  return (
+    <div className={classes.groupPools}>
+      {Object.entries(playerFactionPools).map(([playerId, factions]) => {
+        const player = hydratedPlayers.find((p) => p.id === Number(playerId))!;
+        return (
+          <Card
+            key={playerId}
+            padding={3}
+            playerColor={!player.faction ? playerColorOf(player.id) : undefined}
           >
-            {player.name}
-          </Badge>
-        )}
-
-        <Surface
-          variant={!player.faction ? "badge" : "flat"}
-          color={!player.faction ? color : undefined}
-        >
-          <Group p="md">
-          {factions.map((factionId) => {
-            return (
-              <Box miw="250px" key={factionId}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, minWidth: 0 }}>
+              <PlayerChip player={player} size="sm" />
+              <Text size="sm" tone="muted">
+                {player.faction ? "Picked" : "Choosing from"}
+              </Text>
+            </div>
+            <div className={classes.factions}>
+              {factions.map((factionId) => (
                 <DraftableFaction
                   key={factionId}
                   player={player.faction === factionId ? player : undefined}
                   disabled={!!player.faction && player.faction !== factionId}
                   faction={allFactions[factionId]}
+                  pending={isPending(`faction-${factionId}`)}
                   onSelect={
                     canSelect && player.id === activePlayer.id
-                      ? () => {
-                          if (
-                            confirm(
-                              `Selecting faction ${allFactions[factionId].name}`,
-                            )
-                          ) {
-                            selectFaction(activePlayer.id, factionId);
-                            syncDraft();
-                          }
-                        }
+                      ? () =>
+                          toggle({
+                            key: `faction-${factionId}`,
+                            label: allFactions[factionId].name,
+                            commit: () => {
+                              selectFaction(activePlayer.id, factionId);
+                              syncDraft();
+                            },
+                          })
                       : undefined
                   }
                 />
-              </Box>
-            );
-          })}
-          </Group>
-        </Surface>
-      </Stack>
-    );
-  });
+              ))}
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
 }

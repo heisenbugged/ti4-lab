@@ -3,7 +3,7 @@ import type { DraftSettings, DiscordData } from "~/types";
 import type {
   SliceGenerationSettings,
   SliceSettingsFormatType,
-} from "~/components/SliceSettingsModal";
+} from "~/draft/sliceSettings";
 import { useDraftSetup } from "./store";
 import { buildSliceGenerationConfig } from "./utils";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";

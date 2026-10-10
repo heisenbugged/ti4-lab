@@ -1,11 +1,13 @@
-import { Modal, Alert, Text, Stack, Button, Group, List } from "@mantine/core";
+import { Button, Modal, Notice, Row, Spinner, Stack, Tag, Text, cx } from "~/ui";
 import {
+  IconBrandSpotify,
   IconRefresh,
   IconDeviceDesktop,
   IconDeviceMobile,
   IconDeviceSpeaker,
   IconDeviceUnknown,
 } from "@tabler/icons-react";
+import styles from "./Spotify.module.css";
 
 interface SpotifyDeviceType {
   id: string;
@@ -42,77 +44,91 @@ export const SpotifyDeviceSelector = ({
     }
   };
 
+  const noDevices = !isLoading && devices.length === 0;
+
   return (
     <Modal
       opened={isOpen}
       onClose={onClose}
-      title="No Active Spotify Device"
-      centered
+      title="No active Spotify device"
       size="md"
-    >
-      <Alert color="blue" title="Playback requires an active device" mb="md">
-        Spotify requires an active device to play music. Please select one of
-        your available devices below or open the Spotify app on a device.
-      </Alert>
-
-      {isLoading ? (
-        <Text>Loading available devices...</Text>
-      ) : devices.length === 0 ? (
-        <Stack>
-          <Text>
-            No Spotify devices found. Please open Spotify on any device.
-          </Text>
-          <Button
-            onClick={() => window.open("https://open.spotify.com", "_blank")}
-            fullWidth
-          >
-            Open Spotify Web Player
-          </Button>
-          <Group grow mt="md">
-            <Button
-              onClick={() => onSelectDevice("refresh")}
-              variant="filled"
-              leftSection={<IconRefresh size={16} />}
-            >
-              Refresh Devices
-            </Button>
-            <Button onClick={onClose} variant="outline">
+      footer={
+        noDevices ? (
+          <>
+            <Button variant="tertiary" onClick={onClose}>
               Cancel
             </Button>
-          </Group>
-        </Stack>
+            <Button
+              icon={<IconRefresh size={16} />}
+              onClick={() => onSelectDevice("refresh")}
+            >
+              Refresh devices
+            </Button>
+            <Button
+              variant="primary"
+              icon={<IconBrandSpotify size={16} />}
+              onClick={() => window.open("https://open.spotify.com", "_blank")}
+            >
+              Open Spotify web player
+            </Button>
+          </>
+        ) : (
+          <Button variant="tertiary" onClick={onClose}>
+            Cancel
+          </Button>
+        )
+      }
+    >
+      <Notice tone="info" title="Playback requires an active device">
+        Spotify requires an active device to play music. Please select one of
+        your available devices below or open the Spotify app on a device.
+      </Notice>
+
+      {isLoading ? (
+        <Row gap={2}>
+          <Spinner size={16} />
+          <Text size="sm" tone="muted">
+            Loading available devices...
+          </Text>
+        </Row>
+      ) : noDevices ? (
+        <Text size="sm">
+          No Spotify devices found. Please open Spotify on any device.
+        </Text>
       ) : (
-        <Stack>
-          <Group justify="space-between" mb="xs">
-            <Text fw={500} size="sm">
-              Select a device:
+        <Stack gap={2}>
+          <Row justify="between">
+            <Text size="sm" weight={600}>
+              Select a device
             </Text>
             <Button
-              variant="subtle"
-              size="xs"
+              variant="tertiary"
+              size="sm"
               onClick={() => onSelectDevice("refresh")}
-              leftSection={<IconRefresh size={14} />}
+              icon={<IconRefresh size={14} />}
               disabled={isLoading}
             >
               Refresh
             </Button>
-          </Group>
-          <List spacing="xs">
+          </Row>
+          <ul className={styles.devices}>
             {devices.map((device: SpotifyDeviceType) => (
-              <List.Item key={device.id} icon={getDeviceIcon(device.type)}>
-                <Button
-                  variant={device.is_active ? "filled" : "outline"}
+              <li key={device.id}>
+                <button
+                  type="button"
+                  className={cx(
+                    styles.device,
+                    device.is_active && styles.deviceActive,
+                  )}
                   onClick={() => onSelectDevice(device.id)}
-                  fullWidth
                 >
-                  {device.name} {device.is_active && "(active)"}
-                </Button>
-              </List.Item>
+                  {getDeviceIcon(device.type)}
+                  <span>{device.name}</span>
+                  {device.is_active && <Tag tone="gold">Active</Tag>}
+                </button>
+              </li>
             ))}
-          </List>
-          <Button onClick={onClose} variant="outline" mt="md">
-            Cancel
-          </Button>
+          </ul>
         </Stack>
       )}
     </Modal>

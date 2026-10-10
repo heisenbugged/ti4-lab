@@ -1,0 +1,2 @@
+.reconnect { position: fixed; top: 160px; left: 50%; z-index: 1000; transform: translateX(-50%); box-shadow: var(--shadow-pop); }
+.adminSave { display: flex; justify-content: flex-end; margin-top: var(--space-4); }

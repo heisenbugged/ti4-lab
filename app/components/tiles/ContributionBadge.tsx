@@ -1,4 +1,3 @@
-import { Badge } from "@mantine/core";
 
 type Props = {
   percentage: number; // 0.5 for 50%, 0.33 for 33%, etc.
@@ -9,10 +8,7 @@ export function ContributionBadge({ percentage }: Props) {
   const percentText = `${Math.round(percentage * 100)}%`;
 
   return (
-    <Badge
-      size="sm"
-      variant="filled"
-      color="orange"
+    <span
       style={{
         position: "absolute",
         top: 0,
@@ -20,20 +16,19 @@ export function ContributionBadge({ percentage }: Props) {
         transform: "translateX(-50%)",
         zIndex: 20,
         pointerEvents: "none",
-        textTransform: "none",
+        display: "inline-flex",
+        alignItems: "center",
+        height: 18,
+        padding: "0 7px",
+        borderRadius: 999,
+        background: "var(--pal-orange-8)",
+        color: "white",
+        fontSize: 11,
         fontWeight: 700,
-        minWidth: "fit-content",
-        overflow: "visible",
-      }}
-      styles={{
-        label: {
-          overflow: "visible",
-          textOverflow: "clip",
-          whiteSpace: "nowrap",
-        },
+        whiteSpace: "nowrap",
       }}
     >
       {percentText}
-    </Badge>
+    </span>
   );
 }

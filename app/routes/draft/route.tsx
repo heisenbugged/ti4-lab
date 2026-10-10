@@ -1,6 +1,6 @@
 import { MetaFunction } from "react-router";
 import { Outlet } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MainAppShell } from "~/components/MainAppShell";
 import { HeaderControls } from "~/components/HeaderControls";
 
@@ -20,6 +20,11 @@ export default function Draft() {
   const [accessibleColors, setAccessibleColors] = useState(false);
   const [adminMode, setAdminMode] = useState(false);
   const [pickForAnyone, setPickForAnyone] = useState(false);
+
+  // Accessible colours switch the hazard reds site-wide through a token override.
+  useEffect(() => {
+    document.documentElement.dataset.a11y = accessibleColors ? "true" : "false";
+  }, [accessibleColors]);
 
   return (
     <MainAppShell

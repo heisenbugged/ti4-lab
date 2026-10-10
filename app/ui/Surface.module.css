@@ -1,137 +1,59 @@
-.surface {
-    @mixin light {background-color: var(--mantine-color-gray-1);}
-    @mixin dark {background-color: var(--mantine-color-dark-6);}
-}
+/* Panel */
+.panel { background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); min-width: 0; }
+.well { background: var(--hull-sunken); }
+.well > .head { background: var(--hull); }
+.head { display: flex; align-items: center; gap: var(--space-3); min-height: 48px; padding: 6px var(--space-4); border-bottom: 1px solid var(--rule); }
+.trigger { width: 100%; border: 0; border-bottom: 1px solid var(--rule); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.panel[data-closed] .trigger { border-bottom-color: transparent; }
+.trigger:hover .title { color: var(--text); }
+.chev { flex: none; color: var(--text-muted); transition: transform 160ms var(--ease); }
+.panel[data-closed] .chev { transform: rotate(-90deg); }
+.title { flex: 1; min-width: 0; margin: 0; font-size: 16px; line-height: 1.35; font-weight: 600; flex-shrink: 0; }
+.trigger .title { flex: none; }
+.summary { flex: 1; min-width: 0; text-align: right; font-size: 13px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.action { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }
+.body { padding: var(--space-4); }
+.flush { padding: 0; }
+.collapse { overflow: hidden; height: var(--collapsible-panel-height); transition: height 180ms var(--ease); }
+.collapse[data-starting-style], .collapse[data-ending-style] { height: 0; }
 
-.withBorder {}
+.iconSquare { display: grid; place-items: center; flex: none; border-radius: 2px; background: color-mix(in oklab, var(--t) 16%, transparent); color: var(--t); }
+.iconSquare svg { width: 62%; height: 62%; }
 
-.surface.withBorder {
-    border: 1px solid;
-    transition: all 0.15s ease;
-    @mixin light { border-color: var(--mantine-color-gray-3); }
-    @mixin dark { border-color: var(--mantine-color-dark-4); }
-}
+/* Rows */
+.rows > * + * { border-top: 1px solid var(--rule); }
+.row { display: flex; align-items: center; gap: var(--space-3); min-height: 48px; padding: var(--space-2) 0; }
+.rows > .row:first-child { padding-top: 0; min-height: 40px; }
+.rows > .row:last-child { padding-bottom: 0; min-height: 40px; }
+.rowLabel { flex: 1; min-width: 0; font-size: 14px; }
+.rowLabel small { display: block; color: var(--text-muted); font-size: 12.5px; line-height: 1.4; }
+.rowControl { display: flex; align-items: center; gap: var(--space-2); flex: none; }
+.rowDisabled .rowLabel { color: var(--text-muted); }
 
-.surface.withBorder.hoverable {
-    @mixin light {
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    }
-    @mixin dark {
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
-}
+/* Card */
+.card { position: relative; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.interactive { cursor: pointer; transition: border-color 120ms var(--ease), background-color 120ms var(--ease); }
+.interactive:hover { border-color: var(--rule-strong); background: var(--hull-raised); }
+.interactive:focus-visible { outline: 2px solid var(--ion); outline-offset: 2px; }
+.taken { border-color: color-mix(in oklab, var(--p) 65%, transparent); background: color-mix(in oklab, var(--p) 9%, var(--hull)); }
+.off { background: transparent; border-style: dashed; opacity: 0.6; }
+.sunken { background: var(--hull-sunken); }
 
-.surface.withBorder.hoverable:hover {
-    cursor: pointer;
-    transform: translateY(-1px);
-    @mixin light {
-        background-color: var(--mantine-color-gray-0);
-        border-color: var(--mantine-color-blue-6);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    }
-    @mixin dark {
-        background-color: var(--mantine-color-dark-5);
-        border-color: var(--mantine-color-violet-4);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    }
-}
+/* Section heading */
+.sectionHead { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; min-height: 36px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.sticky { position: sticky; top: var(--header-h); z-index: 5; background: var(--void); padding-top: 8px; }
+.sectionTitle { margin: 0; font-size: 19px; line-height: 1.25; font-weight: 600; font-stretch: var(--wide); }
+.sectionMeta { font-size: 13px; color: var(--text-muted); }
+.sectionActions { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; flex-wrap: wrap; }
 
-.surface.withBorder.hoverable:active {
-    transform: translateY(0);
-    @mixin light {
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    }
-    @mixin dark {
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
-}
-
-.surface.withBorder.blue {
-    background-color: color-mix(in srgb, var(--mantine-color-blue-filled) 10%, transparent);
-    border-color: var(--mantine-color-blue-filled);
-}
-
-.surface.withBorder.red {
-    background-color: color-mix(in srgb, var(--mantine-color-red-filled) 10%, transparent);
-    border-color: var(--mantine-color-red-filled);
-}
-
-.surface.withBorder.green {
-    background-color: color-mix(in srgb, var(--mantine-color-green-filled) 10%, transparent);
-    border-color: var(--mantine-color-green-filled);
-}
-
-.surface.withBorder.magenta {
-    background-color: color-mix(in srgb, var(--mantine-color-magenta-filled) 10%, transparent);
-    border-color: var(--mantine-color-magenta-filled);
-}
-
-.surface.withBorder.violet {
-    background-color: color-mix(in srgb, var(--mantine-color-violet-filled) 10%, transparent);
-    border-color: var(--mantine-color-violet-filled);
-}
-
-.surface.withBorder.orange {
-    background-color: color-mix(in srgb, var(--mantine-color-orange-filled) 10%, transparent);
-    border-color: var(--mantine-color-orange-filled);
-}
-
-.surface.withBorder.gray {
-    background-color: color-mix(in srgb, var(--mantine-color-gray-4) 10%, transparent);
-    border-color: var(--mantine-color-gray-4);
-}
-
-.surface.withBorder.cyan {
-    background-color: color-mix(in srgb, var(--mantine-color-cyan-filled) 10%, transparent);
-    border-color: var(--mantine-color-cyan-filled);
-}
-
-.surface.withBorder.onlyBg {
-    border-width: 0px;
-}
-
-.bordered {
-    border: 1px solid;
-    @mixin light { border-color: rgba(0, 0, 0, 0.1); }
-    @mixin dark { border-color: var(--mantine-color-dark-5); }
-}
-
-/* Elevated variant - for primary cards like slices and factions */
-.elevated {
-    border-width: 2px;
-    @mixin light {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border-color: var(--mantine-color-gray-3);
-    }
-    @mixin dark {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-        background: var(--mantine-color-dark-5);
-        border-color: var(--mantine-color-dark-4);
-    }
-}
-
-/* Panel variant - for config sections with left accent */
-.panel {
-    border-left: 3px solid var(--mantine-color-blue-6);
-    border-radius: 0 8px 8px 0;
-    @mixin light {
-        background: var(--mantine-color-gray-0);
-        border-top: 1px solid var(--mantine-color-gray-2);
-        border-right: 1px solid var(--mantine-color-gray-2);
-        border-bottom: 1px solid var(--mantine-color-gray-2);
-    }
-    @mixin dark {
-        background: var(--mantine-color-dark-6);
-        border-top: 1px solid var(--mantine-color-dark-4);
-        border-right: 1px solid var(--mantine-color-dark-4);
-        border-bottom: 1px solid var(--mantine-color-dark-4);
-    }
-}
-
-/* Inline variant - for subtle/helper containers */
-.inline {
-    background: transparent;
-    border: 1px dashed;
-    @mixin light { border-color: var(--mantine-color-gray-4); }
-    @mixin dark { border-color: var(--mantine-color-dark-4); }
-}
+/* Table */
+.tableWrap { width: 100%; overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--hull); }
+.table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.table th { position: sticky; top: 0; padding: 9px 12px; background: var(--hull-sunken); color: var(--text-muted); font-size: 12px; font-weight: 600; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--rule); }
+.table td { padding: 10px 12px; border-top: 1px solid var(--rule); vertical-align: middle; }
+.table tbody tr:first-child td { border-top: 0; }
+.dense th { padding: 6px 10px; }
+.dense td { padding: 6px 10px; }
+.striped tbody tr:nth-child(even) td { background: color-mix(in oklab, var(--hull-raised) 60%, transparent); }
+.hover tbody tr:hover td { background: var(--hull-raised); }
+.num { font-variant-numeric: tabular-nums; }

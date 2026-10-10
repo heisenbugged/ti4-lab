@@ -1,22 +1,36 @@
-import { Button, Grid, SimpleGrid, Stack } from "@mantine/core";
-import { CurrentPickBanner } from "../components/CurrentPickBanner";
+import { useMemo, useState } from "react";
+import {
+  Button,
+  Grid,
+  Modal,
+  PlayerHex,
+  SectionHeader,
+  Stack,
+  Text,
+  playerVar,
+} from "~/ui";
 import { DraftOrderSection } from "./DraftOrderSection";
-import { SectionTitle } from "~/components/Section";
 import { useDraft } from "~/draftStore";
 import { DraftableFaction } from "../components/DraftableFaction";
-import { factions as allFactions } from "~/data/factionData";
-import { useMemo } from "react";
+import { factions as allFactions, playerColors } from "~/data/factionData";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
+import { FactionId } from "~/types";
+import { PhaseBanner } from "../components/SimultaneousPhaseHeader";
+import classes from "./BanPhase.module.css";
 
 export function BanPhase() {
   const { adminMode } = useSafeOutletContext();
   const players = useDraft((state) => state.draft.players);
   const factionPool = useDraft((state) => state.factionPool);
+  const numBans = useDraft(
+    (state) => state.draft.settings.modifiers?.banFactions?.numFactions ?? 1,
+  );
   const { banFaction } = useDraft((state) => state.draftActions);
   const { updatePlayerName } = useDraft((state) => state.actions);
+  const [pendingBan, setPendingBan] = useState<FactionId | null>(null);
   const sortedFactionPool = useMemo(() => {
     return [...factionPool].sort((a, b) => {
       const aFaction = allFactions[a];
@@ -30,70 +44,108 @@ export function BanPhase() {
   const { currentlyPicking, hydratedPlayers, activePlayer } =
     useHydratedDraft();
   const canSelect = currentlyPicking && !!activePlayer;
+  const bannedCount = hydratedPlayers.reduce(
+    (sum, p) => sum + (p.bannedFactions?.length ?? 0),
+    0,
+  );
+
+  const confirmBan = () => {
+    const factionId = pendingBan;
+    setPendingBan(null);
+    if (!factionId || !canSelect || !activePlayer) return;
+    banFaction(activePlayer.id, factionId);
+    syncDraft();
+  };
+
+  const activeColor =
+    activePlayer !== undefined ? playerColors[activePlayer.id] : undefined;
 
   return (
-    <>
-      <Stack gap="sm" mb="60" mt="lg">
-        <CurrentPickBanner
-          title={`It's ${activePlayer?.name}'s turn to ban!`}
+    <Stack gap={6} className={classes.page}>
+      {activePlayer && (
+        <PhaseBanner
+          tint={playerVar(activeColor)}
+          badge={
+            <PlayerHex color={activeColor} size="lg">
+              {String.fromCharCode(65 + activePlayer.id)}
+            </PlayerHex>
+          }
+          title={
+            canSelect
+              ? `Your ban, ${activePlayer.name}`
+              : `It's ${activePlayer.name}'s turn to ban`
+          }
+          description={`Ban phase: each player bans ${numBans === 1 ? "one faction" : `${numBans} factions`} before the draft starts.`}
         />
-        <div style={{ height: 15 }} />
-      </Stack>
-      <Grid gutter="xl">
-        <Grid.Col span={12}>
-          <DraftOrderSection />
-        </Grid.Col>
-        <Grid.Col span={12}>
-          <SectionTitle title="Ban Phase" />
-          <SimpleGrid
-            cols={{ base: 2, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }}
-            spacing="xs"
-            mt="md"
-          >
-            {sortedFactionPool.map((factionId) => {
-              const player = hydratedPlayers.find((p) =>
-                p.bannedFactions?.includes(factionId),
-              );
-              return (
-                <DraftableFaction
-                  key={factionId}
-                  player={player}
-                  disabled={!!player}
-                  selectTitle={"Ban"}
-                  faction={allFactions[factionId]}
-                  onSelect={
-                    canSelect && !player
-                      ? () => {
-                          if (
-                            confirm(
-                              `Banning faction ${allFactions[factionId].name}`,
-                            )
-                          ) {
-                            banFaction(activePlayer.id, factionId);
-                            syncDraft();
-                          }
-                        }
-                      : undefined
-                  }
-                />
-              );
-            })}
-          </SimpleGrid>
-        </Grid.Col>
-        {adminMode && (
-          <Grid.Col offset={6} span={6} order={{ base: 7 }}>
-            <PlayerInputSection
-              players={players}
-              onChangeName={(playerIdx, name) => {
-                updatePlayerName(playerIdx, name);
-              }}
-            />
-            <Button mt="lg" onClick={syncDraft} loading={syncing}>
+      )}
+
+      <DraftOrderSection />
+
+      <section>
+        <SectionHeader
+          title="Ban phase"
+          meta={`${bannedCount} of ${players.length * numBans} banned`}
+        />
+        <Grid minWidth={230} gap={3} className={classes.grid}>
+          {sortedFactionPool.map((factionId) => {
+            const player = hydratedPlayers.find((p) =>
+              p.bannedFactions?.includes(factionId),
+            );
+            return (
+              <DraftableFaction
+                key={factionId}
+                player={player}
+                disabled={!!player}
+                selectTitle={"Ban"}
+                faction={allFactions[factionId]}
+                onSelect={
+                  canSelect && !player
+                    ? () => setPendingBan(factionId)
+                    : undefined
+                }
+              />
+            );
+          })}
+        </Grid>
+      </section>
+
+      {adminMode && (
+        <div className={classes.admin}>
+          <PlayerInputSection
+            players={players}
+            onChangeName={(playerIdx, name) => {
+              updatePlayerName(playerIdx, name);
+            }}
+          />
+          <div>
+            <Button variant="primary" onClick={syncDraft} loading={syncing}>
               Save
             </Button>
-          </Grid.Col>
-        )}
-      </Grid>
-    </>
+          </div>
+        </div>
+      )}
+
+      <Modal
+        opened={pendingBan !== null}
+        onClose={() => setPendingBan(null)}
+        title={pendingBan ? `Ban ${allFactions[pendingBan].name}?` : undefined}
+        size="sm"
+        footer={
+          <>
+            <Button variant="tertiary" onClick={() => setPendingBan(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmBan} autoFocus>
+              Ban faction
+            </Button>
+          </>
+        }
+      >
+        <Text size="sm" tone="muted">
+          {pendingBan &&
+            `Banning faction ${allFactions[pendingBan].name}. It leaves the pool for every player.`}
+        </Text>
+      </Modal>
+    </Stack>
   );
 }

@@ -1,880 +1,446 @@
-/* Page header */
-.pageHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--mantine-spacing-xl);
-    flex-wrap: wrap;
-    margin-bottom: var(--mantine-spacing-xl);
+.page {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 1440px;
+  margin: 0 auto;
+  /* room for the fixed player bar */
+  padding-bottom: calc(80px + var(--sab));
 }
 
-.pageTitle {
-    font-family: "Orbitron", sans-serif;
-    font-weight: 700;
-    font-size: 1.75rem;
-    letter-spacing: 0.05em;
-    margin: 0;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-1);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-9);
-    }
+.reconnect {
+  position: fixed;
+  top: calc(var(--header-h) + var(--sat) + var(--space-4));
+  left: 50%;
+  z-index: 150;
+  transform: translateX(-50%);
+  box-shadow: var(--shadow-pop);
 }
 
-/* Session panel */
-.sessionPanel {
-    border-radius: 4px;
-    padding: var(--mantine-spacing-md);
-    border: 1px solid var(--mantine-color-default-border);
-    background: var(--mantine-color-default);
+/* ── Header ─────────────────────────────────────────────── */
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: var(--space-5);
+  align-items: start;
+}
+.titleBlock {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.sessionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+  margin-top: var(--space-2);
 }
 
+.session {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: 520px;
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+}
+.qrThumb {
+  display: grid;
+  flex: none;
+  padding: 6px;
+  border: 0;
+  border-radius: 2px;
+  background: white; /* QR codes need a white quiet zone to scan */
+  cursor: zoom-in;
+}
+.qrThumb:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: 2px;
+}
+.sessionInfo {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
 .sessionCode {
-    font-family: "Orbitron", sans-serif;
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-
-    @mixin dark {
-        color: var(--mantine-color-blue-4);
-    }
-    @mixin light {
-        color: var(--mantine-color-blue-6);
-    }
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sessionQrButton {
+  flex: none;
 }
 
-.qrContainer {
-    padding: var(--mantine-spacing-sm);
-    background: white;
-    border-radius: 4px;
-    display: inline-block;
+/* ── Spotify ────────────────────────────────────────────── */
+.spotify {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: 14px var(--space-4);
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 2px 0 0 var(--success);
 }
-
-/* Spotify panel */
-.spotifyPanel {
-    border-radius: 4px;
-    padding: var(--mantine-spacing-md);
-    border: 1px solid;
-    max-width: 360px;
-
-    @mixin dark {
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, #1DB954 8%, var(--mantine-color-dark-7)),
-            var(--mantine-color-dark-7)
-        );
-        border-color: color-mix(in srgb, #1DB954 30%, var(--mantine-color-dark-4));
-    }
-    @mixin light {
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, #1DB954 10%, var(--mantine-color-gray-0)),
-            var(--mantine-color-gray-0)
-        );
-        border-color: color-mix(in srgb, #1DB954 30%, var(--mantine-color-gray-3));
-    }
+.spotifyHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 32px;
 }
-
-/* Section styling */
-.sectionHeader {
-    display: flex;
-    align-items: center;
-    gap: var(--mantine-spacing-sm);
-    padding-bottom: var(--mantine-spacing-xs);
-    margin-bottom: var(--mantine-spacing-md);
-    border-bottom: 1px solid var(--mantine-color-default-border);
+.spotifyTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 15px;
+  font-weight: 600;
 }
-
-.sectionTitle {
-    font-family: "Orbitron", sans-serif;
-    font-weight: 600;
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--mantine-color-dimmed);
-    margin: 0;
+.spotifyTitle svg {
+  color: var(--success);
 }
-
-/* Announcer panel */
-.announcerPanel {
-    border-radius: 4px;
-    padding: var(--mantine-spacing-md);
-    border: 1px solid;
-    margin-bottom: var(--mantine-spacing-xl);
-
-    @mixin dark {
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, var(--mantine-color-orange-6) 8%, var(--mantine-color-dark-7)),
-            var(--mantine-color-dark-7)
-        );
-        border-color: color-mix(in srgb, var(--mantine-color-orange-6) 30%, var(--mantine-color-dark-4));
-    }
-    @mixin light {
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, var(--mantine-color-orange-6) 10%, var(--mantine-color-gray-0)),
-            var(--mantine-color-gray-0)
-        );
-        border-color: color-mix(in srgb, var(--mantine-color-orange-6) 30%, var(--mantine-color-gray-3));
-    }
+.playback {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-2);
+  background: var(--hull-sunken);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
 }
-
-.announcerHeader {
-    display: flex;
-    align-items: center;
-    gap: var(--mantine-spacing-sm);
-    margin-bottom: var(--mantine-spacing-md);
+.playback img {
+  flex: none;
+  border-radius: 2px;
+  object-fit: cover;
 }
-
-.announcerIcon {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background-color: var(--mantine-color-orange-6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-}
-
-.announcerTitle {
-    font-family: "Orbitron", sans-serif;
-    font-weight: 600;
-    font-size: 0.8rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    margin: 0;
-
-    @mixin dark {
-        color: var(--mantine-color-orange-4);
-    }
-    @mixin light {
-        color: var(--mantine-color-orange-7);
-    }
-}
-
-/* Announcer button styling */
-.announcerButton {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 16px;
-    min-height: 36px;
-    min-width: 120px;
-    border: 1px solid;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.12s ease;
-    overflow: visible;
-
-    @mixin dark {
-        background: var(--mantine-color-dark-6);
-        border-color: var(--mantine-color-orange-7);
-        color: var(--mantine-color-orange-4);
-    }
-    @mixin light {
-        background: var(--mantine-color-gray-0);
-        border-color: var(--mantine-color-orange-4);
-        color: var(--mantine-color-orange-7);
-    }
-}
-
-.announcerButton:hover:not(.announcerButtonDisabled) {
-    @mixin dark {
-        background: var(--mantine-color-dark-5);
-        border-color: var(--mantine-color-orange-5);
-        color: var(--mantine-color-orange-3);
-    }
-    @mixin light {
-        background: var(--mantine-color-orange-0);
-        border-color: var(--mantine-color-orange-5);
-        color: var(--mantine-color-orange-8);
-    }
-}
-
-.announcerButton:focus {
-    outline: none;
-}
-
-.announcerButton:focus-visible {
-    outline: 2px solid var(--mantine-color-orange-5);
-    outline-offset: 2px;
-}
-
-.announcerButtonQueued {
-    @mixin dark {
-        background: transparent !important;
-        border-color: var(--mantine-color-orange-5) !important;
-        border-style: dashed !important;
-        color: var(--mantine-color-orange-4) !important;
-    }
-    @mixin light {
-        background: transparent !important;
-        border-color: var(--mantine-color-orange-5) !important;
-        border-style: dashed !important;
-        color: var(--mantine-color-orange-6) !important;
-    }
-}
-
-.announcerButtonLoading {
-    @mixin dark {
-        background: var(--mantine-color-dark-5) !important;
-        border-color: var(--mantine-color-orange-5) !important;
-        color: var(--mantine-color-orange-4) !important;
-    }
-    @mixin light {
-        background: var(--mantine-color-orange-0) !important;
-        border-color: var(--mantine-color-orange-5) !important;
-        color: var(--mantine-color-orange-6) !important;
-    }
-}
-
-.announcerButtonDisabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-.announcerButtonLabel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    white-space: nowrap;
-}
-
-.announcerButtonLabelHidden {
-    visibility: hidden;
-}
-
-.announcerButtonLoaderOverlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-}
-
-.announcerButtonBadge {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 8px;
-    font-size: 10px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    @mixin dark {
-        background: var(--mantine-color-orange-7);
-        color: white;
-        border: 1px solid var(--mantine-color-orange-5);
-    }
-    @mixin light {
-        background: var(--mantine-color-orange-6);
-        color: white;
-        border: 1px solid var(--mantine-color-orange-5);
-    }
-}
-
-/* Faction grid */
-.factionGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: var(--mantine-spacing-md);
-
-    @media (max-width: 400px) {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Faction card */
-.factionCard {
-    border-radius: 6px;
-    border: 1px solid var(--mantine-color-default-border);
-    overflow: hidden;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
-
-    @mixin dark {
-        background: var(--mantine-color-dark-7);
-    }
-    @mixin light {
-        background: var(--mantine-color-gray-0);
-    }
-
-    &:hover {
-        @mixin dark {
-            border-color: var(--mantine-color-dark-3);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-        @mixin light {
-            border-color: var(--mantine-color-gray-4);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-    }
-}
-
-.factionCardHeader {
-    display: flex;
-    align-items: center;
-    gap: var(--mantine-spacing-sm);
-    padding: 10px var(--mantine-spacing-md);
-    border-bottom: 1px solid var(--mantine-color-default-border);
-
-    @mixin dark {
-        background: var(--mantine-color-dark-6);
-    }
-    @mixin light {
-        background: var(--mantine-color-gray-1);
-    }
-}
-
-.factionName {
-    font-family: "Orbitron", sans-serif;
-    font-weight: 600;
-    font-size: 0.7rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    flex: 1;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-3);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-7);
-    }
-}
-
-.factionCardBody {
-    padding: var(--mantine-spacing-sm);
-    display: flex;
-    flex-direction: column;
-    gap: var(--mantine-spacing-sm);
-}
-
-/* Voice line category sections */
-.voiceLineSection {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.voiceLineSectionLabel {
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding-bottom: 4px;
-    border-bottom: 1px solid;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-5);
-        border-color: var(--mantine-color-dark-5);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-6);
-        border-color: var(--mantine-color-gray-3);
-    }
-}
-
-.voiceLineGroup {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-/* Audio player footer */
-.playerFooter {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    border-top: 1px solid;
-    padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
-
-    @mixin dark {
-        background: var(--mantine-color-dark-8);
-        border-color: var(--mantine-color-dark-5);
-    }
-    @mixin light {
-        background: var(--mantine-color-gray-0);
-        border-color: var(--mantine-color-gray-3);
-    }
-}
-
-.playerContent {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: var(--mantine-spacing-md);
-}
-
-.playerControls {
-    display: flex;
-    align-items: center;
-    gap: var(--mantine-spacing-xs);
-    flex-shrink: 0;
-}
-
-.nowPlaying {
-    display: flex;
-    align-items: center;
-    gap: var(--mantine-spacing-xs);
-    min-width: 0;
-    flex-shrink: 0;
-    max-width: 200px;
-}
-
-.nowPlayingText {
-    font-size: 0.8rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.progressContainer {
-    flex: 1;
-    min-width: 100px;
-}
-
-.volumeControls {
-    display: flex;
-    align-items: center;
-    gap: var(--mantine-spacing-xs);
-    flex-shrink: 0;
-
-    @media (max-width: 600px) {
-        display: none;
-    }
-}
-
-/* Playback display */
-.playbackCard {
-    display: flex;
-    gap: var(--mantine-spacing-sm);
-    align-items: center;
-    padding: var(--mantine-spacing-xs);
-    border-radius: 4px;
-    border: 1px solid var(--mantine-color-default-border);
-    background: var(--mantine-color-default);
-}
-
 .playbackInfo {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
+  display: grid;
+  min-width: 0;
+  line-height: 1.3;
 }
-
 .trackName {
-    font-size: 0.85rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    &:hover {
-        text-decoration: underline;
-    }
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
+.trackName:hover {
+  color: var(--ion);
+  text-decoration: underline;
+}
 .artistName {
-    font-size: 0.75rem;
-    color: var(--mantine-color-dimmed);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    &:hover {
-        text-decoration: underline;
-        color: var(--mantine-color-text);
-    }
+  overflow: hidden;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Credits section */
-.creditsSection {
-    border-top: 1px solid var(--mantine-color-default-border);
-    margin-top: var(--mantine-spacing-xl);
-    padding-top: var(--mantine-spacing-xl);
-    max-width: 700px;
+/* ── Announcer ──────────────────────────────────────────── */
+.announcer {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: color-mix(in oklab, var(--wormhole-alpha) 7%, var(--hull));
+  border: 1px solid color-mix(in oklab, var(--wormhole-alpha) 35%, transparent);
+  border-radius: var(--radius-sm);
+}
+.announcerHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.announcerMeta {
+  margin-left: auto;
 }
 
-.creditsTitle {
-    font-family: "Orbitron", sans-serif;
-    font-weight: 600;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin: 0 0 var(--mantine-spacing-lg) 0;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-5);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-6);
-    }
+.lineRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
+/* ── Faction cards ──────────────────────────────────────── */
+.factions {
+  display: grid;
+  gap: var(--space-4);
+}
+.factionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+.factionCard {
+  min-width: 0;
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+}
+.factionCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px var(--space-3);
+  border-bottom: 1px solid var(--rule);
+}
+.factionCardHeader img {
+  flex: none;
+}
+.factionName {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 14.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Compact faction swap: only the chevron shows. */
+.factionSelect {
+  flex: none;
+  justify-content: center;
+  padding: 0;
+}
+.factionSelect > :first-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.factionCardBody {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+.groupLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.groupLabel:not(:first-child) {
+  margin-top: 2px;
+}
+
+/* ── Credits ────────────────────────────────────────────── */
+.credits {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+.creditsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+}
 .creditsGroup {
-    margin-bottom: var(--mantine-spacing-lg);
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
 }
-
-.creditsSubtitle {
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding-bottom: 6px;
-    margin-bottom: var(--mantine-spacing-sm);
-    border-bottom: 1px solid;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-5);
-        border-color: var(--mantine-color-dark-5);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-6);
-        border-color: var(--mantine-color-gray-3);
-    }
-}
-
 .creditsList {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
 }
-
 .creditRow {
-    display: flex;
-    align-items: baseline;
-    gap: var(--mantine-spacing-md);
-    font-size: 0.8rem;
-    line-height: 1.4;
+  display: grid;
+  gap: 1px;
+}
+.creditRow dt {
+  font-size: 14px;
+  font-weight: 500;
+}
+.creditRow dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.creditLink {
+  color: var(--ion);
+  text-decoration: none;
+}
+.creditLink:hover {
+  text-decoration: underline;
 }
 
-.creditName {
-    flex-shrink: 0;
-    width: 130px;
-    font-weight: 600;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-3);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-7);
-    }
+/* ── Player bar ─────────────────────────────────────────── */
+.player {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 10px var(--space-5) calc(10px + var(--sab));
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--rule);
 }
-
-.creditNameLink {
-    flex-shrink: 0;
-    width: 130px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: color 0.12s ease;
-
-    @mixin dark {
-        color: var(--mantine-color-blue-4);
-    }
-    @mixin light {
-        color: var(--mantine-color-blue-6);
-    }
-
-    &:hover {
-        text-decoration: underline;
-        @mixin dark {
-            color: var(--mantine-color-blue-3);
-        }
-        @mixin light {
-            color: var(--mantine-color-blue-7);
-        }
-    }
+.playerInner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 1440px;
+  margin: 0 auto;
 }
-
-.creditRole {
-    flex: 1;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-5);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-6);
-    }
+.nowPlaying {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+  width: 220px;
+  min-width: 0;
 }
-
-/* Queue popup styles */
+.nowPlaying img,
+.nowPlaying > span:first-child {
+  flex: none;
+}
+.nowPlayingText {
+  display: grid;
+  min-width: 0;
+  line-height: 1.25;
+}
+.nowPlayingText b {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nowPlayingText small {
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.seek {
+  flex: 1;
+  min-width: 80px;
+}
+.seekDisabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.volume {
+  flex: none;
+  width: 96px;
+}
 .queueButton {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border: 1px solid;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.12s ease;
-
-    @mixin dark {
-        background: var(--mantine-color-dark-6);
-        border-color: var(--mantine-color-dark-4);
-        color: var(--mantine-color-gray-3);
-    }
-    @mixin light {
-        background: var(--mantine-color-gray-1);
-        border-color: var(--mantine-color-gray-4);
-        color: var(--mantine-color-gray-7);
-    }
-
-    &:hover {
-        @mixin dark {
-            background: var(--mantine-color-dark-5);
-            border-color: var(--mantine-color-dark-3);
-        }
-        @mixin light {
-            background: var(--mantine-color-gray-2);
-            border-color: var(--mantine-color-gray-5);
-        }
-    }
+  flex: none;
 }
 
-.queueBadge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 9px;
-    font-size: 0.65rem;
-    font-weight: 700;
-
-    @mixin dark {
-        background: var(--mantine-color-blue-7);
-        color: white;
-    }
-    @mixin light {
-        background: var(--mantine-color-blue-6);
-        color: white;
-    }
-}
-
-.queuePopover {
-    border-radius: 6px;
-    border: 1px solid;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-
-    @mixin dark {
-        background: var(--mantine-color-dark-7);
-        border-color: var(--mantine-color-dark-4);
-    }
-    @mixin light {
-        background: white;
-        border-color: var(--mantine-color-gray-3);
-    }
-}
-
+/* Queue popover */
 .queueHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    border-bottom: 1px solid;
-
-    @mixin dark {
-        background: var(--mantine-color-dark-6);
-        border-color: var(--mantine-color-dark-5);
-    }
-    @mixin light {
-        background: var(--mantine-color-gray-0);
-        border-color: var(--mantine-color-gray-2);
-    }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--rule);
 }
-
-.queueTitle {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-3);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-7);
-    }
-}
-
-.queueClearButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.12s ease;
-
-    @mixin dark {
-        background: transparent;
-        color: var(--mantine-color-red-5);
-    }
-    @mixin light {
-        background: transparent;
-        color: var(--mantine-color-red-6);
-    }
-
-    &:hover {
-        @mixin dark {
-            background: var(--mantine-color-dark-5);
-            color: var(--mantine-color-red-4);
-        }
-        @mixin light {
-            background: var(--mantine-color-red-0);
-            color: var(--mantine-color-red-7);
-        }
-    }
-}
-
 .queueList {
-    padding: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  display: grid;
+  max-height: 280px;
+  margin: 0;
+  padding: var(--space-1);
+  overflow-y: auto;
+  list-style: none;
 }
-
 .queueItem {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: 4px;
-    transition: background 0.1s ease;
-
-    @mixin dark {
-        background: var(--mantine-color-dark-6);
-    }
-    @mixin light {
-        background: var(--mantine-color-gray-0);
-    }
-
-    &:hover {
-        @mixin dark {
-            background: var(--mantine-color-dark-5);
-        }
-        @mixin light {
-            background: var(--mantine-color-gray-1);
-        }
-    }
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-1) 0 var(--space-2);
+  border-radius: 2px;
 }
-
+.queueItem:hover {
+  background: var(--hull-hover);
+}
 .queueItemIndex {
-    font-size: 0.7rem;
-    font-weight: 700;
-    width: 16px;
-    text-align: center;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-6);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-5);
-    }
+  width: 16px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
 }
-
-.queueItemIcon {
-    flex-shrink: 0;
-}
-
-.queueItemAnnouncerIcon {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: var(--mantine-color-orange-6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: bold;
-    color: white;
-}
-
 .queueItemName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* QR modal */
+.qrLarge {
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  border-radius: 2px;
+  background: white; /* QR codes need a white quiet zone to scan */
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 991.98px) {
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .creditsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .factionGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .announcerMeta {
+    margin-left: 0;
+  }
+  .session {
+    flex-wrap: wrap;
+  }
+  .sessionQrButton {
+    width: 100%;
+  }
+  .player {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+  .playerInner {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .nowPlaying {
     flex: 1;
-    font-size: 0.8rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    @mixin dark {
-        color: var(--mantine-color-gray-2);
-    }
-    @mixin light {
-        color: var(--mantine-color-gray-8);
-    }
-}
-
-.queueItemRemove {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    opacity: 0.5;
-    transition: all 0.1s ease;
-
-    @mixin dark {
-        background: transparent;
-        color: var(--mantine-color-gray-5);
-    }
-    @mixin light {
-        background: transparent;
-        color: var(--mantine-color-gray-5);
-    }
-
-    &:hover {
-        opacity: 1;
-        @mixin dark {
-            background: var(--mantine-color-red-9);
-            color: var(--mantine-color-red-4);
-        }
-        @mixin light {
-            background: var(--mantine-color-red-0);
-            color: var(--mantine-color-red-6);
-        }
-    }
-}
-
-/* Footer spacer */
-.footerSpacer {
-    height: 100px;
+    width: auto;
+  }
+  .seek {
+    order: 5;
+    flex-basis: 100%;
+  }
+  .volume {
+    display: none;
+  }
+  .page {
+    padding-bottom: calc(110px + var(--sab));
+  }
 }

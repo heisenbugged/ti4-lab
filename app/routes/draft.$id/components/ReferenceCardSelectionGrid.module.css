@@ -1,0 +1,58 @@
+.root {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 1200px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+  transition: opacity 160ms var(--ease);
+}
+
+.item > :first-child {
+  flex: 1;
+  display: flex;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover article {
+  border-color: var(--rule-hover);
+  background: var(--hull-raised);
+}
+
+.waiting {
+  opacity: 0.6;
+}
+
+.disabled {
+  opacity: 0.4;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 28px;
+}
+
+.note {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}

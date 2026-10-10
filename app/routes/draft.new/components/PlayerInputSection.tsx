@@ -1,17 +1,7 @@
-import {
-  ActionIcon,
-  Box,
-  Button,
-  Group,
-  Stack,
-  Text,
-  TextInput,
-  UnstyledButton,
-  useMantineTheme,
-} from "@mantine/core";
 import { IconBrandDiscordFilled, IconPlus, IconX } from "@tabler/icons-react";
 import { playerColors } from "~/data/factionData";
 import { DiscordData, Player } from "~/types";
+import { IconButton, NumberStepper, SectionHeader, Stack, TextInput, playerVar } from "~/ui";
 import classes from "./PlayerInputSection.module.css";
 
 type Props = {
@@ -42,131 +32,79 @@ export function PlayerInputSection({
   onChangeName,
   showHeader = true,
 }: Props) {
-  const { colors } = useMantineTheme();
-
   return (
-    <Stack gap="xs">
-      {/* Header */}
+    <Stack gap={3}>
       {showHeader && (
-        <Group justify="space-between">
-          <Text
-            size="sm"
-            fw={600}
-            tt="uppercase"
-            style={{ letterSpacing: "0.05em", fontFamily: "Orbitron" }}
-          >
-            Players
-          </Text>
+        <SectionHeader title="Players">
           {onIncreasePlayers && onDecreasePlayers && (
-            <Group gap={2}>
-              <Button
-                size="compact-xs"
-                variant="subtle"
-                color="gray"
-                disabled={players.length <= 4}
-                onMouseDown={onDecreasePlayers}
-              >
-                -
-              </Button>
-              <Text size="sm" fw={600} miw={20} ta="center" c="purple.3">
-                {players.length}
-              </Text>
-              <Button
-                size="compact-xs"
-                variant="subtle"
-                color="gray"
-                disabled={players.length >= maxPlayers}
-                onMouseDown={onIncreasePlayers}
-              >
-                +
-              </Button>
-            </Group>
+            <NumberStepper
+              value={players.length}
+              label="players"
+              decrease={onDecreasePlayers}
+              increase={onIncreasePlayers}
+              decreaseDisabled={players.length <= 4}
+              increaseDisabled={players.length >= maxPlayers}
+            />
           )}
-        </Group>
+        </SectionHeader>
       )}
 
-      {/* Player Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 160px), 1fr))",
-          gap: "6px 10px",
-        }}
-      >
+      <div className={classes.grid}>
         {players.map((player, idx) => {
           const discordPlayer = discordData?.players.find(
             (dp) => dp.playerId === idx,
           );
-          const color = playerColors[player.id];
+          const color = playerVar(playerColors[player.id]);
+          const label = player.name || `Player ${placeholderName[idx]}`;
+
+          if (discordPlayer?.type === "identified") {
+            const name = discordPlayer.nickname ?? discordPlayer.username;
+            return (
+              <div
+                key={idx}
+                className={classes.discordPlayer}
+                style={{ "--p": color } as React.CSSProperties}
+                title={name}
+              >
+                <i className={classes.accent} />
+                <IconBrandDiscordFilled size={16} className={classes.discordIcon} />
+                <span className={classes.discordName}>{name}</span>
+              </div>
+            );
+          }
 
           return (
-            <Group
+            <TextInput
               key={idx}
-              gap="xs"
-              wrap="nowrap"
-              className={classes.playerRow}
-            >
-              {/* Color accent bar */}
-              <Box
-                w={3}
-                h={28}
-                style={{
-                  borderRadius: 1,
-                  background: `var(--mantine-color-${color}-5)`,
-                  flexShrink: 0,
-                }}
-              />
-
-              {discordPlayer?.type === "identified" ? (
-                <Group gap="xs" flex={1} wrap="nowrap">
-                  <IconBrandDiscordFilled
-                    size={16}
-                    color={colors[color]?.[5] || colors.blue?.[5] || "#228be6"}
-                  />
-                  <Text size="sm" truncate flex={1}>
-                    {discordPlayer.nickname ?? discordPlayer.username}
-                  </Text>
-                </Group>
-              ) : (
-                <TextInput
-                  size="xs"
-                  flex={1}
-                  value={player.name}
-                  placeholder={`Player ${placeholderName[idx]}`}
-                  onChange={(e) => onChangeName(idx, e.currentTarget.value)}
-                  rightSection={
-                    onRemovePlayer && (
-                      <ActionIcon
-                        size="sm"
-                        variant="subtle"
-                        color="gray"
-                        className={classes.removePlayer}
-                        aria-label={`Remove ${player.name || `player ${placeholderName[idx]}`}`}
-                        onClick={() => onRemovePlayer(idx)}
-                      >
-                        <IconX size={14} />
-                      </ActionIcon>
-                    )
-                  }
-                  styles={{
-                    input: {
-                      height: 28,
-                    },
-                  }}
-                />
-              )}
-            </Group>
+              accent={color}
+              value={player.name}
+              placeholder={`Player ${placeholderName[idx]}`}
+              aria-label={`Player ${placeholderName[idx]} name`}
+              onChange={(e) => onChangeName(idx, e.currentTarget.value)}
+              className={classes.input}
+              right={
+                onRemovePlayer && (
+                  <IconButton
+                    size="sm"
+                    label={`Remove ${label}`}
+                    onClick={() => onRemovePlayer(idx)}
+                  >
+                    <IconX />
+                  </IconButton>
+                )
+              }
+            />
           );
         })}
         {onAddPlayer && (
-          <Group gap="xs" wrap="nowrap">
-            <Box w={3} style={{ flexShrink: 0 }} />
-            <UnstyledButton className={classes.addPlayer} onClick={onAddPlayer}>
-              <IconPlus size={14} />
-              Add player
-            </UnstyledButton>
-          </Group>
+          <button
+            type="button"
+            className={classes.addPlayer}
+            onClick={onAddPlayer}
+          >
+            <IconPlus size={15} aria-hidden />
+            Add player
+          </button>
         )}
       </div>
     </Stack>

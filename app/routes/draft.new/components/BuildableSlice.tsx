@@ -1,16 +1,9 @@
-import {
-  ActionIcon,
-  Button,
-  Group,
-  Popover,
-  Text,
-  Tooltip,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { IconDice5, IconEraser, IconTrash } from "@tabler/icons-react";
 import { Slice, Tile } from "~/types";
-import { IconDice6Filled, IconEraser, IconTrash } from "@tabler/icons-react";
 import { BaseSlice } from "~/components/Slice/BaseSlice";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
+import { Button, IconButton, Popover, Text, useDisclosure } from "~/ui";
+import classes from "./BuildableSlice.module.css";
 
 type Props = {
   id: string;
@@ -43,29 +36,17 @@ export function BuildableSlice({
       slice={slice}
       mapModifiable
       titleRight={
-        <Group gap={2} wrap="nowrap">
-          <Tooltip label="Reroll slice" openDelay={300}>
-            <ActionIcon
-              size="md"
-              variant="subtle"
-              color="gray"
-              aria-label="Reroll slice"
-              onMouseDown={onRandomizeSlice}
-            >
-              <IconDice6Filled size={20} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Clear tiles" openDelay={300}>
-            <ActionIcon
-              size="md"
-              variant="subtle"
-              color="gray"
-              aria-label="Clear tiles"
-              onMouseDown={onClearSlize}
-            >
-              <IconEraser size={20} />
-            </ActionIcon>
-          </Tooltip>
+        <span className={classes.actions}>
+          <IconButton
+            size="sm"
+            label="Reroll slice"
+            onMouseDown={onRandomizeSlice}
+          >
+            <IconDice5 />
+          </IconButton>
+          <IconButton size="sm" label="Clear tiles" onMouseDown={onClearSlize}>
+            <IconEraser />
+          </IconButton>
           {onRemoveSlice && (
             <RemoveSliceButton
               sliceName={slice.name}
@@ -73,7 +54,7 @@ export function BuildableSlice({
               onConfirm={onRemoveSlice}
             />
           )}
-        </Group>
+        </span>
       }
       onSelectTile={onSelectTile}
       onDeleteTile={onDeleteTile}
@@ -91,64 +72,52 @@ function RemoveSliceButton({
   disabled: boolean;
   onConfirm: () => void;
 }) {
-  const [opened, { close, toggle }] = useDisclosure(false);
+  const [opened, { close, set }] = useDisclosure(false);
 
   if (disabled) {
     return (
-      <Tooltip label="Each player needs a slice" openDelay={300}>
-        {/* Disabled buttons don't fire pointer events, so the span carries the tooltip */}
-        <span>
-          <ActionIcon
-            size="md"
-            variant="subtle"
-            color="gray"
-            aria-label="Remove slice"
-            disabled
-          >
-            <IconTrash size={20} />
-          </ActionIcon>
-        </span>
-      </Tooltip>
+      // Disabled buttons don't fire pointer events, so the span carries the tooltip
+      <span title="Each player needs a slice" className={classes.disabledWrap}>
+        <IconButton size="sm" label="Remove slice" title="Each player needs a slice" disabled>
+          <IconTrash />
+        </IconButton>
+      </span>
     );
   }
 
   return (
     <Popover
       opened={opened}
-      onChange={(next) => !next && close()}
-      position="bottom-end"
-      withArrow
-      shadow="md"
-      trapFocus
+      onOpenChange={set}
+      side="bottom"
+      align="end"
+      width={240}
+      trigger={
+        <IconButton
+          size="sm"
+          variant={opened ? "danger" : "ghost"}
+          label="Remove slice"
+          aria-expanded={opened}
+          className={classes.remove}
+        >
+          <IconTrash />
+        </IconButton>
+      }
     >
-      <Popover.Target>
-        <Tooltip label="Remove slice" openDelay={300} disabled={opened}>
-          <ActionIcon
-            size="md"
-            variant={opened ? "light" : "subtle"}
-            color="red"
-            aria-label="Remove slice"
-            onClick={toggle}
-          >
-            <IconTrash size={20} />
-          </ActionIcon>
-        </Tooltip>
-      </Popover.Target>
-      <Popover.Dropdown maw={240}>
-        <Text size="sm" fw={600}>
+      <div className={classes.confirm} role="group" aria-label="Remove slice">
+        <Text size="sm" weight={600}>
           Remove {sliceName || "this slice"}?
         </Text>
-        <Text size="xs" c="dimmed" mt={4}>
+        <Text size="sm" tone="muted">
           Its systems go back into the pool.
         </Text>
-        <Group justify="flex-end" gap="xs" mt="sm">
-          <Button size="compact-sm" variant="default" onClick={close}>
+        <div className={classes.confirmActions}>
+          <Button size="sm" variant="tertiary" onClick={close}>
             Cancel
           </Button>
           <Button
-            size="compact-sm"
-            variant="filled"
-            color="red.9"
+            size="sm"
+            variant="danger"
             onClick={() => {
               close();
               onConfirm();
@@ -156,8 +125,8 @@ function RemoveSliceButton({
           >
             Remove
           </Button>
-        </Group>
-      </Popover.Dropdown>
+        </div>
+      </div>
     </Popover>
   );
 }

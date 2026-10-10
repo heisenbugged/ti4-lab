@@ -1,4 +1,4 @@
-import { Container, Group, Text, Stack, Button } from "@mantine/core";
+import { Button, Heading, Text } from "~/ui";
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { FactionIcon } from "~/components/icons/FactionIcon";
@@ -9,6 +9,7 @@ import { VoiceLineButton } from "~/components/voices/VoiceLineButton";
 import { FactionId } from "~/types";
 import { SelectFaction } from "./components/SelectFaction";
 import { IconRefresh } from "@tabler/icons-react";
+import styles from "./session.module.css";
 
 export const factionIds: FactionId[] = ["sol", "hacan"];
 
@@ -56,208 +57,107 @@ export default function SoundboardProxy() {
       <SelectFaction factionIds={factionIds} onFactionSelected={setFaction} />
     );
 
+  const line = (type: LineType) => ({
+    faction,
+    type,
+    loadingAudio,
+    onPlay: () => handlePlayAudio(faction, type),
+    onStop: handleStopAudio,
+    size: "lg" as const,
+    width: "100%",
+  });
+
   return (
-    <Container py="xl" maw={1400}>
+    <div className={styles.page}>
       {socket && isDisconnected && (
-        <Button
-          variant="filled"
-          size="md"
-          radius="xl"
-          leftSection={<IconRefresh size={20} />}
-          style={{
-            position: "fixed",
-            top: "100px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 1000,
-          }}
-          onClick={reconnect}
-          loading={isReconnecting}
-        >
-          Refresh
-        </Button>
+        <div className={styles.reconnect}>
+          <Button
+            icon={<IconRefresh size={18} />}
+            onClick={reconnect}
+            loading={isReconnecting}
+          >
+            Refresh
+          </Button>
+        </div>
       )}
 
-      <Group gap="md" mb="md">
-        <FactionIcon faction={faction} style={{ width: 32, height: 32 }} />
-        <Text
-          size="xl"
-          ff="heading"
-          style={{
-            fontSize: 32,
-          }}
-        >
+      <header className={styles.factionHead}>
+        <FactionIcon faction={faction} style={{ width: 40, height: 40 }} />
+        <Heading variant="title" as="h1" truncate>
           {factions[faction].name}
+        </Heading>
+      </header>
+
+      <section className={styles.group}>
+        <Text size="sm" tone="muted" weight={600}>
+          Combat
         </Text>
-      </Group>
-      <Stack gap="md">
         <VoiceLineButton
-          faction={faction}
-          label="Battle Line"
-          type="battleLines"
-          loadingAudio={loadingAudio}
-          onPlay={() => handlePlayAudio(faction, "battleLines")}
-          onStop={handleStopAudio}
-          width="100%"
+          label="Battle line"
+          variant="primary"
+          {...line("battleLines")}
         />
-
-        <Stack gap="xs">
+        <div className={styles.pair}>
           <VoiceLineButton
-            faction={faction}
             label="Outnumbered"
-            type="defenseOutnumbered"
-            loadingAudio={loadingAudio}
-            onPlay={() => handlePlayAudio(faction, "defenseOutnumbered")}
-            onStop={handleStopAudio}
-            width="auto"
+            {...line("defenseOutnumbered")}
           />
-          <VoiceLineButton
-            faction={faction}
-            label="Superiority"
-            type="offenseSuperior"
-            loadingAudio={loadingAudio}
-            onPlay={() => handlePlayAudio(faction, "offenseSuperior")}
-            onStop={handleStopAudio}
-            width="auto"
-          />
-        </Stack>
-
+          <VoiceLineButton label="Superiority" {...line("offenseSuperior")} />
+        </div>
         <VoiceLineButton
-          faction={faction}
-          label="Home Defense (Epic Speech)"
-          type="homeDefense"
-          loadingAudio={loadingAudio}
-          onPlay={() => handlePlayAudio(faction, "homeDefense")}
-          onStop={handleStopAudio}
-          width="100%"
+          label="Home defense (epic speech)"
+          variant="primary"
+          {...line("homeDefense")}
         />
         <VoiceLineButton
-          faction={faction}
-          label="Planet Invasion"
-          type="homeInvasion"
-          loadingAudio={loadingAudio}
-          onPlay={() => handlePlayAudio(faction, "homeInvasion")}
-          onStop={handleStopAudio}
-          width="100%"
+          label="Planet invasion"
+          variant="primary"
+          {...line("homeInvasion")}
         />
+      </section>
 
+      <section className={styles.group}>
+        <Text size="sm" tone="muted" weight={600}>
+          Special
+        </Text>
         <VoiceLineButton
-          faction={faction}
           label={factionAudios[faction]?.special?.title ?? ""}
-          type="special"
-          loadingAudio={loadingAudio}
-          onPlay={() => handlePlayAudio(faction, "special")}
-          onStop={handleStopAudio}
-          width="100%"
+          {...line("special")}
         />
         {factionAudios[faction]?.special2 && (
           <VoiceLineButton
-            faction={faction}
             label={factionAudios[faction]?.special2?.title ?? ""}
-            type="special2"
-            loadingAudio={loadingAudio}
-            onPlay={() => handlePlayAudio(faction, "special2")}
-            onStop={handleStopAudio}
-            width="100%"
+            {...line("special2")}
           />
         )}
+        <VoiceLineButton label="Joke" {...line("jokes")} />
+      </section>
 
-        <VoiceLineButton
-          faction={faction}
-          label="Joke"
-          type="jokes"
-          loadingAudio={loadingAudio}
-          onPlay={() => handlePlayAudio(faction, "jokes")}
-          onStop={handleStopAudio}
-          width="100%"
-        />
-
-        {/* Roleplay buttons for specific factions */}
-        {(faction === "nomad" ||
-          faction === "vulraith" ||
-          faction === "hacan") &&
-          factionAudios[faction]?.roleplayYes && (
-            <Stack gap="md">
-              <Text size="lg" fw={500} c="dimmed" mt="md">
-                Roleplay Lines
-              </Text>
-              <Stack gap="xs">
-                <VoiceLineButton
-                  faction={faction}
-                  label="Yes"
-                  type="roleplayYes"
-                  loadingAudio={loadingAudio}
-                  onPlay={() => handlePlayAudio(faction, "roleplayYes")}
-                  onStop={handleStopAudio}
-                  width="100%"
-                />
-                <VoiceLineButton
-                  faction={faction}
-                  label="No"
-                  type="roleplayNo"
-                  loadingAudio={loadingAudio}
-                  onPlay={() => handlePlayAudio(faction, "roleplayNo")}
-                  onStop={handleStopAudio}
-                  width="100%"
-                />
-                <VoiceLineButton
-                  faction={faction}
-                  label="I Refuse"
-                  type="roleplayIRefuse"
-                  loadingAudio={loadingAudio}
-                  onPlay={() => handlePlayAudio(faction, "roleplayIRefuse")}
-                  onStop={handleStopAudio}
-                  width="100%"
-                />
-                <VoiceLineButton
-                  faction={faction}
-                  label="Deal With It"
-                  type="roleplayDealWithIt"
-                  loadingAudio={loadingAudio}
-                  onPlay={() => handlePlayAudio(faction, "roleplayDealWithIt")}
-                  onStop={handleStopAudio}
-                  width="100%"
-                />
-                <VoiceLineButton
-                  faction={faction}
-                  label="Not Enough"
-                  type="roleplayNotEnough"
-                  loadingAudio={loadingAudio}
-                  onPlay={() => handlePlayAudio(faction, "roleplayNotEnough")}
-                  onStop={handleStopAudio}
-                  width="100%"
-                />
-                <VoiceLineButton
-                  faction={faction}
-                  label="Too Much"
-                  type="roleplayTooMuch"
-                  loadingAudio={loadingAudio}
-                  onPlay={() => handlePlayAudio(faction, "roleplayTooMuch")}
-                  onStop={handleStopAudio}
-                  width="100%"
-                />
-                <VoiceLineButton
-                  faction={faction}
-                  label="Sabotage"
-                  type="roleplaySabotage"
-                  loadingAudio={loadingAudio}
-                  onPlay={() => handlePlayAudio(faction, "roleplaySabotage")}
-                  onStop={handleStopAudio}
-                  width="100%"
-                />
-                <VoiceLineButton
-                  faction={faction}
-                  label="Fire!"
-                  type="roleplayFire"
-                  loadingAudio={loadingAudio}
-                  onPlay={() => handlePlayAudio(faction, "roleplayFire")}
-                  onStop={handleStopAudio}
-                  width="100%"
-                />
-              </Stack>
-            </Stack>
-          )}
-      </Stack>
-    </Container>
+      {/* Roleplay buttons for specific factions */}
+      {(faction === "nomad" || faction === "vulraith" || faction === "hacan") &&
+        factionAudios[faction]?.roleplayYes && (
+          <section className={styles.group}>
+            <Text size="sm" tone="muted" weight={600}>
+              Roleplay lines
+            </Text>
+            <div className={styles.pair}>
+              <VoiceLineButton label="Yes" {...line("roleplayYes")} />
+              <VoiceLineButton label="No" {...line("roleplayNo")} />
+              <VoiceLineButton label="I refuse" {...line("roleplayIRefuse")} />
+              <VoiceLineButton
+                label="Deal with it"
+                {...line("roleplayDealWithIt")}
+              />
+              <VoiceLineButton
+                label="Not enough"
+                {...line("roleplayNotEnough")}
+              />
+              <VoiceLineButton label="Too much" {...line("roleplayTooMuch")} />
+              <VoiceLineButton label="Sabotage" {...line("roleplaySabotage")} />
+              <VoiceLineButton label="Fire!" {...line("roleplayFire")} />
+            </div>
+          </section>
+        )}
+    </div>
   );
 }

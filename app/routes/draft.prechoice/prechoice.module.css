@@ -1,51 +1,164 @@
+.page {
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+
+.banners {
+  display: grid;
+  gap: 10px;
+  margin-bottom: var(--space-6);
+}
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: var(--mantine-spacing-md);
-  margin-top: var(--mantine-spacing-lg);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+  padding-bottom: 56px;
 }
 
-.col12 {
-  grid-column: span 12;
-}
-
-.colLeft {
-  grid-column: span 12;
-}
-
-.colRight {
-  grid-column: span 12;
-}
-
-@media (min-width: 62em) {
-  .colLeft {
-    grid-column: span 7;
+@media (min-width: 992px) {
+  .grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   }
 
-  .colRight {
-    grid-column: span 5;
+  .left {
+    position: sticky;
+    top: calc(var(--header-h, 56px) + 16px);
+  }
+}
+
+.left,
+.right {
+  display: grid;
+  gap: 28px;
+  min-width: 0;
+}
+
+.sec {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Style list beside the map; stacks above it when the column narrows. */
+.stylebox {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (min-width: 1200px) {
+  .stylebox {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+}
+
+.mapwrap {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  justify-self: center;
+  min-width: 0;
+}
+
+.meta {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.why {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin: -4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.why svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.config {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.commit,
+.span {
+  grid-column: 1 / -1;
+}
+
+/* Sticky commit bar for phones, above the home indicator. */
+.bar {
+  display: none;
+}
+
+.barText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.barText small {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barText b {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .grid {
+    padding-bottom: 24px;
   }
 
-}
+  .two {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-.hiddenFromXs {
-  display: block;
-}
+  .actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-@media (min-width: 36em) {
-  .hiddenFromXs {
+  .commit {
     display: none;
   }
-}
 
-.twoColGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--mantine-spacing-sm);
-}
-
-@media (min-width: 30em) {
-  .twoColGrid {
-    grid-template-columns: 1fr 1fr;
+  .bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-inline: calc(-1 * var(--space-4));
+    padding: 10px var(--space-4) calc(10px + var(--sab));
+    background: color-mix(in oklab, var(--void) 95%, transparent);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--rule);
   }
 }

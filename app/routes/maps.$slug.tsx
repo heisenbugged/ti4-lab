@@ -1,4 +1,3 @@
-import { ActionIcon, Box, Button, Stack, Text } from "@mantine/core";
 import {
   LoaderFunctionArgs,
   MetaFunction,
@@ -22,7 +21,6 @@ import { useMemo, useState } from "react";
 import { decodeMapString } from "~/mapgen/utils/mapStringCodec";
 import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { buildPresetDraftState } from "~/mapgen/utils/presetDraft";
-import { notifications } from "@mantine/notifications";
 import { MainAppShell } from "~/components/MainAppShell";
 import {
   LegendaryDisplay,
@@ -42,6 +40,15 @@ import {
   getAllTileContributions,
 } from "~/mapgen/utils/sliceScoring";
 import classes from "./maps/styles.module.css";
+import {
+  Button,
+  ButtonAnchor,
+  ButtonLink,
+  Heading,
+  Text,
+  cx,
+  notify,
+} from "~/ui";
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const slug = params.slug;
@@ -124,10 +131,10 @@ export default function MapDetail() {
 
   const handleStartDraft = () => {
     if (!decoded) {
-      notifications.show({
+      notify({
         title: "Invalid map",
         message: "Unable to load the map data.",
-        color: "red",
+        tone: "danger",
       });
       return;
     }
@@ -143,10 +150,10 @@ export default function MapDetail() {
 
     if (!result.ok) {
       const isMissingPlayers = result.error.includes("home systems");
-      notifications.show({
+      notify({
         title: isMissingPlayers ? "Missing players" : "Unsupported",
         message: result.error,
-        color: isMissingPlayers ? "yellow" : "red",
+        tone: isMissingPlayers ? "warning" : "danger",
       });
       return;
     }
@@ -163,161 +170,136 @@ export default function MapDetail() {
   if (!decoded) {
     return (
       <MainAppShell>
-        <Box p="xl">
-          <Text c="red">Failed to decode map data.</Text>
-        </Box>
+        <Text tone="danger">Failed to decode map data.</Text>
       </MainAppShell>
     );
   }
 
+  const techSkips = parseTechSkips(preset.techSkips);
+
   return (
     <MainAppShell>
-      <Box className={classes.page}>
-        <div className={classes.grid}>
-          <div className={classes.mapColumn}>
-            <Box className={classes.mapContainer}>
-              <Map
-                id="map-detail"
-                modifiableMapTiles={[]}
-                map={decoded.map}
-                disabled
-                interactions={MAP_INTERACTIONS.readonly}
-                sliceValues={sliceValues}
-                sliceStats={sliceStats}
-                sliceBreakdowns={sliceBreakdowns}
-                tileContributions={tileContributions}
-              />
-            </Box>
-          </div>
-          <div className={classes.sidebarColumn}>
-            <Stack gap="lg">
-              <Button
-                variant="subtle"
-                color="gray"
-                size="sm"
-                leftSection={<IconArrowLeft size={14} />}
-                onClick={() => navigate("/map-presets")}
-                className={classes.backButton}
-              >
-                Back to Maps
-              </Button>
-
-              <Stack gap={4}>
-                <h1 className={classes.title}>{preset.name}</h1>
-                <span className={classes.author}>By {preset.author}</span>
-              </Stack>
-
-              {preset.description && (
-                <p className={classes.description}>{preset.description}</p>
-              )}
-
-              <div className={classes.mapStatsRow}>
-                {preset.avgSliceValue != null && (
-                  <div className={classes.mapStatItem}>
-                    <Text size="lg" fw={700} c="white">
-                      {preset.avgSliceValue}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                      Avg Slice
-                    </Text>
-                  </div>
-                )}
-                {preset.totalResources != null &&
-                  preset.totalInfluence != null && (
-                    <div className={classes.mapStatItem}>
-                      <Text size="lg" fw={700} c="white">
-                        {preset.totalResources}/{preset.totalInfluence}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        R/I
-                      </Text>
-                    </div>
-                  )}
-                {!!preset.legendaries && (
-                  <div className={classes.mapStatItem}>
-                    <LegendaryDisplay count={preset.legendaries} size="md" />
-                    <Text size="xs" c="dimmed">
-                      Legendary
-                    </Text>
-                  </div>
-                )}
-                {parseTechSkips(preset.techSkips) && (
-                  <div className={classes.mapStatItem}>
-                    <TechSkipsDisplay techSkips={preset.techSkips} size="md" />
-                    <Text size="xs" c="dimmed">
-                      Tech Skips
-                    </Text>
-                  </div>
-                )}
-              </div>
-
-              <div className={classes.statsRow}>
-                <div className={classes.statItem}>
-                  <IconPlayerPlay size={16} style={{ opacity: 0.6 }} />
-                  <Text size="sm" fw={500}>
-                    {preset.draftCount}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {preset.draftCount === 1 ? "draft" : "drafts"}
-                  </Text>
-                </div>
-                <div className={classes.statItem}>
-                  <IconEye size={16} style={{ opacity: 0.6 }} />
-                  <Text size="sm" fw={500}>
-                    {preset.views}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    views
-                  </Text>
-                </div>
-                <div className={classes.statItem}>
-                  <ActionIcon
-                    variant="subtle"
-                    color={liked ? "red" : "gray"}
-                    className={classes.heartButton}
-                    onClick={handleLike}
-                  >
-                    {liked ? (
-                      <IconHeartFilled size={16} />
-                    ) : (
-                      <IconHeart size={16} />
-                    )}
-                  </ActionIcon>
-                  <Text size="sm" fw={500}>
-                    {likes}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    likes
-                  </Text>
-                </div>
-              </div>
-
-              <Stack gap="sm" mt="md">
-                <Button
-                  onClick={handleStartDraft}
-                  size="lg"
-                  fullWidth
-                  leftSection={<IconPlayerPlay size={18} />}
-                >
-                  Start Draft
-                </Button>
-
-                <Button
-                  component="a"
-                  href={mapGeneratorHref(preset.mapString)}
-                  variant="light"
-                  color="blue"
-                  size="sm"
-                  fullWidth
-                  leftSection={<IconSparkles size={14} />}
-                >
-                  Open in Map Generator
-                </Button>
-              </Stack>
-            </Stack>
+      <div className={classes.page}>
+        <div className={classes.mapWell}>
+          <div className={classes.mapBox}>
+            <Map
+              id="map-detail"
+              modifiableMapTiles={[]}
+              map={decoded.map}
+              disabled
+              interactions={MAP_INTERACTIONS.readonly}
+              sliceValues={sliceValues}
+              sliceStats={sliceStats}
+              sliceBreakdowns={sliceBreakdowns}
+              tileContributions={tileContributions}
+            />
           </div>
         </div>
-      </Box>
+        <aside className={classes.side}>
+          <ButtonLink
+            to="/map-presets"
+            variant="tertiary"
+            size="sm"
+            icon={<IconArrowLeft size={14} />}
+            className={classes.back}
+          >
+            Back to maps
+          </ButtonLink>
+
+          <div className={classes.titleBlock}>
+            <Heading variant="title" as="h1">
+              {preset.name}
+            </Heading>
+            <Text size="sm" tone="muted">
+              By {preset.author}
+            </Text>
+          </div>
+
+          {preset.description && (
+            <Text className={classes.description}>{preset.description}</Text>
+          )}
+
+          <div className={classes.tiles}>
+            {preset.avgSliceValue != null && (
+              <div>
+                <b className={classes.tileValue}>{preset.avgSliceValue}</b>
+                <span className={classes.tileLabel}>Avg slice</span>
+              </div>
+            )}
+            {preset.totalResources != null && preset.totalInfluence != null && (
+              <div>
+                <b className={classes.tileValue}>
+                  {preset.totalResources}/{preset.totalInfluence}
+                </b>
+                <span className={classes.tileLabel}>R/I</span>
+              </div>
+            )}
+            {!!preset.legendaries && (
+              <div>
+                <span className={classes.tileGlyphs}>
+                  <LegendaryDisplay count={preset.legendaries} size="md" />
+                </span>
+                <span className={classes.tileLabel}>Legendary</span>
+              </div>
+            )}
+            {techSkips && (
+              <div>
+                <span className={classes.tileGlyphs}>
+                  <TechSkipsDisplay techSkips={preset.techSkips} size="md" />
+                </span>
+                <span className={classes.tileLabel}>Tech skips</span>
+              </div>
+            )}
+          </div>
+
+          <div className={classes.engagement}>
+            <span>
+              <IconPlayerPlay />
+              <b>{preset.draftCount}</b>
+              {preset.draftCount === 1 ? "draft" : "drafts"}
+            </span>
+            <span>
+              <IconEye />
+              <b>{preset.views}</b>
+              views
+            </span>
+            <button
+              type="button"
+              className={cx(classes.like, liked && classes.liked)}
+              onClick={handleLike}
+              aria-pressed={liked}
+              aria-label={liked ? "Liked" : `Like ${preset.name}`}
+            >
+              {liked ? <IconHeartFilled /> : <IconHeart />}
+              <b>{likes}</b>
+              likes
+            </button>
+          </div>
+
+          <div className={classes.actions}>
+            <Button
+              variant="primary"
+              size="lg"
+              block
+              onClick={handleStartDraft}
+              icon={<IconPlayerPlay size={18} />}
+            >
+              Start draft
+            </Button>
+            <ButtonAnchor
+              href={mapGeneratorHref(preset.mapString)}
+              block
+              icon={<IconSparkles size={16} />}
+            >
+              Open in map generator
+            </ButtonAnchor>
+          </div>
+          <Text size="xs" tone="muted">
+            Home systems show each seat&apos;s slice value, optimal R/I and tech
+            skips.
+          </Text>
+        </aside>
+      </div>
     </MainAppShell>
   );
 }

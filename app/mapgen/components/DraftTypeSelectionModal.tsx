@@ -1,4 +1,4 @@
-import { Modal, Stack, Button } from "@mantine/core";
+import { Button, Modal, Stack, Text } from "~/ui";
 import { DraftType } from "~/draft/types";
 
 const DRAFT_TYPE_LABELS: Record<string, string> = {
@@ -34,20 +34,15 @@ export function DraftTypeSelectionModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title="Select Draft Format"
+      title="Select draft format"
       size="sm"
-      centered
     >
-      <Stack gap="xs">
+      <Text size="sm" tone="muted">
+        This map supports more than one slice format.
+      </Text>
+      <Stack gap={2}>
         {compatibleTypes.map((type) => (
-          <Button
-            key={type}
-            variant="outline"
-            color="blue"
-            size="md"
-            ff="heading"
-            onClick={() => onSelect(type)}
-          >
+          <Button key={type} block onClick={() => onSelect(type)}>
             {DRAFT_TYPE_LABELS[type] ?? type}
           </Button>
         ))}

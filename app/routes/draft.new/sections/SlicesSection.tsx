@@ -1,12 +1,4 @@
-import {
-  Button,
-  Group,
-  SimpleGrid,
-  Stack,
-  Text,
-  UnstyledButton,
-} from "@mantine/core";
-import { IconPlus } from "@tabler/icons-react";
+import { IconDice5, IconPlus } from "@tabler/icons-react";
 import {
   DndContext,
   DragEndEvent,
@@ -16,7 +8,8 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 
-import { Section, SectionTitle } from "~/components/Section";
+import { Button } from "~/ui";
+import { BuilderSection } from "./BuilderSection";
 import { draftConfig } from "~/draft";
 import { useDraft } from "~/draftStore";
 import { BuildableSlice } from "../components/BuildableSlice";
@@ -94,35 +87,37 @@ export function SlicesSection() {
   });
   const sensors = useSensors(delayedPointerSensor);
 
-  const xxlCols = 6;
-  const cols = { base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: xxlCols };
-  return (
-    <Section>
-      <div style={{ position: "sticky", top: 60, zIndex: 11 }}>
-        <SectionTitle title="Slices">
-          <Group gap={4}>
-            <Button
-              onMouseDown={() => {
-                if (config.generateMap !== undefined) {
-                  randomizeAll();
-                } else {
-                  randomizeSlices();
-                }
-              }}
-              variant="light"
-            >
-              Randomize All
-            </Button>
-          </Group>
-        </SectionTitle>
-      </div>
+  const incomplete = slices.filter((slice) =>
+    slice.tiles.some((t) => t.type === "OPEN"),
+  ).length;
+  const meta =
+    `${slices.length} ${slices.length === 1 ? "slice" : "slices"}` +
+    (incomplete > 0
+      ? `, ${incomplete} ${incomplete === 1 ? "needs a tile" : "need tiles"}`
+      : "");
 
-      <SimpleGrid
-        flex={1}
-        cols={cols}
-        spacing="lg"
-        style={{ alignItems: "flex-start" }}
-      >
+  return (
+    <BuilderSection
+      title="Slices"
+      sticky
+      meta={meta}
+      actions={
+        <Button
+          size="sm"
+          icon={<IconDice5 />}
+          onMouseDown={() => {
+            if (config.generateMap !== undefined) {
+              randomizeAll();
+            } else {
+              randomizeSlices();
+            }
+          }}
+        >
+          Randomize all
+        </Button>
+      }
+    >
+      <div className={classes.grid}>
         <DndContext
           onDragEnd={handleDragEnd}
           onDragStart={handleDragStart}
@@ -131,6 +126,7 @@ export function SlicesSection() {
           {slices.map((slice, idx) => (
             <div
               key={idx}
+              className={classes.slice}
               style={{
                 zIndex: draggingSlice === idx ? 9999 : undefined,
                 position: draggingSlice === idx ? "relative" : undefined,
@@ -151,17 +147,15 @@ export function SlicesSection() {
           ))}
         </DndContext>
         {slices.length < maxSlices && (
-          <UnstyledButton className={classes.addSlice} onClick={addSlice}>
-            <Stack align="center" gap={6}>
-              <IconPlus size={28} stroke={1.5} />
-              <Text fw={600}>Add slice</Text>
-              <Text size="xs" c="dimmed" ta="center" maw={180}>
-                Generated from unused systems with this format's rules
-              </Text>
-            </Stack>
-          </UnstyledButton>
+          <button type="button" className={classes.addSlice} onClick={addSlice}>
+            <span className={classes.addIcon}>
+              <IconPlus aria-hidden />
+            </span>
+            <b>Add slice</b>
+            <small>Generated from unused systems with this format&apos;s rules</small>
+          </button>
         )}
-      </SimpleGrid>
-    </Section>
+      </div>
+    </BuilderSection>
   );
 }

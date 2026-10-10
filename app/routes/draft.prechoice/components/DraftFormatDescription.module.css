@@ -1,123 +1,54 @@
-.container {
-    border-radius: 4px;
-    background: var(--mantine-color-default);
-    border: 1px solid var(--mantine-color-default-border);
-    overflow: hidden;
+.desc {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  min-width: 0;
 }
 
-.header {
-    display: flex;
-    align-items: center;
-    gap: var(--mantine-spacing-xs);
-    padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
-    border-bottom: 1px solid var(--mantine-color-default-border);
+.title {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.25;
+  font-weight: 600;
+  font-stretch: var(--wide);
 }
 
-.formatTitle {
-    font-family: "Orbitron", sans-serif;
-    font-weight: 600;
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--mantine-color-dimmed);
+.text {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
 }
 
-.content {
-    padding: var(--mantine-spacing-sm);
+.chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.description {
-    font-size: 0.8125rem;
-    line-height: 1.55;
-    margin-bottom: var(--mantine-spacing-sm);
-    color: var(--mantine-color-text);
+.chips li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 4px 10px;
+  background: var(--hull-sunken);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.25;
+  min-width: 0;
 }
 
-.featuresGrid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.featureItem {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    background: var(--mantine-color-default-hover);
-    color: var(--mantine-color-dimmed);
-}
-
-.featureIcon {
-    flex-shrink: 0;
-    opacity: 0.7;
-}
-
-/* Header gradient variants - the one distinctive element */
-.milty .header {
-    background: linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--mantine-color-blue-6) 15%, transparent),
-        transparent 60%
-    );
-}
-
-.milty .formatTitle {
-    color: var(--mantine-color-blue-4);
-}
-
-.milty .featureIcon {
-    color: var(--mantine-color-blue-5);
-}
-
-.miltyeq .header {
-    background: linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--mantine-color-teal-6) 15%, transparent),
-        transparent 60%
-    );
-}
-
-.miltyeq .formatTitle {
-    color: var(--mantine-color-teal-4);
-}
-
-.miltyeq .featureIcon {
-    color: var(--mantine-color-teal-5);
-}
-
-.nucleus .header {
-    background: linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--mantine-color-violet-6) 15%, transparent),
-        transparent 60%
-    );
-}
-
-.nucleus .formatTitle {
-    color: var(--mantine-color-violet-4);
-}
-
-.nucleus .featureIcon {
-    color: var(--mantine-color-violet-5);
-}
-
-.small .header {
-    background: linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--mantine-color-orange-6) 15%, transparent),
-        transparent 60%
-    );
-}
-
-.small .formatTitle {
-    color: var(--mantine-color-orange-4);
-}
-
-.small .featureIcon {
-    color: var(--mantine-color-orange-5);
+.chips svg {
+  flex: none;
+  color: var(--ion);
 }

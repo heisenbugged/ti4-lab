@@ -1,17 +1,4 @@
-import {
-  Box,
-  Button,
-  Code,
-  Flex,
-  Grid,
-  Group,
-  List,
-  Popover,
-  Stack,
-  Text,
-} from "@mantine/core";
-import { IconDeviceFloppy } from "@tabler/icons-react";
-import { useDisclosure } from "@mantine/hooks";
+import { IconDeviceFloppy, IconPlayerPlay } from "@tabler/icons-react";
 import type { ActionFunctionArgs } from "react-router";
 import { redirect, useLocation, useNavigate } from "react-router";
 import { useEffect, useRef } from "react";
@@ -20,7 +7,6 @@ import { draftStore, useDraft } from "~/draftStore";
 import { Draft } from "~/types";
 import { DraftInput, useCreateDraft } from "./useCreateDraft";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
-import { SectionTitle } from "~/components/Section";
 import { SlicesTable } from "../draft/SlicesTable";
 import { createDraft } from "~/drizzle/draft.server";
 import { DiscordBanner } from "~/components/DiscordBanner";
@@ -40,6 +26,10 @@ import { ConnectedFactionSettingsModal } from "./components/ConnectedFactionSett
 import { withDraftOrder } from "~/utils/draftOrder.server";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
 import { SaveDraftPresetModal } from "./components/SaveDraftPresetModal";
+import { BuilderSection } from "./sections/BuilderSection";
+import { MAPS } from "~/routes/draft.prechoice/maps";
+import { Button, Code, Heading, Text, useDisclosure } from "~/ui";
+import classes from "./route.module.css";
 
 export default function DraftNew() {
   const location = useLocation();
@@ -51,10 +41,6 @@ export default function DraftNew() {
 
   const validationErrors = useDraftValidationErrors();
   const draftIsValid = validationErrors.length === 0;
-  const [
-    validationErrorsOpened,
-    { close: closeValidationErrors, open: openValidationErrors },
-  ] = useDisclosure(false);
   const [savePresetOpened, { close: closeSavePreset, open: openSavePreset }] =
     useDisclosure(false);
 
@@ -106,167 +92,151 @@ export default function DraftNew() {
   const handleCreate = () => createDraft(draft);
 
   const advancedOptions = (
-    <Stack gap="lg">
-      <Group gap="sm">
-        <Popover shadow="md" opened={validationErrorsOpened && !draftIsValid}>
-          <Popover.Target>
-            <Button
-              flex={1}
-              size="xl"
-              onClick={handleCreate}
-              disabled={!draftIsValid}
-              onMouseOver={openValidationErrors}
-              onMouseLeave={closeValidationErrors}
-              style={{
-                border: !draftIsValid
-                  ? "1px solid var(--mantine-color-red-3)"
-                  : undefined,
-              }}
-            >
-              Create
-            </Button>
-          </Popover.Target>
-          <Popover.Dropdown>
-            <List>
-              {validationErrors.map((error) => (
-                <List.Item key={error}>{error}</List.Item>
-              ))}
-            </List>
-          </Popover.Dropdown>
-        </Popover>
-      </Group>
-      <Stack gap="xs">
-        <SectionTitle title="Save for Later" />
-        <Group
-          justify="space-between"
-          align="center"
-          px="sm"
-          wrap="nowrap"
-          gap="md"
+    <div className={classes.createColumn}>
+      <section className={classes.createBox} aria-label="Create draft">
+        <Button
+          variant="primary"
+          size="lg"
+          block
+          icon={<IconPlayerPlay />}
+          onClick={handleCreate}
+          disabled={!draftIsValid}
+          aria-describedby={draftIsValid ? undefined : "draft-errors"}
         >
-          <Text size="sm" c="dimmed">
-            Save this map, slices and settings as a named preset. Continue from
-            it later in TI4 Lab, or use the Discord bot command{" "}
-            <Code>/labdraft preset:&lt;name&gt;</Code> to start a draft.
-          </Text>
-          <Button
-            variant="light"
-            color="gray"
-            size="sm"
-            leftSection={<IconDeviceFloppy size={16} />}
-            disabled={!draftIsValid}
-            onClick={openSavePreset}
-            style={{ flexShrink: 0 }}
-          >
-            Save as preset
-          </Button>
-        </Group>
-      </Stack>
-    </Stack>
+          Create draft
+        </Button>
+        {!draftIsValid && (
+          <div className={classes.errors} id="draft-errors" role="status">
+            <b>
+              Fix {validationErrors.length}{" "}
+              {validationErrors.length === 1 ? "thing" : "things"} to create
+              the draft
+            </b>
+            <ul>
+              {validationErrors.map((error) => (
+                <li key={error}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+      <section className={classes.saveBox}>
+        <Heading variant="heading" as="h3">
+          Save for later
+        </Heading>
+        <Text size="sm" tone="muted">
+          Save this map, slices and settings as a named preset. Continue from
+          it later in TI4 Lab, or start it in Discord with{" "}
+          <Code>/labdraft preset:&lt;name&gt;</Code>.
+        </Text>
+        <Button
+          icon={<IconDeviceFloppy />}
+          disabled={!draftIsValid}
+          onClick={openSavePreset}
+        >
+          Save as preset
+        </Button>
+      </section>
+    </div>
   );
 
-  if (!initialized) return <LoadingOverlay />;
-  if (isTexasStyle) return <LoadingOverlay />;
-  if (isPresetMapDraft) {
-    return (
-      <Flex py="lg" direction="column">
-        {draft.integrations.discord && (
-          <Box mb="lg">
-            <DiscordBanner />
-          </Box>
-        )}
+  const formatName = isPresetMapDraft
+    ? "Preset map"
+    : draft.settings.draftGameMode === "twilightsFall"
+      ? "Twilight's Fall"
+      : (MAPS[draft.settings.type]?.title ?? draft.settings.type);
 
-        <ConnectedFactionSettingsModal />
-        <SaveDraftPresetModal
-          draft={draft}
-          opened={savePresetOpened}
-          onClose={closeSavePreset}
-        />
-        <PlanetFinder />
+  const header = (
+    <header className={classes.head}>
+      <div className={classes.headText}>
+        <Heading variant="title" as="h1">
+          Review your draft
+        </Heading>
+        <Text size="sm" tone="muted">
+          {formatName}, {draft.players.length} players. Reroll, edit or remove
+          anything, then create the draft.
+        </Text>
+      </div>
+      {!isPresetMapDraft && <OriginalArtToggle showWarning={true} />}
+    </header>
+  );
 
-        <Grid style={{ gap: 30 }} mt="lg">
-          <Grid.Col span={{ base: 12, lg: 6 }}>
-            <Stack gap="lg">
-              <PlayerInputSection
-                players={draft.players}
-                discordData={draft.integrations.discord}
-                onChangeName={(playerIdx, name) => {
-                  actions.updatePlayerName(playerIdx, name);
-                }}
-              />
-              <AvailableReferenceCardPacksSection />
-              <AvailableFactionsSection />
-              <AvailableMinorFactionsSection />
-              {advancedOptions}
-            </Stack>
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, lg: 6 }}>
-            <MapSection />
-          </Grid.Col>
-        </Grid>
-      </Flex>
-    );
-  }
-
-  return (
-    <Flex py="lg" direction="column">
-      {draft.integrations.discord && (
-        <Box mb="lg">
-          <DiscordBanner />
-        </Box>
-      )}
-
+  const modals = (
+    <>
       <ConnectedFactionSettingsModal />
       <SaveDraftPresetModal
         draft={draft}
         opened={savePresetOpened}
         onClose={closeSavePreset}
       />
-
       <PlanetFinder />
-      <Box mb="md">
-        <OriginalArtToggle showWarning={true} />
-      </Box>
+    </>
+  );
 
-      <Stack>
-        <PlayersSection />
-        {draft.settings.draftGameMode !== "texasStyle" && (
-          <>
+  if (!initialized) return <LoadingOverlay />;
+  if (isTexasStyle) return <LoadingOverlay />;
+  if (isPresetMapDraft) {
+    return (
+      <div className={classes.page}>
+        {draft.integrations.discord && <DiscordBanner />}
+        {modals}
+        {header}
+
+        <div className={classes.presetLayout}>
+          <div className={classes.column}>
+            <BuilderSection
+              title="Players"
+              meta={`${draft.players.length} players`}
+            >
+              <PlayerInputSection
+                showHeader={false}
+                players={draft.players}
+                discordData={draft.integrations.discord}
+                onChangeName={(playerIdx, name) => {
+                  actions.updatePlayerName(playerIdx, name);
+                }}
+              />
+            </BuilderSection>
             <AvailableReferenceCardPacksSection />
             <AvailableFactionsSection />
             <AvailableMinorFactionsSection />
-          </>
-        )}
-      </Stack>
+            {advancedOptions}
+          </div>
+          <div className={classes.mapColumn}>
+            <MapSection />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-      {!isTexasStyle && (
-        <Box mt="lg">
-          <SlicesSection />
-        </Box>
-      )}
+  return (
+    <div className={classes.page}>
+      {draft.integrations.discord && <DiscordBanner />}
+      {modals}
+      {header}
 
-      <Grid style={{ gap: 30 }} mt="50px">
-        <Grid.Col
-          span={{ base: 12, lg: 6 }}
-          order={showFullMap ? { base: 2, lg: 1 } : undefined}
-        >
-          <Stack gap="xl" w="100%">
-            <Stack gap="xs">
-              <SectionTitle title="Slices Summary" />
-              <SlicesTable slices={draft.slices} />
-            </Stack>
-            {showFullMap && advancedOptions}
-          </Stack>
-        </Grid.Col>
-        <Grid.Col
-          span={{ base: 12, lg: 6 }}
-          order={showFullMap ? { base: 1, lg: 2 } : undefined}
-        >
-          {showFullMap && !isTexasStyle && <MapSection />}
-          {!showFullMap && advancedOptions}
-        </Grid.Col>
-      </Grid>
-    </Flex>
+      <PlayersSection />
+      <AvailableReferenceCardPacksSection />
+      <AvailableFactionsSection />
+      <AvailableMinorFactionsSection />
+      <SlicesSection />
+
+      <div
+        className={classes.bottom}
+        data-full-map={showFullMap || undefined}
+      >
+        <div className={classes.column}>
+          <BuilderSection title="Slices summary">
+            <SlicesTable slices={draft.slices} />
+          </BuilderSection>
+          {showFullMap && advancedOptions}
+        </div>
+        <div className={classes.side}>
+          {showFullMap ? <MapSection /> : advancedOptions}
+        </div>
+      </div>
+    </div>
   );
 }
 

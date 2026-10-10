@@ -1,4 +1,5 @@
-import { List, SimpleGrid, Stack, Title } from "@mantine/core";
+import { Stack, Text } from "~/ui";
+import classes from "./StartingUnitsTable.module.css";
 import { FleetComposition } from "~/types";
 
 type Props = {
@@ -46,24 +47,24 @@ export function StartingUnitsTable({
   const rightColumn = units.filter((_, idx) => idx % 2 === 1);
 
   return (
-    <Stack gap="xs">
+    <Stack gap={1}>
       {showTitle && (
-        <Title order={6} size="xs" c="dimmed">
+        <Text size="xs" tone="muted" weight={600}>
           {title}
-        </Title>
+        </Text>
       )}
-      <SimpleGrid cols={2} spacing={4}>
-        <List size="xs" spacing={2}>
+      <div className={classes.grid}>
+        <ul className={classes.list}>
           {leftColumn.map((unit, idx) => (
-            <List.Item key={idx}>{unit}</List.Item>
+            <li key={idx}>{unit}</li>
           ))}
-        </List>
-        <List size="xs" spacing={2}>
+        </ul>
+        <ul className={classes.list}>
           {rightColumn.map((unit, idx) => (
-            <List.Item key={idx}>{unit}</List.Item>
+            <li key={idx}>{unit}</li>
           ))}
-        </List>
-      </SimpleGrid>
+        </ul>
+      </div>
     </Stack>
   );
 }

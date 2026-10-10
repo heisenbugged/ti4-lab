@@ -1,21 +1,6 @@
-import {
-  Alert,
-  Box,
-  Button,
-  Flex,
-  Group,
-  NumberInput,
-  Stack,
-  Switch,
-  Tabs,
-  Text,
-  Tooltip,
-} from "@mantine/core";
 import { DiscordData, DraftSettings } from "~/types";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DemoMap } from "~/components/DemoMap";
-import { SectionTitle } from "~/components/Section";
-import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import {
   useLoaderData,
   useLocation,
@@ -31,20 +16,32 @@ import {
   IconPlayerPlay,
 } from "@tabler/icons-react";
 import { DiscordBanner } from "~/components/DiscordBanner";
-import { useDisclosure } from "@mantine/hooks";
-import { notifications } from "@mantine/notifications";
+import {
+  Button,
+  NumberStepper,
+  Notice,
+  Panel,
+  Rows,
+  ListRow,
+  SectionHeader,
+  Segmented,
+  Switch,
+  notify,
+  useDisclosure,
+} from "~/ui";
 import {
   SliceSettingsModal,
   DEFAULT_SLICE_SETTINGS,
   SliceGenerationSettings,
   SliceSettingsFormatType,
 } from "~/components/SliceSettingsModal";
-import { useDraftSetup } from "./store";
+import { DraftMode, useDraftSetup } from "./store";
 import { MAPS, ChoosableDraftType } from "./maps";
 import { ReferenceCardPacksConfigurationSection } from "./components/ReferenceCardPacksConfigurationSection";
 import { SlicesConfigurationSection } from "./components/SlicesConfigurationSection";
 import { KingsConfigurationSection } from "./components/KingsConfigurationSection";
 import { DraftConfigurationPanel } from "./components/DraftConfigurationPanel";
+import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import { useDraftSettingsBuilder, useDraftNavigation } from "./hooks";
 import { buildInitialTexasDraft } from "~/draft/buildInitialDraft";
 import {
@@ -62,8 +59,13 @@ import { SeededMapBanner } from "./components/SeededMapBanner";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
 import { DraftFormatDescription } from "./components/DraftFormatDescription";
 import { getMaxAvailableSlices } from "./utils";
-import buttonClasses from "~/ui/buttons.module.css";
 import classes from "./prechoice.module.css";
+
+const MODE_LABELS: Record<DraftMode, string> = {
+  base: "Base draft",
+  twilightFalls: "Twilight's Fall",
+  texasStyle: "Texas style",
+};
 
 export default function DraftPrechoice() {
   const location = useLocation();
@@ -192,10 +194,11 @@ export default function DraftPrechoice() {
   };
 
   const texasSlots = getTexasSlotCounts(map.selectedMapType);
+  const texasReason = `Texas style deals ${TEXAS_TILES_PER_PLAYER} tiles per player (${texasSlots.dealtTiles} total), but ${MAPS[map.selectedMapType].title} has ${texasSlots.openSlots} open systems, so the galaxy can't be completed. Choose a different map to use Texas style.`;
 
-  const handleDraftModeChange = (value: string | null) => {
+  const handleDraftModeChange = (value: DraftMode) => {
     if (!value) return;
-    setDraftMode(value as "base" | "twilightFalls" | "texasStyle");
+    setDraftMode(value);
   };
 
   const handleContinue = () => {
@@ -262,6 +265,16 @@ export default function DraftPrechoice() {
     }
   };
 
+  // Commit on mousedown so it feels immediate; keyboard activation only fires click.
+  const continueHandlers = {
+    onMouseDown: (e: React.MouseEvent) => {
+      if (e.button === 0) handleContinue();
+    },
+    onClick: (e: React.MouseEvent) => {
+      if (e.detail === 0) handleContinue();
+    },
+  };
+
   const [discordOpened, { open: openDiscord, close: closeDiscord }] =
     useDisclosure(false);
 
@@ -279,8 +292,8 @@ export default function DraftPrechoice() {
     const playerCountError =
       discordData && presetPlayerCountError(preset, player.players.length);
     if (playerCountError) {
-      notifications.show({
-        color: "red",
+      notify({
+        tone: "danger",
         title: "Could not continue from preset",
         message: playerCountError,
       });
@@ -319,6 +332,18 @@ export default function DraftPrechoice() {
     openSliceSettings();
   };
 
+  const commitLabel =
+    draftMode === "texasStyle" ? "Start draft" : "Continue to draft builder";
+
+  const demoMap = mapType && (
+    <DemoMap
+      id="prechoice-map"
+      map={MAPS[mapType].map}
+      titles={MAPS[mapType].titles}
+      padding={0}
+    />
+  );
+
   return (
     <>
       <SliceSettingsModal
@@ -351,86 +376,48 @@ export default function DraftPrechoice() {
         onClose={closeDiscord}
       />
 
-      <div className={classes.grid}>
-        {mapSlicesString && (
-          <div className={classes.col12}>
-            <SeededMapBanner />
-          </div>
-        )}
-        {discordData && (
-          <div className={classes.col12}>
-            <DiscordBanner />
-          </div>
-        )}
-        {location.state?.invalidDraftParameters && (
-          <div className={classes.col12}>
-            <Alert
-              variant="light"
-              color="red"
-              title="Invalid Draft Parameters"
-              icon={<IconInfoCircle />}
-            >
-              Could not generate a draft with the given parameters. Please try
-              different minimal/total optimal values.
-            </Alert>
-          </div>
-        )}
-        <div className={classes.colLeft}>
-          <Flex align="center" direction="column">
-            <Box w="100%">
-              <SectionTitle title="Draft style" />
-            </Box>
-            <Group w="100%" align="flex-start">
-              <MapStyleSelector
-                playerCount={player.players.length}
-                selectedMapType={map.selectedMapType}
-                onMapTypeHover={setHoveredMapType}
-                onMapTypeSelect={handleMapTypeSelect}
-                onOpenSettings={handleOpenSettings}
-                onOpenMinorFactionsInfo={openMinorFactions}
-              />
-              <Box flex={1} pos="relative" mt="sm">
-                <Box
-                  flex={1}
-                  pos="relative"
-                  mah="1000px"
-                  mb="lg"
-                  visibleFrom="xs"
-                >
-                  {mapType && (
-                    <DemoMap
-                      id="prechoice-map"
-                      map={MAPS[mapType].map}
-                      titles={MAPS[mapType].titles}
-                      padding={0}
-                    />
-                  )}
-                </Box>
-                <DraftFormatDescription
-                  mapType={mapType}
-                  data={MAPS[mapType].descriptionData}
-                  title={MAPS[mapType].title}
-                />
-              </Box>
-            </Group>
-          </Flex>
-        </div>
-
-        <div className={`${classes.col12} ${classes.hiddenFromXs}`}>
-          <Box flex={1} pos="relative" mah="1000px" mt="lg">
-            {mapType && (
-              <DemoMap
-                id="prechoice-map"
-                map={MAPS[mapType].map}
-                titles={MAPS[mapType].titles}
-                padding={0}
-              />
+      <div className={classes.page}>
+        {(mapSlicesString ||
+          discordData ||
+          location.state?.invalidDraftParameters) && (
+          <div className={classes.banners}>
+            {mapSlicesString && <SeededMapBanner />}
+            {discordData && <DiscordBanner />}
+            {location.state?.invalidDraftParameters && (
+              <Notice tone="danger" title="Invalid draft parameters">
+                Could not generate a draft with the given parameters. Please
+                try different minimal/total optimal values.
+              </Notice>
             )}
-          </Box>
-        </div>
+          </div>
+        )}
 
-        <div className={classes.colRight}>
-          <Stack>
+        <div className={classes.grid}>
+          <div className={classes.left}>
+            <section className={classes.sec}>
+              <SectionHeader title="Draft style">
+                <span className={classes.meta}>{playerCount} players</span>
+              </SectionHeader>
+              <div className={classes.stylebox}>
+                <MapStyleSelector
+                  playerCount={playerCount}
+                  selectedMapType={map.selectedMapType}
+                  onMapTypeHover={setHoveredMapType}
+                  onMapTypeSelect={handleMapTypeSelect}
+                  onOpenSettings={handleOpenSettings}
+                  onOpenMinorFactionsInfo={openMinorFactions}
+                />
+                <div className={classes.mapwrap}>{demoMap}</div>
+              </div>
+              <DraftFormatDescription
+                mapType={mapType}
+                data={MAPS[mapType].descriptionData}
+                title={MAPS[mapType].title}
+              />
+            </section>
+          </div>
+
+          <div className={classes.right}>
             <PlayerInputSection
               players={player.players}
               discordData={discordData}
@@ -438,125 +425,112 @@ export default function DraftPrechoice() {
               onIncreasePlayers={player.add}
               onDecreasePlayers={player.remove}
             />
-            <Stack>
-              <SectionTitle title="Configuration" />
-              <Tabs
+
+            <section className={classes.sec}>
+              <SectionHeader title="Configuration" />
+              <Segmented<DraftMode>
+                label="Draft mode"
+                block
                 value={draftMode}
                 onChange={handleDraftModeChange}
-                variant="pills"
-              >
-                <Tabs.List mb="md">
-                  <Tabs.Tab value="base">Base Draft</Tabs.Tab>
-                  <Tabs.Tab value="twilightFalls">
-                    Twilight&apos;s Fall
-                  </Tabs.Tab>
-                  <Tooltip
-                    label={`Texas Style deals ${TEXAS_TILES_PER_PLAYER} tiles per player (${texasSlots.dealtTiles} total), but ${MAPS[map.selectedMapType].title} has ${texasSlots.openSlots} open systems, so the galaxy can't be completed. Choose a different map to use Texas Style.`}
-                    disabled={texasSlots.supported}
-                    multiline
-                    w={260}
-                    withArrow
-                    events={{ hover: true, focus: true, touch: true }}
-                  >
-                    {/* Disabled buttons don't fire pointer events; the span keeps the tooltip working. */}
-                    <span>
-                      <Tabs.Tab
-                        value="texasStyle"
-                        disabled={!texasSlots.supported}
-                      >
-                        Texas Style
-                      </Tabs.Tab>
-                    </span>
-                  </Tooltip>
-                </Tabs.List>
+                options={[
+                  { value: "base", label: "Base draft" },
+                  { value: "twilightFalls", label: "Twilight's Fall" },
+                  {
+                    value: "texasStyle",
+                    label: "Texas style",
+                    disabled: !texasSlots.supported,
+                    title: texasSlots.supported ? undefined : texasReason,
+                  },
+                ]}
+              />
+              {!texasSlots.supported && (
+                <p className={classes.why}>
+                  <IconInfoCircle size={14} />
+                  {texasReason}
+                </p>
+              )}
 
-                <Tabs.Panel value="base">
+              <div className={classes.config}>
+                {draftMode === "base" && (
                   <DraftConfigurationPanel maxSlices={maxSlices} />
-                </Tabs.Panel>
+                )}
 
-                <Tabs.Panel value="twilightFalls">
-                  <Stack gap="sm">
-                    <Alert
-                      color="blue"
-                      title="Simplified Configuration"
-                      variant="light"
-                    >
-                      <Text size="xs">
-                        Players pick a &quot;reference card pack&quot; during
-                        the snake draft. After drafting, choose home system,
-                        faction, and priority from your pack.
-                      </Text>
-                    </Alert>
-
-                    <div className={classes.twoColGrid}>
+                {draftMode === "twilightFalls" && (
+                  <>
+                    <Notice tone="info" title="Simplified configuration">
+                      Players pick a &ldquo;reference card pack&rdquo; during
+                      the snake draft. After drafting, choose home system,
+                      faction, and priority from your pack.
+                    </Notice>
+                    <div className={classes.two}>
                       <SlicesConfigurationSection maxSlices={maxSlices} />
                       <ReferenceCardPacksConfigurationSection />
-                    </div>
-                    <div className={classes.twoColGrid}>
                       <KingsConfigurationSection />
                     </div>
-                  </Stack>
-                </Tabs.Panel>
+                  </>
+                )}
 
-                <Tabs.Panel value="texasStyle">
-                  <Stack gap="sm">
-                    <Alert
-                      color="blue"
-                      title="Texas Style Draft"
-                      variant="light"
-                    >
-                      <Text size="xs">
-                        Randomized seating and speaker, faction bans,
-                        simultaneous faction selection, and a pass-based tile
-                        draft before the galaxy build.
-                      </Text>
-                    </Alert>
+                {draftMode === "texasStyle" && (
+                  <>
+                    <Notice tone="info" title="Texas style draft">
+                      Randomized seating and speaker, faction bans,
+                      simultaneous faction selection, and a pass-based tile
+                      draft before the galaxy build.
+                    </Notice>
+                    <TexasStyleSettings
+                      factionHandSize={texas.factionHandSize}
+                      allowRedraw={texas.allowRedraw}
+                      onChangeHandSize={texas.setFactionHandSize}
+                      onToggleRedraw={texas.setAllowRedraw}
+                    />
+                  </>
+                )}
+              </div>
+            </section>
 
-                    <div className={classes.twoColGrid}>
-                      <TexasStyleSettings
-                        factionHandSize={texas.factionHandSize}
-                        allowRedraw={texas.allowRedraw}
-                        onChangeHandSize={texas.setFactionHandSize}
-                        onToggleRedraw={texas.setAllowRedraw}
-                      />
-                    </div>
-                  </Stack>
-                </Tabs.Panel>
-              </Tabs>
-            </Stack>
-
-            <Button
-              size="lg"
-              onMouseDown={handleContinue}
-              leftSection={<IconPlayerPlay />}
-              className={buttonClasses.primaryCta}
-            >
-              Continue
-            </Button>
-            <Group>
+            <div className={classes.actions}>
               <Button
-                size="md"
-                flex={1}
-                onMouseDown={openPreset}
-                variant="outline"
-                color="purple.3"
-                leftSection={<IconFile />}
+                variant="primary"
+                size="lg"
+                block
+                icon={<IconPlayerPlay size={18} />}
+                className={classes.commit}
+                {...continueHandlers}
+              >
+                {commitLabel}
+              </Button>
+              <Button
+                block
+                icon={<IconFile size={16} />}
+                onClick={openPreset}
+                className={discordData ? classes.span : undefined}
               >
                 Continue from preset
               </Button>
               {!discordData && (
                 <Button
-                  size="md"
-                  variant="filled"
-                  color="discordBlue.5"
-                  leftSection={<IconBrandDiscordFilled />}
-                  onMouseDown={openDiscord}
+                  block
+                  icon={<IconBrandDiscordFilled size={16} />}
+                  onClick={openDiscord}
                 >
                   Integrate with Discord
                 </Button>
               )}
-            </Group>
-          </Stack>
+            </div>
+          </div>
+        </div>
+
+        <div className={classes.bar}>
+          <span className={classes.barText}>
+            <small>
+              {MAPS[map.selectedMapType].title}, {playerCount} players
+            </small>
+            <b>{MODE_LABELS[draftMode]}</b>
+          </span>
+          <Button variant="primary" {...continueHandlers}>
+            {draftMode === "texasStyle" ? "Start draft" : "Continue"}
+          </Button>
         </div>
       </div>
     </>
@@ -603,21 +577,32 @@ function TexasStyleSettings({
   onToggleRedraw,
 }: TexasStyleSettingsProps) {
   return (
-    <Stack gap="sm">
-      <NumberInput
-        label="Factions dealt per player"
-        description="Deal 2 or 3 factions to each player before selection."
-        min={2}
-        max={3}
-        value={factionHandSize}
-        onChange={(value) => onChangeHandSize(Number(value) || 2)}
-      />
-      <Switch
-        label="Allow redraw"
-        description="Players can toss both factions and draw one they must play."
-        checked={allowRedraw}
-        onChange={(event) => onToggleRedraw(event.currentTarget.checked)}
-      />
-    </Stack>
+    <Panel>
+      <Rows>
+        <ListRow
+          label="Factions dealt per player"
+          hint="Deal 2 or 3 factions to each player before selection."
+        >
+          <NumberStepper
+            value={factionHandSize}
+            label="factions dealt per player"
+            decrease={() => onChangeHandSize(Math.max(2, factionHandSize - 1))}
+            increase={() => onChangeHandSize(Math.min(3, factionHandSize + 1))}
+            decreaseDisabled={factionHandSize <= 2}
+            increaseDisabled={factionHandSize >= 3}
+          />
+        </ListRow>
+        <ListRow
+          label="Allow redraw"
+          hint="Players can toss both factions and draw one they must play."
+        >
+          <Switch
+            aria-label="Allow redraw"
+            checked={allowRedraw}
+            onChange={onToggleRedraw}
+          />
+        </ListRow>
+      </Rows>
+    </Panel>
   );
 }

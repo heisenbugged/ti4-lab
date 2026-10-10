@@ -1,16 +1,18 @@
-import { SimpleGrid } from "@mantine/core";
 import { factions as allFactions } from "~/data/factionData";
-import { Section, SectionTitle } from "~/components/Section";
 import { DraftableFaction } from "../components/DraftableFaction";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
+import { SectionHeader } from "~/ui";
+import { usePendingPick } from "../components/pendingPick";
+import classes from "../components/DraftLayout.module.css";
 
 export function DraftableMinorFactionsSection() {
   const factions = useDraft((state) => state.draft.availableMinorFactions);
   const { selectMinorFaction } = useDraft((state) => state.draftActions);
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
+  const { toggle, isPending } = usePendingPick();
 
   const { syncDraft } = useSyncDraft();
   const canSelect =
@@ -19,38 +21,46 @@ export function DraftableMinorFactionsSection() {
     activePlayer.minorFaction === undefined;
 
   if (!factions) return null;
+  const taken = factions.filter((f) =>
+    hydratedPlayers.some((p) => p.minorFaction === f),
+  ).length;
+
   return (
-    <Section>
-      <SectionTitle title="Available Minor Factions" />
-      <SimpleGrid cols={{ base: 2, sm: 3, md: 4, lg: 3, xl: 4 }}>
+    <section className={classes.sec}>
+      <SectionHeader
+        title="Minor factions"
+        meta={`${factions.length - taken} of ${factions.length} open.${canSelect ? " Select one." : ""}`}
+      />
+      <div className={classes.factions}>
         {factions.map((factionId) => {
           const player = hydratedPlayers.find(
             (p) => p.minorFaction === factionId,
           );
+          const key = `minor-${factionId}`;
           return (
             <DraftableFaction
               key={factionId}
               player={player}
               disabled={!!player}
               faction={allFactions[factionId]}
+              pending={isPending(key)}
               onSelect={
                 canSelect
-                  ? () => {
-                      if (
-                        confirm(
-                          `Selecting minor faction ${allFactions[factionId].name}`,
-                        )
-                      ) {
-                        selectMinorFaction(activePlayer.id, factionId);
-                        syncDraft();
-                      }
-                    }
+                  ? () =>
+                      toggle({
+                        key,
+                        label: `${allFactions[factionId].name} as your minor faction`,
+                        commit: () => {
+                          selectMinorFaction(activePlayer.id, factionId);
+                          syncDraft();
+                        },
+                      })
                   : undefined
               }
             />
           );
         })}
-      </SimpleGrid>
-    </Section>
+      </div>
+    </section>
   );
 }

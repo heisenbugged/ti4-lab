@@ -1,9 +1,10 @@
-import { SimpleGrid } from "@mantine/core";
-import { Section, SectionTitle } from "~/components/Section";
+import { SectionHeader } from "~/ui";
 import { useDraft } from "~/draftStore";
 import { DraftableSpeakerOrder } from "../components/DraftableSpeakerOrder";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
+import { usePendingPick } from "../components/pendingPick";
+import classes from "../components/DraftLayout.module.css";
 
 export const playerSpeakerOrder = [
   "Speaker",
@@ -21,36 +22,56 @@ export function SpeakerOrderSection() {
     useHydratedDraft();
   const { selectSpeakerOrder } = useDraft((state) => state.draftActions);
   const { syncDraft } = useSyncDraft();
+  const { toggle, isPending } = usePendingPick();
   const canSelect =
     currentlyPicking &&
     !!activePlayer &&
     activePlayer.speakerOrder === undefined;
 
-  return (
-    <Section>
-      <SectionTitle title="Speaker Order" />
-      <SimpleGrid cols={{ base: 3, sm: 3, md: 3, lg: 3, xl: 6 }}>
-        {playerSpeakerOrder.map((so, idx) => {
-          if (idx >= hydratedPlayers.length) return null;
+  const positions = playerSpeakerOrder.slice(0, hydratedPlayers.length);
+  const open = positions.filter(
+    (_, idx) => !hydratedPlayers.some((p) => p.speakerOrder === idx),
+  ).length;
+  const youHave =
+    currentlyPicking && activePlayer?.speakerOrder !== undefined
+      ? playerSpeakerOrder[activePlayer.speakerOrder]
+      : undefined;
+  const meta = youHave
+    ? `You have ${youHave === "Speaker" ? "speaker" : youHave}.`
+    : canSelect
+      ? `${open} of ${positions.length} open. Select one.`
+      : `${open} of ${positions.length} open.`;
 
+  return (
+    <section className={classes.sec}>
+      <SectionHeader title="Speaker order" meta={meta} />
+      <div className={classes.speakers} style={{ "--n": positions.length } as React.CSSProperties}>
+        {positions.map((so, idx) => {
           const player = hydratedPlayers.find((p) => p.speakerOrder === idx);
+          const key = `speaker-${idx}`;
           return (
             <DraftableSpeakerOrder
               key={so}
               speakerOrder={so}
               player={player}
+              selected={isPending(key)}
+              openNote="Open"
               onSelect={() => {
                 if (!activePlayer || !canSelect) return;
-                if (confirm(`Selecting speaker order position ${so}`)) {
-                  selectSpeakerOrder(activePlayer.id, idx);
-                  syncDraft();
-                }
+                toggle({
+                  key,
+                  label: so === "Speaker" ? "Speaker" : `${so} in speaker order`,
+                  commit: () => {
+                    selectSpeakerOrder(activePlayer.id, idx);
+                    syncDraft();
+                  },
+                });
               }}
               canSelectSpeakerOrder={canSelect}
             />
           );
         })}
-      </SimpleGrid>
-    </Section>
+      </div>
+    </section>
   );
 }

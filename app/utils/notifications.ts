@@ -15,11 +15,11 @@ export function requestNotificationPermission() {
 }
 
 export function showNotification(title: string, options: NotificationOptions) {
-  if ("Notification" in window && navigator.serviceWorker) {
-    navigator.serviceWorker.ready.then((registration) => {
-      registration.showNotification(title, options);
-    });
-  }
+  if (!("Notification" in window) || !navigator.serviceWorker) return;
+  if (Notification.permission !== "granted") return;
+  navigator.serviceWorker.ready
+    .then((registration) => registration.showNotification(title, options))
+    .catch(() => {});
 }
 
 export function playNotificationSound() {

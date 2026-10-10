@@ -1,10 +1,10 @@
-import { Button, Group, SimpleGrid, Text } from "@mantine/core";
+import { IconDice5 } from "@tabler/icons-react";
 import { factions } from "~/data/factionData";
-import { Section, SectionTitle } from "~/components/Section";
-import { NumberStepper } from "~/components/NumberStepper";
-import { IconDice6Filled } from "@tabler/icons-react";
+import { IconButton, NumberStepper, Text } from "~/ui";
 import { NewDraftFaction } from "../components/NewDraftFaction";
 import { useDraft } from "~/draftStore";
+import { BuilderSection } from "./BuilderSection";
+import classes from "./FactionPool.module.css";
 
 export function AvailableMinorFactionsSection() {
   const {
@@ -27,31 +27,34 @@ export function AvailableMinorFactionsSection() {
   if (!numFactions || !availableFactions) return null;
 
   return (
-    <Section>
-      <SectionTitle title="Minor Faction Pool">
-        <Group>
-          <Button
-            size="xs"
-            onMouseDown={randomizeMinorFactions}
-            color="gray.7"
-            variant="filled"
-          >
-            <IconDice6Filled size={24} />
-          </Button>
-
-          <Text># factions: {numFactions}</Text>
+    <BuilderSection
+      title="Minor faction pool"
+      meta={`${availableFactions.length} minor factions`}
+      actions={
+        <span className={classes.tools}>
+          <Text as="span" size="xs" tone="muted" weight={600}>
+            Count
+          </Text>
           <NumberStepper
+            size="sm"
+            value={numFactions}
+            label="minor factions in pool"
             decrease={removeLastMinorFaction}
             increase={addRandomMinorFaction}
             decreaseDisabled={numFactions <= 6}
             increaseDisabled={numFactions >= factionPool.length}
           />
-        </Group>
-      </SectionTitle>
-      <SimpleGrid
-        cols={{ base: 1, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }}
-        spacing="xs"
-      >
+          <IconButton
+            variant="outline"
+            label="Randomize minor factions"
+            onMouseDown={randomizeMinorFactions}
+          >
+            <IconDice5 />
+          </IconButton>
+        </span>
+      }
+    >
+      <div className={classes.grid}>
         {availableFactions.map((factionId) => (
           <NewDraftFaction
             key={factionId}
@@ -60,7 +63,7 @@ export function AvailableMinorFactionsSection() {
             removeEnabled={availableFactions.length > 6}
           />
         ))}
-      </SimpleGrid>
-    </Section>
+      </div>
+    </BuilderSection>
   );
 }

@@ -1,7 +1,7 @@
-import { ActionIcon, Box, Checkbox, Group, Text } from "@mantine/core";
+import { IconX } from "@tabler/icons-react";
 import { Faction } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
-import { IconX } from "@tabler/icons-react";
+import { Checkbox, IconButton, cx } from "~/ui";
 
 import classes from "./NewDraftFaction.module.css";
 
@@ -11,6 +11,8 @@ type Props = {
   removeEnabled?: boolean;
   onCheck?: (checked: boolean) => void;
   onRemove?: () => void;
+  /** Smaller chip, for read-only lists. */
+  compact?: boolean;
 };
 
 export function NewDraftFaction({
@@ -19,52 +21,44 @@ export function NewDraftFaction({
   removeEnabled = true,
   onCheck,
   onRemove,
+  compact,
 }: Props) {
   const isSelectable = !!onCheck;
 
   return (
-    <Group
-      gap="xs"
-      className={classes.factionCard}
+    <div
+      className={cx(classes.faction, compact && classes.compact)}
       data-selectable={isSelectable || undefined}
-      align="center"
-      px="sm"
-      py={6}
-      wrap="nowrap"
-      style={{ cursor: isSelectable ? "pointer" : undefined }}
+      data-checked={checked || undefined}
       onMouseDown={isSelectable ? () => onCheck(!checked) : undefined}
     >
-      <Box className={classes.indicator} />
-      <FactionIcon
-        faction={faction.id}
-        style={{ minWidth: 28, maxWidth: 28 }}
-      />
-      <Text size="sm" flex={1} lh={1.2} truncate>
+      <FactionIcon faction={faction.id} style={compact ? { width: 18, height: 18, flexShrink: 0 } : { width: 28, height: 28, flexShrink: 0 }} />
+      <span className={classes.name} title={faction.name}>
         {faction.name}
-      </Text>
+      </span>
       {onRemove && (
-        <ActionIcon
-          size="xs"
-          variant="subtle"
-          color="gray"
-          className={classes.removeButton}
+        <IconButton
+          label={`Remove ${faction.name}`}
+          size="sm"
+          className={classes.remove}
           onMouseDown={(e) => {
             e.stopPropagation();
             onRemove();
           }}
           disabled={!removeEnabled}
         >
-          <IconX size={12} />
-        </ActionIcon>
+          <IconX />
+        </IconButton>
       )}
       {onCheck && (
-        <Checkbox
-          radius="xl"
-          size="sm"
-          checked={checked}
-          onChange={() => onCheck(!checked)}
-        />
+        <span onMouseDown={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={checked}
+            onChange={() => onCheck(!checked)}
+            aria-label={`Include ${faction.name}`}
+          />
+        </span>
       )}
-    </Group>
+    </div>
   );
 }

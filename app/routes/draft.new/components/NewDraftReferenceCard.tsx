@@ -1,12 +1,9 @@
-import { Group, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { Faction } from "~/types";
 import { factionSystems } from "~/data/systemData";
-import { ResourceIcon } from "~/components/Planet/ResourceIcon";
-import { SmallNumberHex } from "~/components/Hex/SmallNumberHex";
-import styles from "./NewDraftReferenceCard.module.css";
-import { Surface } from "~/ui";
 import { StartingUnitsTable } from "~/components/StartingUnitsTable";
+import { Text, ValuePill } from "~/ui";
+import styles from "./NewDraftReferenceCard.module.css";
 
 type Props = {
   faction: Faction;
@@ -16,61 +13,42 @@ export function NewDraftReferenceCard({ faction }: Props) {
   const homeSystem = factionSystems[faction.id];
 
   return (
-    <Stack gap={0} className={styles.card}>
-      <Surface variant="card" className={styles.cardHeader}>
-        <Stack gap={4} px="sm" py={8} pb={4}>
-          <div className={styles.factionBadge}>
-            <FactionIcon
-              faction={faction.id}
-              style={{ width: 20, height: 20 }}
-            />
-          </div>
-          {faction.priorityOrder !== undefined && (
-            <div className={styles.priorityPill}>
-              <Text size="sm" fw="bold" c="white" ff="heading">
-                {faction.priorityOrder}
-              </Text>
-            </div>
-          )}
-          <Group
-            align="center"
-            flex={1}
-            className={styles.factionNameGroup}
-            pt={5}
-            pb={6}
+    <article className={styles.card}>
+      <header className={styles.head}>
+        <FactionIcon faction={faction.id} style={{ width: 26, height: 26, flexShrink: 0 }} />
+        <span className={styles.name} title={faction.name}>
+          {faction.name}
+        </span>
+        {faction.priorityOrder !== undefined && (
+          <span
+            className={styles.priority}
+            title={`Priority ${faction.priorityOrder}`}
           >
-            <Text flex={1} size="12px" ff="heading" fw="bold" pl="xs">
-              {faction.name}
-            </Text>
-          </Group>
-        </Stack>
-      </Surface>
-      <Surface variant="card" className={styles.cardBody}>
-        <Stack p="sm" gap="md">
-          <Stack gap="xs" className={styles.homeSystemSection}>
-            <Group gap="xs">
-              <Title order={6} size="xs" c="dimmed">
-                Home System
-              </Title>
-            </Group>
-            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xs">
-              {homeSystem?.planets.map((planet, idx) => (
-                <Group key={idx} gap="xs" align="center" wrap="nowrap">
-                  <ResourceIcon value={planet.resources} size={20} />
-                  <SmallNumberHex value={planet.influence} size={20} />
-                  <Text size="sm" lineClamp={1}>
-                    {planet.name}
-                  </Text>
-                </Group>
-              ))}
-            </SimpleGrid>
-          </Stack>
+            {faction.priorityOrder}
+          </span>
+        )}
+      </header>
+      <div className={styles.body}>
+        <div className={styles.home}>
+          <Text size="xs" tone="muted" weight={600}>
+            Home system
+          </Text>
+          <div className={styles.planets}>
+            {homeSystem?.planets.map((planet, idx) => (
+              <div key={idx} className={styles.planet}>
+                <ValuePill r={planet.resources} i={planet.influence} size="sm" />
+                <Text size="sm" truncate>
+                  {planet.name}
+                </Text>
+              </div>
+            ))}
+          </div>
+        </div>
 
-          {faction.fleetComposition && (
-            <StartingUnitsTable fleetComposition={faction.fleetComposition} />
-          )}
-        </Stack>
-      </Surface>
-    </Stack>
+        {faction.fleetComposition && (
+          <StartingUnitsTable fleetComposition={faction.fleetComposition} />
+        )}
+      </div>
+    </article>
   );
 }

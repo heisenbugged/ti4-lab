@@ -32,7 +32,7 @@ import { getUsedSystemIdsInMap } from "./hooks/useUsedSystemIds";
 import { atomWithStore } from "jotai-zustand";
 import { createStore } from "zustand/vanilla";
 import { shuffle } from "./draft/helpers/randomization";
-import { notifications } from "@mantine/notifications";
+import { notify } from "~/ui/notify";
 import { coreRerollSlice, coreRerollMap } from "./draft/common/sliceGenerator";
 import {
   createTexasSeatAssignments,
@@ -209,9 +209,9 @@ function switchFormat(draft: Draft, type: DraftType) {
   if (result) {
     draft.presetMap = result.map;
   } else {
-    notifications.show({
+    notify({
       message: "Could not fill the new map. Randomize it or add tiles by hand.",
-      color: "yellow",
+      tone: "warning",
     });
   }
 }
@@ -276,9 +276,9 @@ const makeSelection = (
 
 const resetStratification = (state: { draft: Draft }) => {
   if (state.draft.settings.factionStratification) {
-    notifications.show({
+    notify({
       message: "Faction stratification was reset.",
-      color: "blue",
+      tone: "info",
     });
     state.draft.settings.factionStratification = undefined;
   }
@@ -712,9 +712,9 @@ export const draftStore = createStore<DraftV2State>()(
             ...(draft.availableMinorFactions ?? []),
           ]);
           if (availableFactions.length === 0) {
-            notifications.show({
+            notify({
               message: "No available factions",
-              color: "red",
+              tone: "danger",
             });
             return;
           }
@@ -827,10 +827,10 @@ export const draftStore = createStore<DraftV2State>()(
           );
 
           if (!result) {
-            notifications.show({
+            notify({
               message:
                 "Could not generate a valid slice with the given parameters",
-              color: "red",
+              tone: "danger",
             });
             return;
           }
@@ -852,9 +852,9 @@ export const draftStore = createStore<DraftV2State>()(
           draft.settings.numSlices = draft.slices.length;
 
           if (!result.valid) {
-            notifications.show({
+            notify({
               message: "Generated slice may not be optimal",
-              color: "yellow",
+              tone: "warning",
             });
           }
         }),
@@ -903,18 +903,18 @@ export const draftStore = createStore<DraftV2State>()(
           );
 
           if (!result) {
-            notifications.show({
+            notify({
               message:
                 "Could not generate a valid slice with the given parameters",
-              color: "red",
+              tone: "danger",
             });
             return;
           }
 
           if (!result.valid) {
-            notifications.show({
+            notify({
               message: "Generated slice may not be optimal",
-              color: "yellow",
+              tone: "warning",
             });
           }
 
@@ -944,10 +944,10 @@ export const draftStore = createStore<DraftV2State>()(
 
           // Handle the result
           if (!result) {
-            notifications.show({
+            notify({
               message:
                 "Could not generate a valid slice with the given parameters",
-              color: "red",
+              tone: "danger",
             });
             return;
           }
@@ -960,9 +960,9 @@ export const draftStore = createStore<DraftV2State>()(
           );
 
           if (!result.valid) {
-            notifications.show({
+            notify({
               message: "Generated slice may not be optimal",
-              color: "yellow",
+              tone: "warning",
             });
           }
         }),

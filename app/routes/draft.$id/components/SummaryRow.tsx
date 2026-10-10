@@ -1,12 +1,12 @@
-import { Group, Table, Text } from "@mantine/core";
 import { useSlice } from "~/components/Slice";
-import { PlanetStatsPill } from "~/components/Slice/PlanetStatsPill";
 import { SliceFeatures } from "~/components/Slice/SliceFeatures";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
 import { Slice, HydratedPlayer } from "~/types";
+import { Table, ValuePill } from "~/ui";
 import { PlayerChip } from "./PlayerChip";
 import { FactionHelpInfo } from "~/routes/draft.$id/components/FactionHelpInfo";
+import classes from "./FinalizedDraft.module.css";
 
 type Props = {
   player: HydratedPlayer;
@@ -14,6 +14,9 @@ type Props = {
   draftSpeaker: boolean;
   showPlayerColor: boolean;
 };
+
+const ordinal = (n: number) =>
+  n === 1 ? "Speaker" : `${n}${n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
 
 export function SummaryRow({
   player,
@@ -25,41 +28,37 @@ export function SummaryRow({
   const { optimal, sliceValue } = useSlice(slice);
   return (
     <Table.Tr>
-      <Table.Td>
-        <PlayerChip player={player} />
+      <Table.Td className={classes.playerCell}>
+        <PlayerChip player={player} size="sm" />
       </Table.Td>
       <Table.Td>
-        <Group wrap="nowrap">
-          <FactionIcon faction={player.faction!} style={{ height: 36 }} />
-          <Text>{faction.name}</Text>
-        </Group>
-        <Group>
-          <FactionHelpInfo faction={faction} />
-        </Group>
+        <span className={classes.faction}>
+          <FactionIcon faction={player.faction!} style={{ width: 22, height: 22, flex: "none" }} />
+          <span className={classes.factionName} title={faction.name}>
+            {faction.name}
+          </span>
+          <FactionHelpInfo faction={faction} compact />
+        </span>
       </Table.Td>
-      <Table.Td>{player.speakerOrder! + 1}</Table.Td>
-      {draftSpeaker && <Table.Td>{player.seatIdx! + 1}</Table.Td>}
+      <Table.Td>{ordinal(player.speakerOrder! + 1)}</Table.Td>
+      {draftSpeaker && <Table.Td numeric>{player.seatIdx! + 1}</Table.Td>}
 
-      <Table.Td>
-        <Text fw={700} c="yellow.5">
-          {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
-        </Text>
+      <Table.Td numeric>
+        <b>{sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}</b>
       </Table.Td>
       <Table.Td>
-        <Group gap={4}>
-          <PlanetStatsPill
-            size="sm"
-            resources={optimal.resources}
-            influence={optimal.influence}
-            flex={optimal.flex}
-          />
-          <Text size="xs" c="dimmed">
-            ({optimal.resources + optimal.influence + optimal.flex})
-          </Text>
-        </Group>
+        <ValuePill
+          size="sm"
+          r={optimal.resources}
+          i={optimal.influence}
+          f={optimal.flex}
+          total={optimal.resources + optimal.influence + optimal.flex}
+        />
       </Table.Td>
       <Table.Td>
-        <SliceFeatures slice={slice} />
+        <span className={classes.features}>
+          <SliceFeatures slice={slice} />
+        </span>
       </Table.Td>
       {showPlayerColor && <Table.Td>{player.factionColor}</Table.Td>}
     </Table.Tr>

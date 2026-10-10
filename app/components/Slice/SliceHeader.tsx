@@ -1,5 +1,3 @@
-import { Group } from "@mantine/core";
-
 import classes from "./Slice.module.css";
 
 type Props = {
@@ -8,13 +6,11 @@ type Props = {
   right?: React.ReactNode;
 };
 
-export function SliceHeader({ children, right, selected = false }: Props) {
+export function SliceHeader({ children, right }: Props) {
   return (
-    <Group className={`${classes.header} ${selected ? classes.selected : ""}`}>
-      <Group gap={2} flex={1}>
-        {children}
-      </Group>
-      {right}
-    </Group>
+    <div className={classes.header}>
+      <div className={classes.headerMain}>{children}</div>
+      {right && <div className={classes.headerRight}>{right}</div>}
+    </div>
   );
 }

@@ -1,0 +1,16 @@
+.page {
+  padding-bottom: var(--space-7);
+  min-width: 0;
+}
+
+.grid {
+  margin-top: var(--space-4);
+}
+
+.admin {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 640px;
+  margin-left: auto;
+}

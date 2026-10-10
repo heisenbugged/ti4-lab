@@ -1,83 +1,50 @@
-import { ReactNode } from "react";
-import { Stack, Box } from "@mantine/core";
-import { PlayerColor } from "./types";
-import { Surface } from "./Surface";
+import type { ReactNode } from "react";
+import type { PlayerColor } from "./types";
+import { cx } from "./utils";
 import classes from "./SelectableCard.module.css";
 
 export interface SelectableCardProps {
+  /** Taken: tinted with the picker's colour. */
   selected?: boolean;
   selectedColor?: PlayerColor;
+  /** Currently chosen but not committed: gold brackets. */
+  pending?: boolean;
   disabled?: boolean;
-  layout?: "split" | "unified";
-  interaction?: "none" | "header" | "full";
+  /** Clicking the header selects. */
   onSelect?: () => void;
   header: ReactNode;
-  body: ReactNode;
+  /** Secondary actions row under the header (Info, Wiki…). */
+  body?: ReactNode;
+  className?: string;
 }
 
-export function SelectableCard({
-  selected,
-  selectedColor,
-  disabled,
-  layout = "split",
-  interaction,
-  onSelect,
-  header,
-  body,
-}: SelectableCardProps) {
-  const resolvedInteraction = interaction ?? (onSelect ? "header" : "none");
-  const isInteractive = !!onSelect && resolvedInteraction !== "none";
-  const variant = isInteractive ? "interactive" : "card";
-  const color = selected && selectedColor ? selectedColor : undefined;
-
-  if (layout === "unified") {
-    return (
-      <Surface
-        variant={variant}
-        color={color}
-        className={classes.header}
-        onClick={isInteractive ? onSelect : undefined}
-        style={{
-          cursor: isInteractive ? "pointer" : "default",
-          opacity: disabled ? 0.5 : selected ? 0.5 : 1,
-          position: "relative",
-        }}
-      >
-        <Stack gap={0}>
-          {header}
-          <Box className={classes.body}>{body}</Box>
-        </Stack>
-      </Surface>
-    );
-  }
-
-  const headerInteractive = resolvedInteraction !== "none";
-  const bodyInteractive = resolvedInteraction === "full";
-
+/** Card for a draftable thing: header with the name and a pick control, optional footer actions. */
+export function SelectableCard({ selected, selectedColor, pending, disabled, onSelect, header, body, className }: SelectableCardProps) {
+  const interactive = !!onSelect && !selected && !disabled;
   return (
-    <Stack gap={0}>
-      <Surface
-        variant={variant}
-        color={color}
-        className={classes.header}
-        onClick={headerInteractive ? onSelect : undefined}
-        style={{
-          cursor: headerInteractive && isInteractive ? "pointer" : "default",
-          opacity: disabled ? 0.5 : selected ? 0.5 : 1,
-          position: "relative",
-        }}
+    <div
+      className={cx(classes.card, selected && classes.taken, disabled && !selected && classes.off, pending && "ui-bracket", className)}
+      style={selected && selectedColor ? ({ "--p": `var(--player-${selectedColor})` } as React.CSSProperties) : undefined}
+    >
+      <div
+        className={cx(classes.header, interactive && classes.interactive)}
+        onClick={interactive ? onSelect : undefined}
+        role={interactive ? "button" : undefined}
+        tabIndex={interactive ? 0 : undefined}
+        onKeyDown={
+          interactive
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelect?.();
+                }
+              }
+            : undefined
+        }
       >
         {header}
-      </Surface>
-      <Box className={classes.body}>
-        <Surface
-          variant={bodyInteractive ? variant : "card"}
-          onClick={bodyInteractive ? onSelect : undefined}
-          style={{ cursor: bodyInteractive && isInteractive ? "pointer" : "default" }}
-        >
-          {body}
-        </Surface>
-      </Box>
-    </Stack>
+      </div>
+      {body && <div className={classes.body}>{body}</div>}
+    </div>
   );
 }

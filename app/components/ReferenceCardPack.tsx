@@ -1,7 +1,6 @@
-import { Badge, Button, Group, Stack, Text } from "@mantine/core";
 import { playerColors } from "~/data/factionData";
 import { FactionId, HydratedPlayer } from "~/types";
-import { PlayerColor, Surface } from "~/ui";
+import { Card, PickButton, PlayerColor, PlayerTag, Row, Stack, Text } from "~/ui";
 import { ReferenceCardGrid } from "./ReferenceCardGrid";
 
 type Props = {
@@ -15,45 +14,38 @@ export function ReferenceCardPack({ pack, packIdx, player, onSelect }: Props) {
   const playerColor = player
     ? (playerColors[player.id] as PlayerColor)
     : undefined;
-
-  const variant = onSelect && !player ? "interactive" : "card";
+  const selectable = !!onSelect && !player;
 
   return (
-    <Surface
-      variant={variant}
-      color={player ? playerColor : undefined}
+    <Card
+      interactive={selectable}
+      playerColor={playerColor}
+      padding={4}
       style={{
-        cursor: onSelect ? "pointer" : "default",
+        cursor: selectable ? "pointer" : "default",
         opacity: player ? 0.5 : 1,
       }}
-      onClick={onSelect && !player ? onSelect : undefined}
+      onClick={selectable ? onSelect : undefined}
     >
-      <Stack gap="xs" p="md">
-        <Group justify="space-between" align="center">
-          <Text size="sm" fw="bold" c="dimmed">
+      <Stack gap={3}>
+        <Row justify="between" wrap={false}>
+          <Text size="sm" weight={600} tone="muted">
             Pack {packIdx + 1}
           </Text>
-          {!player && onSelect && (
-            <Button
-              lh={1}
-              py={6}
-              px={10}
-              h="auto"
-              onMouseDown={onSelect}
-              variant="filled"
-              size="sm"
-            >
-              Select
-            </Button>
+          {selectable && (
+            <PickButton
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect();
+              }}
+            />
           )}
           {player && (
-            <Badge color={playerColor} size="md">
-              {player.name}
-            </Badge>
+            <PlayerTag color={playerColor} name={player.name} size="sm" />
           )}
-        </Group>
+        </Row>
         <ReferenceCardGrid pack={pack} cols={{ base: 1, sm: 3 }} spacing="xs" />
       </Stack>
-    </Surface>
+    </Card>
   );
 }

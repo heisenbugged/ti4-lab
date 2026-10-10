@@ -1,26 +1,42 @@
-import { ActionIcon, Box, Button, Group, Stack } from "@mantine/core";
-import { SectionTitle } from "~/components/Section";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import {
+  IconArrowBackUp,
+  IconBell,
+  IconBellOff,
+  IconChevronDown,
+  IconCopy,
+  IconHandFinger,
+  IconLink,
+  IconPhoto,
+  IconPlayerPlay,
+  IconShare,
+  IconUserShield,
+} from "@tabler/icons-react";
+import {
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  MenuSeparator,
+  notify,
+  useClipboard,
+} from "~/ui";
 import { DraftOrder } from "../components/DraftOrder";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
-import { useState } from "react";
 import { AdminPasswordModal } from "../components/AdminPasswordModal";
-import { notifications } from "@mantine/notifications";
 import { useAdminControls } from "../components/useAdminControls";
-import { Link } from "react-router";
-import {
-  IconPlayerPlay,
-  IconShare,
-  IconVolume,
-  IconVolumeOff,
-  IconArrowBackUp,
-} from "@tabler/icons-react";
-import { LabArtToggleButton } from "~/components/LabArtToggleButton";
-import { isAudioAlertEnabled, setAudioAlertEnabled } from "~/utils/audioAlert";
+import { getDraftOrderEntries, shortSelectionLabel } from "../components/draftOrderUtils";
+import { isAudioAlertEnabled,
+  AUDIO_ALERT_CHANGE_EVENT, setAudioAlertEnabled } from "~/utils/audioAlert";
+import classes from "../components/DraftLayout.module.css";
 
+/** Pick order with every round, the draft link and the draft tools. */
 export function DraftOrderSection() {
+  const navigate = useNavigate();
   const { originalArt, setOriginalArt } = useSafeOutletContext();
   const {
     adminMode,
@@ -36,154 +52,160 @@ export function DraftOrderSection() {
 
   const replayMode = useDraft((state) => state.replayMode);
   const draftUrl = useDraft((state) => state.draftUrl);
+  const slices = useDraft((state) => state.draft.slices);
   const { undoLastPick } = useSyncDraft();
   const { hydratedPlayers, currentPick } = useHydratedDraft();
   const pickOrder = useDraft((state) => state.draft.pickOrder);
   const selections = useDraft((state) => state.draft.selections);
-  const [audioAlertEnabled, setAudioAlertEnabledState] = useState(
-    isAudioAlertEnabled(),
-  );
+  const [audioAlertEnabled, setAudioAlertEnabledState] = useState(false);
+  // Read the stored preference after hydration (the server has no localStorage).
+  useEffect(() => {
+    const sync = () => setAudioAlertEnabledState(isAudioAlertEnabled());
+    sync();
+    window.addEventListener(AUDIO_ALERT_CHANGE_EVENT, sync);
+    return () => window.removeEventListener(AUDIO_ALERT_CHANGE_EVENT, sync);
+  }, []);
+  const { copy } = useClipboard();
+
+  const link = `https://tidraft.com/draft/${draftUrl}`;
+  const entries = getDraftOrderEntries(pickOrder, hydratedPlayers, currentPick);
+  const position = entries.findIndex((e) => e.isActive);
+
+  const lastSelection = selections[selections.length - 1];
+  const lastPlayer =
+    lastSelection && "playerId" in lastSelection
+      ? hydratedPlayers.find((p) => p.id === lastSelection.playerId)
+      : undefined;
+  const undoHint = lastSelection
+    ? `Takes back ${lastPlayer ? `${lastPlayer.name}'s ` : ""}${shortSelectionLabel(lastSelection, { slices }) ?? "last pick"}`
+    : "Nothing to undo yet";
 
   const handleAudioToggle = () => {
     const newValue = !audioAlertEnabled;
     setAudioAlertEnabled(newValue);
     setAudioAlertEnabledState(newValue);
-    notifications.show({
-      title: newValue ? "Audio alerts enabled" : "Audio alerts disabled",
+    notify({
+      title: newValue ? "Sound alerts on" : "Sound alerts off",
       message: newValue
         ? "You'll hear a sound when it's your turn to draft"
         : "You won't hear sounds when it's your turn",
-      color: newValue ? "blue" : "gray",
+      tone: "info",
     });
   };
 
-  // Compact control bar with grouped controls using Mantine components
-  const ControlBar = (
-    <Group gap="xs" wrap="wrap">
-      {/* Primary action: Share */}
-      <Button
-        component="a"
-        href={`/draft/${draftUrl}.png`}
-        target="_blank"
-        rel="noreferrer"
-        size="compact-xs"
-        color="green"
-        leftSection={<IconShare size={12} />}
-      >
-        Share
-      </Button>
-
-      {/* Art toggle - prominent with different colors for each state */}
-      <LabArtToggleButton
-        originalArt={originalArt}
-        onToggle={() => setOriginalArt(!originalArt)}
-      />
-
-      {/* Other view controls */}
-      <Group gap={4}>
-        <ActionIcon
-          size="sm"
-          variant={audioAlertEnabled ? "filled" : "default"}
-          color={audioAlertEnabled ? "violet" : "gray"}
-          onClick={handleAudioToggle}
-          title={
-            audioAlertEnabled ? "Disable audio alerts" : "Enable audio alerts"
-          }
-        >
-          {audioAlertEnabled ? (
-            <IconVolume size={14} />
-          ) : (
-            <IconVolumeOff size={14} />
-          )}
-        </ActionIcon>
-        <ActionIcon
-          component={Link}
-          to={`/draft/${draftUrl}/replay`}
-          size="sm"
-          variant="default"
-          color="gray"
-          disabled={selections.length === 0}
-          title="Watch replay"
-          onClick={(e: React.MouseEvent) =>
-            selections.length === 0 && e.preventDefault()
-          }
-        >
-          <IconPlayerPlay size={14} />
-        </ActionIcon>
-      </Group>
-
-      {/* Admin controls - only show when not in replay mode */}
-      {!replayMode && (
-        <>
-          <Group gap={4}>
-            {/* Admin mode toggle */}
-            <Button
-              size="compact-xs"
-              variant={adminMode ? "filled" : "default"}
-              color={adminMode ? "violet" : "gray"}
-              onClick={handleAdminToggle}
-              title="Toggle admin mode"
-            >
-              Admin
-            </Button>
-
-            {/* Pick for anyone - only when allowed */}
-            {showPickForAnyoneControl && (
-              <Button
-                size="compact-xs"
-                variant={pickForAnyone ? "filled" : "default"}
-                color={pickForAnyone ? "violet" : "gray"}
-                onClick={() => setPickForAnyone(!pickForAnyone)}
-                title="Pick for any player"
-              >
-                Pick Any
-              </Button>
-            )}
-          </Group>
-
-          {/* Destructive/admin actions */}
-          {(showUndoLastSelection || adminMode) && (
-            <Group gap={4}>
-              {showUndoLastSelection && (
-                <Button
-                  size="compact-xs"
-                  variant="subtle"
-                  color="red"
-                  leftSection={<IconArrowBackUp size={12} />}
-                  onClick={undoLastPick}
-                  disabled={selections.length === 0}
-                  title="Undo last selection"
-                >
-                  Undo
-                </Button>
-              )}
-            </Group>
-          )}
-        </>
-      )}
-    </Group>
-  );
-
   return (
-    <Stack>
+    <section className={classes.orderSection}>
       <AdminPasswordModal
         opened={passwordModalOpen}
         onClose={() => setPasswordModalOpen(false)}
         onSubmit={handleAdminPasswordSubmit}
       />
 
-      <SectionTitle title="Draft Order">
-        <Box visibleFrom="xs">{ControlBar}</Box>
-      </SectionTitle>
-
-      {/* Mobile control bar - below title */}
-      <Box hiddenFrom="xs">{ControlBar}</Box>
+      <div className={classes.orderbar}>
+        <h3 className={classes.orderTitle}>Pick order</h3>
+        {position >= 0 && (
+          <span className={classes.progress}>
+            Pick {position + 1} of {entries.length}
+          </span>
+        )}
+        <span className={classes.url} title={link}>
+          <IconLink size={14} />
+          <span>tidraft.com/draft/{draftUrl}</span>
+        </span>
+        <div className={classes.tools}>
+          <div className={classes.toolgrp} role="toolbar" aria-label="Draft tools">
+            <IconButton
+              size="sm"
+              label={audioAlertEnabled ? "Sound alerts on" : "Sound alerts off"}
+              pressed={audioAlertEnabled}
+              onClick={handleAudioToggle}
+            >
+              {audioAlertEnabled ? <IconBell /> : <IconBellOff />}
+            </IconButton>
+            <IconButton
+              size="sm"
+              label="Watch replay"
+              disabled={selections.length === 0}
+              onClick={() => navigate(`/draft/${draftUrl}/replay`)}
+            >
+              <IconPlayerPlay />
+            </IconButton>
+            <IconButton
+              size="sm"
+              label={originalArt ? "Original art (switch to Lab art)" : "Lab art (switch to original art)"}
+              pressed={originalArt}
+              onClick={() => setOriginalArt(!originalArt)}
+            >
+              <IconPhoto />
+            </IconButton>
+            <IconButton
+              size="sm"
+              label="Share draft image"
+              onClick={() => window.open(`/draft/${draftUrl}.png`, "_blank", "noreferrer")}
+            >
+              <IconShare />
+            </IconButton>
+          </div>
+          <Menu
+            trigger={
+              <Button size="sm" iconRight={<IconChevronDown size={14} />}>
+                More
+              </Button>
+            }
+          >
+            <MenuItem
+              icon={<IconCopy />}
+              description={`tidraft.com/draft/${draftUrl}`}
+              onClick={() => {
+                copy(link);
+                notify({ title: "Draft link copied", tone: "success" });
+              }}
+            >
+              Copy draft link
+            </MenuItem>
+            {!replayMode && showUndoLastSelection && (
+              <MenuItem
+                icon={<IconArrowBackUp />}
+                description={undoHint}
+                disabled={selections.length === 0}
+                onClick={undoLastPick}
+              >
+                Undo last pick
+              </MenuItem>
+            )}
+            {!replayMode && (
+              <>
+                <MenuSeparator />
+                {showPickForAnyoneControl && (
+                  <MenuItem
+                    icon={<IconHandFinger />}
+                    description="Shows hidden choices to everyone"
+                    checked={pickForAnyone}
+                    onClick={() => setPickForAnyone(!pickForAnyone)}
+                  >
+                    Pick for any player
+                  </MenuItem>
+                )}
+                <MenuItem
+                  icon={<IconUserShield />}
+                  description="Asks for the draft password"
+                  checked={adminMode}
+                  onClick={handleAdminToggle}
+                >
+                  Admin mode
+                </MenuItem>
+              </>
+            )}
+          </Menu>
+        </div>
+      </div>
 
       <DraftOrder
         players={hydratedPlayers}
         pickOrder={pickOrder}
         currentPick={currentPick}
+        draft={{ slices, selections }}
       />
-    </Stack>
+    </section>
   );
 }

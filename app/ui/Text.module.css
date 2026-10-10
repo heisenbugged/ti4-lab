@@ -1,0 +1,36 @@
+.text { margin: 0; min-width: 0; }
+.size-xs { font-size: 12px; line-height: 1.4; }
+.size-sm { font-size: 13px; line-height: 1.45; }
+.size-md { font-size: 15px; line-height: 1.55; }
+.size-lg { font-size: 17px; line-height: 1.5; }
+.size-xl { font-size: 20px; line-height: 1.35; }
+
+.tone-default { color: var(--text); }
+.tone-muted { color: var(--text-muted); }
+.tone-faint { color: var(--text-faint); }
+.tone-danger { color: var(--danger); }
+.tone-success { color: var(--success); }
+.tone-warning { color: var(--warning); }
+.tone-gold { color: var(--gold-line); }
+.tone-ion { color: var(--ion); }
+.tone-inherit { color: inherit; }
+
+.label { font-size: 12px; line-height: 1.3; font-weight: 600; font-stretch: var(--semi); letter-spacing: 0.02em; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clamp { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+.numeric { font-variant-numeric: tabular-nums lining-nums; }
+
+.heading { margin: 0; min-width: 0; text-wrap: balance; }
+.h-display { font-size: 44px; line-height: 1.05; font-weight: 500; font-stretch: var(--wide); letter-spacing: -0.005em; }
+.h-title { font-size: 28px; line-height: 1.15; font-weight: 500; font-stretch: var(--wide); }
+.h-section { font-size: 19px; line-height: 1.25; font-weight: 600; font-stretch: var(--wide); }
+.h-heading { font-size: 16px; line-height: 1.35; font-weight: 600; }
+@media (max-width: 575.98px) {
+  .h-display { font-size: 32px; }
+  .h-title { font-size: 23px; }
+  .h-section { font-size: 17px; }
+}
+
+.kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; border: 1px solid var(--rule-strong); border-bottom-width: 2px; border-radius: 3px; background: var(--hull); font: 600 11px/1 var(--font); color: var(--text); }
+.code { padding: 1px 5px; border-radius: 2px; background: var(--hull-sunken); font-size: 0.9em; color: var(--text); }
+.pre { margin: 0; padding: 10px 12px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--hull-sunken); font-size: 12.5px; line-height: 1.5; color: var(--text); white-space: pre-wrap; word-break: break-all; }

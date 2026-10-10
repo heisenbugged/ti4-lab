@@ -1,47 +1,148 @@
-.sidebarHeader {
-  @mixin dark {
-    background-color: var(--mantine-color-dark-8);
-  }
-  @mixin light {
-    background-color: var(--mantine-color-gray-1);
-  }
+/* Full-screen board under the app header: tile tray on the left (bottom on phones), map in the middle. */
+.shell {
+  position: fixed;
+  top: var(--header-h);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  background: var(--void);
 }
 
-.footer {
-  @mixin dark {
-    background-color: var(--mantine-color-dark-8);
-  }
-  @mixin light {
-    background-color: var(--mantine-color-gray-1);
-  }
+.tray {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--hull);
+  border-right: 1px solid var(--rule);
 }
 
-.topBar {
-  @mixin dark {
-    background: linear-gradient(
-      180deg,
-      var(--mantine-color-dark-8) 0%,
-      var(--mantine-color-dark-7) 100%
-    );
-    border-bottom: 1px solid var(--mantine-color-dark-5);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
-  @mixin light {
-    background: linear-gradient(
-      180deg,
-      var(--mantine-color-gray-0) 0%,
-      var(--mantine-color-gray-1) 100%
-    );
-    border-bottom: 1px solid var(--mantine-color-gray-3);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  }
+.trayHead {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--rule);
 }
 
-.mutedLabel {
-  @mixin dark {
-    color: var(--mantine-color-gray-4);
+.trayLabel {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.trayList {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-4) var(--space-5);
+}
+
+.trayEmpty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.top {
+  display: grid;
+  gap: var(--space-3);
+  flex: none;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--rule);
+  background: var(--hull);
+}
+
+.mapArea {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 0 auto;
+  width: 100%;
+  min-height: 0;
+  padding: var(--space-4);
+}
+
+.mapBox {
+  position: relative;
+  aspect-ratio: 740 / 800;
+  height: 100%;
+  max-width: 100%;
+  min-height: 450px;
+}
+
+.faded {
+  opacity: 0.5;
+}
+
+.preview {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2) 0;
+}
+
+@media (max-width: 767px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
   }
-  @mixin light {
-    color: var(--mantine-color-gray-7);
+
+  .tray {
+    grid-row: 2;
+    border-right: 0;
+    border-top: 1px solid var(--rule);
+    padding-bottom: var(--sab);
+  }
+
+  .trayHead {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .trayHead > :first-child {
+    display: none;
+  }
+
+  .trayList {
+    display: flex;
+    flex: none;
+    gap: var(--space-2);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: var(--space-2) var(--space-3) var(--space-3);
+  }
+
+  .trayList > * {
+    flex: none;
+  }
+
+  .top {
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .mapArea {
+    padding: var(--space-2);
+  }
+
+  .mapBox {
+    min-height: 280px;
   }
 }

@@ -1,0 +1,55 @@
+.page {
+  min-height: 100vh;
+  padding-bottom: var(--space-7);
+}
+
+.notice {
+  width: 100%;
+  max-width: var(--maw, 1400px);
+  margin: 0 auto;
+  padding-top: var(--space-3);
+}
+
+.notice:empty {
+  display: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+  width: 100%;
+  max-width: var(--maw, 1400px);
+  margin: 0 auto;
+  padding-top: var(--space-5);
+}
+
+.content {
+  min-width: 0;
+}
+
+/* Phones: the player's own choice comes first, the player list after it. */
+@media (max-width: 767px) {
+  .content {
+    order: -1;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .stackBelowLg .content {
+    order: -1;
+  }
+}
+
+@media (min-width: 768px) {
+  .stackBelowMd {
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .stackBelowLg {
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  }
+}

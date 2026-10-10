@@ -1,4 +1,2 @@
-.border {
-    @mixin light { stroke: #e5e5e5;}
-    /* @mixin dark { stroke: var(--mantine-color-dark-3) } */
-}
+.border { /*  */ stroke: var(--pal-dark-3) }
+:global([data-theme="light"]) .border { stroke: #e5e5e5; }

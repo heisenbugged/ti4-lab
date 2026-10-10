@@ -1,9 +1,9 @@
 import { FactionId } from "~/types";
-import { Button, Container, Group, Stack, Box } from "@mantine/core";
+import { Button, Heading, Text, cx } from "~/ui";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { factions } from "~/data/factionData";
-import { SectionTitle } from "~/components/Section";
 import { useState } from "react";
+import styles from "../session.module.css";
 
 type Props = {
   factionIds: FactionId[];
@@ -23,57 +23,55 @@ export function SelectFaction({ factionIds, onFactionSelected }: Props) {
     onFactionSelected(selectedFaction);
   };
   return (
-    <Box style={{ position: "relative", minHeight: "100vh" }}>
-      <Container style={{ paddingBottom: "100px" }}>
-        <Stack gap="lg" mt="xl">
-          <SectionTitle title="Select Faction" />
-          {factionIds.map((factionId) => (
-            <Button
+    <div className={styles.page}>
+      <div className={styles.pickerHead}>
+        <Heading variant="title" as="h1">
+          Select faction
+        </Heading>
+        <Text size="sm" tone="muted">
+          Pick the faction you&apos;re playing. Your buttons play its lines on
+          the table&apos;s soundboard.
+        </Text>
+      </div>
+      <div className={styles.factionList} role="radiogroup">
+        {factionIds.map((factionId) => {
+          const selected = selectedFaction === factionId;
+          return (
+            <button
               key={factionId}
-              size="xl"
-              leftSection={
-                <FactionIcon
-                  faction={factionId}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    marginRight: 12,
-                  }}
-                />
-              }
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              className={cx(
+                styles.factionOption,
+                selected && styles.factionOptionSelected,
+                selected && "ui-bracket",
+              )}
               onClick={() => handleFactionPressed(factionId)}
-              variant={selectedFaction === factionId ? "filled" : "outline"}
-              color="blue"
             >
-              {factions[factionId].name}
-            </Button>
-          ))}
-        </Stack>
-      </Container>
+              <FactionIcon
+                faction={factionId}
+                style={{ width: 32, height: 32 }}
+              />
+              <span>{factions[factionId].name}</span>
+            </button>
+          );
+        })}
+      </div>
 
-      <Box
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: "16px",
-          backgroundColor: "var(--mantine-color-body)",
-          borderTop: "1px solid var(--mantine-color-gray-8)",
-          zIndex: 100,
-        }}
-      >
-        <Container>
+      <div className={styles.stickyFoot}>
+        <div className={styles.stickyInner}>
           <Button
-            size="xl"
+            variant="primary"
+            size="lg"
             onClick={handleContinuePressed}
             disabled={!selectedFaction}
-            fullWidth
+            block
           >
             Continue
           </Button>
-        </Container>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }

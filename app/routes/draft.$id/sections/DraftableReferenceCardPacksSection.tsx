@@ -1,9 +1,10 @@
-import { SimpleGrid } from "@mantine/core";
-import { Section, SectionTitle } from "~/components/Section";
+import { Bracket, SectionHeader } from "~/ui";
 import { useDraft } from "~/draftStore";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { ReferenceCardPack } from "~/components/ReferenceCardPack";
+import { usePendingPick } from "../components/pendingPick";
+import classes from "../components/DraftLayout.module.css";
 
 export function DraftableReferenceCardPacksSection() {
   const draftGameMode = useDraft(
@@ -15,6 +16,7 @@ export function DraftableReferenceCardPacksSection() {
   const { selectReferenceCardPack } = useDraft((state) => state.draftActions);
   const { hydratedPlayers, currentlyPicking, activePlayer } =
     useHydratedDraft();
+  const { toggle, isPending } = usePendingPick();
 
   const { syncDraft } = useSyncDraft();
   const canSelect =
@@ -29,38 +31,46 @@ export function DraftableReferenceCardPacksSection() {
   ) {
     return null;
   }
+  const taken = hydratedPlayers.filter(
+    (p) => p.referenceCardPackIdx !== undefined,
+  ).length;
 
   return (
-    <Section>
-      <SectionTitle title="Faction Reference Card Packs" />
-      <SimpleGrid cols={{ base: 1, xl: 2 }} spacing="xl">
+    <section className={classes.sec}>
+      <SectionHeader
+        title="Faction reference card packs"
+        meta={`${referenceCardPacks.length - taken} of ${referenceCardPacks.length} open.${canSelect ? " Select one." : ""}`}
+      />
+      <div className={classes.packs}>
         {referenceCardPacks.map((pack, packIdx) => {
           const player = hydratedPlayers.find(
             (p) => p.referenceCardPackIdx === packIdx,
           );
 
           return (
+            <Bracket key={packIdx} active={isPending(`pack-${packIdx}`)}>
             <ReferenceCardPack
-              key={packIdx}
               pack={pack}
               packIdx={packIdx}
               player={player}
               onSelect={
                 canSelect
-                  ? () => {
-                      if (
-                        confirm(`Selecting reference card pack ${packIdx + 1}`)
-                      ) {
-                        selectReferenceCardPack(activePlayer.id, packIdx);
-                        syncDraft();
-                      }
-                    }
+                  ? () =>
+                      toggle({
+                        key: `pack-${packIdx}`,
+                        label: `Reference card pack ${packIdx + 1}`,
+                        commit: () => {
+                          selectReferenceCardPack(activePlayer.id, packIdx);
+                          syncDraft();
+                        },
+                      })
                   : undefined
               }
             />
+            </Bracket>
           );
         })}
-      </SimpleGrid>
-    </Section>
+      </div>
+    </section>
   );
 }

@@ -1,10 +1,15 @@
-import { Button, Grid, Stack } from "@mantine/core";
+import { Button, Panel } from "~/ui";
 import { ActionFunctionArgs, data, MetaFunction } from "react-router";
 import { useLoaderData } from "react-router";
 import { useEffect } from "react";
 import { useDraft } from "~/draftStore";
 import { banPhaseLength, Draft } from "~/types";
-import { CurrentPickBanner } from "../draft.$id/components/CurrentPickBanner";
+import {
+  CurrentPickBanner,
+  PickLockBar,
+} from "../draft.$id/components/CurrentPickBanner";
+import { PendingPickProvider } from "../draft.$id/components/pendingPick";
+import classes from "./route.module.css";
 import { PlayerSelectionScreen } from "../draft.$id/components/PlayerSelectionScreen";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { updateDraft, getDraftStagedSelections } from "~/drizzle/draft.server";
@@ -77,23 +82,16 @@ export default function RunningDraft() {
   return (
     <SyncDraftContext.Provider value={syncDraftContextValue}>
       {socket && isDisconnected && (
-        <Button
-          variant="filled"
-          size="md"
-          radius="xl"
-          leftSection={<IconRefresh size={20} />}
-          style={{
-            position: "fixed",
-            top: "160px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 1000,
-          }}
-          onClick={reconnect}
-          loading={isReconnecting}
-        >
-          Refresh
-        </Button>
+        <div className={classes.reconnect}>
+          <Button
+            variant="primary"
+            icon={<IconRefresh size={18} />}
+            onClick={reconnect}
+            loading={isReconnecting}
+          >
+            Refresh
+          </Button>
+        </div>
       )}
       <DraftPhase draftId={result.id} urlName={result.urlName} />
     </SyncDraftContext.Provider>
@@ -141,7 +139,7 @@ function DraftPhase({
         return (
           <TexasTileDraftPhase
             phase="texasBlueKeep1"
-            title="Blue Tile Draft — Round 1"
+            title="Blue tile draft, round 1"
             description="Keep one blue tile and pass the rest left."
             color="blue"
           />
@@ -150,7 +148,7 @@ function DraftPhase({
         return (
           <TexasTileDraftPhase
             phase="texasBlueKeep2"
-            title="Blue Tile Draft — Round 2"
+            title="Blue tile draft, round 2"
             description="Keep one blue tile from the pass."
             color="blue"
           />
@@ -159,7 +157,7 @@ function DraftPhase({
         return (
           <TexasTileDraftPhase
             phase="texasRedKeep"
-            title="Red Tile Draft"
+            title="Red tile draft"
             description="Keep one red tile and pass the other left."
             color="red"
           />
@@ -172,33 +170,33 @@ function DraftPhase({
   }
 
   return (
-    <>
+    <PendingPickProvider>
       <PlanetFinder onSystemSelected={syncDraft} />
       <AudioAlertConsentModal />
       <audio id="notificationSound" src="/chime.mp3" preload="auto">
         <track kind="captions" />
       </audio>
-      <Stack gap="sm" mb="60" mt="lg">
-        <CurrentPickBanner />
-        <div style={{ height: 15 }} />
-      </Stack>
+      <CurrentPickBanner />
 
       <DraftBoard urlName={urlName}>
         {adminMode && (
-          <Grid.Col offset={6} span={6} order={{ base: 7 }}>
+          <Panel aria-label="Player names">
             <PlayerInputSection
               players={draft.players}
               onChangeName={(playerIdx, name) => {
                 draftStore.actions.updatePlayerName(playerIdx, name);
               }}
             />
-            <Button mt="lg" onClick={syncDraft} loading={syncing}>
-              Save
-            </Button>
-          </Grid.Col>
+            <div className={classes.adminSave}>
+              <Button variant="primary" onClick={syncDraft} loading={syncing}>
+                Save
+              </Button>
+            </div>
+          </Panel>
         )}
       </DraftBoard>
-    </>
+      <PickLockBar />
+    </PendingPickProvider>
   );
 }
 

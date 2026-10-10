@@ -1,6 +1,5 @@
-import { Box, Group, Modal, SegmentedControl, Text } from "@mantine/core";
-import { useDisclosure, useLocalStorage } from "@mantine/hooks";
-import { IconPalette } from "@tabler/icons-react";
+import { IconHexagons } from "@tabler/icons-react";
+import { Button, Modal, Segmented, Text, useDisclosure, useLocalStorage } from "~/ui";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 type Props = {
@@ -13,49 +12,54 @@ export function OriginalArtToggle({ showWarning = false }: Props) {
       key: "hasSeenOriginalArtWarning",
       defaultValue: false,
     });
-  const [showWarningModal, setShowWarningModal] = useDisclosure(false);
+  const [showWarningModal, warningModal] = useDisclosure(false);
 
   const { originalArt, setOriginalArt } = useSafeOutletContext();
   return (
-    <Box>
-      <SegmentedControl
+    <>
+      <Segmented
+        label="Tile art"
+        value={originalArt ? "original" : "lab"}
         onChange={(value) => {
           if (
             value === "original" &&
             showWarning &&
             !hasSeenOriginalArtWarning
           ) {
-            setShowWarningModal.open();
+            warningModal.open();
             setHasSeenOriginalArtWarning(true);
           }
           setOriginalArt(value === "original");
         }}
-        value={originalArt ? "original" : "lab"}
-        color="blue"
-        data={[
+        options={[
           {
             label: (
-              <Group gap="xs">
-                <IconPalette size={16} />
-                <span>Lab Art</span>
-              </Group>
+              <>
+                <IconHexagons aria-hidden />
+                Lab art
+              </>
             ),
             value: "lab",
           },
-          { label: "Original Art", value: "original" },
+          { label: "Original art", value: "original" },
         ]}
       />
       <Modal
         opened={showWarningModal}
-        onClose={setShowWarningModal.close}
-        title="Original Art Mode"
+        onClose={warningModal.close}
+        title="Original art"
+        size="sm"
+        footer={
+          <Button variant="primary" onClick={warningModal.close}>
+            Got it
+          </Button>
+        }
       >
         <Text>
-          Please note that editing features do not work in &apos;Original
-          Art&apos; mode. You can switch back to &apos;Lab Art&apos; mode to use
-          all editing features.
+          Editing doesn&apos;t work with original art. Switch back to Lab art
+          to reroll, swap or delete systems.
         </Text>
       </Modal>
-    </Box>
+    </>
   );
 }

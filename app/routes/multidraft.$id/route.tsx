@@ -1,7 +1,6 @@
-import { Group, SimpleGrid, Stack, Text } from "@mantine/core";
 import { LoaderFunctionArgs, data } from "react-router";
 import { useLoaderData } from "react-router";
-import { SectionTitle } from "~/components/Section";
+import { IconExternalLink } from "@tabler/icons-react";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 import { multiDraftByPrettyUrl } from "~/drizzle/multiDraft.server";
 import { NewDraftFaction } from "../draft.new/components/NewDraftFaction";
@@ -9,6 +8,8 @@ import { Draft } from "~/types";
 import { factions } from "~/data/factionData";
 import { BaseSlice } from "~/components/Slice";
 import { draftConfig } from "~/draft";
+import { ButtonAnchor, Heading, Panel, Text } from "~/ui";
+import classes from "./multidraft.module.css";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params;
@@ -31,49 +32,70 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export default function MultidraftRoute() {
   const { drafts } = useLoaderData<typeof loader>();
   return (
-    <Stack p="lg" gap={50}>
+    <div className={classes.page}>
+      <header className={classes.head}>
+        <Heading variant="title" as="h1">
+          Multidraft
+        </Heading>
+        <Text size="sm" tone="muted">
+          {drafts.length} drafts
+        </Text>
+      </header>
       {drafts.map(({ draft, urlName }) => {
         if (draft?.data == null) return null;
         const data: Draft = JSON.parse(draft.data as string);
         return (
-          <Stack key={urlName}>
-            <a href={`/draft/${urlName}`}>
-              <SectionTitle title={urlName} />
-            </a>
-            <Text ff="mono" fw={700}>
-              Factions
-            </Text>
-            <Group>
-              {data.availableFactions.map((faction) => {
-                return (
-                  <NewDraftFaction key={faction} faction={factions[faction]} />
-                );
-              })}
-            </Group>
-
-            <Text ff="mono" fw={700}>
-              Slices
-            </Text>
-            <SimpleGrid
-              flex={1}
-              cols={{ base: 1, sm: 2, md: 3, lg: 6, xxl: 6 }}
-              spacing="lg"
-              style={{ alignItems: "flex-start" }}
-            >
-              {data.slices.map((slice, idx) => (
-                <div key={`${urlName}-${idx}`} style={{ position: "relative" }}>
-                  <BaseSlice
-                    id={`${urlName}-${idx}`}
-                    slice={slice}
-                    mapModifiable={false}
-                    config={draftConfig[data.settings.type]}
-                  />
+          <Panel
+            key={urlName}
+            title={<span className={classes.draftName}>{urlName}</span>}
+            action={
+              <ButtonAnchor
+                href={`/draft/${urlName}`}
+                size="sm"
+                variant="tertiary"
+                iconRight={<IconExternalLink />}
+              >
+                Open draft
+              </ButtonAnchor>
+            }
+          >
+            <div className={classes.body}>
+              <div className={classes.group}>
+                <Text size="sm" weight={600} tone="muted">
+                  Factions
+                </Text>
+                <div className={classes.factions}>
+                  {data.availableFactions.map((faction) => (
+                    <NewDraftFaction
+                      key={faction}
+                      faction={factions[faction]}
+                      compact
+                    />
+                  ))}
                 </div>
-              ))}
-            </SimpleGrid>
-          </Stack>
+              </div>
+
+              <div className={classes.group}>
+                <Text size="sm" weight={600} tone="muted">
+                  Slices
+                </Text>
+                <div className={classes.slices}>
+                  {data.slices.map((slice, idx) => (
+                    <div key={`${urlName}-${idx}`} className={classes.slice}>
+                      <BaseSlice
+                        id={`${urlName}-${idx}`}
+                        slice={slice}
+                        mapModifiable={false}
+                        config={draftConfig[data.settings.type]}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Panel>
         );
       })}
-    </Stack>
+    </div>
   );
 }

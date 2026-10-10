@@ -1,0 +1,15 @@
+.stack { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.row { display: flex; align-items: center; gap: 4px; }
+.seat { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.1; color: var(--text); }
+.value { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.1; color: var(--pal-yellow-5); }
+.label { margin: 0; font-size: 12px; line-height: 1.1; color: white; }
+.small { margin: 0; font-size: 10px; font-weight: bolder; line-height: 1.1; color: white; text-align: center; }
+@media (min-width: 576px) {
+  .value { font-size: 18px; }
+  .label { font-size: 16px; }
+  .small { font-size: 14px; }
+}
+.select { z-index: 1; margin-top: 2px; }
+.player { display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1; }
+.nameBadge { padding: 3px 6px; border-radius: 6px; background: var(--hull-sunken); }
+.name { margin: 0; font-weight: 700; text-align: center; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }

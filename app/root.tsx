@@ -1,5 +1,4 @@
-import "@mantine/core/styles.css";
-import "@mantine/notifications/styles.css";
+import "./ui/global.css";
 import "./main.css";
 
 import {
@@ -10,119 +9,12 @@ import {
   ScrollRestoration,
   useRouteLoaderData,
 } from "react-router";
-import {
-  Button,
-  ColorSchemeScript,
-  MantineProvider,
-  createTheme,
-  mantineHtmlProps,
-} from "@mantine/core";
 import { useEffect, useState } from "react";
 import type { Socket } from "socket.io-client";
 import io from "socket.io-client";
 import { SocketProvider } from "./socketContext";
 import { LoaderFunctionArgs, redirect } from "react-router";
-import { Notifications } from "@mantine/notifications";
-
-const mantineTheme = createTheme({
-  colors: {
-    // override dark colors here to change them for all components
-    dark: [
-      "#d5d7e0",
-      "#acaebf",
-      "#8c8fa3",
-      "#666980",
-      "#4d4f66",
-      "#34354a",
-      "#2b2c3d",
-      "#1d1e30",
-      "#0c0d21",
-      "#01010a",
-    ],
-    // used by dark theme
-    palePurple: [
-      "#f3f2f7",
-      "#e2e2e8",
-      "#c3c2d2",
-      "#a2a0bc",
-      "#8583aa",
-      "#73719e",
-      "#6a679a",
-      "#595787",
-      "#4f4c79",
-      "#44426c",
-    ],
-    purple: [
-      "#f3edff",
-      "#e0d7fa",
-      "#beabf0",
-      "#9a7ce6",
-      "#7c56de",
-      "#683dd9",
-      "#5f2fd8",
-      "#4f23c0",
-      "#451eac",
-      "#3a1899",
-    ],
-    spaceBlue: [
-      "#eef3ff",
-      "#dee4f3",
-      "#bcc6df",
-      "#98a7cc",
-      "#798cbb",
-      "#657cb2",
-      "#5a73ae",
-      "#4a6299",
-      "#40578a",
-      "#324b7c",
-    ],
-    discordBlue: [
-      "#ecf1ff",
-      "#d7e0fa",
-      "#afbded",
-      "#8499e0",
-      "#5f79d5",
-      "#4866cf",
-      "#3b5ccd",
-      "#2c4cb6",
-      "#2444a4",
-      "#173992",
-    ],
-    magenta: [
-      "#ffe9f6",
-      "#ffd1e6",
-      "#faa1c9",
-      "#f66eab",
-      "#f24391",
-      "#f02881",
-      "#f01879",
-      "#d60867",
-      "#c0005c",
-      "#a9004f",
-    ],
-  },
-  breakpoints: {
-    xs: "36em",
-    sm: "48em",
-    md: "62em",
-    lg: "75em",
-    xl: "88em",
-    xxl: "120em",
-  },
-  primaryColor: "purple",
-  fontFamily: '"Quantico", sans-serif',
-  headings: {
-    fontFamily: "Orbitron",
-  },
-  components: {
-    Button: Button.extend({
-      defaultProps: {
-        variant: "gradient",
-        gradient: { from: "purple", to: "indigo.9", deg: 90 },
-      },
-    }),
-  },
-});
+import { ThemeProvider, Toaster, TooltipProvider, themeScript } from "./ui";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket>();
@@ -146,7 +38,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const result = useRouteLoaderData<typeof loader>("root");
 
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang="en" data-theme={result?.forcedColorScheme ?? "dark"} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -170,7 +62,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
         <meta name="msapplication-TileColor" content="#da532c" />
-        <meta name="theme-color" content="#ffffff"></meta>
+        <meta name="theme-color" content="#070b16"></meta>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -178,22 +70,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Quantico:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@50..125,300..700&display=swap"
           rel="stylesheet"
         />
         <Meta />
         <Links />
-        <ColorSchemeScript defaultColorScheme="auto" />
+        {!result?.forcedColorScheme && <script dangerouslySetInnerHTML={{ __html: themeScript }} />}
       </head>
       <body>
-        <MantineProvider
-          theme={mantineTheme}
-          defaultColorScheme="dark"
-          forceColorScheme={result?.forcedColorScheme ?? undefined}
-        >
-          <Notifications />
-          <SocketProvider socket={socket}>{children}</SocketProvider>
-        </MantineProvider>
+        <ThemeProvider forced={result?.forcedColorScheme ?? null}>
+          <TooltipProvider>
+            <Toaster>
+              <SocketProvider socket={socket}>{children}</SocketProvider>
+            </Toaster>
+          </TooltipProvider>
+        </ThemeProvider>
 
         <ScrollRestoration />
         <Scripts />

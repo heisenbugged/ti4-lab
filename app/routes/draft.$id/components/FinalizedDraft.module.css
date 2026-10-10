@@ -1,0 +1,42 @@
+.page { display: grid; gap: var(--space-5); padding-top: var(--space-2); }
+
+.header { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); }
+.titleBlock { display: grid; gap: 2px; min-width: 0; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
+.divider { width: 1px; height: 22px; margin: 0 var(--space-1); background: var(--rule); }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.left { display: grid; gap: var(--space-6); min-width: 0; }
+.right { position: sticky; top: calc(var(--header-h) + var(--sat) + var(--space-4)); min-width: 0; }
+.sec { display: grid; gap: var(--space-3); min-width: 0; }
+
+.playerCell { max-width: 180px; }
+.faction { display: inline-flex; align-items: center; gap: 8px; min-width: 0; max-width: 260px; }
+.factionName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.features { display: inline-flex; align-items: center; gap: 6px; }
+.tiles { line-height: 1.7; font-variant-numeric: tabular-nums; }
+
+.mapString { display: flex; gap: var(--space-2); min-width: 0; }
+.mapStringInput {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--hull-sunken);
+  color: var(--text);
+  font: 12.5px/1 var(--mono);
+}
+.mapStringInput:focus { outline: 2px solid var(--ion); outline-offset: -1px; }
+.adminSave { display: flex; justify-content: flex-end; margin-top: var(--space-4); }
+
+@media (max-width: 1199.98px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .right { position: static; order: -1; }
+}
+@media (max-width: 759.98px) {
+  .header { align-items: stretch; }
+  .actions { width: 100%; }
+  .divider { display: none; }
+}

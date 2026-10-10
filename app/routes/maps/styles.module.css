@@ -1,119 +1,37 @@
-.page {
-  padding: var(--mantine-spacing-xl) 0;
-}
+/* A map's own page */
+.page { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 28px; align-items: start; min-width: 0; }
 
-.grid {
-  display: grid;
-  gap: var(--mantine-spacing-xl);
-  grid-template-columns: 1fr;
-}
+.mapWell { min-width: 0; padding: 20px; background: var(--hull-sunken); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
 
-.mapColumn {
-  order: 2;
-}
+.mapBox { width: 100%; max-width: calc((100dvh - var(--header-h, 56px) - 96px) * 0.925); min-width: min(100%, 320px); aspect-ratio: 740 / 800; margin: 0 auto; }
 
-.sidebarColumn {
-  order: 1;
-}
+.side { display: grid; gap: 14px; min-width: 0; position: sticky; top: calc(var(--header-h, 56px) + var(--space-4)); }
+.back { justify-self: start; }
+.titleBlock { display: grid; gap: 4px; min-width: 0; }
+.titleBlock h1 { overflow-wrap: anywhere; }
+.description { margin: 0; white-space: pre-line; }
 
-@media (min-width: 62em) {
-  .grid {
-    grid-template-columns: 2fr 1fr;
-  }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tiles > div { display: grid; gap: 6px; align-content: end; padding: 12px 14px; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); min-width: 0; }
+.tileValue { font-size: 26px; line-height: 1.1; font-weight: 500; font-stretch: var(--wide); font-variant-numeric: tabular-nums; }
+.tileLabel { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.tileGlyphs { display: flex; align-items: center; min-height: 30px; }
 
-  .mapColumn {
-    order: 1;
-  }
+.engagement { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--text-muted); }
+.engagement > span { display: inline-flex; align-items: center; gap: 6px; }
+.engagement svg { width: 15px; height: 15px; }
+.engagement b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
 
-  .sidebarColumn {
-    order: 2;
-  }
-}
+.like { display: inline-flex; align-items: center; gap: 6px; height: 28px; margin: -4px 0; padding: 0 8px; border: 1px solid transparent; border-radius: 2px; background: none; color: var(--text-muted); font: 500 13px/1 var(--font); cursor: pointer; }
+.like:hover { background: var(--hull-raised); color: var(--text); }
+.like:focus-visible { outline: 2px solid var(--ion); outline-offset: 1px; }
+.liked, .liked:hover { color: var(--danger); }
+.liked b { color: var(--danger); }
 
-.backButton {
-  align-self: flex-start;
-}
+.actions { display: grid; gap: var(--space-2); }
 
-.title {
-  font-family: "Orbitron", sans-serif;
-  font-weight: 700;
-  font-size: 1.5rem;
-  letter-spacing: 0.02em;
-  color: var(--mantine-color-gray-1);
-  margin: 0;
-}
-
-.author {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--mantine-color-violet-4);
-}
-
-.description {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: var(--mantine-color-gray-3);
-  margin: 0;
-}
-
-.mapStatsRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--mantine-spacing-sm);
-}
-
-.mapStatItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: var(--mantine-color-dark-6);
-  border: 1px solid var(--mantine-color-dark-4);
-  min-width: 70px;
-  min-height: 70px;
-}
-
-.statsRow {
-  display: flex;
-  gap: var(--mantine-spacing-md);
-  padding: var(--mantine-spacing-sm) 0;
-  border-top: 1px solid var(--mantine-color-dark-5);
-  border-bottom: 1px solid var(--mantine-color-dark-5);
-}
-
-.statItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: var(--mantine-color-dark-6);
-  border: 1px solid var(--mantine-color-dark-4);
-}
-
-.heartButton {
-  transition: transform 0.15s ease;
-}
-
-.heartButton:hover {
-  transform: scale(1.1);
-}
-
-.heartButton:active {
-  transform: scale(0.95);
-}
-
-.mapContainer {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 740 / 800;
-  max-height: calc(100vh - 140px);
-  background: rgba(10, 16, 24, 0.4);
-  border-radius: 10px;
-  border: 1px solid var(--mantine-color-dark-5);
-  padding: var(--mantine-spacing-md);
+@media (max-width: 991.98px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+  .side { position: static; order: -1; }
+  .mapWell { padding: 8px; }
 }

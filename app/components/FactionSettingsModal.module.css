@@ -1,0 +1,239 @@
+.modal.modal {
+  width: min(1080px, 100%);
+  height: auto;
+  max-height: calc(100dvh - 2 * var(--space-6));
+}
+
+.count {
+  margin-right: auto;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Summary strip */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.summary > div {
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  padding: 10px 14px;
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+
+.summary b {
+  font-size: 22px;
+  font-weight: 700;
+  font-stretch: var(--wide);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.gold {
+  color: var(--gold);
+}
+
+.summary > .strat {
+  flex: 1;
+  min-width: min(280px, 100%);
+  gap: 8px;
+}
+
+.stratTitle small {
+  margin-left: 6px;
+  font-weight: 400;
+}
+
+.stratRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.summary .stratItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Groups */
+.groups {
+  display: grid;
+  gap: 18px;
+}
+
+.group {
+  display: grid;
+  gap: 8px;
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.groupHead h5 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bar {
+  flex: none;
+  width: 64px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--hull-sunken);
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--ion);
+}
+
+.of {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.quick {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 6px;
+}
+
+/* Faction tile */
+.fp {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+
+.fp:hover {
+  border-color: var(--rule-strong);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 8px 0 10px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: 500 13.5px/1.2 var(--font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.main[aria-disabled] {
+  cursor: default;
+}
+
+.main span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main:focus-visible,
+.lock:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: -2px;
+}
+
+.lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 26px;
+  margin-right: 8px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: none;
+  color: var(--text-muted);
+  font: 600 11.5px/1 var(--font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lock:hover {
+  color: var(--text);
+  border-color: var(--rule);
+}
+
+.out {
+  background: transparent;
+  border-style: dashed;
+}
+
+.out .main {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in oklab, var(--text-muted) 60%, transparent);
+}
+
+.out img {
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+
+.forced {
+  border-color: color-mix(in oklab, var(--gold-line) 75%, transparent);
+  background: color-mix(in oklab, var(--gold) 8%, var(--hull));
+  box-shadow: inset 2px 0 0 var(--gold);
+}
+
+.forced .lock {
+  color: var(--gold);
+  background: color-mix(in oklab, var(--gold) 14%, transparent);
+}
+
+@media (max-width: 575px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .summary > div:not(.strat) {
+    flex: 1;
+  }
+}

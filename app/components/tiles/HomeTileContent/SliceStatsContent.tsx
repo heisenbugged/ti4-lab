@@ -1,7 +1,7 @@
-import { Group, Stack, Text } from "@mantine/core";
 import type { CoreSliceData } from "~/hooks/useCoreSliceValues";
 import { SliceValuePopover } from "../../Slice/SliceValuePopover";
 import type { SliceStats } from "~/mapgen/utils/sliceScoring";
+import classes from "./HomeTileContent.module.css";
 
 const seatLabel = ["Speaker", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
@@ -17,57 +17,22 @@ type Props = {
  * Content for home tiles showing slice statistics.
  * Used in map generator to display seat label, slice value, and resource/influence stats.
  */
-export function SliceStatsContent({
-  seat,
-  sliceValue,
-  sliceStats,
-  coreSliceData,
-  fontSize,
-}: Props) {
+export function SliceStatsContent({ seat, sliceValue, sliceStats, coreSliceData, fontSize }: Props) {
   return (
-    <Stack align="center" gap={0} style={{ fontSize }}>
-      {seat !== undefined && (
-        <Text fz={{ base: "xs", xs: "md" }} c="white" lh={1.1}>
-          {seatLabel[seat]}
-        </Text>
-      )}
+    <div className={classes.stack} style={{ fontSize }}>
+      {seat !== undefined && <p className={classes.label}>{seatLabel[seat]}</p>}
       {sliceValue !== undefined && (
-        <Group gap={4} align="center">
-          <Text fz={{ base: "sm", xs: "lg" }} fw="bold" c="yellow.5" lh={1.1}>
-            {sliceValue.toFixed(1)}
-          </Text>
-          {coreSliceData && (
-            <SliceValuePopover
-              breakdown={coreSliceData.breakdown}
-              title="Seat Value"
-              variant="dark"
-            />
-          )}
-        </Group>
+        <div className={classes.row}>
+          <p className={classes.value}>{sliceValue.toFixed(1)}</p>
+          {coreSliceData && <SliceValuePopover breakdown={coreSliceData.breakdown} title="Seat value" variant="dark" />}
+        </div>
       )}
-      <Stack align="center" gap={0}>
-        <Text
-          fz={{ base: 10, xs: "sm" }}
-          fw="bolder"
-          c="white"
-          ta="center"
-          lh={1.1}
-        >
-          {Math.round(sliceStats.optimalResources * 10) / 10}/
-          {Math.round(sliceStats.optimalInfluence * 10) / 10}
-        </Text>
-        {sliceStats.techs && (
-          <Text
-            fz={{ base: 10, xs: "sm" }}
-            fw="bolder"
-            c="white"
-            ta="center"
-            lh={1.1}
-          >
-            {sliceStats.techs}
-          </Text>
-        )}
-      </Stack>
-    </Stack>
+      <div className={classes.stack}>
+        <p className={classes.small}>
+          {Math.round(sliceStats.optimalResources * 10) / 10}/{Math.round(sliceStats.optimalInfluence * 10) / 10}
+        </p>
+        {sliceStats.techs && <p className={classes.small}>{sliceStats.techs}</p>}
+      </div>
+    </div>
   );
 }

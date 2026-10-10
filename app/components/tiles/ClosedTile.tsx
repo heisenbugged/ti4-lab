@@ -37,7 +37,7 @@ export function ClosedTile({ mapId, tileIdx, closeTileMode }: Props) {
           y1={xSize * 0.3}
           x2={xSize * 1.7}
           y2={xSize * 1.7}
-          stroke="var(--mantine-color-dark-2)"
+          stroke="var(--pal-dark-2)"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           opacity={0.6}
@@ -47,7 +47,7 @@ export function ClosedTile({ mapId, tileIdx, closeTileMode }: Props) {
           y1={xSize * 0.3}
           x2={xSize * 0.3}
           y2={xSize * 1.7}
-          stroke="var(--mantine-color-dark-2)"
+          stroke="var(--pal-dark-2)"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           opacity={0.6}

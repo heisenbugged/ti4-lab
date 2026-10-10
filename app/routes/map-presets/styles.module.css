@@ -1,661 +1,101 @@
-.page {
-  padding: var(--mantine-spacing-xl) 0;
-  max-width: 1440px;
-  margin: 0 auto;
-}
+/* Community maps */
+.page { display: grid; gap: var(--space-7); padding-bottom: var(--space-7); container-type: inline-size; min-width: 0; }
 
-/* ── Header ── */
-.header {
-  margin-bottom: var(--mantine-spacing-xl);
-}
+.head { display: grid; gap: var(--space-2); }
+.titleRow { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.filter { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-3); }
+.playerSeg { max-width: 100%; overflow-x: auto; }
 
-.headerRow {
-  display: flex;
-  align-items: center;
-  gap: var(--mantine-spacing-md);
-  margin-bottom: var(--mantine-spacing-xs);
-}
-
-.title {
-  font-family: "Orbitron", sans-serif;
-  font-weight: 700;
-  font-size: 1.5rem;
-  letter-spacing: 0.03em;
-  color: var(--mantine-color-gray-1);
-  margin: 0;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  background: color-mix(in srgb, var(--mantine-color-blue-6) 15%, transparent);
-  border: 1px solid var(--mantine-color-blue-6);
-  color: var(--mantine-color-blue-4);
-}
-
-.subtitle {
-  color: var(--mantine-color-dimmed);
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-/* ── Player count filter ── */
-.playerFilter {
-  display: flex;
-  align-items: center;
-  gap: var(--mantine-spacing-sm);
-  margin-bottom: var(--mantine-spacing-xl);
-}
-
-.playerFilterLabel {
-  font-size: 0.875rem;
-  color: var(--mantine-color-gray-4);
-}
-
-/* ── Entrance reveal ── */
+/* Entrance reveal */
 @media (prefers-reduced-motion: no-preference) {
-  .reveal {
-    animation: reveal-rise 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-  }
+  .reveal { animation: reveal-rise 0.5s var(--ease) both; }
 }
-
 @keyframes reveal-rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ── Spotlight (Map of the Day) ── */
-.spotlight {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(280px, 5fr) 7fr;
-  border: 1px solid var(--mantine-color-dark-4);
-  border-radius: 14px;
-  overflow: hidden;
-  background:
-    radial-gradient(
-      900px 420px at 8% -20%,
-      color-mix(in srgb, var(--mantine-color-blue-9) 30%, transparent),
-      transparent 65%
-    ),
-    radial-gradient(
-      700px 380px at 95% 120%,
-      color-mix(in srgb, var(--mantine-color-violet-9) 14%, transparent),
-      transparent 60%
-    ),
-    var(--mantine-color-dark-8);
-  margin-bottom: calc(var(--mantine-spacing-xl) * 1.6);
-}
-
-/* Hairline accent along the top edge */
-.spotlight::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    var(--mantine-color-blue-5),
-    var(--mantine-color-violet-5) 45%,
-    transparent 85%
-  );
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.spotlightImageWrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--mantine-spacing-xl);
-  background: rgba(8, 12, 20, 0.5);
-  border-right: 1px solid var(--mantine-color-dark-5);
-  min-height: 280px;
-}
-
-.spotlightImage {
-  max-width: 100%;
-  max-height: 340px;
-  border-radius: 6px;
-  filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.45));
-}
-
-.spotlightContent {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mantine-spacing-xs);
-  padding: var(--mantine-spacing-xl);
-  min-width: 0;
-}
-
-.spotlightKicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--mantine-color-blue-4);
-  margin-bottom: 2px;
-}
-
-.spotlightName {
-  font-family: "Orbitron", sans-serif;
-  font-size: 1.45rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--mantine-color-gray-0);
-  margin: 0;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-
-.spotlightAuthorRow {
-  display: flex;
-  align-items: center;
-  gap: var(--mantine-spacing-sm);
-}
-
-.playerTag {
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  padding: 2px 7px;
-  border-radius: 4px;
-  border: 1px solid var(--mantine-color-dark-4);
-  color: var(--mantine-color-gray-4);
-  background: rgba(8, 12, 20, 0.5);
-}
-
-.spotlightDescription {
-  color: var(--mantine-color-gray-4);
-  font-size: 0.875rem;
-  line-height: 1.55;
-  margin: var(--mantine-spacing-xs) 0 0;
-  max-width: 56ch;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.spotlightStats {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--mantine-spacing-lg);
-  margin-top: var(--mantine-spacing-md);
-  padding-top: var(--mantine-spacing-md);
-  border-top: 1px solid var(--mantine-color-dark-5);
-}
-
-.spotlightStat {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
-}
-
-.spotlightStatValue {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--mantine-color-gray-0);
-  line-height: 1;
-}
-
-.spotlightStatLabel {
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mantine-color-dimmed);
-}
-
-.spotlightEngagement {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  color: var(--mantine-color-gray-4);
-}
-
-@media (max-width: 860px) {
-  .spotlight {
-    grid-template-columns: 1fr;
-  }
-
-  .spotlightImageWrap {
-    border-right: none;
-    border-bottom: 1px solid var(--mantine-color-dark-5);
-    min-height: 0;
-  }
-
-  .spotlightImage {
-    max-height: 260px;
-  }
-}
-
-/* ── Shelves ── */
-.shelf {
-  margin-bottom: calc(var(--mantine-spacing-xl) * 1.4);
-}
-
-.shelfHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--mantine-spacing-sm);
-  margin-bottom: var(--mantine-spacing-md);
-}
-
-.shelfIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  flex-shrink: 0;
-  color: var(--mantine-color-teal-4);
-  border: 1px solid
-    color-mix(in srgb, var(--mantine-color-teal-6) 45%, transparent);
-  background: color-mix(in srgb, var(--mantine-color-teal-9) 25%, transparent);
-}
-
-.sectionTitle {
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--mantine-color-gray-2);
-  margin: 0;
-}
-
-.shelfTitle {
-  white-space: nowrap;
-}
-
-.shelfSubtitle {
-  font-size: 0.72rem;
-  color: var(--mantine-color-dimmed);
-  white-space: nowrap;
-}
-
-.shelfRule {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, var(--mantine-color-dark-4), transparent);
-}
-
-.shelfRow {
-  display: flex;
-  gap: var(--mantine-spacing-md);
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  padding-bottom: var(--mantine-spacing-sm);
-  scrollbar-width: thin;
-  scrollbar-color: var(--mantine-color-dark-4) transparent;
-}
-
-.shelfItem {
-  flex: 0 0 280px;
-  /* Defeat min-width: auto so long nowrap card titles can't widen the item */
-  min-width: 0;
-  max-width: 280px;
-  display: flex;
-  scroll-snap-align: start;
-}
-
-@media (max-width: 480px) {
-  .shelfItem {
-    flex-basis: 240px;
-  }
-}
-
-/* ── All maps section ── */
-.allMaps {
-  margin-top: calc(var(--mantine-spacing-xl) * 0.4);
-}
-
-.allMapsHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--mantine-spacing-sm);
-  margin-bottom: var(--mantine-spacing-md);
-  padding-top: var(--mantine-spacing-md);
-  border-top: 1px solid var(--mantine-color-dark-5);
-}
-
-.allMapsHeading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--mantine-spacing-sm);
-  min-width: 0;
-}
-
-.allMapsCount {
-  font-size: 0.75rem;
-  color: var(--mantine-color-dimmed);
-  font-variant-numeric: tabular-nums;
-}
-
-.groupingNote {
-  margin: calc(var(--mantine-spacing-xs) * -0.5) 0 var(--mantine-spacing-md);
-  font-size: 0.75rem;
-  color: var(--mantine-color-dimmed);
-}
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--mantine-spacing-sm);
-  padding: var(--mantine-spacing-xl) 0;
-  color: var(--mantine-color-gray-4);
-}
-
-.sortControl {
-  flex-shrink: 0;
-}
-
-.loadMore {
-  display: flex;
-  justify-content: center;
-  min-height: 48px;
-  padding: var(--mantine-spacing-lg) 0;
-}
-
-/* ── Responsive grid ── */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-  gap: var(--mantine-spacing-md);
-}
-
-/* ── Card ── */
-.card {
-  position: relative;
-  background: var(--mantine-color-dark-7);
-  border: 1px solid var(--mantine-color-dark-4);
-  border-radius: 10px;
-  transition:
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-}
-
-.card:hover {
-  border-color: var(--mantine-color-blue-6);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-.card:hover .mapPreview {
-  transform: scale(1.03);
-}
-
-/* ── Map preview ── */
-.mapPreviewWrap {
-  position: relative;
-  padding: var(--mantine-spacing-md);
-  background: rgba(10, 16, 24, 0.6);
-  border-bottom: 1px solid var(--mantine-color-dark-5);
-  aspect-ratio: 4 / 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Absolutely positioned so tall (portrait) map images can't stretch the
-   4:3 preview box and break row rhythm */
-.mapPreview {
-  position: absolute;
-  inset: var(--mantine-spacing-md);
-  margin: auto;
-  max-width: 80%;
-  max-height: calc(100% - 2 * var(--mantine-spacing-md));
-  border-radius: 4px;
-  transition: transform 0.25s ease;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-}
-
-/* ── Preview chips ── */
-/* Positions .playerTag over the card preview. */
-.playerChip {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  font-size: 0.55rem;
-  padding: 3px 7px;
-  background: rgba(8, 12, 20, 0.75);
-}
-
-.newBadge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.55rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 4px;
-  color: var(--mantine-color-teal-3);
-  background: color-mix(
-    in srgb,
-    var(--mantine-color-teal-9) 55%,
-    rgba(8, 12, 20, 0.85)
-  );
-  border: 1px solid
-    color-mix(in srgb, var(--mantine-color-teal-5) 55%, transparent);
-}
-
-/* ── Card content ── */
-.cardContent {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
-  flex: 1;
-}
-
-.cardTitleLink {
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--mantine-color-gray-1);
-  text-decoration: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Makes the whole card clickable without nesting other links inside one. */
-.cardTitleLink::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  border-radius: inherit;
-}
-
-.cardTitleLink:focus-visible {
-  outline: none;
-}
-
-.cardTitleLink:focus-visible::after {
-  outline: 2px solid var(--mantine-color-blue-4);
-  outline-offset: -2px;
-  border-radius: 10px;
-}
-
-/* ── Inline author tag ── */
-.authorTag {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.72rem;
-  color: var(--mantine-color-violet-4);
-  letter-spacing: 0.02em;
-}
-
-.authorDot {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  background: linear-gradient(
-    135deg,
-    var(--mantine-color-violet-8),
-    var(--mantine-color-blue-8)
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Orbitron", sans-serif;
-  font-weight: 700;
-  font-size: 0.55rem;
-  color: var(--mantine-color-gray-0);
-  flex-shrink: 0;
-}
-
-.description {
-  color: var(--mantine-color-gray-5);
-  font-size: 0.75rem;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* ── Map statistics ── */
-.mapStats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.stat {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 3px;
-  font-size: 0.7rem;
-  color: var(--mantine-color-gray-4);
-}
-
-.statLabel {
-  font-size: 0.6rem;
-  opacity: 0.7;
-}
-
-.statValue {
-  font-weight: 600;
-  color: var(--mantine-color-gray-2);
-}
-
-/* ── Bottom stats row ── */
-.statsRow {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: var(--mantine-spacing-sm);
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
-  background: var(--mantine-color-dark-8);
-  border-top: 1px solid var(--mantine-color-dark-5);
-}
-
-/* Same voice as the like count beside it: only the number is brighter. */
-.played {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: var(--mantine-color-dimmed);
-  font-variant-numeric: tabular-nums;
-}
-
-.played svg {
-  opacity: 0.6;
-}
-
-.playedCount {
-  color: var(--mantine-color-gray-4);
-}
-
-.likeGroup {
-  color: var(--mantine-color-gray-4);
-}
-
-.moreByAuthor {
-  position: relative;
-  z-index: 2;
-  display: block;
-  padding: 7px var(--mantine-spacing-md);
-  font-size: 0.72rem;
-  color: var(--mantine-color-violet-3);
-  text-decoration: none;
-  background: color-mix(
-    in srgb,
-    var(--mantine-color-violet-9) 18%,
-    var(--mantine-color-dark-8)
-  );
-  border-top: 1px solid var(--mantine-color-dark-5);
-}
-
-.moreByAuthor:hover {
-  color: var(--mantine-color-violet-2);
-  text-decoration: underline;
-}
-
-.moreByAuthor:focus-visible {
-  outline: 2px solid var(--mantine-color-blue-4);
-  outline-offset: -2px;
-}
-
-.heartButton {
-  transition: transform 0.15s ease;
-}
-
-.heartButton:hover {
-  transform: scale(1.1);
-}
-
-.heartButton:active {
-  transform: scale(0.95);
-}
-
-.genButton {
-  margin-left: auto;
-  font-size: 0.7rem;
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 575.98px) {
+  .page { gap: var(--space-6); }
+}
+
+/* Small atoms */
+.author { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: var(--text-muted); }
+.author i { display: grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--hull-raised); box-shadow: inset 0 0 0 1px var(--rule-strong); font-style: normal; font-size: 10px; font-weight: 700; color: var(--text); }
+.authorName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.drafts { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+.drafts svg { width: 14px; height: 14px; }
+.drafts b { font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.like { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 8px; border: 1px solid transparent; border-radius: 2px; background: none; color: var(--text-muted); font: 600 13px/1 var(--font); cursor: pointer; }
+.like svg { width: 16px; height: 16px; }
+.like:hover { color: var(--text); background: var(--hull-raised); }
+.like:focus-visible { outline: 2px solid var(--ion); outline-offset: 1px; }
+.liked, .liked:hover { color: var(--danger); }
+
+/* Map of the day */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; }
+.heroMap { display: grid; place-items: center; padding: var(--space-5) var(--space-7); background: var(--hull-sunken); border-right: 1px solid var(--rule); }
+.heroMap img { display: block; width: 100%; max-width: 560px; height: auto; aspect-ratio: 1; object-fit: contain; }
+.heroInfo { display: grid; gap: 14px; align-content: center; padding: 28px 32px; min-width: 0; }
+.heroKicker { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; font-weight: 600; color: var(--gold-line); }
+.heroBy { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.heroDesc { margin: 0; max-width: 60ch; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.heroStats { display: flex; flex-wrap: wrap; gap: 14px 28px; padding: 14px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.heroStats > div { display: grid; gap: 6px; align-content: end; }
+.statValue { font-size: 24px; line-height: 1.1; font-weight: 600; font-stretch: var(--wide); font-variant-numeric: tabular-nums; }
+.statLabel { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.heroGlyphs { display: flex; align-items: center; min-height: 26px; }
+.heroEng { display: flex; align-items: center; gap: 12px; }
+.heroActions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* Section heads */
+.sectionHead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.shelfIcon { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 2px; background: color-mix(in oklab, var(--success) 18%, var(--hull)); color: var(--success); }
+.sortSeg { margin-left: auto; }
+
+/* New arrivals shelf */
+.shelf { display: grid; gap: 14px; min-width: 0; }
+.shelfRow { display: grid; grid-auto-flow: column; grid-auto-columns: 280px; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent; }
+.shelfRow > * { scroll-snap-align: start; }
+
+/* All maps grid */
+.allMaps { display: grid; gap: 14px; min-width: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+.loadMore { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 48px; padding: var(--space-3) 0; }
+
+.empty { display: grid; justify-items: center; gap: var(--space-3); padding: var(--space-8) var(--space-4); text-align: center; background: var(--hull); border: 1px dashed var(--rule-strong); border-radius: var(--radius-sm); }
+.emptyIcon { color: var(--text-muted); }
+
+/* Map card */
+.card { position: relative; display: grid; grid-template-rows: auto 1fr auto; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; transition: border-color 120ms var(--ease); }
+.card:hover { border-color: var(--rule-strong); }
+.card:has(.cardTitle:focus-visible) { outline: 2px solid var(--ion); outline-offset: 1px; }
+.cardImg { position: relative; display: block; padding: 14px 28px; background: var(--hull-sunken); border-bottom: 1px solid var(--rule); }
+.cardImg img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; }
+.cardPlayers { position: absolute; top: 10px; left: 10px; background: var(--hull); }
+.cardNew { position: absolute; top: 10px; right: 10px; background: var(--hull); }
+.cardBody { display: grid; gap: 8px; align-content: start; padding: 12px 14px; min-width: 0; }
+.cardTitle { min-width: 0; font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cardTitle:focus-visible { outline: none; }
+/* Stretched link: the whole card opens the map. */
+.cardTitle::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.cardStats { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 12.5px; color: var(--text-muted); }
+.cardStats b { color: var(--text); font-variant-numeric: tabular-nums; }
+.cardDesc { margin: 0; font-size: 13px; line-height: 1.45; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cardFoot { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border-top: 1px solid var(--rule); }
+.cardGen { position: relative; z-index: 2; margin-left: auto; }
+.cardMore { position: relative; z-index: 2; display: block; padding: 8px 14px; border-top: 1px solid var(--rule); background: var(--hull-sunken); color: var(--ion); font-size: 12.5px; font-weight: 600; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cardMore:hover { text-decoration: underline; }
+
+@container (max-width: 860px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .heroMap { padding: var(--space-4) 60px; border-right: 0; border-bottom: 1px solid var(--rule); }
+}
+@container (max-width: 520px) {
+  .heroMap { padding: var(--space-3) var(--space-5); }
+  .heroInfo { padding: 18px; }
+  .shelfRow { grid-auto-columns: 240px; }
+  .sortSeg { margin-left: 0; }
 }

@@ -5,11 +5,10 @@ export function PriorityValueSelectionPhase() {
     <ReferenceCardPhase
       phase="priorityValue"
       label="Priority Value"
-      phaseName="Priority Value Selection"
+      phaseName="Priority value selection"
       phaseColor="blue"
       description="Select your priority value card"
-      sidebarSpan={{ base: 12, lg: 4 }}
-      gridSpan={{ base: 12, lg: 8 }}
+      stackBelow="lg"
     />
   );
 }

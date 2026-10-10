@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { notifications } from "@mantine/notifications";
+import { notify } from "~/ui";
 import { useDraft } from "~/draftStore";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 
@@ -17,10 +17,10 @@ export function useAdminControls() {
     if (password === adminPassword) {
       setAdminMode(true);
     } else {
-      notifications.show({
+      notify({
         title: "Incorrect password",
         message: "Please try again",
-        color: "red",
+        tone: "danger",
       });
     }
     setPasswordModalOpen(false);

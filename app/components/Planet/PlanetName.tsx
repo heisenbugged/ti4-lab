@@ -1,4 +1,3 @@
-import { Box, Text, useMantineTheme } from "@mantine/core";
 import { PlanetTrait } from "~/types";
 
 type Props = {
@@ -36,18 +35,17 @@ export function PlanetName({
   trait,
   legendary = false,
 }: Props) {
-  const theme = useMantineTheme();
 
   const traitColor: Record<PlanetTrait, string> = {
-    CULTURAL: theme.colors.blue[9],
-    HAZARDOUS: theme.colors.red[9],
-    INDUSTRIAL: theme.colors.green[9],
+    CULTURAL: "var(--pal-blue-9)",
+    HAZARDOUS: "var(--pal-red-9)",
+    INDUSTRIAL: "var(--pal-green-9)",
   };
 
   const traitBorderColor: Record<PlanetTrait, string> = {
-    CULTURAL: theme.colors.blue[6],
-    HAZARDOUS: theme.colors.red[6],
-    INDUSTRIAL: theme.colors.green[6],
+    CULTURAL: "var(--pal-blue-6)",
+    HAZARDOUS: "var(--pal-red-6)",
+    INDUSTRIAL: "var(--pal-green-6)",
   };
 
   const bgColor = trait ? getBgColor(traitColor, trait) : "#d27900";
@@ -65,18 +63,20 @@ export function PlanetName({
     }
   }
   return (
-    <Box
-      pos="absolute"
-      top={size - 10}
-      right={0}
-      left={0}
-      bg={legendary ? bgColor : "rgba(0, 0, 0, 0.7)"}
-      p={2}
-      style={borderStyle}
+    <div
+      style={{
+        position: "absolute",
+        top: size - 10,
+        right: 0,
+        left: 0,
+        background: legendary ? bgColor : "rgba(0, 0, 0, 0.7)",
+        padding: 2,
+        ...borderStyle,
+      }}
     >
-      <Text size="10" c="white" fw="bolder" ta="center" lh={0.9}>
+      <p style={{ margin: 0, fontSize: 10, color: "white", fontWeight: "bolder", textAlign: "center", lineHeight: 0.9 }}>
         {children}
-      </Text>
-    </Box>
+      </p>
+    </div>
   );
 }

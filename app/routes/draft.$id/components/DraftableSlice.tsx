@@ -1,16 +1,18 @@
-import { Button, Group } from "@mantine/core";
+import { IconDice5, IconEraser } from "@tabler/icons-react";
+import { IconButton, PickButton } from "~/ui";
 import { Slice, HydratedPlayer, Tile } from "~/types";
 import { BaseSlice } from "~/components/Slice/BaseSlice";
 import { PlayerChip } from "./PlayerChip";
-import { playerColors } from "~/data/factionData";
 import { useDraftConfig } from "~/hooks/useDraftConfig";
-import { IconDice6Filled } from "@tabler/icons-react";
+import { playerColorOf } from "./draftOrderUtils";
 
 type Props = {
   id: string;
   slice: Slice;
   player: HydratedPlayer | undefined;
   modifiable?: boolean;
+  /** Selected, waiting for Lock in pick. */
+  selected?: boolean;
   onSelect?: () => void;
   onSelectTile?: (tile: Tile) => void;
   onDeleteTile?: (tile: Tile) => void;
@@ -19,11 +21,13 @@ type Props = {
   onNameChange?: (name: string) => void;
 };
 
+/** A full-size slice with Select when it is pickable and the owner's name once taken. */
 export function DraftableSlice({
   id,
   slice,
   player,
   modifiable = false,
+  selected = false,
   onSelect,
   onSelectTile,
   onDeleteTile,
@@ -31,70 +35,48 @@ export function DraftableSlice({
   onClearSlice,
   onNameChange,
 }: Props) {
-  const playerColor = player ? playerColors[player.id] : undefined;
   const config = useDraftConfig();
-
-  const selectionButton =
-    !player && onSelect ? (
-      <Button lh={1} py={6} px={10} h="auto" onMouseDown={onSelect} variant="filled">
-        Select
-      </Button>
-    ) : null;
 
   const editControls =
     onRandomizeSlice || onClearSlice ? (
-      <Group gap={4}>
+      <>
         {onRandomizeSlice && (
-          <Button
-            size="xs"
-            onMouseDown={onRandomizeSlice}
-            color="gray.7"
-            variant="filled"
-          >
-            <IconDice6Filled size={24} />
-          </Button>
+          <IconButton size="sm" variant="outline" label="Randomize slice" onClick={onRandomizeSlice}>
+            <IconDice5 />
+          </IconButton>
         )}
         {onClearSlice && (
-          <Button size="xs" onMouseDown={onClearSlice} variant="filled" color="red.9">
-            Clear
-          </Button>
+          <IconButton size="sm" variant="danger" label="Clear slice" onClick={onClearSlice}>
+            <IconEraser />
+          </IconButton>
         )}
-      </Group>
+      </>
     ) : null;
 
+  const right = player ? (
+    <>
+      {editControls}
+      <PlayerChip player={player} size="sm" />
+    </>
+  ) : onSelect || editControls ? (
+    <>
+      {editControls}
+      {onSelect && <PickButton selected={selected} onClick={onSelect} />}
+    </>
+  ) : undefined;
+
   return (
-    <div style={{ position: "relative" }}>
-      <BaseSlice
-        id={id}
-        config={config}
-        slice={slice}
-        mapModifiable={modifiable}
-        selectedColor={playerColor}
-        titleLeft={
-          player ? (
-            <div
-              style={{
-                position: "absolute",
-                top: -10,
-                right: -10,
-              }}
-            >
-              <PlayerChip player={player} />
-            </div>
-          ) : undefined
-        }
-        titleRight={
-          selectionButton || editControls ? (
-            <Group gap={6}>
-              {selectionButton}
-              {editControls}
-            </Group>
-          ) : undefined
-        }
-        onSelectTile={onSelectTile}
-        onDeleteTile={onDeleteTile}
-        onNameChange={onNameChange}
-      />
-    </div>
+    <BaseSlice
+      id={id}
+      config={config}
+      slice={slice}
+      mapModifiable={modifiable}
+      selectedColor={player ? playerColorOf(player.id) : undefined}
+      pending={selected}
+      titleRight={right}
+      onSelectTile={onSelectTile}
+      onDeleteTile={onDeleteTile}
+      onNameChange={onNameChange}
+    />
   );
 }

@@ -1,5 +1,5 @@
-import { Grid, Stack, Text } from "@mantine/core";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { cx } from "~/ui";
 import { useDraft } from "~/draftStore";
 import {
   SlicesSection,
@@ -12,72 +12,56 @@ import {
 import { DraftableMinorFactionsSection } from "../sections/DraftableMinorFactionsSection";
 import { DraftablePlayerColorsSection } from "../sections/DraftablePlayerColorsSection";
 import { DraftableReferenceCardPacksSection } from "../sections/DraftableReferenceCardPacksSection";
+import classes from "./DraftLayout.module.css";
 
 type Props = {
   urlName: string | null;
+  /** Extra panels at the end of the pool (admin player names). */
   children?: ReactNode;
+  /** Height of whatever sticks above the board (pick bar or replay controls), for the pinned map. */
+  stickyTop?: string;
 };
 
-export function DraftBoard({ urlName, children }: Props) {
+/**
+ * One scroll, no tabs. Desktop: pick order and player cards on top, the pool on the left,
+ * the full map pinned on the right. Phone: one column with the map first.
+ */
+export function DraftBoard({ children, stickyTop }: Props) {
   const settings = useDraft((state) => state.draft.settings);
   const isPresetMapDraft = settings.draftGameMode === "presetMap";
+  const showMap =
+    settings.draftGameMode !== "twilightsFall" || !!settings.nucleusStyle;
 
   return (
-    <Grid gutter="xl">
-      <Grid.Col span={12} order={{ base: 0 }}>
-        <Text size="md" ta="right" c="dimmed">
-          https://tidraft.com/draft/{urlName}
-        </Text>
-      </Grid.Col>
-
-      {settings.draftSpeaker && (
-        <Grid.Col span={{ base: 12, sm: 6 }} order={{ base: 3, sm: 1, lg: 1 }}>
-          <SpeakerOrderSection />
-        </Grid.Col>
+    <div
+      className={cx(
+        classes.board,
+        !showMap && classes.noTable,
       )}
-      <Grid.Col
-        span={settings.draftSpeaker ? { base: 12, sm: 6 } : 12}
-        order={{ base: 1, sm: 2, lg: 2 }}
-      >
-        <DraftOrderSection />
-      </Grid.Col>
-      {settings.draftGameMode === "twilightsFall" && (
-        <Grid.Col span={12} order={{ base: 5, sm: 5, lg: 5 }}>
-          <DraftableReferenceCardPacksSection />
-        </Grid.Col>
-      )}
-      <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 4, sm: 4, lg: 3 }}>
-        <Stack gap="lg">
-          <DraftableFactionsSection />
-          <DraftableMinorFactionsSection />
-          <DraftablePlayerColorsSection />
-        </Stack>
-      </Grid.Col>
-      <Grid.Col span={{ base: 12, lg: 6 }} order={{ base: 2, sm: 3, lg: 4 }}>
+      style={stickyTop ? ({ "--stack-top": stickyTop } as CSSProperties) : undefined}
+    >
+      <DraftOrderSection />
+      <div className={classes.players}>
         <DraftSummarySection />
-      </Grid.Col>
-      {!isPresetMapDraft && (
-        <Grid.Col
-          span={
-            settings.draftGameMode === "twilightsFall" && !settings.nucleusStyle
-              ? 12
-              : { base: 12, lg: 6 }
-          }
-          order={{ base: 5, sm: 5, lg: 5 }}
-        >
-          <SlicesSection />
-        </Grid.Col>
-      )}
-      {(settings.draftGameMode !== "twilightsFall" || settings.nucleusStyle) && (
-        <Grid.Col
-          span={isPresetMapDraft ? 12 : { base: 12, lg: 6 }}
-          order={{ base: 6, sm: 6, lg: 6 }}
-        >
-          <MapSection />
-        </Grid.Col>
-      )}
+      </div>
 
-      {children}
-    </Grid>
+      <div className={classes.pool}>
+        {settings.draftSpeaker && <SpeakerOrderSection />}
+        {!isPresetMapDraft && <SlicesSection />}
+        {settings.draftGameMode === "twilightsFall" && (
+          <DraftableReferenceCardPacksSection />
+        )}
+        <DraftableFactionsSection />
+        <DraftableMinorFactionsSection />
+        <DraftablePlayerColorsSection />
+        {children}
+      </div>
+
+      {showMap && (
+        <div className={classes.table}>
+          <MapSection />
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,22 +1,8 @@
-.header {
-    border-radius: var(--mantine-radius-md) var(--mantine-radius-md) 0 0;
-    border-bottom: none;
-}
-
-.body {
-    border-radius: 0 0 var(--mantine-radius-md) var(--mantine-radius-md);
-    overflow: hidden;
-}
-
-.body > * {
-    border-radius: 0 0 var(--mantine-radius-md) var(--mantine-radius-md);
-    border: none;
-    border-top: 1px solid;
-    @mixin light { border-color: var(--mantine-color-gray-2); }
-    @mixin dark { border-color: var(--mantine-color-dark-4); }
-}
-
-/* Button group within body */
-.body :global(.mantine-Button-root) {
-    transition: background-color 0.15s ease;
-}
+.card { position: relative; display: grid; min-width: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.header { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 10px 8px 12px; min-width: 0; border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.interactive { cursor: pointer; }
+.interactive:hover { background: var(--hull-raised); }
+.interactive:focus-visible { outline: 2px solid var(--ion); outline-offset: -2px; }
+.body { border-top: 1px solid var(--rule); min-width: 0; }
+.taken { border-color: color-mix(in oklab, var(--p) 65%, transparent); background: color-mix(in oklab, var(--p) 8%, var(--hull)); }
+.off { opacity: 0.5; }

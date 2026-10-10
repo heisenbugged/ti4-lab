@@ -1,8 +1,7 @@
-import { Stack, Text, Box, Button } from "@mantine/core";
+import { PickButton, cx } from "~/ui";
 import { Player } from "~/types";
 import { PlayerChip } from "./PlayerChip";
-import { playerColors } from "~/data/factionData";
-import { PlayerColor } from "~/ui";
+import { playerColorOf } from "./draftOrderUtils";
 import classes from "./DraftableSpeakerOrder.module.css";
 
 type Props = {
@@ -10,81 +9,59 @@ type Props = {
   player?: Player;
   canSelectSpeakerOrder: boolean;
   disabled?: boolean;
+  /** Selected, waiting for Lock in pick. */
+  selected?: boolean;
+  /** Shown on open positions when the picker already has one, e.g. "You have 3rd". */
+  openNote?: string;
   onSelect: () => void;
 };
 
-// Map speaker order text to position numbers for display
-const positionDisplay: Record<string, { number: string; label: string }> = {
-  Speaker: { number: "01", label: "SPEAKER" },
-  "2nd": { number: "02", label: "SECOND" },
-  "3rd": { number: "03", label: "THIRD" },
-  "4th": { number: "04", label: "FOURTH" },
-  "5th": { number: "05", label: "FIFTH" },
-  "6th": { number: "06", label: "SIXTH" },
-  "7th": { number: "07", label: "SEVENTH" },
-  "8th": { number: "08", label: "EIGHTH" },
+const positionNumber = (speakerOrder: string) => {
+  if (speakerOrder === "Speaker") return "1";
+  return speakerOrder.replace(/\D/g, "") || "?";
 };
 
+/** A speaker order position: Select when open, the owner's name when taken. */
 export function DraftableSpeakerOrder({
   speakerOrder,
   player,
   canSelectSpeakerOrder,
   disabled = false,
+  selected = false,
+  openNote = "Open",
   onSelect,
 }: Props) {
-  const playerColor = player
-    ? (playerColors[player.id] as PlayerColor)
-    : undefined;
-  const display = positionDisplay[speakerOrder] ?? {
-    number: "??",
-    label: speakerOrder.toUpperCase(),
-  };
-
   const isAvailable = !player && canSelectSpeakerOrder;
-  const isClaimed = !!player;
-
-  const cardClasses = [
-    classes.speakerCard,
-    isAvailable && classes.available,
-    isClaimed && classes.claimed,
-    isClaimed && playerColor && classes[playerColor],
-  ]
-    .filter(Boolean)
-    .join(" ");
 
   return (
-    <Box
-      className={cardClasses}
+    <div
+      className={cx(
+        classes.card,
+        isAvailable && !disabled && classes.available,
+        !!player && classes.taken,
+        selected && "ui-bracket",
+      )}
+      style={
+        player
+          ? ({ "--p": `var(--player-${playerColorOf(player.id)})` } as React.CSSProperties)
+          : undefined
+      }
       onClick={isAvailable && !disabled ? onSelect : undefined}
     >
-      <Stack align="center" p="sm" pos="relative" gap={8} justify="center">
-        {/* Position badge */}
-        <Text component="span" className={classes.positionBadge}>
-          {display.label}
-        </Text>
-
-        {/* Large position number */}
-        <Text className={classes.positionNumber} fz={28}>
-          {display.number}
-        </Text>
-
-        {/* Select button or player chip */}
-        {isAvailable && (
-          <Button
-            size="compact-sm"
-            px="lg"
-            disabled={disabled}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect();
-            }}
-          >
-            Select
-          </Button>
-        )}
-
-        {player && <PlayerChip player={player} />}
-      </Stack>
-    </Box>
+      <small className={classes.label}>{speakerOrder}</small>
+      <b className={classes.number}>{positionNumber(speakerOrder)}</b>
+      {isAvailable && (
+        <PickButton
+          selected={selected}
+          disabled={disabled}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect();
+          }}
+        />
+      )}
+      {player && <PlayerChip player={player} size="sm" />}
+      {!player && !isAvailable && <span className={classes.open}>{openNote}</span>}
+    </div>
   );
 }

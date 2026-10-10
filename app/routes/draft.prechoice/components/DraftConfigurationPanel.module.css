@@ -1,0 +1,243 @@
+.panelBody {
+  display: grid;
+  gap: 12px;
+}
+
+.optional {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Draft rules: a card per rule, each with a small illustration. */
+.rules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rule {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  background: var(--hull-sunken);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 120ms var(--ease);
+}
+
+.rule:hover {
+  border-color: var(--rule-strong);
+}
+
+.ruleOn {
+  border-color: color-mix(in oklab, var(--gold-line) 70%, transparent);
+  background: color-mix(in oklab, var(--gold) 6%, var(--hull-sunken));
+}
+
+.ruleOn:hover {
+  border-color: var(--gold-line);
+}
+
+.ruleDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ruleDisabled:hover {
+  border-color: var(--rule);
+}
+
+.ruleTxt {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ruleTxt b {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ruleTxt small {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.extra {
+  margin-top: 6px;
+}
+
+.inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 44px;
+  height: 44px;
+  border-radius: 2px;
+  background: var(--hull);
+  border: 1px solid var(--rule);
+}
+
+.art > i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.art img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.nums {
+  display: flex;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  font-stretch: var(--wide);
+  color: var(--text-muted);
+}
+
+.nums span:first-child {
+  color: var(--gold);
+}
+
+/* A struck-through faction. */
+.ban {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.ban img {
+  opacity: 0.75;
+}
+
+.ban::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  top: 50%;
+  height: 2px;
+  background: var(--danger);
+  transform: rotate(-40deg);
+  border-radius: 1px;
+}
+
+.bag {
+  display: flex;
+}
+
+.bag img {
+  width: 18px;
+  height: 18px;
+}
+
+.bag img + img {
+  margin-left: -5px;
+}
+
+/* Minor faction mode cards. */
+.modes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.modes > small {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.mode {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px;
+  background: var(--hull-sunken);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.mode:hover {
+  border-color: var(--rule-strong);
+}
+
+.mode:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: 2px;
+}
+
+.mode svg {
+  color: var(--text-muted);
+}
+
+.mode b {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.mode > span {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+.modeOn,
+.modeOn:hover {
+  border-color: var(--gold-line);
+  box-shadow: inset 0 0 0 1px var(--gold-line);
+}
+
+.modeOn svg {
+  color: var(--gold);
+}
+
+.mode > .modeStep {
+  margin-top: 6px;
+}
+
+.note {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--hull-sunken);
+  border-radius: 2px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+@media (max-width: 767px) {
+  .rules,
+  .modes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rule {
+    transition: none;
+  }
+}

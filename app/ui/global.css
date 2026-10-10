@@ -1,0 +1,54 @@
+@import "./tokens.css";
+@import "./palette.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--void); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { max-width: 100%; }
+img { display: inline-block; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--ion); }
+h1, h2, h3, h4, h5, h6, p { margin: 0; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+code, kbd, pre { font-family: var(--mono); }
+:focus-visible { outline: 2px solid var(--ion); outline-offset: 2px; }
+::selection { background: color-mix(in oklab, var(--ion) 35%, transparent); }
+
+/* Thin, quiet scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent; }
+
+/* Tabler icons inherit the stroke weight the design uses */
+.tabler-icon { stroke-width: 1.75; flex: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Selection brackets: the anomaly corners printed on the tiles, in gold */
+.ui-bracket { position: relative; }
+.ui-bracket::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 2px solid var(--gold);
+  pointer-events: none;
+  z-index: 2;
+  -webkit-mask: conic-gradient(at 12px 12px, transparent 75%, #000 0) 0 0 / calc(100% - 12px) calc(100% - 12px);
+  mask: conic-gradient(at 12px 12px, transparent 75%, #000 0) 0 0 / calc(100% - 12px) calc(100% - 12px);
+}
+[hidden] { display: none !important; }

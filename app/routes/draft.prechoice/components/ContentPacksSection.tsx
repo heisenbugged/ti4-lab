@@ -1,6 +1,7 @@
-import { Box, Checkbox, Group, Stack, Text, ThemeIcon } from "@mantine/core";
 import { IconBox, IconHexagons, IconAlien } from "@tabler/icons-react";
+import { Checkbox, Panel } from "~/ui";
 import { useDraftSetup } from "../store";
+import classes from "./ContentPacksSection.module.css";
 
 type ContentRowProps = {
   label: string;
@@ -8,7 +9,6 @@ type ContentRowProps = {
   factionsChecked: boolean;
   onTilesChange: (checked: boolean) => void;
   onFactionsChange: (checked: boolean) => void;
-  dimmed?: boolean;
 };
 
 function ContentRow({
@@ -19,62 +19,23 @@ function ContentRow({
   onFactionsChange,
 }: ContentRowProps) {
   return (
-    <Group
-      gap="xs"
-      py={6}
-      px="xs"
-      wrap="nowrap"
-      style={{
-        borderBottom: "1px dashed var(--mantine-color-default-border)",
-      }}
-    >
-      <Text
-        size="xs"
-        fw={500}
-        style={{
-          flex: 1,
-          minWidth: 0,
-        }}
-      >
-        {label}
-      </Text>
-      <Group gap="md" wrap="nowrap">
+    <>
+      <span className={classes.label}>{label}</span>
+      <span>
         <Checkbox
-          size="xs"
-          label={
-            <Group gap={4}>
-              <IconHexagons size={12} />
-              <Text size="xs" c="dimmed">
-                Tiles
-              </Text>
-            </Group>
-          }
+          aria-label={`${label} tiles`}
           checked={tilesChecked}
-          onChange={(e) => onTilesChange(e.currentTarget.checked)}
-          styles={{
-            label: { paddingLeft: 6, cursor: "pointer" },
-            input: { cursor: "pointer" },
-          }}
+          onChange={onTilesChange}
         />
+      </span>
+      <span>
         <Checkbox
-          size="xs"
-          label={
-            <Group gap={4}>
-              <IconAlien size={12} />
-              <Text size="xs" c="dimmed">
-                Factions
-              </Text>
-            </Group>
-          }
+          aria-label={`${label} factions`}
           checked={factionsChecked}
-          onChange={(e) => onFactionsChange(e.currentTarget.checked)}
-          styles={{
-            label: { paddingLeft: 6, cursor: "pointer" },
-            input: { cursor: "pointer" },
-          }}
+          onChange={onFactionsChange}
         />
-      </Group>
-    </Group>
+      </span>
+    </>
   );
 }
 
@@ -92,45 +53,19 @@ export function ContentPacksSection() {
   } = content.flags;
 
   return (
-    <Box
-      p="xs"
-      style={{
-        borderRadius: 4,
-        background: "var(--mantine-color-default)",
-        border: "1px solid var(--mantine-color-default-border)",
-      }}
-    >
-      {/* Header */}
-      <Group
-        gap="xs"
-        pb={6}
-        mb="xs"
-        style={{
-          borderBottom: "1px solid var(--mantine-color-default-border)",
-        }}
-      >
-        <ThemeIcon size="sm" variant="light" color="cyan" radius="sm">
-          <IconBox size={12} />
-        </ThemeIcon>
-        <Text
-          size="xs"
-          fw={600}
-          tt="uppercase"
-          c="dimmed"
-          style={{
-            letterSpacing: "0.08em",
-            fontFamily: "Orbitron",
-            flex: 1,
-          }}
-        >
-          Content Packs
-        </Text>
-      </Group>
-
-      {/* Content rows */}
-      <Stack gap={0}>
+    <Panel title="Content packs" icon={<IconBox />} iconTint="var(--ion)">
+      <div className={classes.packs}>
+        <span className={classes.head} aria-hidden />
+        <span className={classes.head}>
+          <IconHexagons size={13} />
+          Tiles
+        </span>
+        <span className={classes.head}>
+          <IconAlien size={13} />
+          Factions
+        </span>
         <ContentRow
-          label="Base Game"
+          label="Base game"
           tilesChecked={withBaseTiles}
           factionsChecked={withBaseFactions}
           onTilesChange={content.setWithBaseTiles}
@@ -157,7 +92,7 @@ export function ContentPacksSection() {
           onTilesChange={content.setWithDiscordantTiles}
           onFactionsChange={content.setWithDiscordantFactions}
         />
-      </Stack>
-    </Box>
+      </div>
+    </Panel>
   );
 }

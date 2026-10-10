@@ -1,11 +1,11 @@
-import { ActionIcon, Group, SimpleGrid, Text, Tooltip } from "@mantine/core";
+import { IconDice5, IconSettings } from "@tabler/icons-react";
 import { factions } from "~/data/factionData";
-import { Section, SectionTitle } from "~/components/Section";
-import { NumberStepper } from "~/components/NumberStepper";
-import { IconDice6Filled, IconSettings } from "@tabler/icons-react";
+import { IconButton, NumberStepper, Text } from "~/ui";
 import { NewDraftFaction } from "../components/NewDraftFaction";
 import { useDraft, useHasBanPhase } from "~/draftStore";
 import type { FactionId } from "~/types";
+import { BuilderSection } from "./BuilderSection";
+import classes from "./FactionPool.module.css";
 
 export function AvailableFactionsSection() {
   const {
@@ -35,95 +35,77 @@ export function AvailableFactionsSection() {
   );
 
   const isTwilightsFall = draftGameMode === "twilightsFall";
+  const noun = isTwilightsFall ? "kings" : "factions";
 
   if (hasBanPhase) {
     return (
-      <Section>
-        <SectionTitle title="Faction Pool">
-          <Group gap="sm">
-            <Group gap={4}>
-              <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
-                Count
-              </Text>
-              <Text size="sm" fw={600} c="purple.3">
-                {numFactions}
-              </Text>
-            </Group>
+      <BuilderSection
+        title="Faction pool"
+        actions={
+          <span className={classes.tools}>
+            <Text as="span" size="xs" tone="muted" weight={600}>
+              Count
+            </Text>
             <NumberStepper
+              size="sm"
+              value={numFactions}
+              label="factions in pool"
               decrease={removeLastFaction}
               increase={addRandomFaction}
               decreaseDisabled={numFactions <= 6}
               increaseDisabled={numFactions >= factionPool.length}
             />
-          </Group>
-        </SectionTitle>
-
-        <Text c="dimmed" px="sm">
-          Factions pool will be made during the draft after the ban phase
+          </span>
+        }
+      >
+        <Text tone="muted" size="sm">
+          The faction pool is made during the draft, after the ban phase.
         </Text>
-      </Section>
+      </BuilderSection>
     );
   }
 
   const minFactions = isTwilightsFall ? playerCount : 6;
   const maxFactions = isTwilightsFall ? 8 : factionPool.length;
 
-  const isPresetMap = draftGameMode === "presetMap";
-
   return (
-    <Section>
-      <SectionTitle title={isTwilightsFall ? "Kings Pool" : "Faction Pool"}>
-        <Group gap="sm">
-          <Group gap={4}>
-            <Tooltip label={isTwilightsFall ? "Randomize kings" : "Randomize factions"} withArrow position="top">
-              <ActionIcon
-                size="sm"
-                variant="subtle"
-                color="gray"
-                onMouseDown={randomizeFactions}
-              >
-                <IconDice6Filled size={16} />
-              </ActionIcon>
-            </Tooltip>
-
-            {!isTwilightsFall && (
-              <Tooltip label="Configure pool" withArrow position="top">
-                <ActionIcon
-                  size="sm"
-                  variant="subtle"
-                  color="gray"
-                  onMouseDown={openFactionSettings}
-                >
-                  <IconSettings size={16} />
-                </ActionIcon>
-              </Tooltip>
-            )}
-          </Group>
-
-          <Group gap={4}>
-            <Text size="xs" c="dimmed" tt="uppercase" fw={500}>
-              Count
-            </Text>
-            <Text size="sm" fw={600} c="purple.3">
-              {numFactions}
-            </Text>
-          </Group>
+    <BuilderSection
+      title={isTwilightsFall ? "Kings pool" : "Faction pool"}
+      meta={`${availableFactions.length} ${noun}`}
+      actions={
+        <span className={classes.tools}>
+          <Text as="span" size="xs" tone="muted" weight={600}>
+            Count
+          </Text>
           <NumberStepper
+            size="sm"
+            value={numFactions}
+            label={`${noun} in pool`}
             decrease={removeLastFaction}
             increase={addRandomFaction}
             decreaseDisabled={numFactions <= minFactions}
             increaseDisabled={numFactions >= maxFactions}
           />
-        </Group>
-      </SectionTitle>
-      <SimpleGrid
-        cols={
-          isPresetMap
-            ? { base: 1, xs: 2, sm: 3, md: 3, xl: 3, xxl: 3 }
-            : { base: 1, xs: 2, sm: 3, md: 4, xl: 6, xxl: 8 }
-        }
-        spacing="xs"
-      >
+          <IconButton
+            variant="outline"
+            label={isTwilightsFall ? "Randomize kings" : "Randomize factions"}
+            onMouseDown={randomizeFactions}
+          >
+            <IconDice5 />
+          </IconButton>
+          {!isTwilightsFall && (
+            <IconButton
+              variant="outline"
+              label="Configure pool"
+              onMouseDown={openFactionSettings}
+            >
+              <IconSettings />
+            </IconButton>
+          )}
+        </span>
+      }
+    >
+      <div className={classes.grid}>
         {availableFactions.map((factionId, idx) => (
           <NewDraftFaction
             key={`${factionId}-${idx}`}
@@ -132,7 +114,7 @@ export function AvailableFactionsSection() {
             removeEnabled={availableFactions.length > minFactions}
           />
         ))}
-      </SimpleGrid>
-    </Section>
+      </div>
+    </BuilderSection>
   );
 }

@@ -1,11 +1,3 @@
-import {
-  Box,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
 import { SliceMap } from "./SliceMap";
 import { PlanetStatsPill } from "./PlanetStatsPill";
 import { SliceHeader } from "./SliceHeader";
@@ -13,25 +5,27 @@ import { Slice, Tile } from "~/types";
 import { useSlice } from "./useSlice";
 import { SliceFeatures } from "./SliceFeatures";
 import { SliceValuePopover } from "./SliceValuePopover";
-
-import classes from "./Slice.module.css";
 import { DraftConfig } from "~/draft";
-import { Titles } from "../Titles";
+import classes from "./Slice.module.css";
 
 type Props = {
   id: string;
   config: DraftConfig;
   slice: Slice;
   mapModifiable?: boolean;
+  /** Player colour of whoever took this slice. */
   selectedColor?: string;
-  // greyOut?: boolean;
   titleLeft?: React.ReactNode;
   titleRight?: React.ReactNode;
   onNameChange?: (name: string) => void;
   onSelectTile?: (tile: Tile) => void;
   onDeleteTile?: (tile: Tile) => void;
+  /** Gold brackets: selected but not yet locked in. */
+  pending?: boolean;
+  className?: string;
 };
 
+/** A slice card: name, SV and optimal values, the slice map, and its features. */
 export function BaseSlice({
   id,
   config,
@@ -43,78 +37,60 @@ export function BaseSlice({
   onSelectTile,
   onDeleteTile,
   onNameChange,
+  pending,
+  className,
 }: Props) {
   const { optimal, sliceValue } = useSlice(slice);
   return (
-    <Paper
-      shadow="sm"
-      style={{ opacity: selectedColor ? 0.5 : 1 }}
-      className={selectedColor ? classes[selectedColor] : ""}
+    <article
+      className={[classes.slice, selectedColor && classes.taken, pending && "ui-bracket", className].filter(Boolean).join(" ")}
+      style={selectedColor ? ({ "--p": `var(--player-${selectedColor})` } as React.CSSProperties) : undefined}
     >
-      <Stack flex={1} gap={0}>
-        <SliceHeader right={titleRight}>
-          <Group flex={1}>
-            {mapModifiable && onNameChange ? (
-              <TextInput
-                className={classes.editableSliceName}
-                value={slice.name}
-                mr="xs"
-                fw="bold"
-                w="auto"
-                flex={1}
-                onChange={(e) => onNameChange?.(e.target.value)}
-              />
-            ) : (
-              <Titles.Slice className={`${classes["slice-text"]}`}>
-                {slice.name}
-              </Titles.Slice>
-            )}
-            {titleLeft}
-          </Group>
-        </SliceHeader>
-
-        <Group className={classes.stats} justify="space-between">
-          <Group gap={6}>
-            <Text size="10px" c="dimmed" fw={600} tt="uppercase">
-              SV
-            </Text>
-            <Text size="sm" fw={700} c="yellow.5">
-              {sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}
-            </Text>
-            <SliceValuePopover slice={slice} />
-          </Group>
-          <Group gap={6}>
-            <Text size="10px" c="dimmed" fw={600} tt="uppercase">
-              Opt
-            </Text>
-            <PlanetStatsPill
-              resources={optimal.resources}
-              influence={optimal.influence}
-              flex={optimal.flex}
-            />
-            <Text size="xs" c="dimmed">
-              ({optimal.resources + optimal.influence + optimal.flex})
-            </Text>
-          </Group>
-        </Group>
-
-        <Box className={classes.map}>
-          <SliceMap
-            id={id}
-            sliceHeight={config.sliceHeight}
-            sliceConcentricCircles={config.sliceConcentricCircles}
-            wOffsetMultiplier={config.wOffsetMultiplier}
-            tiles={slice.tiles}
-            mapModifiable={mapModifiable}
-            onSelectTile={onSelectTile}
-            onDeleteTile={onDeleteTile}
+      <SliceHeader right={titleRight}>
+        {mapModifiable && onNameChange ? (
+          <input
+            className={classes.nameInput}
+            value={slice.name}
+            aria-label="Slice name"
+            onChange={(e) => onNameChange?.(e.target.value)}
           />
-        </Box>
+        ) : (
+          <h4 className={classes.name} title={slice.name}>
+            {slice.name}
+          </h4>
+        )}
+        {titleLeft}
+      </SliceHeader>
 
-        <Box className={classes.features}>
-          <SliceFeatures slice={slice} />
-        </Box>
-      </Stack>
-    </Paper>
+      <div className={classes.stats}>
+        <span className={classes.sv}>
+          <small>SV</small>
+          <b>{sliceValue % 1 === 0 ? sliceValue : sliceValue.toFixed(1)}</b>
+          <SliceValuePopover slice={slice} />
+        </span>
+        <span className={classes.opt}>
+          <small>Optimal</small>
+          <PlanetStatsPill resources={optimal.resources} influence={optimal.influence} flex={optimal.flex} />
+          <em>({optimal.resources + optimal.influence + optimal.flex})</em>
+        </span>
+      </div>
+
+      <div className={classes.map}>
+        <SliceMap
+          id={id}
+          sliceHeight={config.sliceHeight}
+          sliceConcentricCircles={config.sliceConcentricCircles}
+          wOffsetMultiplier={config.wOffsetMultiplier}
+          tiles={slice.tiles}
+          mapModifiable={mapModifiable}
+          onSelectTile={onSelectTile}
+          onDeleteTile={onDeleteTile}
+        />
+      </div>
+
+      <div className={classes.features}>
+        <SliceFeatures slice={slice} />
+      </div>
+    </article>
   );
 }

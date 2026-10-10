@@ -1,11 +1,14 @@
-import { SimpleGrid } from "@mantine/core";
-import { Section, SectionTitle } from "~/components/Section";
+import { Panel, SectionHeader, cx } from "~/ui";
 import { useDraft } from "~/draftStore";
 import { DraftableSlice } from "../components/DraftableSlice";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { useSortedSlices } from "~/routes/draft/useSortedSlices";
+import { SlicesTable } from "~/routes/draft/SlicesTable";
+import { useDraftedSlices } from "~/hooks/useDraftedSlices";
+import { usePendingPick } from "../components/pendingPick";
+import classes from "../components/DraftLayout.module.css";
 
 export function SlicesSection() {
   const slices = useDraft((state) => state.draft.slices);
@@ -18,6 +21,8 @@ export function SlicesSection() {
   const { activePlayer, hydratedPlayers, currentlyPicking } =
     useHydratedDraft();
   const sortedSlices = useSortedSlices(slices, []);
+  const draftedSlices = useDraftedSlices();
+  const { toggle, isPending } = usePendingPick();
 
   const {
     removeSystemFromSlice,
@@ -32,55 +37,68 @@ export function SlicesSection() {
 
   const isTwilightsFallFullWidth =
     draftGameMode === "twilightsFall" && !nucleusStyle;
-  const gridCols = isTwilightsFallFullWidth
-    ? { base: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }
-    : { base: 1, sm: 2, md: 3, lg: 2, xxl: 3 };
+
+  const taken = hydratedPlayers.filter((p) => p.sliceIdx !== undefined).length;
+  const open = slices.length - taken;
+  const youHave =
+    currentlyPicking && activePlayer?.sliceIdx !== undefined
+      ? slices[activePlayer.sliceIdx]?.name
+      : undefined;
+  const meta = youHave
+    ? `You have ${youHave}.`
+    : `${open} of ${slices.length} open.${canSelectSlice ? " Select one." : ""}`;
 
   return (
-    <Section>
-      <div style={{ position: "sticky", top: 60, zIndex: 11 }}>
-        <SectionTitle title="Slices" />
+    <section className={classes.sec}>
+      <SectionHeader title="Slices" meta={meta} />
+
+      <div className={cx(classes.slices, isTwilightsFallFullWidth && classes.slicesWide)}>
+        {sortedSlices.map(({ slice, idx }) => {
+          const key = `slice-${idx}`;
+          return (
+            <DraftableSlice
+              key={idx}
+              id={`slice-${idx}`}
+              slice={slice}
+              player={hydratedPlayers.find((p) => p.sliceIdx === idx)}
+              modifiable={adminMode}
+              selected={isPending(key)}
+              onSelect={
+                canSelectSlice
+                  ? () =>
+                      toggle({
+                        key,
+                        label: slice.name,
+                        commit: () => {
+                          selectSlice(activePlayer.id, idx);
+                          syncDraft();
+                        },
+                      })
+                  : undefined
+              }
+              onSelectTile={
+                adminMode
+                  ? (tile) => openPlanetFinderForSlice(idx, tile.idx)
+                  : undefined
+              }
+              onDeleteTile={
+                adminMode
+                  ? (tile) => removeSystemFromSlice(idx, tile.idx)
+                  : undefined
+              }
+              onRandomizeSlice={adminMode ? () => randomizeSlice(idx) : undefined}
+              onClearSlice={adminMode ? () => clearSlice(idx) : undefined}
+              onNameChange={
+                adminMode ? (name) => updateSliceName(idx, name) : undefined
+              }
+            />
+          );
+        })}
       </div>
 
-      <SimpleGrid
-        flex={1}
-        cols={gridCols}
-        spacing="lg"
-        style={{ alignItems: "flex-start" }}
-      >
-        {sortedSlices.map(({slice, idx}) => (
-          <DraftableSlice
-            key={idx}
-            id={`slice-${idx}`}
-            slice={slice}
-            player={hydratedPlayers.find((p) => p.sliceIdx === idx)}
-            modifiable={adminMode}
-            onSelect={
-              canSelectSlice
-                ? () => {
-                    if (confirm(`Selecting ${slice.name}`)) {
-                      selectSlice(activePlayer.id, idx);
-                      syncDraft();
-                    }
-                  }
-                : undefined
-            }
-            onSelectTile={
-              adminMode
-                ? (tile) => openPlanetFinderForSlice(idx, tile.idx)
-                : undefined
-            }
-            onDeleteTile={
-              adminMode
-                ? (tile) => removeSystemFromSlice(idx, tile.idx)
-                : undefined
-            }
-            onRandomizeSlice={adminMode ? () => randomizeSlice(idx) : undefined}
-            onClearSlice={adminMode ? () => clearSlice(idx) : undefined}
-            onNameChange={adminMode ? (name) => updateSliceName(idx, name) : undefined}
-          />
-        ))}
-      </SimpleGrid>
-    </Section>
+      <Panel title="Slice summary" collapsible defaultOpen={false} flush summary="Compare every slice">
+        <SlicesTable slices={slices} draftedSlices={draftedSlices} />
+      </Panel>
+    </section>
   );
 }

@@ -14,7 +14,7 @@ export type FilterOption = {
 export const FILTER_CATEGORIES: FilterCategory[] = [
   {
     id: "traits",
-    label: "Planet Traits",
+    label: "Planet traits",
     filters: [
       { id: "cultural", label: "Cultural", searchTerm: "cultural", color: "blue" },
       { id: "hazardous", label: "Hazardous", searchTerm: "hazardous", color: "red" },
@@ -23,7 +23,7 @@ export const FILTER_CATEGORIES: FilterCategory[] = [
   },
   {
     id: "tech",
-    label: "Tech Skips",
+    label: "Tech skips",
     filters: [
       { id: "biotic", label: "Biotic", searchTerm: "biotic", color: "green" },
       { id: "propulsion", label: "Propulsion", searchTerm: "propulsion", color: "blue" },
@@ -36,7 +36,7 @@ export const FILTER_CATEGORIES: FilterCategory[] = [
     label: "Special",
     filters: [
       { id: "legendary", label: "Legendary", searchTerm: "legendary", color: "yellow" },
-      { id: "station", label: "Space Station", searchTerm: "space station", color: "cyan" },
+      { id: "station", label: "Space station", searchTerm: "space station", color: "cyan" },
     ],
   },
   {
@@ -57,9 +57,9 @@ export const FILTER_CATEGORIES: FilterCategory[] = [
       { id: "anomaly", label: "Any", searchTerm: "anomaly", color: "orange" },
       { id: "nebula", label: "Nebula", searchTerm: "nebula", color: "orange" },
       { id: "asteroid", label: "Asteroid", searchTerm: "asteroid field", color: "orange" },
-      { id: "rift", label: "Gravity Rift", searchTerm: "gravity rift", color: "orange" },
+      { id: "rift", label: "Gravity rift", searchTerm: "gravity rift", color: "orange" },
       { id: "supernova", label: "Supernova", searchTerm: "supernova", color: "orange" },
-      { id: "entropic-scar", label: "Entropic Scar", searchTerm: "entropic scar", color: "orange" },
+      { id: "entropic-scar", label: "Entropic scar", searchTerm: "entropic scar", color: "orange" },
     ],
   },
   {
@@ -71,23 +71,23 @@ export const FILTER_CATEGORIES: FilterCategory[] = [
   },
   {
     id: "system",
-    label: "System Type",
+    label: "System type",
     filters: [
       { id: "empty", label: "Empty", searchTerm: "empty", color: "gray" },
       {
         id: "no-planet",
-        label: "No Planets",
+        label: "No planets",
         searchTerm: "no planets",
         color: "red",
       },
-      { id: "1planet", label: "1 Planet", searchTerm: "1 planet", color: "gray" },
-      { id: "2planet", label: "2 Planets", searchTerm: "2 planet", color: "gray" },
-      { id: "3planet", label: "3 Planets", searchTerm: "3 planet", color: "gray" },
+      { id: "1planet", label: "1 planet", searchTerm: "1 planet", color: "gray" },
+      { id: "2planet", label: "2 planets", searchTerm: "2 planet", color: "gray" },
+      { id: "3planet", label: "3 planets", searchTerm: "3 planet", color: "gray" },
     ],
   },
   {
     id: "gameset",
-    label: "Game Set",
+    label: "Game set",
     filters: [
       { id: "gs-base", label: "Base", searchTerm: "base game", color: "gray" },
       { id: "gs-pok", label: "PoK", searchTerm: "prophecy of kings", color: "gray" },

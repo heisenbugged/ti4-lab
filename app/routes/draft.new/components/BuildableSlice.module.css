@@ -1,0 +1,26 @@
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.disabledWrap {
+  display: inline-flex;
+}
+
+.remove:hover {
+  color: var(--danger);
+}
+
+.confirm {
+  display: grid;
+  gap: 4px;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}

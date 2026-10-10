@@ -1,7 +1,8 @@
-import { ActionIcon, Box, Group, Stack, Text, UnstyledButton } from "@mantine/core";
 import { IconChevronRight, IconSettings } from "@tabler/icons-react";
+import { IconButton, cx } from "~/ui";
 import { MAPS, ChoosableDraftType } from "../maps";
 import { SliceSettingsFormatType } from "~/components/SliceSettingsModal";
+import classes from "./MapStyleSelector.module.css";
 
 type Props = {
   playerCount: number;
@@ -22,6 +23,7 @@ function getSettingsFormatType(
   return undefined;
 }
 
+/** The styles available for the current player count. Hover previews, press picks. */
 export function MapStyleSelector({
   playerCount,
   selectedMapType,
@@ -30,110 +32,80 @@ export function MapStyleSelector({
   onOpenSettings,
   onOpenMinorFactionsInfo,
 }: Props) {
-
   return (
-    <Stack
-      gap={4}
-      onMouseLeave={() => onMapTypeHover(undefined)}
-      mt="xs"
-      miw={180}
-    >
-      {Object.entries(MAPS).map(([type, { title, playerCount: mapPlayerCount }]) => {
-        if (mapPlayerCount !== playerCount) return null;
+    <div className={classes.list} onMouseLeave={() => onMapTypeHover(undefined)}>
+      <div className={classes.styles}>
+        {Object.entries(MAPS).map(
+          ([type, { title, playerCount: mapPlayerCount }]) => {
+            if (mapPlayerCount !== playerCount) return null;
 
-        const isSelected = selectedMapType === type;
-        const settingsFormat = getSettingsFormatType(type as ChoosableDraftType);
+            const draftType = type as ChoosableDraftType;
+            const isSelected = selectedMapType === type;
+            const settingsFormat = getSettingsFormatType(draftType);
 
-        return (
-          <Group key={type} gap={4} wrap="nowrap">
-            <UnstyledButton
-              onMouseOver={() => onMapTypeHover(type as ChoosableDraftType)}
-              onMouseDown={() => onMapTypeSelect(type as ChoosableDraftType)}
-              style={{ flex: 1 }}
-            >
-              <Group
-                gap="xs"
-                py={6}
-                px="sm"
-                wrap="nowrap"
-                style={{
-                  borderRadius: 4,
-                  border: isSelected
-                    ? "1px solid var(--mantine-color-blue-6)"
-                    : "1px solid var(--mantine-color-default-border)",
-                  background: isSelected
-                    ? "var(--mantine-color-blue-light)"
-                    : "var(--mantine-color-default)",
-                  transition: "all 100ms ease",
-                }}
+            return (
+              <div
+                key={type}
+                className={cx(classes.style, isSelected && classes.on)}
               >
-                <Box
-                  w={3}
-                  h={16}
-                  style={{
-                    borderRadius: 1,
-                    background: isSelected
-                      ? "var(--mantine-color-blue-6)"
-                      : "var(--mantine-color-dimmed)",
-                    opacity: isSelected ? 1 : 0.3,
-                    transition: "all 100ms ease",
+                <button
+                  type="button"
+                  className={classes.pick}
+                  aria-pressed={isSelected}
+                  onMouseOver={() => onMapTypeHover(draftType)}
+                  onFocus={() => onMapTypeHover(draftType)}
+                  onBlur={() => onMapTypeHover(undefined)}
+                  onMouseDown={(e) => {
+                    if (e.button === 0) onMapTypeSelect(draftType);
                   }}
-                />
-                <Text
-                  size="xs"
-                  fw={isSelected ? 600 : 500}
-                  style={{
-                    flex: 1,
-                    fontFamily: "Orbitron",
-                    letterSpacing: "0.03em",
+                  onClick={(e) => {
+                    // Keyboard activation doesn't fire mousedown.
+                    if (e.detail === 0) onMapTypeSelect(draftType);
                   }}
                 >
-                  {title}
-                </Text>
-                <IconChevronRight
-                  size={12}
-                  style={{
-                    opacity: isSelected ? 0.7 : 0.3,
-                    transition: "opacity 100ms ease",
-                  }}
-                />
-              </Group>
-            </UnstyledButton>
-            {settingsFormat && (
-              <ActionIcon
-                size="sm"
-                variant="subtle"
-                color="gray"
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  onMapTypeSelect(type as ChoosableDraftType);
-                  onOpenSettings(settingsFormat);
-                }}
-              >
-                <IconSettings size={14} />
-              </ActionIcon>
-            )}
-          </Group>
-        );
-      })}
+                  <i />
+                  <span>{title}</span>
+                  <IconChevronRight size={14} />
+                </button>
+                {settingsFormat ? (
+                  <IconButton
+                    label={`${title} slice settings`}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      onMapTypeSelect(draftType);
+                      onOpenSettings(settingsFormat);
+                    }}
+                    onClick={(e) => {
+                      if (e.detail === 0) {
+                        onMapTypeSelect(draftType);
+                        onOpenSettings(settingsFormat);
+                      }
+                    }}
+                  >
+                    <IconSettings size={16} />
+                  </IconButton>
+                ) : (
+                  <span className={classes.nogear} />
+                )}
+              </div>
+            );
+          },
+        )}
+      </div>
 
-      {/* Minor Factions Info Link */}
-      <UnstyledButton onMouseDown={onOpenMinorFactionsInfo}>
-        <Group
-          gap="xs"
-          py={4}
-          px="sm"
-          mt="xs"
-          style={{
-            borderTop: "1px dashed var(--mantine-color-default-border)",
-          }}
-        >
-          <Text size="xs" c="orange.5" fw={500}>
-            Minor Factions Info
-          </Text>
-          <IconChevronRight size={10} color="var(--mantine-color-orange-5)" />
-        </Group>
-      </UnstyledButton>
-    </Stack>
+      <button
+        type="button"
+        className={classes.info}
+        onMouseDown={(e) => {
+          if (e.button === 0) onOpenMinorFactionsInfo();
+        }}
+        onClick={(e) => {
+          if (e.detail === 0) onOpenMinorFactionsInfo();
+        }}
+      >
+        Minor factions info
+        <IconChevronRight size={14} />
+      </button>
+    </div>
   );
 }

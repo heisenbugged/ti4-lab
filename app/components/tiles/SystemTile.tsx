@@ -2,7 +2,6 @@ import { useContext } from "react";
 import { Hex } from "../Hex";
 import { Planet } from "../Planet";
 import type { SystemTile } from "~/types";
-import { Group } from "@mantine/core";
 import { calcScale } from "./calcScale";
 import { AnomalyImage } from "../features/AnomalyImage";
 import { GravityRift } from "../features/GravityRift";
@@ -64,10 +63,17 @@ export function RawSystemTile({ mapId, tile, hideValues = false, radius, disable
             radius={radius}
           />
         )}
-        <Group
-          gap={4}
-          justify="center"
-          style={{ scale: scale.toString(), minWidth: 125, maxWidth: 125 }}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 4,
+            justifyContent: "center",
+            scale: scale.toString(),
+            minWidth: 125,
+            maxWidth: 125,
+          }}
         >
           {system.planets.map((planet) => (
             <Planet
@@ -83,7 +89,7 @@ export function RawSystemTile({ mapId, tile, hideValues = false, radius, disable
           {system.wormholes.map((wormhole) => (
             <Wormhole key={wormhole} wormhole={wormhole} />
           ))}
-        </Group>
+        </div>
       </Hex>
     </div>
   );

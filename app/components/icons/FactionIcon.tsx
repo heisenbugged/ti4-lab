@@ -1,12 +1,12 @@
-import { Box, MantineSize } from "@mantine/core";
+import classes from "./FactionIcon.module.css";
 import { factions } from "~/data/factionData";
 import { FactionId } from "~/types";
 
 type Props = {
   faction: FactionId;
   style?: React.CSSProperties;
-  visibleFrom?: MantineSize;
-  hiddenFrom?: MantineSize;
+  visibleFrom?: "xs" | "sm" | "md" | "lg";
+  hiddenFrom?: "xs" | "sm" | "md" | "lg";
   className?: string;
 };
 
@@ -23,32 +23,23 @@ export function FactionIcon({
     return (
       <img
         src={factions[faction].iconPath}
-        style={{
-          objectFit: "contain",
-          ...style,
-          ...(className && { className }),
-        }}
+        className={className}
+        style={{ objectFit: "contain", ...style }}
         alt={factions[faction].name}
       />
     );
   }
 
   return (
-    <Box
-      visibleFrom={visibleFrom}
-      hiddenFrom={hiddenFrom}
+    <div
       style={style}
-      className={className}
+      className={[className, visibleFrom && classes[`from-${visibleFrom}`], hiddenFrom && classes[`below-${hiddenFrom}`]].filter(Boolean).join(" ")}
     >
       <img
         src={factions[faction].iconPath}
-        style={{
-          objectFit: "contain",
-          width: "100%",
-          height: "100%",
-        }}
+        style={{ objectFit: "contain", width: "100%", height: "100%" }}
         alt={factions[faction].name}
       />
-    </Box>
+    </div>
   );
 }

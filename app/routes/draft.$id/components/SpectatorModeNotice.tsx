@@ -1,4 +1,5 @@
-import { Text } from "@mantine/core";
+import { IconEye } from "@tabler/icons-react";
+import { Notice } from "~/ui";
 
 interface SpectatorModeNoticeProps {
   isSpectatorMode: boolean;
@@ -10,9 +11,8 @@ export function SpectatorModeNotice({
   if (!isSpectatorMode) return null;
 
   return (
-    <Text size="sm" c="dimmed" ta="center">
-      Spectator mode: Choices are hidden unless &quot;Pick for anyone&quot; is
-      enabled
-    </Text>
+    <Notice tone="info" icon={<IconEye size={18} />} title="You're watching as a spectator">
+      Hidden choices stay hidden unless Pick for any player is on.
+    </Notice>
   );
 }

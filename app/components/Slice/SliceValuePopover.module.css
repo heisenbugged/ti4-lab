@@ -1,0 +1,17 @@
+.trigger { display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--text-muted); cursor: help; }
+.trigger:hover { color: var(--ion); }
+.dark { color: rgb(255 255 255 / 0.75); filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.35)); }
+.head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--rule); font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.head b { font-size: 15px; color: var(--resource); font-variant-numeric: tabular-nums; }
+.group { display: grid; gap: 3px; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px dashed var(--rule); }
+.group:last-child { padding-bottom: 0; margin-bottom: 0; border-bottom: 0; }
+.groupLabel { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
+.line { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; }
+.line b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-muted); }
+.r, .i, .f { font-style: normal; font-weight: 700; }
+.r { color: var(--resource); }
+.i { color: var(--influence); }
+.f { color: var(--flex); }
+.plus { color: var(--success); }
+.minus { color: var(--danger); }

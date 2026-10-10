@@ -2,7 +2,7 @@ import { useFetcher } from "react-router";
 import { createContext, useContext, useEffect } from "react";
 import { draftStore } from "~/draftStore";
 import { useSocket } from "~/socketContext";
-import { notifications } from "@mantine/notifications";
+import { notify } from "~/ui/notify";
 import { Draft, PlayerId, SimultaneousPickType } from "~/types";
 
 type SyncDraftContextValue = ReturnType<typeof useSyncDraftFetcher>;
@@ -25,11 +25,11 @@ function reloadOutOfSync(notification: {
   title: string;
   message: string;
 }) {
-  notifications.show({
+  notify({
     ...notification,
     message: `${notification.message} Refreshing...`,
-    color: "orange",
-    autoClose: 3000,
+    tone: "warning",
+    timeout: 3000,
   });
   setTimeout(() => {
     window.location.reload();
@@ -62,10 +62,10 @@ async function postDraftMutation(
         message: error.message ?? "",
       });
     } else {
-      notifications.show({
+      notify({
         title: "Error",
         message: error.error || errorMessage,
-        color: "red",
+        tone: "danger",
       });
     }
     return false;
@@ -75,7 +75,7 @@ async function postDraftMutation(
   if (data.success && data.draft) {
     draftStore.getState().draftActions.update(draftId, data.draft);
     if (success) {
-      notifications.show({ ...success, color: "green", autoClose: 3000 });
+      notify({ ...success, tone: "success", timeout: 3000 });
     }
   }
   return true;
@@ -109,11 +109,11 @@ export function useSyncDraftFetcher() {
     }
 
     if (data?.discordError && data?.discordMessage) {
-      notifications.show({
+      notify({
         title: "Discord Notification Failed",
         message: data.discordMessage,
-        color: "red",
-        autoClose: 10000,
+        tone: "danger",
+        timeout: 10000,
       });
     }
   }, [fetcher.data]);

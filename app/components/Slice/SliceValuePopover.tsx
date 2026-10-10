@@ -1,4 +1,5 @@
-import { Box, Group, HoverCard, Stack, Text } from "@mantine/core";
+import { Popover } from "~/ui";
+import classes from "./SliceValuePopover.module.css";
 import { IconInfoCircleFilled } from "@tabler/icons-react";
 import { Slice } from "~/types";
 import { useSliceValueBreakdown } from "~/hooks/useSliceValueBreakdown";
@@ -22,7 +23,7 @@ function formatValue(value: number, showSign = false): string {
 export function SliceValuePopover({
   slice,
   breakdown: providedBreakdown,
-  title = "Slice Value",
+  title = "Slice value",
   variant = "light",
 }: Props) {
   const computedBreakdown = useSliceValueBreakdown(slice);
@@ -39,180 +40,72 @@ export function SliceValuePopover({
   const hasEquidistant = breakdown.equidistantPenalty !== null;
   const hasAnyPenalty = hasPenalties || hasEquidistant;
 
-  // Icon colors based on variant - dark variant for light backgrounds (like green home tiles)
-  const iconColor =
-    variant === "dark" ? "rgba(0, 0, 0, 0.55)" : "rgba(255, 255, 255, 0.7)";
-
   return (
-    <HoverCard
+    <Popover
+      openOnHover
+      side="top"
       width={260}
-      position="top"
-      withArrow
-      shadow="md"
-      openDelay={100}
-      closeDelay={50}
+      trigger={
+        <button type="button" className={variant === "dark" ? `${classes.trigger} ${classes.dark}` : classes.trigger} aria-label={`${title} breakdown`}>
+          <IconInfoCircleFilled size={14} />
+        </button>
+      }
     >
-      <HoverCard.Target>
-        <Box
-          component="span"
-          style={{
-            cursor: "help",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "opacity 0.15s ease",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.85")}
-        >
-          <IconInfoCircleFilled
-            size={14}
-            color={iconColor}
-            style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.2))" }}
-          />
-        </Box>
-      </HoverCard.Target>
+      <div className={classes.head}>
+        <span>{title}</span>
+        <b>{formatValue(breakdown.total)}</b>
+      </div>
 
-      <HoverCard.Dropdown
-        style={{
-          background: "var(--mantine-color-body)",
-          border: "1px solid var(--mantine-color-default-border)",
-        }}
-      >
-        <Stack gap={0}>
-          {/* Header */}
-          <Group
-            justify="space-between"
-            pb="xs"
-            mb="xs"
-            style={{
-              borderBottom: "1px solid var(--mantine-color-default-border)",
-            }}
-          >
-            <Text
-              size="xs"
-              fw={600}
-              tt="uppercase"
-              c="dimmed"
-              style={{ fontFamily: "Orbitron", letterSpacing: "0.05em" }}
-            >
-              {title}
-            </Text>
-            <Text size="sm" fw={700} c="yellow.5">
-              {formatValue(breakdown.total)}
-            </Text>
-          </Group>
+      <div className={classes.group}>
+        <span className={classes.groupLabel}>Base optimal</span>
+        <div className={classes.line}>
+          <span>
+            <i className={classes.r}>R</i> + <i className={classes.i}>I</i> + <i className={classes.f}>F</i>{" "}
+            <span className={classes.muted}>
+              ({breakdown.optimal.resources}+{breakdown.optimal.influence}+{breakdown.optimal.flex})
+            </span>
+          </span>
+          <b>{formatValue(breakdown.optimal.sum)}</b>
+        </div>
+      </div>
 
-          {/* Base Optimal */}
-          <Box
-            pb="xs"
-            mb={hasBonuses || hasAnyPenalty ? "xs" : 0}
-            style={{
-              borderBottom:
-                hasBonuses || hasAnyPenalty
-                  ? "1px dashed var(--mantine-color-default-border)"
-                  : "none",
-            }}
-          >
-            <Text size="xs" c="dimmed" fw={500} mb={4}>
-              Base Optimal
-            </Text>
-            <Group justify="space-between" gap="xs">
-              <Text size="xs">
-                <Text component="span" c="orange.5">
-                  R
-                </Text>
-                <Text component="span" c="dimmed">
-                  +
-                </Text>
-                <Text component="span" c="blue.5">
-                  I
-                </Text>
-                <Text component="span" c="dimmed">
-                  +
-                </Text>
-                <Text component="span" c="violet.5">
-                  F
-                </Text>
-                <Text component="span" c="dimmed" size="xs" ml={4}>
-                  ({breakdown.optimal.resources}+{breakdown.optimal.influence}+
-                  {breakdown.optimal.flex})
-                </Text>
-              </Text>
-              <Text size="xs" fw={600} ff="monospace">
-                {formatValue(breakdown.optimal.sum)}
-              </Text>
-            </Group>
-          </Box>
+      {hasBonuses && (
+        <div className={classes.group}>
+          <span className={classes.groupLabel}>Bonuses</span>
+          {bonuses.map((mod, idx) => (
+            <div key={idx} className={classes.line}>
+              <span>
+                {mod.label}
+                {mod.count !== undefined && <span className={classes.muted}> ({mod.count})</span>}
+              </span>
+              <b className={classes.plus}>{formatValue(mod.value, true)}</b>
+            </div>
+          ))}
+        </div>
+      )}
 
-          {/* Bonuses (positive modifiers) */}
-          {hasBonuses && (
-            <Box
-              pb={hasAnyPenalty ? "xs" : 0}
-              mb={hasAnyPenalty ? "xs" : 0}
-              style={{
-                borderBottom: hasAnyPenalty
-                  ? "1px dashed var(--mantine-color-default-border)"
-                  : "none",
-              }}
-            >
-              <Text size="xs" c="dimmed" fw={500} mb={4}>
-                Bonuses
-              </Text>
-              <Stack gap={2}>
-                {bonuses.map((mod, idx) => (
-                  <Group key={idx} justify="space-between" gap="xs">
-                    <Text size="xs">
-                      {mod.label}
-                      {mod.count !== undefined && (
-                        <Text component="span" c="dimmed" size="xs">
-                          {" "}
-                          ({mod.count})
-                        </Text>
-                      )}
-                    </Text>
-                    <Text size="xs" fw={600} ff="monospace" c="green.5">
-                      {formatValue(mod.value, true)}
-                    </Text>
-                  </Group>
-                ))}
-              </Stack>
-            </Box>
+      {hasAnyPenalty && (
+        <div className={classes.group}>
+          <span className={classes.groupLabel}>Penalties</span>
+          {penalties.map((mod, idx) => (
+            <div key={idx} className={classes.line}>
+              <span>{mod.label}</span>
+              <b className={classes.minus}>{formatValue(mod.value, true)}</b>
+            </div>
+          ))}
+          {hasEquidistant && (
+            <div className={classes.line}>
+              <span>
+                {/* Show percentage only if using fixed multiplier system (multiplier != 1) */}
+                {breakdown.equidistantMultiplier !== 1
+                  ? `Equidistant (${Math.round((1 - breakdown.equidistantMultiplier) * 100)}%)`
+                  : "Equidistant"}
+              </span>
+              <b className={classes.minus}>{formatValue(-breakdown.equidistantPenalty!, true)}</b>
+            </div>
           )}
-
-          {/* Penalties (negative modifiers + equidistant) */}
-          {hasAnyPenalty && (
-            <Box>
-              <Text size="xs" c="dimmed" fw={500} mb={4}>
-                Penalties
-              </Text>
-              <Stack gap={2}>
-                {penalties.map((mod, idx) => (
-                  <Group key={idx} justify="space-between" gap="xs">
-                    <Text size="xs">{mod.label}</Text>
-                    <Text size="xs" fw={600} ff="monospace" c="red.4">
-                      {formatValue(mod.value, true)}
-                    </Text>
-                  </Group>
-                ))}
-                {hasEquidistant && (
-                  <Group justify="space-between" gap="xs">
-                    <Text size="xs">
-                      {/* Show percentage only if using fixed multiplier system (multiplier != 1) */}
-                      {breakdown.equidistantMultiplier !== 1
-                        ? `Equidistant (${Math.round((1 - breakdown.equidistantMultiplier) * 100)}%)`
-                        : "Equidistant"}
-                    </Text>
-                    <Text size="xs" fw={600} ff="monospace" c="red.4">
-                      {formatValue(-breakdown.equidistantPenalty!, true)}
-                    </Text>
-                  </Group>
-                )}
-              </Stack>
-            </Box>
-          )}
-        </Stack>
-      </HoverCard.Dropdown>
-    </HoverCard>
+        </div>
+      )}
+    </Popover>
   );
 }

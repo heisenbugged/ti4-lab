@@ -1,14 +1,8 @@
-import {
-  Badge,
-  Box,
-  Group,
-  Paper,
-  SimpleGrid,
-  Stack,
-  Text,
-} from "@mantine/core";
+import type { CSSProperties } from "react";
+import { Row, Tag } from "~/ui";
 import { MahactKingReference as MahactKingReferenceData } from "~/data/mahactKingReferences";
 import { Faction } from "~/types";
+import classes from "./MahactKingReference.module.css";
 
 type Props = {
   faction: Faction;
@@ -17,118 +11,49 @@ type Props = {
 
 export function MahactKingReference({ faction, reference }: Props) {
   return (
-    <Paper
-      withBorder
-      radius="md"
-      p={{ base: "md", sm: "lg" }}
-      maw={900}
-      mx="auto"
-      style={{ borderTop: `4px solid ${reference.accent}` }}
+    <div
+      className={classes.root}
+      style={{ "--accent": reference.accent } as CSSProperties}
     >
-      <Stack gap="lg">
-        <Group justify="space-between" align="center" wrap="nowrap">
-          <Group gap="md" wrap="nowrap" miw={0}>
-            <Box
-              component="img"
-              src={faction.iconPath}
-              alt=""
-              aria-hidden
-              w={{ base: 42, sm: 54 }}
-              h={{ base: 42, sm: 54 }}
-              style={{ objectFit: "contain", flexShrink: 0 }}
-            />
-            <Box miw={0}>
-              <Text size="xs" c="dimmed" tt="uppercase" fw={700} lts="0.08em">
-                Mahact King
-              </Text>
-              <Text
-                fz={{ base: "lg", sm: "xl" }}
-                fw={700}
-                ff="Orbitron"
-                lh={1.2}
-              >
-                {faction.name}
-              </Text>
-            </Box>
-          </Group>
-          <Badge
-            size="lg"
-            variant="light"
-            color="gray"
-            style={{ flexShrink: 0, color: reference.accent }}
-          >
-            {reference.commodities} commodities
-          </Badge>
-        </Group>
+      <div className={classes.head}>
+        <img
+          className={classes.icon}
+          src={faction.iconPath}
+          alt=""
+          aria-hidden
+        />
+        <div className={classes.titles}>
+          <p className={classes.kicker}>Mahact king</p>
+          <h3 className={classes.name}>{faction.name}</h3>
+        </div>
+        <Tag>{reference.commodities} commodities</Tag>
+      </div>
 
-        {reference.units.map((unit) => (
-          <Paper
-            key={unit.type}
-            withBorder
-            radius="sm"
-            p={{ base: "sm", sm: "md" }}
-          >
-            <Stack gap="sm">
-              <Group gap="xs" align="center">
-                <Badge
-                  variant="filled"
-                  color={reference.accent}
-                  size="lg"
-                  radius="sm"
-                  h="auto"
-                  py={4}
-                  fz={{ base: "sm", sm: "md" }}
-                  fw={700}
-                >
-                  {unit.type}
-                </Badge>
-                <Text fw={700} fz={{ base: "md", sm: "lg" }}>
-                  {unit.name}
-                </Text>
-              </Group>
+      {reference.units.map((unit) => (
+        <section key={unit.type} className={classes.unit}>
+          <div className={classes.unitHead}>
+            <span className={classes.unitType}>{unit.type}</span>
+            <h4 className={classes.unitName}>{unit.name}</h4>
+          </div>
 
-              <Text size="sm" lh={1.5}>
-                {unit.ability}
-              </Text>
+          <p className={classes.ability}>{unit.ability}</p>
 
-              <Group gap={6}>
-                {unit.traits.map((trait) => (
-                  <Badge key={trait} variant="light" color="gray" size="sm">
-                    {trait}
-                  </Badge>
-                ))}
-              </Group>
+          <Row gap={2}>
+            {unit.traits.map((trait) => (
+              <Tag key={trait}>{trait}</Tag>
+            ))}
+          </Row>
 
-              <SimpleGrid cols={{ base: 2, xs: 4 }} spacing="xs">
-                {unit.stats.map((stat) => (
-                  <Paper
-                    key={stat.label}
-                    withBorder
-                    radius="sm"
-                    py="xs"
-                    px="sm"
-                    ta="center"
-                    bg="var(--mantine-color-body)"
-                  >
-                    <Text fw={700} fz={{ base: "lg", sm: "xl" }} lh={1.1}>
-                      {stat.value}
-                    </Text>
-                    <Text
-                      size="xs"
-                      c="dimmed"
-                      tt="uppercase"
-                      fw={600}
-                      lts="0.04em"
-                    >
-                      {stat.label}
-                    </Text>
-                  </Paper>
-                ))}
-              </SimpleGrid>
-            </Stack>
-          </Paper>
-        ))}
-      </Stack>
-    </Paper>
+          <div className={classes.stats}>
+            {unit.stats.map((stat) => (
+              <div key={stat.label} className={classes.stat}>
+                <b>{stat.value}</b>
+                <span>{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }

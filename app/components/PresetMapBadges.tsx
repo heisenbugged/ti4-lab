@@ -1,52 +1,42 @@
-import { Box, Group, Text } from "@mantine/core";
 import type { ReactNode } from "react";
 import type { TechSkipsData } from "~/drizzle/presetMap.server";
 import { TechIcon } from "~/components/icons/TechIcon";
 import { LegendaryIcon } from "~/components/icons/LegendaryIcon";
 import { TechSpecialty } from "~/types";
+import { cx } from "~/ui";
+import classes from "./PresetMapBadges.module.css";
 
 type BadgeSize = "sm" | "md";
 
-const BADGE_SIZES: Record<
-  BadgeSize,
-  { icon: number; fontSize: string; gap: number }
-> = {
-  sm: { icon: 18, fontSize: "0.6rem", gap: 3 },
-  md: { icon: 22, fontSize: "0.65rem", gap: 4 },
+const ICON_SIZE: Record<BadgeSize, number> = { sm: 20, md: 26 };
+
+const TECH_LABEL: Record<TechSpecialty, string> = {
+  BIOTIC: "biotic",
+  WARFARE: "warfare",
+  PROPULSION: "propulsion",
+  CYBERNETIC: "cybernetic",
 };
 
+/** A game glyph with a small count bubble on its lower right. */
 function CountBadge({
   icon,
   count,
-  fontSize,
+  size,
+  title,
 }: {
   icon: ReactNode;
   count: number;
-  fontSize: string;
+  size: BadgeSize;
+  title: string;
 }) {
   return (
-    <Box
-      pos="relative"
-      style={{ display: "inline-flex", alignItems: "center" }}
+    <span
+      className={cx(classes.glyph, size === "md" && classes.big)}
+      title={title}
     >
       {icon}
-      <Text
-        size="xs"
-        fw="bold"
-        c="white"
-        pos="absolute"
-        style={{
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          WebkitTextStroke: "1.5px black",
-          paintOrder: "stroke fill",
-          fontSize,
-        }}
-      >
-        {count}
-      </Text>
-    </Box>
+      <b>{count}</b>
+    </span>
   );
 }
 
@@ -60,12 +50,12 @@ function TechSkipIcon({
   size?: BadgeSize;
 }) {
   if (count === 0) return null;
-  const { icon, fontSize } = BADGE_SIZES[size];
   return (
     <CountBadge
-      icon={<TechIcon techSpecialty={techSpecialty} size={icon} />}
+      icon={<TechIcon techSpecialty={techSpecialty} size={ICON_SIZE[size]} />}
       count={count}
-      fontSize={fontSize}
+      size={size}
+      title={`${count} ${TECH_LABEL[techSpecialty]} ${count === 1 ? "skip" : "skips"}`}
     />
   );
 }
@@ -91,12 +81,12 @@ export function TechSkipsDisplay({
   const data = parseTechSkips(techSkips);
   if (!data) return null;
   return (
-    <Group gap={BADGE_SIZES[size].gap}>
+    <span className={cx(classes.row, size === "md" && classes.rowBig)}>
       <TechSkipIcon techSpecialty="BIOTIC" count={data.G} size={size} />
       <TechSkipIcon techSpecialty="WARFARE" count={data.R} size={size} />
       <TechSkipIcon techSpecialty="PROPULSION" count={data.B} size={size} />
       <TechSkipIcon techSpecialty="CYBERNETIC" count={data.Y} size={size} />
-    </Group>
+    </span>
   );
 }
 
@@ -108,12 +98,12 @@ export function LegendaryDisplay({
   size?: BadgeSize;
 }) {
   if (!count) return null;
-  const { icon, fontSize } = BADGE_SIZES[size];
   return (
     <CountBadge
-      icon={<LegendaryIcon size={icon} />}
+      icon={<LegendaryIcon size={ICON_SIZE[size]} />}
       count={count}
-      fontSize={fontSize}
+      size={size}
+      title={`${count} legendary ${count === 1 ? "planet" : "planets"}`}
     />
   );
 }

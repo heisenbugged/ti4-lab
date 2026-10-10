@@ -1,4 +1,4 @@
-import { Button } from "@mantine/core";
+import { Button } from "~/ui";
 import { useState, useEffect } from "react";
 import { EULAModal } from "./EULAModal";
 import { PrivacyPolicyModal } from "./PrivacyPolicyModal";
@@ -65,8 +65,8 @@ export function SpotifyLoginButton({
     <>
       {!accessToken ? (
         <>
-          <Button color="green" variant="filled" onClick={handleLoginClick}>
-            Login
+          <Button size="sm" onClick={handleLoginClick}>
+            Log in
           </Button>
 
           <EULAModal

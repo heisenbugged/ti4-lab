@@ -1,52 +1,77 @@
-.addPlayer {
-  flex: 1;
-  height: 28px;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));
+  gap: var(--space-2);
+}
+
+.input input {
+  text-overflow: ellipsis;
+}
+
+.discordPlayer {
+  position: relative;
   display: flex;
   align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  height: 36px;
+  padding: 0 var(--space-3) 0 14px;
+  background: var(--hull-sunken);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--p);
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.discordIcon {
+  flex-shrink: 0;
+  color: var(--p);
+}
+
+.discordName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.addPlayer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 0 10px;
-  font-size: var(--mantine-font-size-xs);
-  border: 1px dashed;
-  border-radius: var(--mantine-radius-sm);
-  transition:
-    border-color 120ms ease,
-    color 120ms ease;
+  height: 36px;
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ion);
+  font: 600 13.5px/1 var(--font);
+  cursor: pointer;
+  transition: background-color 120ms var(--ease), border-color 120ms var(--ease);
+}
 
-  @mixin light {
-    border-color: var(--mantine-color-gray-4);
-    color: var(--mantine-color-gray-6);
-  }
-  @mixin dark {
-    border-color: var(--mantine-color-dark-4);
-    color: var(--mantine-color-dark-2);
-  }
+.addPlayer:hover {
+  background: var(--hull);
+  border-color: var(--ion);
+}
 
-  &:hover {
-    @mixin light {
-      border-color: var(--mantine-color-spaceBlue-filled);
-      color: var(--mantine-color-spaceBlue-filled);
-    }
-    @mixin dark {
-      border-color: var(--mantine-color-dark-2);
-      color: var(--mantine-color-dark-0);
-    }
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--mantine-primary-color-filled);
-    outline-offset: 2px;
-  }
+.addPlayer:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .addPlayer {
     transition: none;
   }
-}
-
-/* With a mouse, only show the remove button for the row being used. */
-@media (hover: hover) {
-    .playerRow:not(:hover):not(:focus-within) .removePlayer {
-        opacity: 0;
-    }
 }

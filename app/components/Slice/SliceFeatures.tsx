@@ -1,4 +1,3 @@
-import { Group } from "@mantine/core";
 import { techSpecialtiesForSystems } from "~/utils/map";
 import { TechIcon } from "../icons/TechIcon";
 import { LegendaryIcon } from "../icons/LegendaryIcon";
@@ -26,7 +25,7 @@ export function SliceFeatures({ slice }: Props) {
     .flat(1);
 
   return (
-    <Group gap="sm" align="center">
+    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12 }}>
       {specialties.map((tech, idx) => (
         <TechIcon key={idx} techSpecialty={tech} />
       ))}
@@ -39,6 +38,6 @@ export function SliceFeatures({ slice }: Props) {
       {wormholes.map((w, idx) => (
         <Wormhole key={idx} wormhole={w} size={28} fontSize={14} />
       ))}
-    </Group>
+    </div>
   );
 }

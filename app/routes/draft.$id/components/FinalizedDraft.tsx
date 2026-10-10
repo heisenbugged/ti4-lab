@@ -1,32 +1,23 @@
 import {
-  ActionIcon,
-  Box,
-  Button,
-  CopyButton,
-  SimpleGrid,
-  Stack,
-  Table,
-  Text,
-  TextInput,
-  Title,
-  Group,
-  Anchor,
-  Divider,
-  SegmentedControl,
-} from "@mantine/core";
-import {
-  IconCheck,
-  IconCopy,
   IconShare,
   IconPlayerPlay,
   IconArrowBackUp,
   IconMicrophone2,
 } from "@tabler/icons-react";
+import {
+  Button,
+  ButtonAnchor,
+  CopyButton,
+  Heading,
+  Panel,
+  SectionHeader,
+  Segmented,
+  Table,
+  Text,
+} from "~/ui";
 import { useDraft } from "~/draftStore";
-import { Section, SectionTitle } from "~/components/Section";
 import { SummaryRow } from "./SummaryRow";
 import { useMemo, useState } from "react";
-import { SummaryCard } from "./MidDraftSummary";
 import { useNavigate } from "react-router";
 import { PlayerInputSection } from "~/routes/draft.new/components/PlayerInputSection";
 import {
@@ -34,24 +25,25 @@ import {
   useHydratedDraft,
 } from "~/hooks/useHydratedDraft";
 import type { ExternalMapStringFormat } from "~/mapgen/utils/externalMapStringCodec";
-import { useDraftConfig } from "~/hooks/useDraftConfig";
 import { MapSection } from "../sections";
 import { useAtom } from "jotai";
 import { useSyncDraft } from "~/hooks/useSyncDraft";
 import { PlanetFinder } from "./PlanetFinder";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 import { trackButtonClick } from "~/lib/analytics.client";
-import { LabArtToggleButton } from "~/components/LabArtToggleButton";
 import { StartingUnitsTable } from "~/components/StartingUnitsTable";
 import { FactionIcon } from "~/components/icons/FactionIcon";
 import { PlayerChip } from "./PlayerChip";
 import { factions as allFactions } from "~/data/factionData";
+import classes from "./FinalizedDraft.module.css";
+
+const ordinal = (n: number) =>
+  n === 1 ? "Speaker" : `${n}${n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
 
 export function FinalizedDraft() {
   const navigate = useNavigate();
   const { adminMode, originalArt, setOriginalArt } = useSafeOutletContext();
 
-  const config = useDraftConfig();
   const draftUrl = useDraft((state) => state.draftUrl);
   const draft = useDraft((state) => state.draft);
   const { updatePlayerName } = useDraft((state) => state.actions);
@@ -64,11 +56,6 @@ export function FinalizedDraft() {
   const showSeat = draftSpeaker || draftGameMode === "texasStyle";
   const showSliceSummary =
     draftGameMode !== "texasStyle" && draftGameMode !== "presetMap";
-  const usingMinorFactions = useDraft(
-    (state) =>
-      state.draft.settings.minorFactionsInSharedPool ||
-      state.draft.availableMinorFactions !== undefined,
-  );
   const { hydratedPlayers } = useHydratedDraft();
   const { syncDraft, undoLastPick } = useSyncDraft();
 
@@ -98,94 +85,64 @@ export function FinalizedDraft() {
   };
 
   return (
-    <Stack mt="lg" gap="xl">
+    <div className={classes.page}>
       <PlanetFinder onSystemSelected={syncDraft} />
 
-      {/* Header */}
-      <Box>
-        <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
-          <Title order={1}>Draft Complete</Title>
-          <Group gap="sm">
-            <Anchor href={`/draft/${draftUrl}.png`} target="_blank">
-              <Button
-                size="md"
-                color="green"
-                leftSection={<IconShare size={18} />}
-              >
-                Share Image
-              </Button>
-            </Anchor>
-            <Button
-              size="md"
-              variant="light"
-              color="orange"
-              leftSection={<IconMicrophone2 size={18} />}
-              onClick={handleSoundboardClick}
-            >
-              Soundboard
-            </Button>
-          </Group>
-        </Group>
-
-        <Divider my="md" />
-
-        <Group gap="xs">
+      <header className={classes.header}>
+        <div className={classes.titleBlock}>
+          <Heading variant="title">Draft complete</Heading>
+          <Text size="sm" tone="muted" truncate>
+            {draftUrl}, finished in {selections.length} picks.
+          </Text>
+        </div>
+        <div className={classes.actions}>
+          <ButtonAnchor
+            variant="primary"
+            href={`/draft/${draftUrl}.png`}
+            target="_blank"
+            rel="noreferrer"
+            icon={<IconShare size={18} />}
+          >
+            Share image
+          </ButtonAnchor>
+          <Button icon={<IconMicrophone2 size={18} />} onClick={handleSoundboardClick}>
+            Soundboard
+          </Button>
+          <span className={classes.divider} aria-hidden />
           <Button
-            size="xs"
-            variant="subtle"
-            color="gray"
-            leftSection={<IconPlayerPlay size={14} />}
+            variant="tertiary"
+            icon={<IconPlayerPlay size={16} />}
             onClick={() => navigate(`/draft/${draftUrl}/replay`)}
           >
-            Replay Draft
+            Replay draft
           </Button>
           <Button
-            size="xs"
-            variant="subtle"
-            color="gray"
-            leftSection={<IconArrowBackUp size={14} />}
+            variant="tertiary"
+            icon={<IconArrowBackUp size={16} />}
             onClick={undoLastPick}
             disabled={selections.length === 0}
           >
-            Undo Last
+            Undo last
           </Button>
-        </Group>
-      </Box>
-      <SimpleGrid
-        cols={{ base: 1, sm: 1, md: 1, lg: 2 }}
-        style={{ gap: 30 }}
-        mb={20}
-      >
-        <Stack flex={1} gap="xl">
-          <Section>
-            <SectionTitle title="Draft Summary" />
-            <Stack mt="lg" gap="md" hiddenFrom="sm">
-              {hydratedPlayers.map((p) => (
-                <SummaryCard
-                  config={config}
-                  key={p.id}
-                  player={p}
-                  slice={
-                    p.sliceIdx !== undefined ? slices[p.sliceIdx] : undefined
-                  }
-                  showSeat={showSeat}
-                  showPlayerColor={!!draftPlayerColors}
-                  showMinorFaction={usingMinorFactions}
-                />
-              ))}
-            </Stack>
+        </div>
+      </header>
+
+      <div className={classes.grid}>
+        <div className={classes.left}>
+          <section className={classes.sec}>
+            <SectionHeader title="Draft summary" />
             {showSliceSummary ? (
-              <Table visibleFrom="sm">
+              <Table minWidth={760}>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Player</Table.Th>
                     <Table.Th>Faction</Table.Th>
-                    <Table.Th>Speaker Order</Table.Th>
+                    <Table.Th>Speaker</Table.Th>
                     {showSeat && <Table.Th>Seat</Table.Th>}
                     <Table.Th>SV</Table.Th>
                     <Table.Th>Optimal</Table.Th>
                     <Table.Th>Features</Table.Th>
-                    {draftPlayerColors && <Table.Th>Color</Table.Th>}
+                    {draftPlayerColors && <Table.Th>Colour</Table.Th>}
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -201,14 +158,14 @@ export function FinalizedDraft() {
                 </Table.Tbody>
               </Table>
             ) : (
-              <Table visibleFrom="sm">
+              <Table minWidth={480}>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Player</Table.Th>
                     <Table.Th>Faction</Table.Th>
-                    <Table.Th>Speaker Order</Table.Th>
+                    <Table.Th>Speaker</Table.Th>
                     {showSeat && <Table.Th>Seat</Table.Th>}
-                    {draftPlayerColors && <Table.Th>Color</Table.Th>}
+                    {draftPlayerColors && <Table.Th>Colour</Table.Th>}
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -219,19 +176,28 @@ export function FinalizedDraft() {
                         : undefined;
                     return (
                       <Table.Tr key={player.id}>
-                        <Table.Td>
-                          <PlayerChip player={player} />
+                        <Table.Td className={classes.playerCell}>
+                          <PlayerChip player={player} size="sm" />
                         </Table.Td>
                         <Table.Td>
-                          {faction ? faction.name : "Not chosen"}
+                          {faction ? (
+                            <span className={classes.faction}>
+                              <FactionIcon faction={faction.id} style={{ width: 22, height: 22, flex: "none" }} />
+                              <span className={classes.factionName}>{faction.name}</span>
+                            </span>
+                          ) : (
+                            <Text as="span" size="sm" tone="muted">
+                              Not chosen
+                            </Text>
+                          )}
                         </Table.Td>
                         <Table.Td>
                           {player.speakerOrder !== undefined
-                            ? player.speakerOrder + 1
+                            ? ordinal(player.speakerOrder + 1)
                             : "-"}
                         </Table.Td>
                         {showSeat && (
-                          <Table.Td>
+                          <Table.Td numeric>
                             {player.seatIdx !== undefined
                               ? player.seatIdx + 1
                               : "-"}
@@ -246,11 +212,12 @@ export function FinalizedDraft() {
                 </Table.Tbody>
               </Table>
             )}
-          </Section>
+          </section>
+
           {draftGameMode === "twilightsFall" && (
-            <Section>
-              <SectionTitle title="Starting Units" />
-              <Table striped highlightOnHover>
+            <section className={classes.sec}>
+              <SectionHeader title="Starting units" />
+              <Table minWidth={520}>
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>Player</Table.Th>
@@ -270,21 +237,21 @@ export function FinalizedDraft() {
 
                     return (
                       <Table.Tr key={player.id}>
-                        <Table.Td>
-                          <Text fw="bold">{player.name}</Text>
+                        <Table.Td className={classes.playerCell}>
+                          <PlayerChip player={player} size="sm" />
                         </Table.Td>
                         <Table.Td>
                           {player.startingUnitsFactionId &&
                             startingUnitsFaction && (
-                              <Group gap="xs" align="center">
+                              <span className={classes.faction}>
                                 <FactionIcon
                                   faction={player.startingUnitsFactionId}
-                                  style={{ maxHeight: 22 }}
+                                  style={{ width: 22, height: 22, flex: "none" }}
                                 />
-                                <Text size="sm">
+                                <span className={classes.factionName}>
                                   {startingUnitsFaction.name}
-                                </Text>
-                              </Group>
+                                </span>
+                              </span>
                             )}
                         </Table.Td>
                         <Table.Td>
@@ -298,100 +265,79 @@ export function FinalizedDraft() {
                   })}
                 </Table.Tbody>
               </Table>
-            </Section>
+            </section>
           )}
-          <Stack gap="md">
-            <Section>
-              <SectionTitle title="Tiles" />
-              <Text size="sm">
-                {mapString
-                  .split(" ")
-                  .sort((a, b) => Number(a) - Number(b))
-                  .join(", ")}
-              </Text>
-            </Section>
 
-            <Section>
-              <SectionTitle title="Map String">
-                <SegmentedControl
-                  size="xs"
-                  data={[
-                    { label: "TTPG", value: "ttpg" },
-                    { label: "Async", value: "async" },
-                  ]}
-                  value={mapStringFormat}
-                  onChange={(value) =>
-                    setMapStringFormat(value as ExternalMapStringFormat)
-                  }
-                />
-              </SectionTitle>
-              <Stack gap={6}>
-                <TextInput
-                  size="sm"
-                  value={mapString}
-                  readOnly
-                  rightSection={
-                    <CopyButton value={mapString}>
-                      {({ copied, copy }) => (
-                        <ActionIcon
-                          variant="subtle"
-                          color={copied ? "teal" : "gray"}
-                          onClick={copy}
-                          aria-label={
-                            copied
-                              ? `Copied ${mapStringFormat} string`
-                              : `Copy ${mapStringFormat} string`
-                          }
-                        >
-                          {copied ? (
-                            <IconCheck size={16} />
-                          ) : (
-                            <IconCopy size={16} />
-                          )}
-                        </ActionIcon>
-                      )}
-                    </CopyButton>
-                  }
-                  styles={{
-                    input: {
-                      fontFamily:
-                        "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace",
-                      fontSize: 12,
-                      background: "var(--mantine-color-dark-7)",
-                      border: "1px solid var(--mantine-color-dark-5)",
-                      paddingRight: 44,
-                    },
-                  }}
-                />
-              </Stack>
-            </Section>
-          </Stack>
+          <section className={classes.sec}>
+            <SectionHeader title="Tiles" />
+            <Text size="sm" tone="muted" className={classes.tiles}>
+              {mapString
+                .split(" ")
+                .sort((a, b) => Number(a) - Number(b))
+                .join(", ")}
+            </Text>
+          </section>
+
+          <section className={classes.sec}>
+            <SectionHeader title="Map string">
+              <Segmented
+                size="sm"
+                label="Map string format"
+                options={[
+                  { label: "TTPG", value: "ttpg" },
+                  { label: "Async", value: "async" },
+                ]}
+                value={mapStringFormat}
+                onChange={(value) =>
+                  setMapStringFormat(value as ExternalMapStringFormat)
+                }
+              />
+            </SectionHeader>
+            <div className={classes.mapString}>
+              <input
+                className={classes.mapStringInput}
+                value={mapString}
+                readOnly
+                aria-label={`${mapStringFormat === "ttpg" ? "TTPG" : "Async"} map string`}
+                onFocus={(e) => e.currentTarget.select()}
+              />
+              <CopyButton value={mapString} size="md" />
+            </div>
+          </section>
 
           {adminMode && (
-            <Box>
+            <Panel aria-label="Player names">
               <PlayerInputSection
                 players={players}
                 onChangeName={(playerIdx, name) => {
                   updatePlayerName(playerIdx, name);
                 }}
               />
-              <Button mt="lg" onClick={syncDraft}>
-                Save
-              </Button>
-            </Box>
+              <div className={classes.adminSave}>
+                <Button variant="primary" onClick={syncDraft}>
+                  Save
+                </Button>
+              </div>
+            </Panel>
           )}
-        </Stack>
-        <Stack flex={1} gap="md">
+        </div>
+        <div className={classes.right}>
           <MapSection
             titleChildren={
-              <LabArtToggleButton
-                originalArt={originalArt}
-                onToggle={() => setOriginalArt(!originalArt)}
+              <Segmented
+                size="sm"
+                label="Map art"
+                options={[
+                  { label: "Lab art", value: "lab" },
+                  { label: "Original", value: "original" },
+                ]}
+                value={originalArt ? "original" : "lab"}
+                onChange={(v) => setOriginalArt(v === "original")}
               />
             }
           />
-        </Stack>
-      </SimpleGrid>
-    </Stack>
+        </div>
+      </div>
+    </div>
   );
 }

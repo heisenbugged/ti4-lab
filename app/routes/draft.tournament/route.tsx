@@ -2,17 +2,9 @@ import { useSearchParams } from "react-router";
 import { PlayerInputSection } from "../draft.new/components/PlayerInputSection";
 import { useState } from "react";
 import { Player } from "~/types";
-import {
-  Alert,
-  Box,
-  Button,
-  Grid,
-  Group,
-  SimpleGrid,
-  Text,
-  TextInput,
-} from "@mantine/core";
-import { SectionTitle } from "~/components/Section";
+import { IconPlayerPlay } from "@tabler/icons-react";
+import { Button, Heading, Notice, SectionHeader, Text, TextInput } from "~/ui";
+import classes from "./tournament.module.css";
 import { BaseSlice } from "~/components/Slice";
 import { systemIdsToSlice } from "~/utils/slice";
 import { DraftConfig, draftConfig } from "~/draft";
@@ -122,83 +114,81 @@ export default function DraftTournament() {
   const maxPlayers = Math.min(8, slices.length);
 
   return (
-    <Box mt="lg">
-      <SectionTitle title="Tournament Table Setup" />
-      <Grid gutter="xl" mt="xl">
-        <Grid.Col span={12} pl="xl" pr="xl">
-          <PlayerInputSection
-            players={players}
-            discordData={undefined}
-            onChangeName={handleChangeName}
-            onIncreasePlayers={handleAddPlayer}
-            onDecreasePlayers={handleRemovePlayer}
-            maxPlayers={maxPlayers}
-          />
-          {players.length < 6 && (
-            <Alert color="orange.9" mt="xs" variant="filled" fw="bold">
-              With fewer than 6 players, one slice and one faction will be
-              randomly removed from the pool for each missing player
-            </Alert>
-          )}
+    <div className={classes.page}>
+      <Heading variant="title" as="h1">
+        Tournament table setup
+      </Heading>
 
-          <Text size="xl" fw={700} mb="sm" mt="lg">
-            URL name
-          </Text>
-          <Group>
+      <section className={classes.setup}>
+        <PlayerInputSection
+          players={players}
+          discordData={undefined}
+          onChangeName={handleChangeName}
+          onIncreasePlayers={handleAddPlayer}
+          onDecreasePlayers={handleRemovePlayer}
+          maxPlayers={maxPlayers}
+        />
+        {players.length < 6 && (
+          <Notice tone="warning">
+            With fewer than 6 players, one slice and one faction will be
+            randomly removed from the pool for each missing player.
+          </Notice>
+        )}
+
+        <div className={classes.urlName}>
+          <SectionHeader title="URL name" />
+          <div className={classes.urlRow}>
             <TextInput
-              size="xl"
+              aria-label="Table prefix"
               placeholder="Enter table prefix..."
               value={urlPrefix ?? ""}
               readOnly
               disabled
+              className={classes.prefix}
             />
-            -
+            <span aria-hidden className={classes.dash}>
+              -
+            </span>
             <TextInput
-              size="xl"
+              aria-label="Table name"
               placeholder="Enter table name..."
-              flex={1}
               value={tableName}
-              miw={200}
               onChange={(e) => setTableName(e.target.value)}
+              className={classes.tableName}
             />
-          </Group>
+          </div>
+        </div>
+
+        <div className={classes.create}>
           <Button
-            mt="xl"
-            size="xl"
+            variant="primary"
+            size="lg"
+            block
+            icon={<IconPlayerPlay />}
             disabled={draftDisabled}
-            fullWidth
             onMouseDown={handleCreateDraft}
           >
-            Create Draft
+            Create draft
           </Button>
 
           {errorMessages && (
-            <Text c="red" size="sm" mt="xs">
+            <Text tone="danger" size="sm">
               {errorMessages}
             </Text>
           )}
-        </Grid.Col>
+        </div>
+      </section>
 
-        <Grid.Col span={12}>
-          <SectionTitle title="Slices" />
-          <SimpleGrid
-            mt="lg"
-            flex={1}
-            cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 3, xl: 4, xxl: 6 }}
-            spacing="lg"
-            style={{ alignItems: "flex-start" }}
-          >
-            {slices.map((slice, idx) => (
-              <BaseSlice
-                key={idx}
-                id={`slice-${idx}`}
-                config={config}
-                slice={slice}
-              />
-            ))}
-          </SimpleGrid>
-        </Grid.Col>
-      </Grid>
-    </Box>
+      <section className={classes.slicesSection}>
+        <SectionHeader title="Slices" meta={`${slices.length} slices`} />
+        <div className={classes.slices}>
+          {slices.map((slice, idx) => (
+            <div key={idx} className={classes.slice}>
+              <BaseSlice id={`slice-${idx}`} config={config} slice={slice} />
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }

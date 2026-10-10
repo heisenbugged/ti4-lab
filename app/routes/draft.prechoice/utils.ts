@@ -2,7 +2,7 @@ import type { ChoosableDraftType } from "./maps";
 import type {
   SliceGenerationSettings,
   SliceSettingsFormatType,
-} from "~/components/SliceSettingsModal";
+} from "~/draft/sliceSettings";
 import type { FactionId, GameSet, SystemId } from "~/types";
 import { draftConfig } from "~/draft";
 import { getSystemPool } from "~/utils/system";

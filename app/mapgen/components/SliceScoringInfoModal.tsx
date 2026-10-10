@@ -1,101 +1,90 @@
-import { Box, List, Modal, Stack, Text } from "@mantine/core";
+import { Heading, Modal, Text } from "~/ui";
+import classes from "./MapGenerator.module.css";
 
 type Props = {
   opened: boolean;
   onClose: () => void;
 };
 
+const SCORE_CARDS = [
+  {
+    title: "System value",
+    items: [
+      "Sum of all planet resources + influence",
+      "+1 per tech specialty",
+      "+1 for legendary planets",
+      "+2 for an entropic scar",
+    ],
+  },
+  {
+    title: "Distance weighting",
+    items: [
+      "Adjacent (distance 1): full value, 1.0×",
+      "Distance 2: half value, 0.5×",
+      "Distance 3: quarter value, 0.25×",
+    ],
+  },
+  {
+    title: "Slice score",
+    items: [
+      "Sum of all weighted system values within 3 spaces of the home system",
+    ],
+  },
+  {
+    title: "Balance gap",
+    items: ["Difference between the highest and lowest slice scores"],
+  },
+];
+
+const BALANCE_STEPS = [
+  "Finds every swappable system, leaving out Mecatol Rex and home positions.",
+  "Tries swapping pairs of systems to find improvements.",
+  "Checks the map is legal after each swap: no adjacent matching wormholes, no adjacent anomalies.",
+  "Applies the first swap that reduces the gap.",
+  "Press Balance again to keep improving.",
+];
+
 export function SliceScoringInfoModal({ opened, onClose }: Props) {
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title="Slice Scoring & Balance"
+      title="Slice scoring and balance"
       size="lg"
     >
-      <Stack gap="xl">
-        <Box>
-          <Text size="xl" fw={700} ff="heading" mb="md">
-            How Slice Scoring Works
-          </Text>
-          <Text size="sm" c="dimmed" mb="lg">
-            Each starting position (slice) is scored based on nearby systems:
-          </Text>
-          <Stack gap="md">
-            <Box bg="dark.6" p="md" style={{ borderRadius: "8px" }}>
-              <Text size="md" fw={600} mb="sm">
-                System Value Calculation
-              </Text>
-              <List size="sm" spacing="xs">
-                <List.Item>Sum of all planet resources + influence</List.Item>
-                <List.Item>+1 bonus per tech specialty</List.Item>
-                <List.Item>+1 bonus for legendary planets</List.Item>
-                <List.Item>+2 bonus for entropic scar</List.Item>
-              </List>
-            </Box>
-
-            <Box bg="dark.6" p="md" style={{ borderRadius: "8px" }}>
-              <Text size="md" fw={600} mb="sm">
-                Distance Weighting
-              </Text>
-              <List size="sm" spacing="xs">
-                <List.Item>
-                  Adjacent tiles (distance 1): Full value (1.0×)
-                </List.Item>
-                <List.Item>Distance 2 tiles: Half value (0.5×)</List.Item>
-                <List.Item>Distance 3 tiles: Quarter value (0.25×)</List.Item>
-              </List>
-            </Box>
-
-            <Box bg="dark.6" p="md" style={{ borderRadius: "8px" }}>
-              <Text size="md" fw={600} mb="sm">
-                Slice Score
-              </Text>
-              <Text size="sm">
-                Sum of all weighted system values within 3 spaces of the home
-                system
-              </Text>
-            </Box>
-
-            <Box bg="dark.6" p="md" style={{ borderRadius: "8px" }}>
-              <Text size="md" fw={600} mb="sm">
-                Balance Gap
-              </Text>
-              <Text size="sm">
-                Difference between highest and lowest slice scores
-              </Text>
-            </Box>
-          </Stack>
-        </Box>
-
-        <Box>
-          <Text size="xl" fw={700} ff="heading" mb="md">
-            How Improve Balance Works
-          </Text>
-          <Text size="sm" c="dimmed" mb="md">
-            The algorithm reduces the balance gap by swapping systems:
-          </Text>
-          <List size="sm" spacing="sm">
-            <List.Item>
-              Identifies all swappable systems (excludes Mecatol Rex and home
-              positions)
-            </List.Item>
-            <List.Item>
-              Tries swapping pairs of systems to find improvements
-            </List.Item>
-            <List.Item>
-              Checks map legality after each swap (no adjacent matching
-              wormholes, no adjacent anomalies)
-            </List.Item>
-            <List.Item>
-              Applies the first swap that reduces the balance gap
-            </List.Item>
-            <List.Item>
-              Run multiple times to iteratively improve balance
-            </List.Item>
-          </List>
-        </Box>
-      </Stack>
+      <div className={classes.infoBlock}>
+        <Heading variant="heading" as="h3">
+          How slice scoring works
+        </Heading>
+        <Text size="sm" tone="muted">
+          Each starting position (slice) is scored based on nearby systems.
+        </Text>
+      </div>
+      <div className={classes.scoreCards}>
+        {SCORE_CARDS.map((card) => (
+          <div key={card.title}>
+            <b>{card.title}</b>
+            <ul>
+              {card.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div className={classes.infoBlock}>
+        <Heading variant="heading" as="h3">
+          How Balance works
+        </Heading>
+        <Text size="sm" tone="muted">
+          Balance reduces the gap by swapping systems.
+        </Text>
+      </div>
+      <ol className={classes.steps}>
+        {BALANCE_STEPS.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
     </Modal>
   );
 }

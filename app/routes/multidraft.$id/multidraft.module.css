@@ -1,0 +1,46 @@
+.page {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.head {
+  display: grid;
+  gap: 6px;
+}
+
+.draftName {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.body {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.group {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.factions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.slices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.slice {
+  position: relative;
+  min-width: 0;
+}

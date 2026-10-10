@@ -1,0 +1,97 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 640px;
+  margin: 0 auto;
+  padding-bottom: calc(var(--space-6) + var(--sab));
+}
+
+.reconnect {
+  position: fixed;
+  top: calc(var(--header-h) + var(--sat) + var(--space-4));
+  left: 50%;
+  z-index: 150;
+  transform: translateX(-50%);
+  box-shadow: var(--shadow-pop);
+}
+
+/* Faction picker */
+.pickerHead {
+  display: grid;
+  gap: var(--space-2);
+}
+.factionList {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: calc(96px + var(--sab));
+}
+.factionOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 60px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--hull);
+  color: var(--text);
+  font: 600 16px/1.2 var(--font);
+  text-align: left;
+  cursor: pointer;
+}
+.factionOption span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.factionOption:hover {
+  border-color: var(--rule-hover);
+  background: var(--hull-raised);
+}
+.factionOption:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: 2px;
+}
+.factionOptionSelected,
+.factionOptionSelected:hover {
+  border-color: var(--gold-line);
+  background: var(--hull-raised);
+}
+.stickyFoot {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--sab));
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--rule);
+}
+.stickyInner {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* Single faction board */
+.factionHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.factionHead img {
+  flex: none;
+}
+.group {
+  display: grid;
+  gap: var(--space-2);
+}
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}

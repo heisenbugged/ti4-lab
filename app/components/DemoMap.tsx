@@ -7,7 +7,6 @@ import {
   getHexPosition,
 } from "~/utils/positioning";
 import { useDimensions } from "~/hooks/useDimensions";
-import { Box } from "@mantine/core";
 import { useContext } from "react";
 import { MapContext } from "~/contexts/MapContext";
 import { PlayerDemoTile } from "./tiles/PlayerDemoTile";
@@ -17,6 +16,8 @@ import { MecatolTile } from "./tiles/MecatolTile";
 import classes from "./tiles/Tiles.module.css";
 import { SystemTile } from "./tiles/SystemTile";
 import { playerColors } from "~/data/factionData";
+import { PresetDemoHex } from "./tiles/PlayerDemoTile";
+import legend from "./DemoMap.module.css";
 
 type Props = {
   id: string;
@@ -46,14 +47,15 @@ export function DemoMap({ id, map, padding, titles }: Props) {
         disabled: false,
       }}
     >
-      <Box ref={ref} w="100%" h={`${clampedHeight}px`}>
+      <div ref={ref} style={{ width: "100%", height: `${clampedHeight}px` }}>
         {width > 0 &&
           map
             .filter((t) => !!t.position)
             .map((tile, idx) => (
               <DemoMapTile key={idx} mapId={id} tile={tile} titles={titles} />
             ))}
-      </Box>
+      </div>
+      <DemoLegend hasPreset={map.some((t) => t.type === "OPEN")} />
     </MapContext.Provider>
   );
 }
@@ -88,14 +90,16 @@ export function DemoMapTile({
     Tile = <SystemTile mapId={`${mapId}-system`} tile={tile} hideValues />;
   } else if (tile.type === "CLOSED") {
     Tile = null;
+  } else if (tile.type === "OPEN") {
+    Tile = <PresetDemoHex radius={radius} />;
   } else {
     Tile = (
       <Hex
         id={`${mapId}-empty`}
         radius={radius}
-        colorClass={tile.type === "OPEN" ? classes.system : classes.demoEmpty}
+        colorClass={classes.demoEmpty}
         borderColorClass={classes.demoBorder}
-        showBorder={tile.type !== "OPEN"}
+        showBorder
         borderRadius={4}
       />
     );
@@ -121,10 +125,30 @@ export function DemoMapTile({
           zIndex: 1000,
         }}
       >
-        <Text>{tile.idx}</Text>
+        {tile.idx}
       </div> */}
 
       {Tile}
     </div>
+  );
+}
+
+/** Explains the three hex treatments: home, drafted with a slice, preset for everyone. */
+function DemoLegend({ hasPreset }: { hasPreset: boolean }) {
+  return (
+    <ul className={legend.legend}>
+      <li>
+        <i className={`${legend.swatch} ${legend.home}`} />
+        Home system
+      </li>
+      <li>
+        <i className={`${legend.swatch} ${legend.drafted}`} />
+        Drafted in a slice
+      </li>
+      <li className={hasPreset ? undefined : legend.off}>
+        <i className={`${legend.swatch} ${legend.preset}`} />
+        {hasPreset ? "Preset, shared" : "Nothing preset"}
+      </li>
+    </ul>
   );
 }

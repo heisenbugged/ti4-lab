@@ -1,96 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
+import { IconArrowBackUp } from "@tabler/icons-react";
 import {
   Button,
-  Group,
   Modal,
-  SimpleGrid,
-  Text,
-  NumberInput,
-  Box,
-  Stack,
+  NumberField,
+  NumberStepper,
   Tooltip,
-} from "@mantine/core";
-import { CompactSetting } from "~/components/CompactSetting";
-import { SettingsSection } from "~/components/SettingsSection";
-import { IconChartBar, IconRoute, IconAlien } from "@tabler/icons-react";
-import { DEFAULT_SLICE_VALUE_MODIFIERS } from "~/stats";
+  cx,
+} from "~/ui";
+import {
+  DEFAULT_SLICE_SETTINGS,
+  type SliceGenerationSettings,
+  type SliceSettingsFormatType,
+} from "~/draft/sliceSettings";
+import classes from "./SliceSettingsModal.module.css";
 
-export type SliceSettingsFormatType = "milty" | "miltyeq" | "heisen";
-
-export interface SliceGenerationSettings {
-  minSliceValue?: number;
-  maxSliceValue?: number;
-  minOptimalInfluence?: number;
-  minOptimalResources?: number;
-
-  safePathToMecatol: number;
-  centerTileNotEmpty: number;
-  highQualityAdjacent: number;
-  minAlphaWormholes: number;
-  minBetaWormholes: number;
-  minLegendaries: number;
-  maxLegendaries?: number;
-
-  // Slice value modifiers
-  entropicScarValue: number;
-  techValue: number;
-  hopesEndValue: number;
-  emelparValue: number;
-  industrexValue: number;
-  otherLegendaryValue: number;
-  tradeStationValue: number;
-  equidistantMultiplier: number;
-  supernovaOnPathPenalty: number;
-  nebulaOnPathPenalty: number;
-}
-
-export const DEFAULT_SLICE_SETTINGS: Record<
+export { DEFAULT_SLICE_SETTINGS } from "~/draft/sliceSettings";
+export type {
+  SliceGenerationSettings,
   SliceSettingsFormatType,
-  SliceGenerationSettings
-> = {
-  milty: {
-    minOptimalInfluence: 4,
-    minOptimalResources: 3,
-    minSliceValue: 9,
-    maxSliceValue: 13,
-    safePathToMecatol: 0,
-    centerTileNotEmpty: 0,
-    highQualityAdjacent: 0,
-    minAlphaWormholes: 2,
-    minBetaWormholes: 2,
-    minLegendaries: 1,
-    maxLegendaries: 3,
-    ...DEFAULT_SLICE_VALUE_MODIFIERS,
-  },
-  miltyeq: {
-    minOptimalInfluence: 3,
-    minOptimalResources: 2,
-    minSliceValue: 6,
-    maxSliceValue: 10,
-    safePathToMecatol: 0,
-    centerTileNotEmpty: 0,
-    highQualityAdjacent: 0,
-    minAlphaWormholes: 2,
-    minBetaWormholes: 2,
-    minLegendaries: 1,
-    maxLegendaries: 3,
-    ...DEFAULT_SLICE_VALUE_MODIFIERS,
-  },
-  heisen: {
-    minOptimalInfluence: 0,
-    minOptimalResources: 0,
-    minSliceValue: 4,
-    maxSliceValue: 10,
-    safePathToMecatol: 0,
-    centerTileNotEmpty: 0,
-    highQualityAdjacent: 0,
-    minAlphaWormholes: 0,
-    minBetaWormholes: 0,
-    minLegendaries: 0,
-    maxLegendaries: undefined,
-    ...DEFAULT_SLICE_VALUE_MODIFIERS,
-  },
-};
+} from "~/draft/sliceSettings";
 
 // Fields to disable (hide) per format type
 const DISABLED_FIELDS: Record<
@@ -112,10 +41,10 @@ const DISABLED_FIELDS: Record<
   ],
 };
 
-const FORMAT_TITLES: Record<SliceSettingsFormatType, string> = {
-  milty: "Milty Draft Settings",
-  miltyeq: "Milty EQ Settings",
-  heisen: "Nucleus Settings",
+const FORMAT_NAMES: Record<SliceSettingsFormatType, string> = {
+  milty: "Milty",
+  miltyeq: "Milty EQ",
+  heisen: "Nucleus",
 };
 
 type Props = {
@@ -126,68 +55,169 @@ type Props = {
   onSave: (newSettings: SliceGenerationSettings) => void;
 };
 
-// Compact inline decimal input for slice value modifiers
-function InlineDecimal({
+type CountKey = keyof SliceGenerationSettings;
+
+type CountProps = {
+  label: string;
+  property: CountKey;
+  value: number | undefined;
+  onChange: (property: CountKey, value: number | undefined) => void;
+  defaultValue?: number;
+  /** Stepping below 1 switches the limit off. */
+  allowUndefined?: boolean;
+  minValue?: number;
+};
+
+/** Small whole-number stepper; "off" when the limit is switched off. */
+function Count({
   label,
-  tooltip,
+  property,
+  value,
+  onChange,
+  defaultValue,
+  allowUndefined = false,
+  minValue,
+}: CountProps) {
+  const handleDecrease = () => {
+    if (value === undefined) return;
+
+    if (minValue !== undefined) {
+      onChange(property, Math.max(minValue, value - 1));
+      return;
+    }
+
+    const newValue = value - 1;
+    if (newValue <= 0 && allowUndefined) {
+      onChange(property, undefined);
+    } else {
+      onChange(property, Math.max(0, newValue));
+    }
+  };
+
+  const handleIncrease = () => {
+    if (value === undefined) {
+      onChange(property, defaultValue ?? minValue ?? 0);
+    } else {
+      onChange(property, value + 1);
+    }
+  };
+
+  const decreaseDisabled =
+    value === undefined ||
+    (minValue !== undefined && value <= minValue) ||
+    (!allowUndefined && value <= 0);
+
+  return (
+    <NumberStepper
+      size="sm"
+      label={label}
+      value={value}
+      display={value === undefined ? <i>off</i> : undefined}
+      decrease={handleDecrease}
+      increase={handleIncrease}
+      decreaseDisabled={decreaseDisabled}
+    />
+  );
+}
+
+/** Signed decimal weight with free entry. */
+function Weight({
+  label,
   value,
   onChange,
   step = 0.5,
   min,
   max,
+  multiplier,
 }: {
   label: string;
-  tooltip?: string;
   value: number;
   onChange: (value: number) => void;
   step?: number;
   min?: number;
   max?: number;
+  multiplier?: boolean;
 }) {
-  const labelElement = (
-    <Text
-      size="xs"
-      style={{
-        whiteSpace: "nowrap",
-        ...(tooltip && {
-          cursor: "help",
-          borderBottom: "1px dotted var(--mantine-color-dimmed)",
-        }),
-      }}
-    >
-      {label}
-    </Text>
-  );
-
   return (
-    <Group gap={6} wrap="nowrap" justify="space-between">
-      {tooltip ? (
-        <Tooltip label={tooltip} multiline maw={250} withArrow>
-          {labelElement}
-        </Tooltip>
-      ) : (
-        labelElement
+    <span
+      className={cx(
+        classes.weight,
+        !multiplier && value > 0 && classes.pos,
+        !multiplier && value < 0 && classes.neg,
       )}
-      <NumberInput
+    >
+      <NumberField
+        size="sm"
+        aria-label={label}
         value={value}
         onChange={(val) => onChange(typeof val === "number" ? val : 0)}
         step={step}
         min={min}
         max={max}
-        decimalScale={2}
-        fixedDecimalScale={false}
-        w={62}
-        size="xs"
-        styles={{
-          input: {
-            textAlign: "center",
-            fontWeight: 600,
-            paddingLeft: 4,
-            paddingRight: 22,
-          },
+        format={{
+          maximumFractionDigits: 2,
+          signDisplay: multiplier ? "auto" : "exceptZero",
         }}
       />
-    </Group>
+    </span>
+  );
+}
+
+function WeightRow({
+  art,
+  title,
+  hint,
+  tooltip,
+  children,
+}: {
+  art: ReactNode;
+  title: string;
+  hint?: string;
+  tooltip?: string;
+  children: ReactNode;
+}) {
+  const label = <b className={tooltip ? classes.help : undefined}>{title}</b>;
+  return (
+    <div className={classes.wrow}>
+      <span className={classes.wart} aria-hidden>
+        {art}
+      </span>
+      <span className={classes.wtxt}>
+        {tooltip ? <Tooltip label={tooltip}>{label}</Tooltip> : label}
+        {hint && <small>{hint}</small>}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+const fmt = (n: number) =>
+  `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toFixed(1)}`;
+
+/** Where the slice value range sits on a 0 to 20 scale. */
+function ValueTrack({ min, max }: { min?: number; max?: number }) {
+  const scale = 20;
+  const pct = (v: number) => `${(Math.min(Math.max(v, 0), scale) / scale) * 100}%`;
+  const left = min !== undefined ? pct(min) : "0%";
+  const right = max !== undefined ? pct(max) : "100%";
+  return (
+    <div className={classes.track} aria-hidden>
+      <div className={classes.rail}>
+        <span
+          className={classes.band}
+          style={{ left, right: `calc(100% - ${right})` }}
+        />
+        {min !== undefined && <span className={classes.knob} style={{ left }} />}
+        {max !== undefined && (
+          <span className={classes.knob} style={{ left: right }} />
+        )}
+      </div>
+      <div className={classes.ticks}>
+        {[0, 5, 10, 15, 20].map((t) => (
+          <span key={t}>{t}</span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -250,238 +280,30 @@ export function SliceSettingsModal({
     setLocalSettings(defaults);
   };
 
+  const name = FORMAT_NAMES[formatType];
+  const s = localSettings;
+  const exampleTech = 2 * s.techValue;
+  const exampleTotal = 12 + exampleTech + s.nebulaOnPathPenalty;
+
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title={
-        <Text
-          fw={700}
-          style={{ fontFamily: "Orbitron", letterSpacing: "0.05em" }}
-        >
-          {FORMAT_TITLES[formatType]}
-        </Text>
-      }
       size="xl"
-    >
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-        <SettingsSection
-          title="Slice Balance"
-          icon={<IconChartBar size={12} />}
-        >
-          <CompactSetting
-            label="Min Optimal Influence"
-            property="minOptimalInfluence"
-            value={localSettings.minOptimalInfluence}
-            onChange={handleSettingChange}
-            allowUndefined={true}
-            defaultValue={defaults.minOptimalInfluence}
-          />
-          <CompactSetting
-            label="Min Optimal Resources"
-            property="minOptimalResources"
-            value={localSettings.minOptimalResources}
-            onChange={handleSettingChange}
-            allowUndefined={true}
-            defaultValue={defaults.minOptimalResources}
-          />
-          <CompactSetting
-            label="Min Slice Value"
-            property="minSliceValue"
-            value={localSettings.minSliceValue}
-            onChange={handleSettingChange}
-            allowUndefined={true}
-            defaultValue={defaults.minSliceValue}
-          />
-          <CompactSetting
-            label="Max Slice Value"
-            property="maxSliceValue"
-            value={localSettings.maxSliceValue}
-            onChange={handleSettingChange}
-            allowUndefined={true}
-            defaultValue={defaults.maxSliceValue}
-          />
-        </SettingsSection>
-
-        <SettingsSection title="Slice Value" icon={<IconChartBar size={12} />}>
-          <Stack gap="xs">
-            {/* Special Features */}
-            <Box>
-              <Text size="10px" c="dimmed" tt="uppercase" mb={4} opacity={0.7}>
-                Features
-              </Text>
-              <SimpleGrid cols={2} spacing={6}>
-                <InlineDecimal
-                  label="Tech Skip"
-                  tooltip="Bonus value added for each tech specialty (red/blue/green/yellow skip) on a planet"
-                  value={localSettings.techValue}
-                  onChange={(v) => handleSettingChange("techValue", v)}
-                  step={0.25}
-                />
-                <InlineDecimal
-                  label="Trade Station"
-                  tooltip="Bonus value added for trade station planets"
-                  value={localSettings.tradeStationValue}
-                  onChange={(v) => handleSettingChange("tradeStationValue", v)}
-                />
-                <InlineDecimal
-                  label="Entropic Scar"
-                  tooltip="Bonus value added for systems with the Entropic Scar anomaly"
-                  value={localSettings.entropicScarValue}
-                  onChange={(v) => handleSettingChange("entropicScarValue", v)}
-                />
-                <InlineDecimal
-                  label="Equidistant Penalty"
-                  tooltip="Multiplier applied to equidistant tiles (tiles equally close to multiple home systems). Lower values penalize these tiles more."
-                  value={localSettings.equidistantMultiplier}
-                  onChange={(v) =>
-                    handleSettingChange("equidistantMultiplier", v)
-                  }
-                  step={0.1}
-                  min={0}
-                  max={1}
-                />
-              </SimpleGrid>
-            </Box>
-
-            {/* Legendaries */}
-            <Box>
-              <Text size="10px" c="dimmed" tt="uppercase" mb={4} opacity={0.7}>
-                Legendaries
-              </Text>
-              <SimpleGrid cols={2} spacing={6}>
-                <InlineDecimal
-                  label="Hope's End"
-                  value={localSettings.hopesEndValue}
-                  onChange={(v) => handleSettingChange("hopesEndValue", v)}
-                />
-                <InlineDecimal
-                  label="Emelpar"
-                  value={localSettings.emelparValue}
-                  onChange={(v) => handleSettingChange("emelparValue", v)}
-                />
-                <InlineDecimal
-                  label="Industrex"
-                  value={localSettings.industrexValue}
-                  onChange={(v) => handleSettingChange("industrexValue", v)}
-                />
-                <InlineDecimal
-                  label="Other Legendary"
-                  value={localSettings.otherLegendaryValue}
-                  onChange={(v) =>
-                    handleSettingChange("otherLegendaryValue", v)
-                  }
-                />
-              </SimpleGrid>
-            </Box>
-
-            {/* Path Penalties */}
-            <Box>
-              <Text size="10px" c="dimmed" tt="uppercase" mb={4} opacity={0.7}>
-                Path Penalties
-              </Text>
-              <SimpleGrid cols={2} spacing={6}>
-                <InlineDecimal
-                  label="Supernova"
-                  tooltip="Penalty applied when a supernova blocks the direct path to Mecatol Rex"
-                  value={localSettings.supernovaOnPathPenalty}
-                  onChange={(v) =>
-                    handleSettingChange("supernovaOnPathPenalty", v)
-                  }
-                />
-                <InlineDecimal
-                  label="Nebula"
-                  tooltip="Penalty applied when a nebula is on the direct path to Mecatol Rex"
-                  value={localSettings.nebulaOnPathPenalty}
-                  onChange={(v) =>
-                    handleSettingChange("nebulaOnPathPenalty", v)
-                  }
-                />
-              </SimpleGrid>
-            </Box>
-          </Stack>
-        </SettingsSection>
-
-        {!isDisabled("safePathToMecatol") && (
-          <SettingsSection title="Slice Quality" icon={<IconRoute size={12} />}>
-            <CompactSetting
-              label="Safe Path to Mecatol"
-              description="Slices with clear path to center"
-              property="safePathToMecatol"
-              value={localSettings.safePathToMecatol}
-              onChange={handleSettingChange}
-            />
-            <CompactSetting
-              label="High-Quality Adjacent"
-              description="Slices with good tiles adjacent to home"
-              property="highQualityAdjacent"
-              value={localSettings.highQualityAdjacent}
-              onChange={handleSettingChange}
-            />
-            <CompactSetting
-              label="Safe Center Tile"
-              description="Slices with no empty/anomaly center"
-              property="centerTileNotEmpty"
-              value={localSettings.centerTileNotEmpty}
-              onChange={handleSettingChange}
-            />
-          </SettingsSection>
-        )}
-
-        {!isDisabled("minAlphaWormholes") && (
-          <SettingsSection
-            title="Wormholes & Legendaries"
-            icon={<IconAlien size={12} />}
-          >
-            <CompactSetting
-              label="Min Alpha Wormholes"
-              property="minAlphaWormholes"
-              value={localSettings.minAlphaWormholes}
-              onChange={handleSettingChange}
-            />
-            <CompactSetting
-              label="Min Beta Wormholes"
-              property="minBetaWormholes"
-              value={localSettings.minBetaWormholes}
-              onChange={handleSettingChange}
-            />
-            <CompactSetting
-              label="Min Legendary Planets"
-              property="minLegendaries"
-              value={localSettings.minLegendaries}
-              onChange={handleMinLegendariesChange}
-            />
-            <CompactSetting
-              label="Max Legendary Planets"
-              property="maxLegendaries"
-              value={localSettings.maxLegendaries}
-              onChange={handleMaxLegendariesChange}
-              allowUndefined={true}
-              defaultValue={defaults.maxLegendaries}
-              minValue={localSettings.minLegendaries}
-            />
-          </SettingsSection>
-        )}
-      </SimpleGrid>
-
-      <Group
-        justify="space-between"
-        mt="md"
-        pt="md"
-        style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}
-      >
-        <Text
-          size="xs"
-          c="dimmed"
-          style={{ cursor: "pointer" }}
-          onClick={handleReset}
-        >
-          Reset to defaults
-        </Text>
-        <Group gap="xs">
+      title={`${name} slice settings`}
+      description="The rules every generated slice must meet, and how a slice's value is counted."
+      footer={
+        <>
           <Button
-            variant="default"
-            size="sm"
+            variant="tertiary"
+            icon={<IconArrowBackUp size={16} />}
+            onClick={handleReset}
+            className={classes.reset}
+          >
+            Reset to {name} defaults
+          </Button>
+          <Button
+            variant="tertiary"
             onClick={() => {
               setLocalSettings(settings);
               onClose();
@@ -490,16 +312,330 @@ export function SliceSettingsModal({
             Cancel
           </Button>
           <Button
-            size="sm"
+            variant="primary"
             onClick={() => {
               onSave(localSettings);
               onClose();
             }}
           >
-            Save
+            Save settings
           </Button>
-        </Group>
-      </Group>
+        </>
+      }
+    >
+      <div className={classes.body}>
+        <section className={classes.card}>
+          <h4>Balance</h4>
+          <div className={classes.field}>
+            <div className={classes.lbl}>
+              <b>Slice value</b>
+              <small>Every slice lands in this range</small>
+            </div>
+            <div className={classes.range}>
+              <Count
+                label="Min slice value"
+                property="minSliceValue"
+                value={s.minSliceValue}
+                onChange={handleSettingChange}
+                allowUndefined
+                defaultValue={defaults.minSliceValue}
+              />
+              <span className={classes.to}>to</span>
+              <Count
+                label="Max slice value"
+                property="maxSliceValue"
+                value={s.maxSliceValue}
+                onChange={handleSettingChange}
+                allowUndefined
+                defaultValue={defaults.maxSliceValue}
+              />
+            </div>
+          </div>
+          <ValueTrack min={s.minSliceValue} max={s.maxSliceValue} />
+          <div className={classes.field}>
+            <div className={classes.lbl}>
+              <b>Minimum optimal</b>
+              <small>Per slice, before features</small>
+            </div>
+            <div className={classes.range}>
+              <span className={cx(classes.ri, classes.r)}>R</span>
+              <Count
+                label="Min optimal resources"
+                property="minOptimalResources"
+                value={s.minOptimalResources}
+                onChange={handleSettingChange}
+                allowUndefined
+                defaultValue={defaults.minOptimalResources}
+              />
+              <span className={cx(classes.ri, classes.i)}>I</span>
+              <Count
+                label="Min optimal influence"
+                property="minOptimalInfluence"
+                value={s.minOptimalInfluence}
+                onChange={handleSettingChange}
+                allowUndefined
+                defaultValue={defaults.minOptimalInfluence}
+              />
+            </div>
+          </div>
+          <p className={classes.note}>
+            Step a limit below 1 to switch it off.
+          </p>
+
+          {!isDisabled("minAlphaWormholes") && (
+            <>
+              <h4>On the map</h4>
+              <div className={classes.mapGrid}>
+                <div className={classes.mini}>
+                  <span
+                    className={classes.wh}
+                    style={{ "--wh": "var(--wormhole-alpha)" } as React.CSSProperties}
+                  >
+                    α
+                  </span>
+                  <b>Alpha wormholes</b>
+                  <small>at least</small>
+                  <Count
+                    label="Min alpha wormholes"
+                    property="minAlphaWormholes"
+                    value={s.minAlphaWormholes}
+                    onChange={handleSettingChange}
+                  />
+                </div>
+                <div className={classes.mini}>
+                  <span
+                    className={classes.wh}
+                    style={{ "--wh": "var(--wormhole-beta)" } as React.CSSProperties}
+                  >
+                    β
+                  </span>
+                  <b>Beta wormholes</b>
+                  <small>at least</small>
+                  <Count
+                    label="Min beta wormholes"
+                    property="minBetaWormholes"
+                    value={s.minBetaWormholes}
+                    onChange={handleSettingChange}
+                  />
+                </div>
+                <div className={cx(classes.mini, classes.miniWide)}>
+                  <img src="/legendary.webp" alt="" />
+                  <b>Legendary planets</b>
+                  <span className={classes.between}>
+                    <small>between</small>
+                    <Count
+                      label="Min legendary planets"
+                      property="minLegendaries"
+                      value={s.minLegendaries}
+                      onChange={handleMinLegendariesChange}
+                    />
+                    <small>and</small>
+                    <Count
+                      label="Max legendary planets"
+                      property="maxLegendaries"
+                      value={s.maxLegendaries}
+                      onChange={handleMaxLegendariesChange}
+                      allowUndefined
+                      defaultValue={defaults.maxLegendaries}
+                      minValue={s.minLegendaries}
+                    />
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {!isDisabled("safePathToMecatol") && (
+            <>
+              <h4>
+                Slice quality <small>How many slices must have</small>
+              </h4>
+              <div className={classes.wlist}>
+                <div className={cx(classes.wrow, classes.qrow)}>
+                  <span className={classes.wtxt}>
+                    <b>Safe path to Mecatol</b>
+                    <small>Slices with clear path to center</small>
+                  </span>
+                  <Count
+                    label="Safe path to Mecatol"
+                    property="safePathToMecatol"
+                    value={s.safePathToMecatol}
+                    onChange={handleSettingChange}
+                  />
+                </div>
+                <div className={cx(classes.wrow, classes.qrow)}>
+                  <span className={classes.wtxt}>
+                    <b>High-quality adjacent</b>
+                    <small>Slices with good tiles adjacent to home</small>
+                  </span>
+                  <Count
+                    label="High-quality adjacent"
+                    property="highQualityAdjacent"
+                    value={s.highQualityAdjacent}
+                    onChange={handleSettingChange}
+                  />
+                </div>
+                <div className={cx(classes.wrow, classes.qrow)}>
+                  <span className={classes.wtxt}>
+                    <b>Safe center tile</b>
+                    <small>Slices with no empty/anomaly center</small>
+                  </span>
+                  <Count
+                    label="Safe center tile"
+                    property="centerTileNotEmpty"
+                    value={s.centerTileNotEmpty}
+                    onChange={handleSettingChange}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </section>
+
+        <section className={classes.card}>
+          <h4>
+            What a slice is worth <small>Added to optimal R + I + F</small>
+          </h4>
+          <div className={classes.wlist}>
+            <WeightRow
+              art={
+                <>
+                  <img src="/biotic.webp" alt="" />
+                  <img src="/warfare.webp" alt="" />
+                </>
+              }
+              title="Tech skip"
+              hint="Each skip on a planet"
+              tooltip="Bonus value added for each tech specialty (red/blue/green/yellow skip) on a planet"
+            >
+              <Weight
+                label="Tech skip"
+                value={s.techValue}
+                onChange={(v) => handleSettingChange("techValue", v)}
+                step={0.25}
+              />
+            </WeightRow>
+            <WeightRow
+              art={<img src="/tradestation.png" alt="" />}
+              title="Trade station"
+              tooltip="Bonus value added for trade station planets"
+            >
+              <Weight
+                label="Trade station"
+                value={s.tradeStationValue}
+                onChange={(v) => handleSettingChange("tradeStationValue", v)}
+              />
+            </WeightRow>
+            <WeightRow
+              art={<img className={classes.wtile} src="/entropic.png" alt="" />}
+              title="Entropic scar"
+              hint="Systems with the anomaly"
+              tooltip="Bonus value added for systems with the Entropic Scar anomaly"
+            >
+              <Weight
+                label="Entropic scar"
+                value={s.entropicScarValue}
+                onChange={(v) => handleSettingChange("entropicScarValue", v)}
+              />
+            </WeightRow>
+            <WeightRow
+              art={<span className={classes.wnum}>×</span>}
+              title="Equidistant penalty"
+              hint="Multiplier, 0 to 1"
+              tooltip="Multiplier applied to equidistant tiles (tiles equally close to multiple home systems). Lower values penalize these tiles more."
+            >
+              <Weight
+                label="Equidistant penalty"
+                value={s.equidistantMultiplier}
+                onChange={(v) => handleSettingChange("equidistantMultiplier", v)}
+                step={0.1}
+                min={0}
+                max={1}
+                multiplier
+              />
+            </WeightRow>
+          </div>
+
+          <h5>Legendaries</h5>
+          <div className={classes.wlist}>
+            <WeightRow
+              art={<img className={classes.wtile} src="/tiles/ST_66.png" alt="" />}
+              title="Hope's End"
+            >
+              <Weight
+                label="Hope's End"
+                value={s.hopesEndValue}
+                onChange={(v) => handleSettingChange("hopesEndValue", v)}
+              />
+            </WeightRow>
+            <WeightRow art={<img src="/legendary.webp" alt="" />} title="Emelpar">
+              <Weight
+                label="Emelpar"
+                value={s.emelparValue}
+                onChange={(v) => handleSettingChange("emelparValue", v)}
+              />
+            </WeightRow>
+            <WeightRow art={<img src="/legendary.webp" alt="" />} title="Industrex">
+              <Weight
+                label="Industrex"
+                value={s.industrexValue}
+                onChange={(v) => handleSettingChange("industrexValue", v)}
+              />
+            </WeightRow>
+            <WeightRow
+              art={<img src="/legendary.webp" alt="" />}
+              title="Other legendary"
+            >
+              <Weight
+                label="Other legendary"
+                value={s.otherLegendaryValue}
+                onChange={(v) => handleSettingChange("otherLegendaryValue", v)}
+              />
+            </WeightRow>
+          </div>
+
+          <h5>On the path to Mecatol</h5>
+          <div className={classes.wlist}>
+            <WeightRow
+              art={<img className={classes.wtile} src="/tiles/ST_43.png" alt="" />}
+              title="Supernova"
+              hint="Blocks the direct path"
+              tooltip="Penalty applied when a supernova blocks the direct path to Mecatol Rex"
+            >
+              <Weight
+                label="Supernova"
+                value={s.supernovaOnPathPenalty}
+                onChange={(v) => handleSettingChange("supernovaOnPathPenalty", v)}
+              />
+            </WeightRow>
+            <WeightRow
+              art={<img className={classes.wtile} src="/tiles/ST_42.png" alt="" />}
+              title="Nebula"
+              hint="On the direct path"
+              tooltip="Penalty applied when a nebula is on the direct path to Mecatol Rex"
+            >
+              <Weight
+                label="Nebula"
+                value={s.nebulaOnPathPenalty}
+                onChange={(v) => handleSettingChange("nebulaOnPathPenalty", v)}
+              />
+            </WeightRow>
+          </div>
+
+          <div className={classes.example}>
+            <span>Worked example</span>
+            <p>
+              Optimal 7 + 5 + 0 = <b>12.0</b>, two tech skips{" "}
+              <b className={classes.posText}>{fmt(exampleTech)}</b>, a nebula
+              on the path{" "}
+              <b className={s.nebulaOnPathPenalty < 0 ? classes.negText : classes.posText}>
+                {fmt(s.nebulaOnPathPenalty)}
+              </b>
+              . Slice value <b>{exampleTotal.toFixed(1)}</b>.
+            </p>
+          </div>
+        </section>
+      </div>
     </Modal>
   );
 }

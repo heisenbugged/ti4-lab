@@ -1,9 +1,10 @@
-import { Stack, Text, Group, Box, ThemeIcon, Badge } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
-import { Surface } from "~/ui";
-import { factions as allFactions } from "~/data/factionData";
+import { Bracket, Panel, PlayerHex, Tag, cx } from "~/ui";
+import type { CSSProperties } from "react";
+import { factions as allFactions, playerColors } from "~/data/factionData";
 import { HydratedPlayer } from "~/types";
 import { FactionIcon } from "~/components/icons/FactionIcon";
+import classes from "./PlayerSelectionSidebar.module.css";
 
 interface PlayerSelectionSidebarProps {
   players: HydratedPlayer[];
@@ -28,103 +29,99 @@ export function PlayerSelectionSidebar({
   currentPlayerId,
   spectatorMode = false,
 }: PlayerSelectionSidebarProps) {
+  const readyCount = players.filter(
+    (p) => stagingValues?.[p.id] !== undefined,
+  ).length;
+
   return (
-    <Stack gap="md" miw={250}>
-      <Text size="lg" fw="bold" ta="center">
-        Players to pick
-      </Text>
-      {players.map((player) => {
-        const isReady = stagingValues?.[player.id] !== undefined;
-        const isSelected = pickForAnyone
-          ? selectedPlayerId === player.id ||
-            (selectedPlayerId === null && defaultPlayerId === player.id)
-          : currentPlayerId === player.id;
-        const faction = player.faction
-          ? allFactions[player.faction]
-          : undefined;
-        const canClick = spectatorMode || pickForAnyone;
+    <Panel
+      title="Players to pick"
+      flush
+      action={
+        <span className={classes.count}>
+          {readyCount} of {players.length} ready
+        </span>
+      }
+    >
+      <div className={classes.list}>
+        {players.map((player) => {
+          const isReady = stagingValues?.[player.id] !== undefined;
+          const isSelected = pickForAnyone
+            ? selectedPlayerId === player.id ||
+              (selectedPlayerId === null && defaultPlayerId === player.id)
+            : currentPlayerId === player.id;
+          const faction = player.faction
+            ? allFactions[player.faction]
+            : undefined;
+          const canClick = spectatorMode || pickForAnyone;
 
-        const priorityValueFaction = player.priorityValueFactionId
-          ? allFactions[player.priorityValueFactionId]
-          : undefined;
-
-        const speakerOrderLabel =
-          player.speakerOrder !== undefined
-            ? speakerOrderLabels[player.speakerOrder]
+          const priorityValueFaction = player.priorityValueFactionId
+            ? allFactions[player.priorityValueFactionId]
             : undefined;
 
-        return (
-          <Box key={player.id} pos="relative">
-            {speakerOrderLabel && (
-              <Badge
-                color="blue"
-                variant="filled"
-                size="sm"
-                radius="xl"
-                pos="absolute"
-                top={-8}
-                right={-8}
-                style={{ zIndex: 1 }}
+          const speakerOrderLabel =
+            player.speakerOrder !== undefined
+              ? speakerOrderLabels[player.speakerOrder]
+              : undefined;
+
+          const color = playerColors[player.id];
+          const Element = canClick ? "button" : "div";
+
+          return (
+            <Bracket key={player.id} active={isSelected}>
+              <Element
+                type={canClick ? "button" : undefined}
+                className={cx(classes.player, isReady && classes.ready)}
+                style={{ "--p": `var(--player-${color})` } as CSSProperties}
+                aria-pressed={canClick ? isSelected : undefined}
+                onMouseEnter={() => canClick && onPlayerHover(player.id)}
+                onMouseLeave={() => onPlayerHover(null)}
+                onClick={() => canClick && onPlayerSelect(player.id)}
               >
-                {speakerOrderLabel}
-              </Badge>
-            )}
-            <Surface
-              variant={canClick && !isReady ? "interactive" : "card"}
-              color={isReady ? "green" : undefined}
-              style={{
-                cursor: canClick ? "pointer" : "default",
-                borderWidth: isSelected ? 2 : undefined,
-                borderStyle: isSelected ? "solid" : undefined,
-                borderColor: isSelected
-                  ? "var(--mantine-color-blue-5)"
-                  : undefined,
-                borderRadius: 8,
-              }}
-              onMouseEnter={() => canClick && onPlayerHover(player.id)}
-              onMouseLeave={() => onPlayerHover(null)}
-              onClick={() => canClick && onPlayerSelect(player.id)}
-            >
-              <Stack gap="xs" style={{ padding: "10px 12px" }}>
-                <Group justify="space-between" align="center" gap="md">
-                  <Group gap="sm" align="center" wrap="nowrap">
-                    {faction && (
-                      <Box
-                        component="img"
-                        src={faction.iconPath}
-                        alt={faction.name}
-                        w={32}
-                        h={32}
-                      />
-                    )}
-                    <Text size="sm" fw="bold">
-                      {player.name}
-                    </Text>
-                  </Group>
-                  {isReady && (
-                    <ThemeIcon color="green" radius="xl" size="md">
-                      <IconCheck size={16} />
-                    </ThemeIcon>
+                <span className={classes.top}>
+                  {faction ? (
+                    <img
+                      className={classes.faction}
+                      src={faction.iconPath}
+                      alt={faction.name}
+                    />
+                  ) : (
+                    <PlayerHex color={color}>
+                      {String.fromCharCode(65 + player.id)}
+                    </PlayerHex>
                   )}
-                </Group>
+                  <span className={classes.name} title={player.name}>
+                    {player.name}
+                  </span>
+                  {speakerOrderLabel && (
+                    <Tag tone="ion">{speakerOrderLabel}</Tag>
+                  )}
+                  {isReady ? (
+                    <span className={classes.tick} aria-label="Ready">
+                      <IconCheck size={14} stroke={3} />
+                    </span>
+                  ) : (
+                    <span className={classes.waiting}>Choosing</span>
+                  )}
+                </span>
                 {priorityValueFaction && (
-                  <Group gap="xs" align="center">
+                  <span className={classes.priority}>
                     <FactionIcon
                       faction={priorityValueFaction.id}
-                      style={{ width: 16, height: 16 }}
+                      style={{ width: 16, height: 16, flex: "none" }}
                     />
-                    <Text size="xs" c="dimmed">
+                    <span>
                       Priority {priorityValueFaction.priorityOrder}:{" "}
                       {priorityValueFaction.name}
-                    </Text>
-                  </Group>
+                    </span>
+                  </span>
                 )}
-              </Stack>
-            </Surface>
-          </Box>
-        );
-      })}
-    </Stack>
+              </Element>
+            </Bracket>
+          );
+        })}
+      </div>
+    </Panel>
   );
 }
 

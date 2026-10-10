@@ -1,4 +1,3 @@
-import { Stack } from "@mantine/core";
 import { data } from "react-router";
 import { useLoaderData } from "react-router";
 import { useEffect } from "react";
@@ -29,11 +28,13 @@ export default function DraftReplay() {
   if (!draftStore.hydrated) return <LoadingOverlay />;
 
   return (
-    <Stack gap="sm" mb="60" mt="lg">
+    <>
       <ReplayControls />
-
-      <DraftBoard urlName={result.urlName} />
-    </Stack>
+      <DraftBoard
+        urlName={result.urlName}
+        stickyTop="calc(var(--header-h) + var(--sat) + 104px)"
+      />
+    </>
   );
 }
 

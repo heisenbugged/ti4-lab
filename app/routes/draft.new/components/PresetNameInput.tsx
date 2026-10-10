@@ -1,5 +1,5 @@
-import { TextInput } from "@mantine/core";
 import { useState } from "react";
+import { TextInput } from "~/ui";
 import {
   finalizeDraftPresetName,
   sanitizeDraftPresetName,
@@ -28,7 +28,7 @@ export function PresetNameInput({
   return (
     <TextInput
       label="Preset name"
-      description={description}
+      hint={description}
       placeholder={placeholder}
       value={preset.value}
       onChange={(e) =>
@@ -37,6 +37,7 @@ export function PresetNameInput({
       onKeyDown={(e) => {
         if (e.key === "Enter") onSubmit();
       }}
+      autoFocus
       data-autofocus
     />
   );

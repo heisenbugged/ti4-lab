@@ -1,13 +1,5 @@
-import {
-  Button,
-  Checkbox,
-  Code,
-  Group,
-  Modal,
-  Stack,
-  Text,
-} from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { IconDeviceFloppy } from "@tabler/icons-react";
+import { Button, Checkbox, Code, Modal, Stack, Text, notify } from "~/ui";
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 import { Draft } from "~/types";
@@ -36,8 +28,8 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
     const result = fetcher.data;
 
     if (result.success) {
-      notifications.show({
-        color: "green",
+      notify({
+        tone: "success",
         title: "Preset saved",
         message: `Continue from preset ${result.name} in TI4 Lab, or start it with /labdraft preset:${result.name} in Discord.`,
       });
@@ -45,8 +37,8 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
       setKeepFactions(true);
       onClose();
     } else {
-      notifications.show({
-        color: "red",
+      notify({
+        tone: "danger",
         title: "Could not save preset",
         message: result.error,
       });
@@ -74,12 +66,27 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
       onClose={onClose}
       title="Save as preset"
       size="md"
-      removeScrollProps={{ removeScrollBar: false }}
+      footer={
+        <>
+          <Button variant="tertiary" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            icon={<IconDeviceFloppy />}
+            onClick={handleSave}
+            disabled={!presetName.isValid}
+            loading={saving}
+          >
+            Save preset
+          </Button>
+        </>
+      }
     >
-      <Stack gap="md">
-        <Text size="sm" c="dimmed">
+      <Stack gap={4}>
+        <Text size="sm" tone="muted">
           Save the current map, slices and settings so you can continue from
-          them later. You can also start a draft through the Discord bot with{" "}
+          them later. You can also start a draft with the Discord bot:{" "}
           <Code>/labdraft preset:&lt;name&gt;</Code>. The bot uses the players
           from the command and always randomizes player order.
         </Text>
@@ -93,23 +100,10 @@ export function SaveDraftPresetModal({ draft, opened, onClose }: Props) {
 
         <Checkbox
           label="Save factions"
-          description="Keep the exact factions (and minor factions / kings) shown here. When off, factions are re-rolled when you continue from the preset or start it through the bot."
+          description="Keep the exact factions (and minor factions or kings) shown here. When off, factions are re-rolled when you continue from the preset or start it through the bot."
           checked={keepFactions}
-          onChange={(e) => setKeepFactions(e.currentTarget.checked)}
+          onChange={setKeepFactions}
         />
-
-        <Group justify="flex-end" mt="xs">
-          <Button variant="default" onClick={onClose} disabled={saving}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!presetName.isValid}
-            loading={saving}
-          >
-            Save preset
-          </Button>
-        </Group>
       </Stack>
     </Modal>
   );

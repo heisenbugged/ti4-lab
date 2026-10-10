@@ -1,12 +1,11 @@
-import { Text, lighten } from "@mantine/core";
 import { Wormhole as TWormhole } from "~/types";
 
 const wormholeColor: Record<TWormhole, string> = {
-  ALPHA: "var(--mantine-color-orange-6)",
-  BETA: "var(--mantine-color-green-8)",
-  DELTA: "var(--mantine-color-blue-8)",
-  GAMMA: "var(--mantine-color-purple-8)",
-  EPSILON: "var(--mantine-color-red-8)",
+  ALPHA: "var(--pal-orange-6)",
+  BETA: "var(--pal-green-8)",
+  DELTA: "var(--pal-blue-8)",
+  GAMMA: "var(--pal-purple-8)",
+  EPSILON: "var(--pal-red-8)",
 };
 
 type Props = {
@@ -25,15 +24,13 @@ export function Wormhole({ wormhole, size = 60, fontSize = 18 }: Props) {
           height: size,
           width: size,
           border: `4px solid ${wormholeColor[wormhole]}`,
-          background: lighten(wormholeColor[wormhole], 0.3),
+          background: `color-mix(in srgb, ${wormholeColor[wormhole]}, white 30%)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Text ff="heading" fw="bold" size={`${fontSize}px`} c="white">
-          {wormhole.slice(0, 1)}
-        </Text>
+        <span style={{ fontWeight: 700, fontSize, color: "white", fontStretch: "125%", lineHeight: 1 }}>{wormhole.slice(0, 1)}</span>
       </div>
     );
   }
@@ -48,7 +45,7 @@ export function Wormhole({ wormhole, size = 60, fontSize = 18 }: Props) {
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
-        background: "var(--mantine-color-spaceBlue-9)",
+        background: "var(--pal-space-blue-9)",
       }}
     >
       <div

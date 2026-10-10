@@ -1,0 +1,118 @@
+.page {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.headText {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.column {
+  display: grid;
+  gap: var(--space-6);
+  align-content: start;
+  min-width: 0;
+}
+
+.side {
+  min-width: 0;
+}
+
+/* Summary on the left, create (or the full map) on the right. */
+.bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.bottom[data-full-map] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.presetLayout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.mapColumn {
+  min-width: 0;
+}
+
+.createColumn {
+  display: grid;
+  gap: var(--space-4);
+  position: sticky;
+  top: calc(var(--header-h) + var(--space-4));
+}
+
+.createBox,
+.saveBox {
+  display: grid;
+  gap: 10px;
+  padding: var(--space-4);
+  background: var(--hull);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+}
+
+.saveBox {
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.saveBox code {
+  white-space: nowrap;
+}
+
+.errors {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  background: color-mix(in oklab, var(--danger) 8%, var(--hull-sunken));
+  border: 1px solid color-mix(in oklab, var(--danger) 40%, transparent);
+  border-radius: 2px;
+  font-size: 13px;
+}
+
+.errors ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--danger);
+}
+
+@media (max-width: 1199px) {
+  .bottom,
+  .bottom[data-full-map],
+  .presetLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* On narrower screens the map comes first, like the original layout. */
+  .bottom[data-full-map] .side {
+    order: -1;
+  }
+
+  .createColumn {
+    position: static;
+  }
+}
+
+@media (max-width: 575px) {
+  .page {
+    gap: 28px;
+  }
+}

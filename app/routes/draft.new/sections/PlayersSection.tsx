@@ -1,7 +1,9 @@
-import { Section, SectionTitle } from "~/components/Section";
 import { useDraft } from "~/draftStore";
 import { formatForPlayerCount } from "~/draft/playerCountFormats";
 import { PlayerInputSection } from "../components/PlayerInputSection";
+import { BuilderSection } from "./BuilderSection";
+
+const MAX_PLAYERS = 8;
 
 export function PlayersSection() {
   const players = useDraft((state) => state.draft.players);
@@ -21,8 +23,14 @@ export function PlayersSection() {
     canChangePlayers && !!formatForPlayerCount(type, players.length + 1);
 
   return (
-    <Section>
-      <SectionTitle title="Players" />
+    <BuilderSection
+      title="Players"
+      meta={
+        canChangePlayers
+          ? `${players.length} of ${MAX_PLAYERS}`
+          : `${players.length} players`
+      }
+    >
       <PlayerInputSection
         showHeader={false}
         players={players}
@@ -31,6 +39,6 @@ export function PlayersSection() {
         onRemovePlayer={canRemove ? removePlayer : undefined}
         onAddPlayer={canAdd ? addPlayer : undefined}
       />
-    </Section>
+    </BuilderSection>
   );
 }

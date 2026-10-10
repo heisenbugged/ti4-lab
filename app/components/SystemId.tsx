@@ -1,4 +1,3 @@
-import { Text } from "@mantine/core";
 import { SystemId as SystemIdType } from "~/types";
 
 type Props = {
@@ -23,15 +22,19 @@ export function SystemId({
   if (rotation) transforms.push(`rotate(${rotation}deg)`);
 
   return (
-    <Text
-      size={size}
-      c="white"
-      pos="absolute"
-      top={15 * scale}
-      fw="bolder"
-      style={{ transform: transforms.join(" ") }}
+    <p
+      style={{
+        margin: 0,
+        fontSize: size,
+        lineHeight: 1.55,
+        color: "white",
+        position: "absolute",
+        top: 15 * scale,
+        fontWeight: "bolder",
+        transform: transforms.join(" "),
+      }}
     >
       {id}
-    </Text>
+    </p>
   );
 }

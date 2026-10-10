@@ -1,4 +1,3 @@
-import { Text } from "@mantine/core";
 import { hexVertices } from "~/components/Hex/hexUtils";
 
 type Props = {
@@ -29,11 +28,11 @@ export function SmallNumberHex({ value, size = 20, color = "#1c7ed6" }: Props) {
       >
         <polygon points={pointsString} fill={color} />
       </svg>
-      <Text
-        fz="sm"
-        fw="bold"
-        c="white"
+      <span
         style={{
+          fontSize: 14,
+          fontWeight: 700,
+          color: "white",
           position: "absolute",
           left: "50%",
           top: "50%",
@@ -42,7 +41,7 @@ export function SmallNumberHex({ value, size = 20, color = "#1c7ed6" }: Props) {
         }}
       >
         {value}
-      </Text>
+      </span>
     </div>
   );
 }

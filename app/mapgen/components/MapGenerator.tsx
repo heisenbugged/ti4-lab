@@ -1,19 +1,17 @@
 import {
-  AppShell,
-  Box,
   Button,
-  Group,
-  Text,
   Modal,
-  ActionIcon,
-  Select,
   MultiSelect,
+  Notice,
+  NumberStepper,
+  Select,
   TextInput,
   Textarea,
-  Alert,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { notifications } from "@mantine/notifications";
+  Text,
+  cx,
+  notify,
+  useDisclosure,
+} from "~/ui";
 import { ClientOnly } from "remix-utils/client-only";
 import { Map, MAP_INTERACTIONS } from "~/components/Map";
 import { MainAppShell } from "~/components/MainAppShell";
@@ -38,10 +36,12 @@ import {
   IconShare,
   IconPhoto,
   IconWand,
-  IconMinus,
-  IconPlus,
   IconHexagonOff,
   IconFileExport,
+  IconInfoCircle,
+  IconCircleCheck,
+  IconUpload,
+  IconLayoutGrid,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router";
 import { draftConfig } from "~/draft/draftConfig";
@@ -81,6 +81,25 @@ import { mapConfigs } from "~/mapgen/mapConfigs";
 import { DraftTypeSelectionModal } from "./DraftTypeSelectionModal";
 import { MapStringImportExportModal } from "./MapStringImportExportModal";
 import { DraftType } from "~/draft/types";
+import classes from "./MapGenerator.module.css";
+
+/** Game sets for the top bar; the trigger shows the short name, the list the full one. */
+const GAME_SET_OPTIONS: { value: GameSet; label: React.ReactNode }[] = [
+  { value: "base", label: "Base", short: "B" },
+  { value: "pok", label: "PoK", short: "PoK" },
+  { value: "te", label: "Thunder's Edge", short: "TE" },
+  { value: "unchartedstars", label: "Uncharted Stars", short: "US" },
+].map(({ value, label, short }) => ({
+  value: value as GameSet,
+  label: (
+    <>
+      <span className={classes.setLong}>{label}</span>
+      <span className={classes.setShort} title={label}>
+        {short}
+      </span>
+    </>
+  ),
+}));
 import { buildPresetDraftState } from "../utils/presetDraft";
 
 function MapGeneratorContent() {
@@ -155,6 +174,7 @@ function MapGeneratorContent() {
   const [publishDescription, setPublishDescription] = useState("");
   const [publishAuthor, setPublishAuthor] = useState("");
   const [publishing, setPublishing] = useState(false);
+  const [publishTried, setPublishTried] = useState(false);
   const mapString = useMemo(() => {
     return encodeMapString(map);
   }, [map]);
@@ -214,10 +234,10 @@ function MapGeneratorContent() {
     }
 
     // Fallback to random placement if auto-complete fails
-    notifications.show({
+    notify({
       title: "Randomization failed",
       message: "Try different parameters. Using random placement as fallback.",
-      color: "yellow",
+      tone: "warning",
     });
 
     const shuffledSystems = shuffle(systemPool);
@@ -253,10 +273,10 @@ function MapGeneratorContent() {
   ): boolean => {
     const formatLabel = format === "ttpg" ? "TTPG" : "Async";
     if (!mapString.trim()) {
-      notifications.show({
+      notify({
         title: "Invalid input",
         message: `Please enter a ${formatLabel} map string`,
-        color: "red",
+        tone: "danger",
       });
       return false;
     }
@@ -266,10 +286,10 @@ function MapGeneratorContent() {
         ? decodeTtpgMapString(mapString)
         : decodeAsyncMapString(mapString);
     if (!decoded) {
-      notifications.show({
+      notify({
         title: "Invalid input",
         message: `This is not a valid ${formatLabel} map string`,
-        color: "red",
+        tone: "danger",
       });
       return false;
     }
@@ -280,10 +300,10 @@ function MapGeneratorContent() {
       (tile) => tile.type === "SYSTEM" && tile.idx !== 0,
     ).length;
 
-    notifications.show({
+    notify({
       title: "Map imported",
       message: `Imported ${systemsPlaced} systems from ${formatLabel}`,
-      color: "green",
+      tone: "success",
     });
     return true;
   };
@@ -291,10 +311,10 @@ function MapGeneratorContent() {
   const handleCreateDraft = () => {
     const compatibleTypes = mapConfigToCompatibleDraftTypes[mapConfigId];
     if (!compatibleTypes || compatibleTypes.length === 0) {
-      notifications.show({
+      notify({
         title: "Unsupported",
         message: "This map type doesn't support draft creation",
-        color: "red",
+        tone: "danger",
       });
       return;
     }
@@ -320,10 +340,10 @@ function MapGeneratorContent() {
 
     if (!result.ok) {
       const isMissingPlayers = result.error.includes("home systems");
-      notifications.show({
+      notify({
         title: isMissingPlayers ? "Missing players" : "Unsupported",
         message: result.error,
-        color: isMissingPlayers ? "yellow" : "red",
+        tone: isMissingPlayers ? "warning" : "danger",
       });
       return;
     }
@@ -371,10 +391,10 @@ function MapGeneratorContent() {
 
   const handlePublish = async () => {
     if (!isMapComplete) {
-      notifications.show({
+      notify({
         title: "Map incomplete",
         message: "Complete the map before publishing.",
-        color: "yellow",
+        tone: "warning",
       });
       return;
     }
@@ -384,10 +404,10 @@ function MapGeneratorContent() {
     const author = publishAuthor.trim();
 
     if (!name || !description || !author) {
-      notifications.show({
+      notify({
         title: "Missing details",
         message: "Name, description, and author are required.",
-        color: "red",
+        tone: "danger",
       });
       return;
     }
@@ -408,10 +428,10 @@ function MapGeneratorContent() {
 
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.success || !result?.slug) {
-        notifications.show({
+        notify({
           title: "Publish failed",
           message: result?.error ?? "Unable to publish map.",
-          color: "red",
+          tone: "danger",
         });
         return;
       }
@@ -511,6 +531,19 @@ function MapGeneratorContent() {
 
   const tileRadius = 60;
 
+  const openHexCount = map.filter((tile) => tile.type === "OPEN").length;
+  const publishMissing =
+    publishTried &&
+    (!publishName.trim() ||
+      !publishDescription.trim() ||
+      !publishAuthor.trim());
+  // Where the gap sits between "even" and "uneven"; 10 points or more reads as fully uneven.
+  const gapPosition = Math.min(balanceGap / 10, 1) * 100;
+
+  const shipReason = !isMapComplete
+    ? `${openHexCount} open ${openHexCount === 1 ? "hex" : "hexes"} left. Fill ${openHexCount === 1 ? "it" : "them"} to make an image, start a draft or publish.`
+    : "Map complete. Start a draft from it or publish it to Community maps.";
+
   return (
     <>
       <SliceScoringInfoModal opened={infoOpened} onClose={closeInfo} />
@@ -528,11 +561,38 @@ function MapGeneratorContent() {
       />
       <Modal
         opened={publishOpened}
-        onClose={closePublish}
-        title="Publish Map"
-        centered
+        onClose={() => {
+          setPublishTried(false);
+          closePublish();
+        }}
+        title="Publish map"
+        size="lg"
+        footer={
+          <>
+            <Button
+              variant="tertiary"
+              onClick={() => {
+                setPublishTried(false);
+                closePublish();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setPublishTried(true);
+                handlePublish();
+              }}
+              loading={publishing}
+              disabled={!isMapComplete}
+            >
+              Publish map
+            </Button>
+          </>
+        }
       >
-        <Group gap="sm" mb="md" grow>
+        <div className={classes.publishRow}>
           <TextInput
             label="Name"
             placeholder="Map name"
@@ -545,26 +605,22 @@ function MapGeneratorContent() {
             value={publishAuthor}
             onChange={(e) => setPublishAuthor(e.currentTarget.value)}
           />
-        </Group>
+        </div>
         <Textarea
           label="Description"
           placeholder="What makes this map special?"
-          minRows={4}
+          rows={4}
           value={publishDescription}
           onChange={(e) => setPublishDescription(e.currentTarget.value)}
+          error={
+            publishMissing
+              ? "Name, description and author are required."
+              : undefined
+          }
         />
-        <Group justify="flex-end" mt="lg">
-          <Button variant="default" onClick={closePublish}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handlePublish}
-            loading={publishing}
-            disabled={!isMapComplete}
-          >
-            Publish
-          </Button>
-        </Group>
+        <Text size="sm" tone="muted">
+          Published maps appear in Community maps and open at their own page.
+        </Text>
       </Modal>
       <MapStringImportExportModal
         exportStrings={
@@ -582,36 +638,24 @@ function MapGeneratorContent() {
         sensors={sensors}
       >
         {duplicateHyperlanes.length > 0 && (
-          <Box
-            pos="fixed"
-            bottom={12}
-            right={12}
-            style={{ zIndex: 2000, maxWidth: 320 }}
-          >
-            <Alert color="yellow" variant="light" radius="md">
-              <Text size="xs">
-                Duplicate hyperlanes detected. Physical maps may be limited to
-                one copy per tile.
-              </Text>
-            </Alert>
-          </Box>
+          <div className={classes.dupNotice}>
+            <Notice tone="warning" title="Duplicate hyperlanes">
+              Physical maps may be limited to one copy of each hyperlane tile.
+            </Notice>
+          </div>
         )}
-        <AppShell
-          navbar={{
-            width: 250,
-            breakpoint: "md",
-            collapsed: { mobile: true },
-          }}
-          padding={0}
-        >
-          <AppShell.Navbar p={0} visibleFrom="sm">
+        <div className={cx(classes.gen, closeTileMode && classes.closing)}>
+          <aside className={classes.side} aria-label="Tiles">
             <TileSidebar />
-          </AppShell.Navbar>
-          <AppShell.Main p={0} h="calc(100vh - 60px)" mih="calc(100vh - 60px)">
-            <Box bg="dark.7" px="sm" py={8}>
-              <Group gap="sm" wrap="wrap">
+          </aside>
+          <div className={classes.main}>
+            <div className={classes.bar}>
+              <div className={classes.grp}>
                 <Select
-                  data={Object.values(mapConfigs).map((config) => ({
+                  aria-label="Map type"
+                  size="sm"
+                  width={150}
+                  options={Object.values(mapConfigs).map((config) => ({
                     value: config.id,
                     label: config.name,
                   }))}
@@ -621,225 +665,210 @@ function MapGeneratorContent() {
                       setMapConfig(value);
                     }
                   }}
-                  size="xs"
-                  w={140}
                 />
-                <MultiSelect
-                  data={[
-                    { value: "base", label: "Base" },
-                    { value: "pok", label: "PoK" },
-                    { value: "te", label: "Thunder's Edge" },
-                    { value: "unchartedstars", label: "Uncharted Stars" },
-                  ]}
-                  value={gameSets}
-                  onChange={(value) => setGameSets(value as GameSet[])}
-                  placeholder="Game Sets"
-                  size="xs"
-                  w={160}
-                  checkIconPosition="right"
-                  styles={{ pill: { display: "none" } }}
-                />
-                <Group gap={4}>
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
+                <div className={classes.sets}>
+                  <MultiSelect
+                    aria-label="Game sets"
                     size="sm"
-                    onClick={() => setRingCount(ringCount - 1)}
-                    disabled={ringCount <= 2}
-                  >
-                    <IconMinus size={14} />
-                  </ActionIcon>
-                  <Text size="xs" c="dimmed" w={50} ta="center">
-                    {ringCount} rings
-                  </Text>
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    size="sm"
-                    onClick={() => setRingCount(ringCount + 1)}
-                    disabled={ringCount >= 5}
-                  >
-                    <IconPlus size={14} />
-                  </ActionIcon>
-                </Group>
-                <Button
-                  leftSection={<IconFileExport size={14} />}
-                  variant="subtle"
-                  color="gray"
-                  size="xs"
-                  onClick={openMapStrings}
-                >
-                  Map Strings
-                </Button>
-                <Group gap={4}>
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    size="sm"
-                    onClick={removeHomeSystem}
-                    disabled={playerCount <= 1}
-                  >
-                    <IconMinus size={14} />
-                  </ActionIcon>
-                  <Text size="xs" c="dimmed" w={55} ta="center">
-                    {playerCount} players
-                  </Text>
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    size="sm"
-                    onClick={addHomeSystem}
-                  >
-                    <IconPlus size={14} />
-                  </ActionIcon>
-                </Group>
-                <ActionIcon
-                  variant={closeTileMode ? "filled" : "subtle"}
-                  color={closeTileMode ? "red" : "gray"}
+                    placeholder="Game sets"
+                    options={GAME_SET_OPTIONS}
+                    value={gameSets}
+                    onChange={(value) => setGameSets(value as GameSet[])}
+                  />
+                </div>
+              </div>
+              <div className={classes.grp}>
+                <NumberStepper
                   size="sm"
-                  onClick={toggleCloseTileMode}
-                  title="Close tile tool"
+                  label="rings"
+                  display={
+                    <>
+                      <b>{ringCount}</b> rings
+                    </>
+                  }
+                  decrease={() => setRingCount(ringCount - 1)}
+                  increase={() => setRingCount(ringCount + 1)}
+                  decreaseDisabled={ringCount <= 2}
+                  increaseDisabled={ringCount >= 5}
+                />
+                <NumberStepper
+                  size="sm"
+                  label="players"
+                  display={
+                    <>
+                      <b>{playerCount}</b> players
+                    </>
+                  }
+                  decrease={removeHomeSystem}
+                  increase={addHomeSystem}
+                  decreaseDisabled={playerCount <= 1}
+                />
+              </div>
+              <div className={cx(classes.grp, classes.grpEnd)}>
+                <div
+                  className={classes.joined}
+                  role="group"
+                  aria-label="Export"
                 >
-                  <IconHexagonOff size={16} />
-                </ActionIcon>
-                <Button
-                  leftSection={<IconRefresh size={14} />}
-                  variant="subtle"
-                  color="gray"
-                  size="xs"
+                  <button type="button" onClick={openMapStrings}>
+                    <IconFileExport />
+                    Map strings
+                  </button>
+                  <button type="button" onClick={openShare}>
+                    <IconShare />
+                    Share
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.open(imageUrl, "_blank")}
+                    disabled={!isMapComplete}
+                    title={
+                      isMapComplete
+                        ? undefined
+                        : "Fill every open hex to make an image"
+                    }
+                  >
+                    <IconPhoto />
+                    Image
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className={classes.canvas}>
+              {stats && (
+                <MapStatsOverlay stats={stats} className={classes.stats} />
+              )}
+
+              <div
+                className={classes.dock}
+                role="toolbar"
+                aria-label="Map tools"
+              >
+                <button
+                  type="button"
+                  className={classes.tool}
                   onClick={handleRandomize}
                 >
-                  Randomize
-                </Button>
-                <Button
-                  leftSection={<IconArrowsShuffle size={14} />}
-                  variant="subtle"
-                  color="gray"
-                  size="xs"
-                  onClick={handleImproveBalance}
-                  disabled={balanceGap === 0}
+                  <IconRefresh />
+                  <span>
+                    Randomize
+                    <small>Refill every open system</small>
+                  </span>
+                </button>
+                <div className={classes.balance}>
+                  <button
+                    type="button"
+                    className={classes.tool}
+                    onClick={handleImproveBalance}
+                    disabled={balanceGap === 0}
+                  >
+                    <IconArrowsShuffle />
+                    <span>
+                      Balance
+                      <small>One improving swap per press</small>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className={classes.gapMeter}
+                    onClick={openInfo}
+                    aria-label={`Balance gap ${balanceGap.toFixed(1)}. How slice scoring works`}
+                  >
+                    <span className={classes.gapRow}>
+                      Gap <b>{balanceGap.toFixed(1)}</b>
+                      <IconInfoCircle />
+                    </span>
+                    <span className={classes.gapBar}>
+                      <i style={{ left: `${gapPosition}%` }} />
+                    </span>
+                    <span className={classes.gapScale}>
+                      <span>Even</span>
+                      <span>Uneven</span>
+                    </span>
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className={cx(classes.tool, closeTileMode && classes.toolOn)}
+                  aria-pressed={closeTileMode}
+                  onClick={toggleCloseTileMode}
                 >
-                  Balance
-                </Button>
-                <Button
-                  leftSection={<IconTrash size={14} />}
-                  variant="subtle"
-                  color="gray"
-                  size="xs"
+                  <IconHexagonOff />
+                  <span>
+                    Close hexes
+                    <small>
+                      {closeTileMode
+                        ? "On: click a hex to close or reopen it"
+                        : "Mark hexes as off the map"}
+                    </small>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className={cx(classes.tool, classes.toolReset)}
                   onClick={clearMap}
                 >
-                  Reset
-                </Button>
-                {balanceGap > 0 && (
-                  <Group
-                    gap={4}
-                    onClick={openInfo}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <Text size="xs" c="dimmed">
-                      Gap:
-                    </Text>
-                    <Text size="xs" fw={600} c="yellow.5">
-                      {balanceGap.toFixed(1)}
-                    </Text>
-                  </Group>
-                )}
-                <Box style={{ marginLeft: "auto" }}>
-                  <Group gap="xs">
-                    <Button
-                      leftSection={<IconShare size={14} />}
-                      variant="subtle"
-                      color="gray"
-                      size="xs"
-                      onClick={openShare}
-                    >
-                      Share
-                    </Button>
-                    <Button
-                      leftSection={<IconPhoto size={14} />}
-                      variant="subtle"
-                      color="gray"
-                      size="xs"
-                      onClick={() => window.open(imageUrl, "_blank")}
-                      disabled={!isMapComplete}
-                    >
-                      Image
-                    </Button>
-                    <Button
-                      variant="light"
-                      color="blue"
-                      size="xs"
-                      onClick={handleCreateDraft}
-                      disabled={!isMapComplete}
-                    >
-                      Slice Draft
-                    </Button>
-                    <Button
-                      leftSection={<IconWand size={14} />}
-                      variant="filled"
-                      color="blue"
-                      size="xs"
-                      onClick={handleCreatePresetDraft}
-                      disabled={!isMapComplete}
-                    >
-                      Preset Draft
-                    </Button>
-                    <Button
-                      variant="light"
-                      color="teal"
-                      size="xs"
-                      onClick={openPublish}
-                      disabled={!isMapComplete}
-                    >
-                      Publish
-                    </Button>
-                  </Group>
-                </Box>
-              </Group>
-            </Box>
-            <Box
-              w="100%"
-              pos="relative"
-              p="md"
-              style={{
-                aspectRatio: "740 / 800",
-                maxHeight: "calc(100vh - 140px)",
-                maxWidth: "100%",
-              }}
-            >
-              {/* Desktop: Overlay on map */}
-              {stats && (
-                <Box visibleFrom="sm">
-                  <MapStatsOverlay stats={stats} />
-                </Box>
-              )}
-              <Map
-                id="map-generator"
-                modifiableMapTiles={modifiableMapTiles}
-                map={map}
-                disabled={false}
-                interactions={MAP_INTERACTIONS.mapGenerator}
-                onSelectSystemTile={(tile) => openPlanetFinderForMap(tile.idx)}
-                onDeleteSystemTile={(tile) => removeSystemFromMap(tile.idx)}
-                sliceValues={sliceValues}
-                sliceStats={sliceStats}
-                sliceBreakdowns={sliceBreakdowns}
-                tileContributions={tileContributions}
-                hoveredHomeIdx={hoveredHomeIdx}
-                onHomeHover={setHoveredHomeIdx}
-                closeTileMode={closeTileMode}
-                onToggleTileClosed={toggleTileClosed}
-              />
-            </Box>
+                  <IconTrash />
+                  <span>Reset map</span>
+                </button>
+              </div>
 
-            {/* Mobile: Stats below map */}
-            {stats && (
-              <Box hiddenFrom="sm" p="md" mt="lg" bg="dark.8">
-                <MapStatsOverlay stats={stats} mobile />
-              </Box>
-            )}
-          </AppShell.Main>
-        </AppShell>
+              <div className={classes.mapBox}>
+                <Map
+                  id="map-generator"
+                  modifiableMapTiles={modifiableMapTiles}
+                  map={map}
+                  disabled={false}
+                  interactions={MAP_INTERACTIONS.mapGenerator}
+                  onSelectSystemTile={(tile) =>
+                    openPlanetFinderForMap(tile.idx)
+                  }
+                  onDeleteSystemTile={(tile) => removeSystemFromMap(tile.idx)}
+                  sliceValues={sliceValues}
+                  sliceStats={sliceStats}
+                  sliceBreakdowns={sliceBreakdowns}
+                  tileContributions={tileContributions}
+                  hoveredHomeIdx={hoveredHomeIdx}
+                  onHomeHover={setHoveredHomeIdx}
+                  closeTileMode={closeTileMode}
+                  onToggleTileClosed={toggleTileClosed}
+                />
+              </div>
+
+              <div className={classes.ship}>
+                <p className={classes.why}>
+                  {isMapComplete ? <IconCircleCheck /> : <IconInfoCircle />}
+                  {shipReason}
+                </p>
+                <div className={classes.shipButtons}>
+                  <Button
+                    icon={<IconLayoutGrid size={16} />}
+                    onClick={handleCreateDraft}
+                    disabled={!isMapComplete}
+                  >
+                    Slice draft
+                  </Button>
+                  <Button
+                    icon={<IconWand size={16} />}
+                    onClick={handleCreatePresetDraft}
+                    disabled={!isMapComplete}
+                  >
+                    Preset draft
+                  </Button>
+                  <Button
+                    variant="primary"
+                    icon={<IconUpload size={16} />}
+                    onClick={openPublish}
+                    disabled={!isMapComplete}
+                  >
+                    Publish map
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <DragOverlay dropAnimation={null}>
           {activeSystemId ? (
             <RawSystemTile
@@ -862,8 +891,8 @@ function MapGeneratorContent() {
 
 export default function MapGenerator() {
   return (
-    <MainAppShell>
-      <ClientOnly fallback={<Box w="100%" h="calc(100vh - 60px)" />}>
+    <MainAppShell flush>
+      <ClientOnly fallback={<div className={classes.fallback} />}>
         {() => <MapGeneratorContent />}
       </ClientOnly>
     </MainAppShell>

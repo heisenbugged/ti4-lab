@@ -1,15 +1,19 @@
-import { Title, TitleProps } from "@mantine/core";
+import type { HTMLAttributes } from "react";
+import { cx } from "~/ui";
+import classes from "./Titles.module.css";
 
-const Slice = ({ children, ...rest }: { children: string } & TitleProps) => (
-  <Title order={4} fw={700} size="md" {...rest}>
+type Props = { children: string } & HTMLAttributes<HTMLHeadingElement>;
+
+const Slice = ({ children, className, ...rest }: Props) => (
+  <h4 className={cx(classes.slice, className)} {...rest}>
     {children}
-  </Title>
+  </h4>
 );
 
-const Player = ({ children, ...rest }: { children: string } & TitleProps) => (
-  <Title order={4} ta="center" fw={700} c="violet.9" {...rest}>
+const Player = ({ children, className, ...rest }: Props) => (
+  <h4 className={cx(classes.player, className)} {...rest}>
     {children}
-  </Title>
+  </h4>
 );
 
 export const Titles = {

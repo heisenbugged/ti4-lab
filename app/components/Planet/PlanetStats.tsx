@@ -1,4 +1,3 @@
-import { Box, Group, Text } from "@mantine/core";
 import { useSafeOutletContext } from "~/useSafeOutletContext";
 
 type Props = {
@@ -8,52 +7,32 @@ type Props = {
   fontSize?: string;
 };
 
-export function PlanetStats({
-  legendary,
-  resources,
-  influence,
-  fontSize = "25px",
-}: Props) {
+const row = { display: "flex", alignItems: "center", gap: 3, zIndex: 1, position: "relative" } as const;
+const num = (fontSize: string) => ({ margin: 0, fontSize, fontWeight: "bolder" as const, lineHeight: 1.55 });
+
+export function PlanetStats({ legendary, resources, influence, fontSize = "25px" }: Props) {
   const { accessibleColors } = useSafeOutletContext();
 
   const accessibleShadow = accessibleColors
-    ? {
-        WebkitTextStroke: "2px rgba(255, 255, 255, 0.5)",
-        paintOrder: "stroke fill",
-      }
+    ? { WebkitTextStroke: "2px rgba(255, 255, 255, 0.5)", paintOrder: "stroke fill" }
     : undefined;
+
   if (legendary) {
     return (
-      <Group gap={3} style={{ zIndex: 1 }}>
-        <Box bg="yellow" style={{ borderRadius: 8 }} px={2} py={2}>
-          <Text size={fontSize} fw="bolder" c="white">
-            {resources}
-          </Text>
-        </Box>
-        <Box bg="blue" style={{ borderRadius: 8 }} px={2} py={2}>
-          <Text size={fontSize} c="white" fw="bolder">
-            {influence}
-          </Text>
-        </Box>
-      </Group>
+      <div style={row}>
+        <div style={{ background: "var(--pal-yellow-8)", borderRadius: 8, padding: 2 }}>
+          <p style={{ ...num(fontSize), color: "white" }}>{resources}</p>
+        </div>
+        <div style={{ background: "var(--pal-blue-8)", borderRadius: 8, padding: 2 }}>
+          <p style={{ ...num(fontSize), color: "white" }}>{influence}</p>
+        </div>
+      </div>
     );
   }
   return (
-    <Group gap={3} style={{ zIndex: 1 }}>
-      <Text
-        size={fontSize}
-        fw="bolder"
-        style={{
-          color: "#edff00",
-          ["-webkit-text-stroke"]: "2px #40578a5e",
-          paintOrder: "stroke fill",
-        }}
-      >
-        {resources}
-      </Text>
-      <Text size={fontSize} c="blue.9" fw="bolder" style={accessibleShadow}>
-        {influence}
-      </Text>
-    </Group>
+    <div style={row}>
+      <p style={{ ...num(fontSize), color: "#edff00", WebkitTextStroke: "2px #40578a5e", paintOrder: "stroke fill" }}>{resources}</p>
+      <p style={{ ...num(fontSize), color: "var(--pal-blue-9)", ...accessibleShadow }}>{influence}</p>
+    </div>
   );
 }

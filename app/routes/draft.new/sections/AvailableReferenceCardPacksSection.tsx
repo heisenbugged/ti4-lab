@@ -1,8 +1,9 @@
-import { Button, SimpleGrid } from "@mantine/core";
-import { Section, SectionTitle } from "~/components/Section";
+import { IconDice5 } from "@tabler/icons-react";
 import { useDraft } from "~/draftStore";
-import { IconDice6Filled } from "@tabler/icons-react";
+import { Button } from "~/ui";
 import { ReferenceCardPack } from "~/components/ReferenceCardPack";
+import { BuilderSection } from "./BuilderSection";
+import classes from "./FactionPool.module.css";
 
 export function AvailableReferenceCardPacksSection() {
   const referenceCardPacks = useDraft(
@@ -17,23 +18,24 @@ export function AvailableReferenceCardPacksSection() {
   }
 
   return (
-    <Section>
-      <SectionTitle title="Faction Reference Cards">
+    <BuilderSection
+      title="Faction reference cards"
+      meta={`${referenceCardPacks.length} packs`}
+      actions={
         <Button
-          size="xs"
+          size="sm"
+          icon={<IconDice5 />}
           onMouseDown={randomizeReferenceCardPacks}
-          color="gray.7"
-          variant="filled"
         >
-          <IconDice6Filled size={24} />
+          Randomize packs
         </Button>
-      </SectionTitle>
-
-      <SimpleGrid cols={{ base: 1, xl: 2 }} spacing="xl">
+      }
+    >
+      <div className={classes.packs}>
         {referenceCardPacks.map((pack, packIdx) => (
           <ReferenceCardPack key={packIdx} pack={pack} packIdx={packIdx} />
         ))}
-      </SimpleGrid>
-    </Section>
+      </div>
+    </BuilderSection>
   );
 }

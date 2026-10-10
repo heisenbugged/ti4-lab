@@ -1,14 +1,14 @@
 import {
-  Anchor,
-  Box,
-  Group,
-  SegmentedControl,
+  Row,
+  SectionHeader,
+  Segmented,
+  Stack,
   Switch,
   Table,
   Text,
   TextInput,
-  Title,
-} from "@mantine/core";
+} from "~/ui";
+import styles from "./styles.module.css";
 import { IconSearch } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import {
@@ -63,12 +63,11 @@ function FlagSwitch({
   const checked = pending != null ? pending === "true" : map[flag];
   return (
     <Switch
-      size="xs"
       checked={checked}
       aria-label={`${label} ${map.name}`}
-      onChange={(event) =>
+      onChange={(next) =>
         fetcher.submit(
-          { id: map.id, flag, value: String(event.currentTarget.checked) },
+          { id: map.id, flag, value: String(next) },
           { method: "post" },
         )
       }
@@ -99,42 +98,42 @@ export default function AdminMaps() {
   const featuredCount = maps.filter((map) => map.featured).length;
 
   return (
-    <Box p="md">
-      <Title order={2} mb="xs">
-        Community maps
-      </Title>
-      <Text size="sm" c="dimmed" mb="md">
+    <Stack gap={4}>
+      <SectionHeader title="Community maps" meta={`${maps.length} maps`} />
+      <Text size="sm" tone="muted">
         Hidden maps stay reachable by link but leave the community listing.
         Featured maps become the only candidates for map of the day.
       </Text>
-      <Group mb="md" gap="sm">
+      <Row gap={3}>
         <TextInput
           placeholder="Search name or author"
-          leftSection={<IconSearch size={14} />}
+          aria-label="Search name or author"
+          leftIcon={<IconSearch size={14} />}
           value={search}
           onChange={(event) => setSearch(event.currentTarget.value)}
-          w={280}
+          className={styles.search}
         />
-        <SegmentedControl
-          size="xs"
+        <Segmented
+          label="Filter maps"
+          size="sm"
           value={view}
           onChange={(value) => setView(value as View)}
-          data={[
+          options={[
             { label: `All (${maps.length})`, value: "all" },
             { label: `Listed (${maps.length - hiddenCount})`, value: "listed" },
             { label: `Hidden (${hiddenCount})`, value: "hidden" },
             { label: `Featured (${featuredCount})`, value: "featured" },
           ]}
         />
-      </Group>
-      <Table striped highlightOnHover verticalSpacing={4} fz="sm">
+      </Row>
+      <Table striped dense minWidth={900}>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
             <Table.Th>Author</Table.Th>
-            <Table.Th ta="right">Players</Table.Th>
-            <Table.Th ta="right">Drafts</Table.Th>
-            <Table.Th ta="right">Views</Table.Th>
+            <Table.Th className={styles.num}>Players</Table.Th>
+            <Table.Th className={styles.num}>Drafts</Table.Th>
+            <Table.Th className={styles.num}>Views</Table.Th>
             <Table.Th>Created</Table.Th>
             <Table.Th>Hidden</Table.Th>
             <Table.Th>Featured</Table.Th>
@@ -142,21 +141,30 @@ export default function AdminMaps() {
         </Table.Thead>
         <Table.Tbody>
           {visible.map((map) => (
-            <Table.Tr key={map.id} opacity={map.hidden ? 0.55 : 1}>
-              <Table.Td maw={320}>
-                <Anchor component={Link} to={`/maps/${map.slug}`} size="sm">
+            <Table.Tr
+              key={map.id}
+              className={map.hidden ? styles.hiddenRow : undefined}
+            >
+              <Table.Td className={styles.nameCell}>
+                <Link to={`/maps/${map.slug}`} className={styles.link}>
                   {map.name}
-                </Anchor>
+                </Link>
                 {map.description && (
-                  <Text size="xs" c="dimmed" lineClamp={1}>
+                  <Text size="xs" tone="muted" truncate>
                     {map.description}
                   </Text>
                 )}
               </Table.Td>
               <Table.Td>{map.author}</Table.Td>
-              <Table.Td ta="right">{map.playerCount}</Table.Td>
-              <Table.Td ta="right">{map.draftCount}</Table.Td>
-              <Table.Td ta="right">{map.views}</Table.Td>
+              <Table.Td numeric className={styles.num}>
+                {map.playerCount}
+              </Table.Td>
+              <Table.Td numeric className={styles.num}>
+                {map.draftCount}
+              </Table.Td>
+              <Table.Td numeric className={styles.num}>
+                {map.views}
+              </Table.Td>
               <Table.Td>{map.createdAt.slice(0, 10)}</Table.Td>
               <Table.Td>
                 <FlagSwitch map={map} flag="hidden" label="Hide" />
@@ -168,6 +176,6 @@ export default function AdminMaps() {
           ))}
         </Table.Tbody>
       </Table>
-    </Box>
+    </Stack>
   );
 }

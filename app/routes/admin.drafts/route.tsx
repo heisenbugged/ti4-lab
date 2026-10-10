@@ -1,20 +1,21 @@
 import {
-  ActionIcon,
   Accordion,
-  Badge,
-  Box,
   Button,
-  Group,
+  IconButton,
   Pagination,
-  Paper,
+  Panel,
   Progress,
+  Row,
+  SectionHeader,
   Select,
   Stack,
   Table,
+  Tag,
   Text,
   TextInput,
-  Title,
-} from "@mantine/core";
+  Tooltip,
+} from "~/ui";
+import type { TagTone } from "~/ui";
 import {
   ActionFunctionArgs,
   data,
@@ -55,28 +56,28 @@ type SortBy =
 const MODE_LABELS: Record<DraftMode, string> = {
   base: "Base",
   twilightsFall: "Twilight's Fall",
-  texasStyle: "Texas Style",
-  presetMap: "Preset Map",
+  texasStyle: "Texas style",
+  presetMap: "Preset map",
 };
 
 const PHASE_LABELS: Record<DraftPhase, string> = {
   ban: "Ban",
-  priorityValue: "Priority Value",
-  homeSystem: "Home System",
-  texasFaction: "Texas Faction",
-  texasBlueKeep1: "Texas Blue Keep 1",
-  texasBlueKeep2: "Texas Blue Keep 2",
-  texasRedKeep: "Texas Red Keep",
-  texasMapBuild: "Texas Map Build",
-  standardPick: "Standard Pick",
+  priorityValue: "Priority value",
+  homeSystem: "Home system",
+  texasFaction: "Texas faction",
+  texasBlueKeep1: "Texas blue keep 1",
+  texasBlueKeep2: "Texas blue keep 2",
+  texasRedKeep: "Texas red keep",
+  texasMapBuild: "Texas map build",
+  standardPick: "Standard pick",
   complete: "Complete",
 };
 
-const MODE_COLORS: Record<string, string> = {
-  base: "blue",
-  twilightsFall: "violet",
-  texasStyle: "orange",
-  presetMap: "teal",
+const MODE_TONES: Record<string, TagTone> = {
+  base: "ion",
+  twilightsFall: "neutral",
+  texasStyle: "warning",
+  presetMap: "success",
 };
 
 const MODE_FILTER_OPTIONS = Object.keys(MODE_LABELS).map((mode) => ({
@@ -89,21 +90,24 @@ const PHASE_FILTER_OPTIONS = Object.keys(PHASE_LABELS).map((phase) => ({
   label: getPhaseLabel(phase),
 }));
 
+/** Select value for "no filter". */
+const ALL = "__all";
+
 const QUICK_FILTERS: Array<{
   label: string;
   updates: Record<string, string>;
 }> = [
-  { label: "In Progress", updates: { isCompleteFilter: "false" } },
+  { label: "In progress", updates: { isCompleteFilter: "false" } },
   {
-    label: "Texas Active",
+    label: "Texas active",
     updates: { modeFilter: "texasStyle", isCompleteFilter: "false" },
   },
   {
-    label: "Twilight Active",
+    label: "Twilight active",
     updates: { modeFilter: "twilightsFall", isCompleteFilter: "false" },
   },
   {
-    label: "Ban Phase",
+    label: "Ban phase",
     updates: { phaseFilter: "ban", isCompleteFilter: "false" },
   },
   { label: "Completed", updates: { isCompleteFilter: "true" } },
@@ -121,10 +125,10 @@ const SORT_COLUMNS: Array<{ column: SortBy; label: string }> = [
 ];
 
 const DATE_FILTERS = [
-  { label: "Created After", param: "createdAfter" },
-  { label: "Created Before", param: "createdBefore" },
-  { label: "Updated After", param: "updatedAfter" },
-  { label: "Updated Before", param: "updatedBefore" },
+  { label: "Created after", param: "createdAfter" },
+  { label: "Created before", param: "createdBefore" },
+  { label: "Updated after", param: "updatedAfter" },
+  { label: "Updated before", param: "updatedBefore" },
 ];
 
 function getModeLabel(mode: string): string {
@@ -143,8 +147,7 @@ function withCounts(
     const count = counts[option.value];
     return {
       ...option,
-      label:
-        count === undefined ? option.label : `${option.label} (${count})`,
+      label: count === undefined ? option.label : `${option.label} (${count})`,
     };
   });
 }
@@ -174,11 +177,10 @@ function clampPageSize(value: number): number {
   return value;
 }
 
-function progressColor(pct: number): string {
-  if (pct >= 100) return "teal";
-  if (pct >= 60) return "cyan";
-  if (pct >= 25) return "yellow";
-  return "red";
+function progressTone(pct: number): "ion" | "gold" | "success" {
+  if (pct >= 100) return "success";
+  if (pct >= 25) return "ion";
+  return "gold";
 }
 
 export default function AdminDraftsIndex() {
@@ -290,55 +292,38 @@ export default function AdminDraftsIndex() {
     searchParams.has("updatedBefore");
 
   return (
-    <Box py="xl">
-      <Group justify="space-between" align="flex-end" mb="xl">
-        <Box>
-          <Title order={1} size="h2" c="gray.1">
-            Drafts
-          </Title>
-          <Text size="xs" c="dimmed" tt="uppercase" lts="0.08em">
-            Admin registry
-          </Text>
-        </Box>
-        <Text size="xs" c="dimmed">
-          {stats.allDrafts.toLocaleString()} total records
-        </Text>
-      </Group>
+    <Stack gap={5}>
+      <SectionHeader
+        title="Drafts"
+        meta={`Admin registry · ${stats.allDrafts.toLocaleString()} total records`}
+      />
 
       <div className={classes.statsGrid}>
+        <StatPanel label="Total" value={stats.allDrafts.toLocaleString()} />
         <StatPanel
-          label="Total"
-          value={stats.allDrafts.toLocaleString()}
-          color="blue"
-        />
-        <StatPanel
-          label="In Scope"
+          label="In scope"
           value={stats.scopedDrafts.toLocaleString()}
           detail="After filters"
-          color="violet"
         />
         <StatPanel
           label="Filtered"
           value={filteredTotal.toLocaleString()}
           detail="Current results"
-          color="cyan"
         />
         <StatPanel
           label="Completion"
           value={`${stats.completionPercent.toFixed(1)}%`}
           detail={`${stats.completedDrafts.toLocaleString()} completed`}
-          color="teal"
         />
       </div>
 
-      <Paper withBorder radius="xs" p="md" bg="dark.7" mb="lg">
-        <Stack gap="sm">
-          <Group gap={6} wrap="wrap">
+      <Panel title="Filters">
+        <Stack gap={3}>
+          <Row gap={2}>
             {QUICK_FILTERS.map((filter) => (
               <Button
                 key={filter.label}
-                variant="default"
-                size="compact-xs"
+                size="sm"
                 onClick={() => applyQuickFilter(filter.updates)}
               >
                 {filter.label}
@@ -346,20 +331,20 @@ export default function AdminDraftsIndex() {
             ))}
             {hasActiveFilters && (
               <Button
-                variant="subtle"
-                size="compact-xs"
-                color="red"
-                leftSection={<IconX size={12} />}
+                size="sm"
+                variant="tertiary"
+                icon={<IconX size={14} />}
                 onClick={clearAllFilters}
               >
-                Clear All
+                Clear all
               </Button>
             )}
-          </Group>
+          </Row>
 
           <TextInput
             placeholder="Search by URL, ID, player, or JSON..."
-            leftSection={<IconSearch size={14} />}
+            aria-label="Search drafts"
+            leftIcon={<IconSearch size={14} />}
             value={searchValue}
             onChange={(e) => setSearchValue(e.currentTarget.value)}
             onKeyDown={(e) => {
@@ -367,60 +352,50 @@ export default function AdminDraftsIndex() {
                 updateParams({ search: searchValue || undefined });
               }
             }}
-            size="sm"
           />
 
           <div className={classes.filtersGrid}>
             <Select
               label="Mode"
-              placeholder="All modes"
-              data={modeOptions}
-              value={searchParams.get("modeFilter") || ""}
+              options={[{ value: ALL, label: "All modes" }, ...modeOptions]}
+              value={searchParams.get("modeFilter") || ALL}
               onChange={(value) =>
-                updateParams({ modeFilter: value || undefined })
+                updateParams({ modeFilter: value === ALL ? undefined : value })
               }
-              clearable
-              size="sm"
             />
             <Select
               label="Type"
-              placeholder="All types"
-              data={typeOptions}
-              value={searchParams.get("typeFilter") || ""}
+              options={[{ value: ALL, label: "All types" }, ...typeOptions]}
+              value={searchParams.get("typeFilter") || ALL}
               onChange={(value) =>
-                updateParams({ typeFilter: value || undefined })
+                updateParams({ typeFilter: value === ALL ? undefined : value })
               }
-              clearable
-              size="sm"
             />
             <Select
               label="Status"
-              placeholder="All"
-              data={[
+              options={[
+                { value: ALL, label: "All" },
                 { value: "true", label: "Completed" },
-                { value: "false", label: "In Progress" },
+                { value: "false", label: "In progress" },
               ]}
-              value={searchParams.get("isCompleteFilter") || ""}
+              value={searchParams.get("isCompleteFilter") || ALL}
               onChange={(value) =>
-                updateParams({ isCompleteFilter: value || undefined })
+                updateParams({
+                  isCompleteFilter: value === ALL ? undefined : value,
+                })
               }
-              clearable
-              size="sm"
             />
             <Select
               label="Phase"
-              placeholder="All phases"
-              data={phaseOptions}
-              value={searchParams.get("phaseFilter") || ""}
+              options={[{ value: ALL, label: "All phases" }, ...phaseOptions]}
+              value={searchParams.get("phaseFilter") || ALL}
               onChange={(value) =>
-                updateParams({ phaseFilter: value || undefined })
+                updateParams({ phaseFilter: value === ALL ? undefined : value })
               }
-              clearable
-              size="sm"
             />
             <Select
-              label="Page Size"
-              data={[
+              label="Page size"
+              options={[
                 { value: "25", label: "25" },
                 { value: "50", label: "50" },
                 { value: "100", label: "100" },
@@ -428,53 +403,43 @@ export default function AdminDraftsIndex() {
               ]}
               value={searchParams.get("pageSize") || "100"}
               onChange={(value) => updateParams({ pageSize: value || "100" })}
-              size="sm"
             />
           </div>
 
-          <Accordion variant="contained" radius="xs">
-            <Accordion.Item value="dates">
-              <Accordion.Control>
-                <Text size="sm" c="dimmed">
-                  Date range
-                </Text>
-              </Accordion.Control>
-              <Accordion.Panel>
-                <div className={classes.dateGrid}>
-                  {DATE_FILTERS.map((filter) => (
-                    <TextInput
-                      key={filter.param}
-                      label={filter.label}
-                      type="date"
-                      value={searchParams.get(filter.param) || ""}
-                      onChange={(e) =>
-                        updateParams({
-                          [filter.param]: e.currentTarget.value || undefined,
-                        })
-                      }
-                      size="sm"
-                    />
-                  ))}
-                </div>
-              </Accordion.Panel>
-            </Accordion.Item>
-          </Accordion>
+          <Accordion
+            items={[
+              {
+                value: "dates",
+                title: "Date range",
+                content: (
+                  <div className={classes.dateGrid}>
+                    {DATE_FILTERS.map((filter) => (
+                      <TextInput
+                        key={filter.param}
+                        label={filter.label}
+                        type="date"
+                        value={searchParams.get(filter.param) || ""}
+                        onChange={(e) =>
+                          updateParams({
+                            [filter.param]: e.currentTarget.value || undefined,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                ),
+              },
+            ]}
+          />
         </Stack>
-      </Paper>
+      </Panel>
 
-      <Group justify="space-between" mb="xs">
-        <Text size="sm" fw={500}>
+      <Stack gap={2}>
+        <Text size="sm" weight={600}>
           {filteredTotal.toLocaleString()} results
         </Text>
-      </Group>
 
-      <Table.ScrollContainer minWidth={900}>
-        <Table
-          striped
-          highlightOnHover
-          withTableBorder
-          withColumnBorders={false}
-        >
+        <Table striped dense minWidth={1000}>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Draft</Table.Th>
@@ -495,9 +460,9 @@ export default function AdminDraftsIndex() {
             {draftsData.length === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={10}>
-                  <Stack align="center" py="xl" gap="sm">
-                    <IconSearch size={32} color="var(--mantine-color-dark-3)" />
-                    <Text size="sm" c="dimmed">
+                  <Stack gap={2} align="center" className={classes.empty}>
+                    <IconSearch size={28} />
+                    <Text size="sm" tone="muted">
                       No records match current parameters
                     </Text>
                   </Stack>
@@ -508,125 +473,121 @@ export default function AdminDraftsIndex() {
             {draftsData.map((draft) => (
               <Table.Tr key={draft.id}>
                 <Table.Td>
-                  <Text size="sm" fw={600} ff="monospace">
+                  <Text size="sm" weight={600} className={classes.mono}>
                     {shortId(draft.id)}
                   </Text>
-                  <Text size="xs" c="dimmed">
-                    {draft.urlName ?? "\u2014"}
+                  <Text size="xs" tone="muted">
+                    {draft.urlName ?? "—"}
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Badge
-                    variant="light"
-                    color={MODE_COLORS[draft.mode] ?? "gray"}
-                    size="sm"
-                  >
+                  <Tag tone={MODE_TONES[draft.mode] ?? "neutral"}>
                     {getModeLabel(draft.mode)}
-                  </Badge>
+                  </Tag>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="xs" c="dimmed">
+                  <Text size="xs" tone="muted">
                     {draft.type ?? "unknown"}
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Badge
-                    variant="dot"
-                    color={draft.isComplete ? "teal" : "yellow"}
-                    size="sm"
-                  >
+                  <Tag tone={draft.isComplete ? "success" : "gold"}>
                     {draft.isComplete ? "Complete" : "Active"}
-                  </Badge>
+                  </Tag>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="xs" c="dimmed">
+                  <Text size="xs" tone="muted">
                     {getPhaseLabel(draft.phase)}
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Stack gap={4} miw={100}>
-                    <Text size="xs" ff="monospace" c="dimmed">
+                  <div className={classes.progress}>
+                    <Text size="xs" tone="muted" className={classes.mono}>
                       {draft.selectionsCount}/{draft.pickOrderCount} (
                       {draft.progressPercent.toFixed(0)}%)
                     </Text>
                     <Progress
                       value={Math.min(draft.progressPercent, 100)}
-                      color={progressColor(draft.progressPercent)}
+                      tone={progressTone(draft.progressPercent)}
                       size="xs"
                     />
-                  </Stack>
+                  </div>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="xs" fw={600}>
+                  <Text size="xs" weight={600}>
                     {draft.playerCount}p
                   </Text>
-                  <Text size="xs" c="dimmed" lineClamp={1} maw={160}>
-                    {draft.playerNames || "\u2014"}
+                  <Text
+                    size="xs"
+                    tone="muted"
+                    truncate
+                    className={classes.players}
+                  >
+                    {draft.playerNames || "—"}
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="xs" ff="monospace" c="dimmed">
+                  <Text size="xs" tone="muted" className={classes.mono}>
                     {formatDateTime(draft.createdAt)}
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="xs" ff="monospace" c="dimmed">
+                  <Text size="xs" tone="muted" className={classes.mono}>
                     {formatDateTime(draft.updatedAt)}
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Group gap={4} wrap="nowrap">
-                    <ActionIcon
-                      component={Link}
-                      to={`/draft/${draft.urlName ?? draft.id}`}
-                      variant="light"
-                      color="cyan"
-                      size="sm"
-                    >
-                      <IconEye size={13} />
-                    </ActionIcon>
-                    <ActionIcon
-                      component="a"
-                      href={`/admin/drafts/${draft.urlName ?? draft.id}/raw`}
-                      variant="light"
-                      color="gray"
-                      size="sm"
-                    >
-                      <IconDatabase size={13} />
-                    </ActionIcon>
+                  <Row gap={1} wrap={false}>
+                    <Tooltip label="Open draft">
+                      <Link
+                        to={`/draft/${draft.urlName ?? draft.id}`}
+                        className={classes.iconLink}
+                        aria-label="Open draft"
+                      >
+                        <IconEye size={15} />
+                      </Link>
+                    </Tooltip>
+                    <Tooltip label="Raw JSON">
+                      <a
+                        href={`/admin/drafts/${draft.urlName ?? draft.id}/raw`}
+                        className={classes.iconLink}
+                        aria-label="Raw JSON"
+                      >
+                        <IconDatabase size={15} />
+                      </a>
+                    </Tooltip>
                     <Form method="delete" onSubmit={handleDeleteSubmit}>
                       <input type="hidden" value={draft.id} name="id" />
-                      <ActionIcon
+                      <IconButton
                         type="submit"
-                        variant="subtle"
-                        color="red"
+                        variant="danger"
                         size="sm"
+                        label="Delete draft"
                       >
-                        <IconTrash size={13} />
-                      </ActionIcon>
+                        <IconTrash size={15} />
+                      </IconButton>
                     </Form>
-                  </Group>
+                  </Row>
                 </Table.Td>
               </Table.Tr>
             ))}
           </Table.Tbody>
         </Table>
-      </Table.ScrollContainer>
+      </Stack>
 
-      <Group justify="space-between" mt="md" wrap="wrap">
-        <Text size="xs" c="dimmed">
+      <Row justify="between" gap={3}>
+        <Text size="xs" tone="muted">
           Showing {draftsData.length} of {filteredTotal.toLocaleString()}{" "}
           filtered &middot; {stats.scopedDrafts.toLocaleString()} in scope
           &middot; {stats.allDrafts.toLocaleString()} total
         </Text>
         <Pagination
           total={Math.max(totalPages, 1)}
-          value={currentPage}
+          page={currentPage}
           onChange={(page) => updateParams({ page: page.toString() }, false)}
-          size="sm"
         />
-      </Group>
-    </Box>
+      </Row>
+    </Stack>
   );
 }
 
@@ -634,38 +595,23 @@ function StatPanel({
   label,
   value,
   detail,
-  color,
 }: {
   label: string;
   value: string;
   detail?: string;
-  color: string;
 }) {
   return (
-    <Paper
-      withBorder
-      radius="xs"
-      p="sm"
-      bg="dark.7"
-      style={{ borderTopColor: `var(--mantine-color-${color}-6)` }}
-    >
-      <Text size="xs" c="dimmed" tt="uppercase" lts="0.08em">
+    <div className={classes.stat}>
+      <Text size="xs" tone="muted" weight={600}>
         {label}
       </Text>
-      <Text
-        size="xl"
-        fw={700}
-        ff="var(--mantine-font-family-headings)"
-        c={color}
-      >
-        {value}
-      </Text>
+      <span className={classes.statValue}>{value}</span>
       {detail && (
-        <Text size="xs" c="dimmed">
+        <Text size="xs" tone="muted">
           {detail}
         </Text>
       )}
-    </Paper>
+    </div>
   );
 }
 
@@ -684,17 +630,19 @@ function SortTh({
 }) {
   const isActive = active === column;
   return (
-    <Table.Th
-      c={isActive ? "blue.4" : undefined}
-      onClick={() => onClick(column)}
-      style={{ cursor: "pointer", userSelect: "none" }}
-    >
-      <Group gap={4} wrap="nowrap">
-        <Text component="span" size="xs" fw={700}>
-          {label}
-        </Text>
+    <Table.Th aria-sort={isActive ? "other" : undefined}>
+      <button
+        type="button"
+        className={
+          isActive
+            ? `${classes.sortBtn} ${classes.sortActive}`
+            : classes.sortBtn
+        }
+        onClick={() => onClick(column)}
+      >
+        {label}
         {icon}
-      </Group>
+      </button>
     </Table.Th>
   );
 }

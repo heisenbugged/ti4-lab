@@ -1,7 +1,7 @@
-import { Alert, Text } from "@mantine/core";
 import { IconMap } from "@tabler/icons-react";
 import { useNavigate, useSearchParams } from "react-router";
 import { decodeSeededMapData } from "~/mapgen/utils/mapToDraft";
+import { Notice } from "~/ui";
 import { useDraftSetup } from "../store";
 
 export function SeededMapBanner() {
@@ -36,20 +36,16 @@ export function SeededMapBanner() {
   };
 
   return (
-    <Alert
-      variant="light"
-      color="teal"
-      title="Slices Pre-seeded from Map Generator"
-      icon={<IconMap />}
-      withCloseButton
+    <Notice
+      tone="success"
+      title="Slices pre-seeded from Map Generator"
+      icon={<IconMap size={18} />}
       onClose={handleClose}
     >
-      <Text size="sm">
-        {sliceCount} slices with {systemCount} total systems have been imported
-        from your generated map. You can customize faction settings, player
-        names, and other options below. Changing to an incompatible map type
-        will ignore these pre-seeded slices.
-      </Text>
-    </Alert>
+      {sliceCount} slices with {systemCount} total systems have been imported
+      from your generated map. You can customize faction settings, player
+      names, and other options below. Changing to an incompatible map type
+      will ignore these pre-seeded slices.
+    </Notice>
   );
 }

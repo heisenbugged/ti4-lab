@@ -1,0 +1,29 @@
+.packs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px 82px;
+  align-items: center;
+}
+
+.packs > * {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  border-top: 1px solid var(--rule);
+  font-size: 14px;
+}
+
+.packs > .head {
+  min-height: 26px;
+  border-top: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

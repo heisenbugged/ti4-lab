@@ -1,0 +1,112 @@
+.list {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.styles {
+  display: grid;
+  gap: 4px;
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .styles {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+}
+
+.style {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pick {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 10px 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font: 600 14px/1 var(--font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pick span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pick i {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rule-strong);
+}
+
+.pick svg {
+  flex: none;
+  opacity: 0.5;
+}
+
+.pick:hover {
+  color: var(--text);
+  background: var(--hull);
+}
+
+.pick:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: 2px;
+}
+
+.on .pick {
+  color: var(--text);
+  background: var(--hull-raised);
+  border-color: var(--rule-strong);
+  box-shadow: inset 2px 0 0 var(--gold);
+}
+
+.on .pick i {
+  background: var(--gold);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--gold) 25%, transparent);
+}
+
+.nogear {
+  flex: none;
+  width: 32px;
+}
+
+.info {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border: 0;
+  background: none;
+  color: var(--ion);
+  font: 600 13px/1 var(--font);
+  cursor: pointer;
+}
+
+.info:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.info:focus-visible {
+  outline: 2px solid var(--ion);
+  outline-offset: 2px;
+}

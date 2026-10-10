@@ -1,6 +1,2 @@
-.logo {
-    color: var(--mantine-color-purple-8);
-    @mixin dark {
-        color: var(--mantine-color-purple-2);
-    }
-}
+.logo { display: inline-flex; align-items: center; gap: 10px; color: var(--text); font-size: 16px; font-weight: 600; font-stretch: var(--wide); white-space: nowrap; }
+.logo img { display: block; width: 26px; height: 26px; }

@@ -1,8 +1,8 @@
-import { Button, Group, useMantineColorScheme } from "@mantine/core";
 import { ActionFunctionArgs, MetaFunction } from "react-router";
 import { Outlet, redirect } from "react-router";
 import { IconMoon, IconSun } from "@tabler/icons-react";
 import { MainAppShell } from "~/components/MainAppShell";
+import { IconButton, useTheme } from "~/ui";
 import { createDraft } from "~/drizzle/draft.server";
 import { createMultiDraft } from "~/drizzle/multiDraft.server";
 import { buildInitialDraft } from "~/draft/buildInitialDraft";
@@ -59,31 +59,20 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function MultiDraft() {
-  const { setColorScheme } = useMantineColorScheme();
+  const { theme, setTheme } = useTheme();
 
   return (
     <MainAppShell
       headerRightSection={
-        <Group>
-          <Button
-            variant="light"
-            color="gray"
-            onMouseDown={() => setColorScheme("dark")}
-            size="compact-xs"
-            darkHidden
-          >
-            <IconMoon />
-          </Button>
-          <Button
-            variant="light"
-            color="gray"
-            onMouseDown={() => setColorScheme("light")}
-            lightHidden
-            size="compact-xs"
-          >
+        theme === "dark" ? (
+          <IconButton label="Light theme" onMouseDown={() => setTheme("light")}>
             <IconSun />
-          </Button>
-        </Group>
+          </IconButton>
+        ) : (
+          <IconButton label="Dark theme" onMouseDown={() => setTheme("dark")}>
+            <IconMoon />
+          </IconButton>
+        )
       }
     >
       <Outlet />
