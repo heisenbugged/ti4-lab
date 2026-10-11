@@ -1,3 +1,4 @@
+import { requireAdmin } from "~/utils/adminAuth.server";
 import {
   Row,
   SectionHeader,
@@ -15,6 +16,7 @@ import {
   ActionFunctionArgs,
   data,
   Link,
+  LoaderFunctionArgs,
   MetaFunction,
   useFetcher,
   useLoaderData,
@@ -31,12 +33,14 @@ export const meta: MetaFunction = () => [{ title: "Maps - Admin - TI4 Lab" }];
 type Flag = "hidden" | "featured";
 type View = "all" | "listed" | Flag;
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  await requireAdmin(request);
   const maps = await listPresetMaps({ includeHidden: true });
   return { maps: sortMaps(maps, "played") };
 };
 
 export async function action({ request }: ActionFunctionArgs) {
+  await requireAdmin(request);
   const form = await request.formData();
   const id = form.get("id")?.toString();
   const flag = form.get("flag")?.toString();

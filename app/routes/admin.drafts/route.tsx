@@ -1,3 +1,4 @@
+import { requireAdmin } from "~/utils/adminAuth.server";
 import {
   Accordion,
   Button,
@@ -626,6 +627,7 @@ function SortTh({
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  await requireAdmin(request);
   const body = await request.formData();
   const id = body.get("id");
   if (!id) return data({ ok: false }, { status: 400 });
@@ -653,6 +655,7 @@ function parseSortBy(value: string | null): SortBy {
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  await requireAdmin(request);
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
   const pageSize = clampPageSize(

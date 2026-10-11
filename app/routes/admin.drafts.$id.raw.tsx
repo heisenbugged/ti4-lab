@@ -1,7 +1,9 @@
+import { requireAdmin } from "~/utils/adminAuth.server";
 import { type LoaderFunctionArgs } from "react-router";
 import { draftByPrettyUrl } from "~/drizzle/draft.server";
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  await requireAdmin(request);
   if (!params.id) {
     throw new Response("Draft ID is required", { status: 400 });
   }
