@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
-import { deriveDraftMetadata } from "../app/drizzle/draft.server";
-import { db } from "../app/drizzle/config.server";
-import { drafts } from "../app/drizzle/schema.server";
-import { Draft } from "../app/types";
+import { deriveDraftMetadata } from "../src/drizzle/draft.server";
+import { db } from "../src/drizzle/config.server";
+import { drafts } from "../src/drizzle/schema.server";
+import { Draft } from "../src/types";
 
 async function backfillDraftAdminMetadata() {
   console.log("Starting draft admin metadata backfill...");

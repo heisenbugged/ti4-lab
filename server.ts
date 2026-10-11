@@ -1,7 +1,6 @@
 import express from "express";
-import { createRequestHandler } from "@react-router/express";
 import { createServer } from "http";
-import type { ServerBuild } from "react-router";
+import { NodeRequest, sendNodeResponse } from "srvx/node";
 import { Server } from "socket.io";
 import { startDiscordBot } from "~/discord/bot.server.js";
 import { initEnv } from "~/env.server.js";
@@ -26,7 +25,7 @@ const viteDevServer =
           server: {
             middlewareMode: true,
             // Separate HMR port per dev server so parallel worktrees don't collide
-            hmr: { port: Number(process.env.HMR_PORT) || 24679 },
+            ws: { port: Number(process.env.HMR_PORT) || 24679 },
           },
         }),
       );
@@ -45,18 +44,26 @@ app.get("/metrics", async (_req, res) => {
 
 app.use(metricsMiddleware);
 
-app.use(
-  viteDevServer ? viteDevServer.middlewares : express.static("build/client"),
-);
-
-const build: ServerBuild | (() => Promise<ServerBuild>) = viteDevServer
-  ? async () =>
-      (await viteDevServer.ssrLoadModule(
-        "virtual:react-router/server-build",
-      )) as ServerBuild
-  : ((await import("./build/server/index.js")) as unknown as ServerBuild);
-
-app.all("/{*splat}", createRequestHandler({ build }));
+if (viteDevServer) {
+  // Vite serves client modules and runs Start's SSR handler (see vite.config.ts).
+  app.use(viteDevServer.middlewares);
+} else {
+  // Built by `vite build`; a variable path keeps tsc from resolving it.
+  const serverEntryPath = "./dist/server/server.js";
+  const { default: start } = (await import(serverEntryPath)) as {
+    default: { fetch: (request: Request) => Promise<Response> };
+  };
+  app.use(
+    "/assets",
+    express.static("dist/client/assets", { immutable: true, maxAge: "1y" }),
+  );
+  app.use(express.static("dist/client", { maxAge: "1h" }));
+  // Everything else (pages, server routes, server functions) is Start's.
+  app.all("/{*splat}", async (req, res) => {
+    const response = await start.fetch(new NodeRequest({ req, res }));
+    await sendNodeResponse(res, response);
+  });
+}
 
 // Connect socket.io
 const httpServer = createServer(app);

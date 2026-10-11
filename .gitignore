@@ -3,10 +3,10 @@ node_modules
 /build
 .env
 ./public/build
+/dist
 sqlite.db
 .DS_Store
 .wrangler
 .voice-sync-cache.json
-.react-router/
 deployment/
 *.log

@@ -18,8 +18,8 @@ import {
   fingerprintFromMap,
   fingerprintFromMapString,
   playerCountFromMapString,
-} from "../app/utils/presetFingerprint";
-import { authorKey } from "../app/utils/presetDiscovery";
+} from "../src/utils/presetFingerprint";
+import { authorKey } from "../src/utils/presetDiscovery";
 
 type PresetRow = {
   id: string;

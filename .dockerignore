@@ -12,6 +12,7 @@ sqlite.db
 
 # Build artifacts (Docker will rebuild)
 build
+dist
 
 # Logs
 *.log
