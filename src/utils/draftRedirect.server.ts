@@ -9,9 +9,9 @@ import {
 import { Draft } from "~/types";
 
 // Legacy drafts were addressed by UUID; assign a pretty url if needed.
-async function prettyUrlForDraftId(draftId: string) {
+export async function prettyUrlForDraftId(draftId: string) {
   const draft = await draftById(draftId);
-  if (!draft) throw notFound();
+  if (!draft) return undefined;
 
   if (draft.urlName) return draft.urlName;
   const urlName = await generateUniquePrettyUrl();
@@ -29,6 +29,7 @@ export async function loadDraftByUrlParam(
 ) {
   if (validateUUID(urlParam)) {
     const id = await prettyUrlForDraftId(urlParam);
+    if (!id) throw notFound();
     throw redirect({ to, params: { id } });
   }
 

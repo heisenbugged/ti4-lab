@@ -36,6 +36,7 @@ import { Route as VoicesIdRouteImport } from "./routes/voices/$id";
 import { Route as VoicesCallbackRouteImport } from "./routes/voices/callback";
 import { Route as VoicesLogoutRouteImport } from "./routes/voices/logout";
 import { Route as DraftIdIndexRouteImport } from "./routes/draft/$id/index";
+import { Route as DraftIdRawRouteImport } from "./routes/draft/$id/raw";
 import { Route as DraftIdReplayRouteRouteImport } from "./routes/draft/$id/replay/route";
 import { Route as AdminDraftsIdRawRouteImport } from "./routes/admin/drafts_.$id.raw";
 
@@ -176,6 +177,11 @@ const DraftIdIndexRoute = DraftIdIndexRouteImport.update({
   path: "/$id/",
   getParentRoute: () => DraftRouteRoute,
 } as any);
+const DraftIdRawRoute = DraftIdRawRouteImport.update({
+  id: "/$id/raw",
+  path: "/$id/raw",
+  getParentRoute: () => DraftRouteRoute,
+} as any);
 const DraftIdReplayRouteRoute = DraftIdReplayRouteRouteImport.update({
   id: "/$id/replay",
   path: "/$id/replay",
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   "/soundboard/": typeof SoundboardIndexRoute;
   "/voices/": typeof VoicesIndexRoute;
   "/draft/$id/replay": typeof DraftIdReplayRouteRoute;
+  "/draft/$id/raw": typeof DraftIdRawRoute;
   "/draft/$id/": typeof DraftIdIndexRoute;
   "/admin/drafts/$id/raw": typeof AdminDraftsIdRawRoute;
 }
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   "/soundboard": typeof SoundboardIndexRoute;
   "/voices": typeof VoicesIndexRoute;
   "/draft/$id/replay": typeof DraftIdReplayRouteRoute;
+  "/draft/$id/raw": typeof DraftIdRawRoute;
   "/draft/$id": typeof DraftIdIndexRoute;
   "/admin/drafts/$id/raw": typeof AdminDraftsIdRawRoute;
 }
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   "/soundboard/": typeof SoundboardIndexRoute;
   "/voices/": typeof VoicesIndexRoute;
   "/draft/$id/replay": typeof DraftIdReplayRouteRoute;
+  "/draft/$id/raw": typeof DraftIdRawRoute;
   "/draft/$id/": typeof DraftIdIndexRoute;
   "/admin/drafts_/$id/raw": typeof AdminDraftsIdRawRoute;
 }
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | "/soundboard/"
     | "/voices/"
     | "/draft/$id/replay"
+    | "/draft/$id/raw"
     | "/draft/$id/"
     | "/admin/drafts/$id/raw";
   fileRoutesByTo: FileRoutesByTo;
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | "/soundboard"
     | "/voices"
     | "/draft/$id/replay"
+    | "/draft/$id/raw"
     | "/draft/$id"
     | "/admin/drafts/$id/raw";
   id:
@@ -371,6 +382,7 @@ export interface FileRouteTypes {
     | "/soundboard/"
     | "/voices/"
     | "/draft/$id/replay"
+    | "/draft/$id/raw"
     | "/draft/$id/"
     | "/admin/drafts_/$id/raw";
   fileRoutesById: FileRoutesById;
@@ -583,6 +595,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof DraftIdIndexRouteImport;
       parentRoute: typeof DraftRouteRoute;
     };
+    "/draft/$id/raw": {
+      id: "/draft/$id/raw";
+      path: "/$id/raw";
+      fullPath: "/draft/$id/raw";
+      preLoaderRoute: typeof DraftIdRawRouteImport;
+      parentRoute: typeof DraftRouteRoute;
+    };
     "/draft/$id/replay": {
       id: "/draft/$id/replay";
       path: "/$id/replay";
@@ -624,6 +643,7 @@ interface DraftRouteRouteChildren {
   DraftTournamentRouteRoute: typeof DraftTournamentRouteRoute;
   DraftChar123idChar125DotpngRoute: typeof DraftChar123idChar125DotpngRoute;
   DraftIdReplayRouteRoute: typeof DraftIdReplayRouteRoute;
+  DraftIdRawRoute: typeof DraftIdRawRoute;
   DraftIdIndexRoute: typeof DraftIdIndexRoute;
 }
 
@@ -633,6 +653,7 @@ const DraftRouteRouteChildren: DraftRouteRouteChildren = {
   DraftTournamentRouteRoute: DraftTournamentRouteRoute,
   DraftChar123idChar125DotpngRoute: DraftChar123idChar125DotpngRoute,
   DraftIdReplayRouteRoute: DraftIdReplayRouteRoute,
+  DraftIdRawRoute: DraftIdRawRoute,
   DraftIdIndexRoute: DraftIdIndexRoute,
 };
 
