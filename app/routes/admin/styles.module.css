@@ -1,0 +1,12 @@
+/* Admin strip: marks the area as admin-only and switches between sections. */
+.bar { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-5); padding-bottom: 0; border-bottom: 1px solid var(--rule); }
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border: 1px solid color-mix(in oklab, var(--danger) 45%, var(--rule)); border-radius: 2px; color: var(--danger); font-size: 12px; font-weight: 600; }
+.tabs { display: flex; gap: var(--space-4); align-self: stretch; }
+.tab { display: inline-flex; align-items: center; padding: 10px 0; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--text-muted); font-size: 14px; font-weight: 600; text-decoration: none; transition: color var(--dur-quick) var(--ease), border-color var(--dur-quick) var(--ease); }
+.tab:hover { color: var(--text); }
+.active { color: var(--text); border-bottom-color: var(--gold); }
+.logout { margin-left: auto; }
+@media (max-width: 575.98px) {
+  .bar { gap: var(--space-3); }
+  .logout :global(span) { display: none; }
+}

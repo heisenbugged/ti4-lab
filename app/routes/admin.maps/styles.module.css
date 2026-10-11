@@ -1,21 +1,55 @@
-.search {
-  width: 280px;
-  max-width: 100%;
+.lede { max-width: 72ch; }
+
+.stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); box-shadow: var(--shadow-card); }
+.stats > div { display: grid; gap: 4px; padding: 10px 14px; border-left: 1px solid var(--rule); min-width: 0; }
+.stats > div:first-child { border-left: 0; }
+.stats dt { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stats dd { margin: 0; font-size: 22px; font-weight: 700; font-stretch: var(--wide); font-variant-numeric: tabular-nums; }
+
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search { width: 300px; max-width: 100%; }
+.showing { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* One grid drives the header and every row, so columns line up without a table. */
+.list { --cols: minmax(0, 1fr) 64px 64px 64px 110px 76px 76px; display: grid; margin: 0; padding: 0; list-style: none; background: var(--hull); border: 1px solid var(--rule); border-radius: var(--radius-sm); box-shadow: var(--shadow-card); overflow: hidden; }
+.headRow, .row { display: grid; grid-template-columns: var(--cols); align-items: center; gap: 16px; padding: 0 14px; }
+.headRow { min-height: 32px; background: var(--hull-raised); border-bottom: 1px solid var(--rule); font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.row { min-height: 56px; padding-block: 8px; border-top: 1px solid var(--rule); transition: background-color var(--dur-quick) var(--ease); }
+.headRow + .row { border-top: 0; }
+.row:hover { background: var(--hull-raised); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.row .num { font-size: 13.5px; }
+.date { font-size: 12.5px; color: var(--text-muted); white-space: nowrap; }
+
+.mapCell { display: grid; gap: 2px; min-width: 0; }
+.titleLine { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.link { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 600; text-decoration: none; }
+.link:hover { color: var(--ion); text-decoration: underline; text-underline-offset: 3px; }
+.author { font-size: 12.5px; color: var(--text-muted); }
+.desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--text-faint); }
+.flag { display: flex; align-items: center; }
+.flag small { display: none; }
+
+.empty { display: grid; justify-items: center; gap: 8px; padding: var(--space-7) var(--space-4); color: var(--text-muted); background: var(--hull); border: 1px dashed var(--rule-strong); border-radius: var(--radius-sm); }
+
+@media (max-width: 991.98px) {
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .stats > div:nth-child(4) { border-left: 0; }
+  .stats > div:nth-child(n + 4) { border-top: 1px solid var(--rule); }
 }
-.num {
-  text-align: right;
-}
-.nameCell {
-  max-width: 320px;
-}
-.link {
-  color: var(--ion);
-  font-weight: 500;
-  text-decoration: none;
-}
-.link:hover {
-  text-decoration: underline;
-}
-.hiddenRow {
-  opacity: 0.55;
+
+@media (max-width: 759.98px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats > div:nth-child(4) { border-left: 1px solid var(--rule); }
+  .stats > div:nth-child(odd) { border-left: 0; }
+  .stats > div:nth-child(n + 3) { border-top: 1px solid var(--rule); }
+  .showing { margin-left: 0; }
+  .headRow { display: none; }
+  /* Phones: map on top, numbers in a labelled row, switches with their names. */
+  .row { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 10px; padding: 10px 12px; }
+  .mapCell { grid-column: 1 / -1; }
+  .num, .date { display: grid; gap: 1px; text-align: left; }
+  .num::before, .date::before { content: attr(data-label); font-size: 11px; font-weight: 600; color: var(--text-muted); }
+  .flag { grid-column: span 2; gap: 8px; }
+  .flag small { display: inline; font-size: 12.5px; color: var(--text-muted); }
 }

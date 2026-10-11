@@ -1,16 +1,7 @@
 import { requireAdmin } from "~/utils/adminAuth.server";
-import {
-  Row,
-  SectionHeader,
-  Segmented,
-  Stack,
-  Switch,
-  Table,
-  Text,
-  TextInput,
-} from "~/ui";
+import { Heading, Segmented, Stack, Switch, Tag, Text, TextInput } from "~/ui";
 import styles from "./styles.module.css";
-import { IconSearch } from "@tabler/icons-react";
+import { IconSearch, IconStarFilled } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import {
   ActionFunctionArgs,
@@ -100,15 +91,42 @@ export default function AdminMaps() {
 
   const hiddenCount = maps.filter((map) => map.hidden).length;
   const featuredCount = maps.filter((map) => map.featured).length;
+  const totalDrafts = maps.reduce((sum, map) => sum + map.draftCount, 0);
 
   return (
     <Stack gap={4}>
-      <SectionHeader title="Community maps" meta={`${maps.length} maps`} />
-      <Text size="sm" tone="muted">
-        Hidden maps stay reachable by link but leave the community listing.
-        Featured maps become the only candidates for map of the day.
-      </Text>
-      <Row gap={3}>
+      <header>
+        <Heading variant="title">Community maps</Heading>
+        <Text size="sm" tone="muted" className={styles.lede}>
+          Hidden maps stay reachable by link but leave the public listing. When
+          any map is featured, map of the day only picks from featured maps.
+        </Text>
+      </header>
+
+      <dl className={styles.stats}>
+        <div>
+          <dt>Maps</dt>
+          <dd>{maps.length}</dd>
+        </div>
+        <div>
+          <dt>Listed</dt>
+          <dd>{maps.length - hiddenCount}</dd>
+        </div>
+        <div>
+          <dt>Hidden</dt>
+          <dd>{hiddenCount}</dd>
+        </div>
+        <div>
+          <dt>Featured</dt>
+          <dd>{featuredCount}</dd>
+        </div>
+        <div>
+          <dt>Drafts played on them</dt>
+          <dd>{totalDrafts.toLocaleString()}</dd>
+        </div>
+      </dl>
+
+      <div className={styles.toolbar}>
         <TextInput
           placeholder="Search name or author"
           aria-label="Search name or author"
@@ -123,63 +141,84 @@ export default function AdminMaps() {
           value={view}
           onChange={(value) => setView(value as View)}
           options={[
-            { label: `All (${maps.length})`, value: "all" },
-            { label: `Listed (${maps.length - hiddenCount})`, value: "listed" },
-            { label: `Hidden (${hiddenCount})`, value: "hidden" },
-            { label: `Featured (${featuredCount})`, value: "featured" },
+            { label: "All", value: "all" },
+            { label: "Listed", value: "listed" },
+            { label: "Hidden", value: "hidden" },
+            { label: "Featured", value: "featured" },
           ]}
         />
-      </Row>
-      <Table striped dense minWidth={900}>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Author</Table.Th>
-            <Table.Th className={styles.num}>Players</Table.Th>
-            <Table.Th className={styles.num}>Drafts</Table.Th>
-            <Table.Th className={styles.num}>Views</Table.Th>
-            <Table.Th>Created</Table.Th>
-            <Table.Th>Hidden</Table.Th>
-            <Table.Th>Featured</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
+        <Text size="sm" tone="muted" className={styles.showing}>
+          {visible.length} of {maps.length}
+        </Text>
+      </div>
+
+      {visible.length === 0 ? (
+        <div className={styles.empty}>
+          <IconSearch size={24} />
+          <Text weight={600}>No maps match</Text>
+        </div>
+      ) : (
+        <ul className={styles.list}>
+          <li className={styles.headRow} aria-hidden>
+            <span>Map</span>
+            <span className={styles.num}>Players</span>
+            <span className={styles.num}>Drafts</span>
+            <span className={styles.num}>Views</span>
+            <span>Created</span>
+            <span>Hidden</span>
+            <span>Featured</span>
+          </li>
           {visible.map((map) => (
-            <Table.Tr
-              key={map.id}
-              className={map.hidden ? styles.hiddenRow : undefined}
-            >
-              <Table.Td className={styles.nameCell}>
-                <Link to={`/maps/${map.slug}`} className={styles.link}>
-                  {map.name}
-                </Link>
+            <li key={map.id} className={styles.row}>
+              <div className={styles.mapCell}>
+                <div className={styles.titleLine}>
+                  <Link to={`/maps/${map.slug}`} className={styles.link}>
+                    {map.name}
+                  </Link>
+                  {map.hidden && <Tag>Hidden</Tag>}
+                  {map.featured && (
+                    <Tag tone="gold" icon={<IconStarFilled size={11} />}>
+                      Featured
+                    </Tag>
+                  )}
+                </div>
+                <span className={styles.author}>by {map.author}</span>
                 {map.description && (
-                  <Text size="xs" tone="muted" truncate>
-                    {map.description}
-                  </Text>
+                  <span className={styles.desc}>{map.description}</span>
                 )}
-              </Table.Td>
-              <Table.Td>{map.author}</Table.Td>
-              <Table.Td numeric className={styles.num}>
-                {map.playerCount}
-              </Table.Td>
-              <Table.Td numeric className={styles.num}>
+              </div>
+              <span className={styles.num} data-label="Players">
+                {map.playerCount}P
+              </span>
+              <span className={styles.num} data-label="Drafts">
                 {map.draftCount}
-              </Table.Td>
-              <Table.Td numeric className={styles.num}>
+              </span>
+              <span className={styles.num} data-label="Views">
                 {map.views}
-              </Table.Td>
-              <Table.Td>{map.createdAt.slice(0, 10)}</Table.Td>
-              <Table.Td>
+              </span>
+              <span className={styles.date} data-label="Created">
+                {formatDate(map.createdAt)}
+              </span>
+              <span className={styles.flag}>
                 <FlagSwitch map={map} flag="hidden" label="Hide" />
-              </Table.Td>
-              <Table.Td>
+                <small>Hidden</small>
+              </span>
+              <span className={styles.flag}>
                 <FlagSwitch map={map} flag="featured" label="Feature" />
-              </Table.Td>
-            </Table.Tr>
+                <small>Featured</small>
+              </span>
+            </li>
           ))}
-        </Table.Tbody>
-      </Table>
+        </ul>
+      )}
     </Stack>
   );
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }

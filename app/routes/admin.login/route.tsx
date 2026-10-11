@@ -1,4 +1,6 @@
-import { Button, Panel, Stack, TextInput } from "~/ui";
+import { IconShieldLock } from "@tabler/icons-react";
+import { Button, Heading, Panel, Stack, Text, TextInput } from "~/ui";
+import classes from "./styles.module.css";
 import {
   ActionFunctionArgs,
   data,
@@ -32,7 +34,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const password = form.get("password")?.toString() ?? "";
   if (!checkAdminPassword(password)) {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    return data({ error: "Wrong password" }, { status: 401 });
+    return data({ error: "That password isn't right. Try again." }, { status: 401 });
   }
   return loginAdmin(request, safeAdminRedirect(form.get("redirectTo")));
 }
@@ -43,8 +45,19 @@ export default function AdminLogin() {
   const navigation = useNavigation();
 
   return (
-    <div style={{ maxWidth: 360, margin: "64px auto", padding: "0 16px" }}>
-      <Panel title="Admin login">
+    <div className={classes.wrap}>
+      <Panel className={classes.panel}>
+        <div className={classes.head}>
+          <span className={classes.icon}>
+            <IconShieldLock size={20} />
+          </span>
+          <div>
+            <Heading variant="section">Admin</Heading>
+            <Text size="sm" tone="muted">
+              Enter the admin password to manage drafts and community maps.
+            </Text>
+          </div>
+        </div>
         <Form method="post">
           <input
             type="hidden"
@@ -57,11 +70,17 @@ export default function AdminLogin() {
               name="password"
               type="password"
               autoComplete="current-password"
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               required
               error={actionData?.error}
             />
-            <Button type="submit" disabled={navigation.state !== "idle"}>
+            <Button
+              type="submit"
+              variant="primary"
+              block
+              loading={navigation.state !== "idle"}
+            >
               Log in
             </Button>
           </Stack>

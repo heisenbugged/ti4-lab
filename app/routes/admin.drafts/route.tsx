@@ -1,13 +1,15 @@
 import { requireAdmin } from "~/utils/adminAuth.server";
 import {
-  Accordion,
   Button,
+  Chip,
+  Heading,
   IconButton,
+  Modal,
   Pagination,
-  Panel,
+  Popover,
   Progress,
   Row,
-  SectionHeader,
+  Segmented,
   Select,
   Stack,
   Table,
@@ -22,7 +24,6 @@ import {
   ActionFunctionArgs,
   data,
   LoaderFunctionArgs,
-  Form,
   Link,
   useLoaderData,
   useSearchParams,
@@ -33,17 +34,18 @@ import { db } from "~/drizzle/config.server";
 import { drafts } from "~/drizzle/schema.server";
 import { eq } from "drizzle-orm";
 import { useState } from "react";
-import type { FormEvent, ReactNode } from "react";
 import {
+  IconBraces,
+  IconCalendar,
   IconChevronDown,
   IconChevronUp,
-  IconDatabase,
-  IconEye,
   IconSearch,
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
 import classes from "./styles.module.css";
+
+export const meta = () => [{ title: "Drafts - Admin - TI4 Lab" }];
 
 type SortBy =
   | "createdAt"
@@ -179,12 +181,6 @@ function clampPageSize(value: number): number {
   return value;
 }
 
-function progressTone(pct: number): "ion" | "gold" | "success" {
-  if (pct >= 100) return "success";
-  if (pct >= 25) return "ion";
-  return "gold";
-}
-
 export default function AdminDraftsIndex() {
   const {
     drafts: draftsData,
@@ -195,6 +191,13 @@ export default function AdminDraftsIndex() {
   } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
+  const [deleting, setDeleting] = useState<DraftRow | null>(null);
+  const pageSize = Number(searchParams.get("pageSize") || 100);
+  const confirmDelete = () => {
+    if (!deleting) return;
+    submit({ id: deleting.id }, { method: "delete" });
+    setDeleting(null);
+  };
   // The box follows the URL (back/forward, clear all) but edits stay local until Enter.
   const searchParam = searchParams.get("search") || "";
   const [searchValue, setSearchValue] = useState(searchParam);
@@ -251,20 +254,6 @@ export default function AdminDraftsIndex() {
   const modeOptions = withCounts(MODE_FILTER_OPTIONS, stats.draftsByMode);
   const phaseOptions = withCounts(PHASE_FILTER_OPTIONS, stats.draftsByPhase);
 
-  const renderSortIcon = (column: SortBy) => {
-    if (searchParams.get("sortBy") !== column) return null;
-    const isAsc = searchParams.get("sortOrder") === "asc";
-    return isAsc ? <IconChevronUp size={12} /> : <IconChevronDown size={12} />;
-  };
-
-  const handleDeleteSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const result = confirm("Are you sure you want to delete this draft?");
-    if (result) {
-      submit(new FormData(e.currentTarget), { method: "delete" });
-    }
-  };
-
   const hasActiveFilters = [
     "modeFilter",
     "typeFilter",
@@ -273,59 +262,68 @@ export default function AdminDraftsIndex() {
     "search",
     ...DATE_FILTERS.map((filter) => filter.param),
   ].some((param) => searchParams.has(param));
+  const activePreset = QUICK_FILTERS.find(
+    (f) =>
+      Object.entries(f.updates).every(([k, v]) => searchParams.get(k) === v) &&
+      ["modeFilter", "phaseFilter", "isCompleteFilter"].every(
+        (k) => k in f.updates || !searchParams.has(k),
+      ),
+  )?.label;
+  const datesSet = DATE_FILTERS.filter((f) => searchParams.get(f.param)).length;
+  const status = searchParams.get("isCompleteFilter") ?? ALL;
+  const inProgress = stats.scopedDrafts - stats.completedDrafts;
+
+  const sortProps = (column: SortBy) => ({
+    column,
+    active: searchParams.get("sortBy") ?? "createdAt",
+    order: searchParams.get("sortOrder") ?? "desc",
+    onClick: handleSortChange,
+  });
 
   return (
-    <Stack gap={5}>
-      <SectionHeader
-        title="Drafts"
-        meta={`Admin registry · ${stats.allDrafts.toLocaleString()} total records`}
-      />
+    <Stack gap={4}>
+      <header className={classes.head}>
+        <div>
+          <Heading variant="title">Drafts</Heading>
+          <Text size="sm" tone="muted">
+            Every draft on the site. Search, filter, open or remove one.
+          </Text>
+        </div>
+      </header>
 
-      <div className={classes.statsGrid}>
-        <StatPanel label="Total" value={stats.allDrafts.toLocaleString()} />
-        <StatPanel
-          label="In scope"
-          value={stats.scopedDrafts.toLocaleString()}
-          detail="After filters"
-        />
-        <StatPanel
-          label="Filtered"
-          value={filteredTotal.toLocaleString()}
-          detail="Current results"
-        />
-        <StatPanel
-          label="Completion"
-          value={`${stats.completionPercent.toFixed(1)}%`}
-          detail={`${stats.completedDrafts.toLocaleString()} completed`}
-        />
-      </div>
+      <dl className={classes.stats}>
+        <div>
+          <dt>All drafts</dt>
+          <dd>{stats.allDrafts.toLocaleString()}</dd>
+        </div>
+        <div>
+          <dt>{hasActiveFilters ? "Matching filters" : "In view"}</dt>
+          <dd>{filteredTotal.toLocaleString()}</dd>
+        </div>
+        <div>
+          <dt>In progress</dt>
+          <dd>{inProgress.toLocaleString()}</dd>
+        </div>
+        <div className={classes.statWide}>
+          <dt>Completed</dt>
+          <dd>
+            {stats.completedDrafts.toLocaleString()}
+            <small>{stats.completionPercent.toFixed(1)}%</small>
+          </dd>
+          <Progress
+            value={stats.completionPercent}
+            tone="success"
+            size="xs"
+            label="Completion rate"
+          />
+        </div>
+      </dl>
 
-      <Panel title="Filters">
-        <Stack gap={3}>
-          <Row gap={2}>
-            {QUICK_FILTERS.map((filter) => (
-              <Button
-                key={filter.label}
-                size="sm"
-                onClick={() => updateParams(filter.updates)}
-              >
-                {filter.label}
-              </Button>
-            ))}
-            {hasActiveFilters && (
-              <Button
-                size="sm"
-                variant="tertiary"
-                icon={<IconX size={14} />}
-                onClick={clearAllFilters}
-              >
-                Clear all
-              </Button>
-            )}
-          </Row>
-
+      <section className={classes.filters} aria-label="Filters">
+        <div className={classes.filterTop}>
           <TextInput
-            placeholder="Search by URL, ID, player, or JSON..."
+            className={classes.search}
+            placeholder="URL, ID, player name or JSON, then Enter"
             aria-label="Search drafts"
             leftIcon={<IconSearch size={14} />}
             value={searchValue}
@@ -336,265 +334,347 @@ export default function AdminDraftsIndex() {
               }
             }}
           />
-
-          <div className={classes.filtersGrid}>
-            <Select
-              label="Mode"
-              options={[{ value: ALL, label: "All modes" }, ...modeOptions]}
-              value={searchParams.get("modeFilter") || ALL}
-              onChange={(value) =>
-                updateParams({ modeFilter: value === ALL ? undefined : value })
-              }
-            />
-            <Select
-              label="Type"
-              options={[{ value: ALL, label: "All types" }, ...typeOptions]}
-              value={searchParams.get("typeFilter") || ALL}
-              onChange={(value) =>
-                updateParams({ typeFilter: value === ALL ? undefined : value })
-              }
-            />
-            <Select
-              label="Status"
-              options={[
-                { value: ALL, label: "All" },
-                { value: "true", label: "Completed" },
-                { value: "false", label: "In progress" },
-              ]}
-              value={searchParams.get("isCompleteFilter") || ALL}
-              onChange={(value) =>
-                updateParams({
-                  isCompleteFilter: value === ALL ? undefined : value,
-                })
-              }
-            />
-            <Select
-              label="Phase"
-              options={[{ value: ALL, label: "All phases" }, ...phaseOptions]}
-              value={searchParams.get("phaseFilter") || ALL}
-              onChange={(value) =>
-                updateParams({ phaseFilter: value === ALL ? undefined : value })
-              }
-            />
-            <Select
-              label="Page size"
-              options={[
-                { value: "25", label: "25" },
-                { value: "50", label: "50" },
-                { value: "100", label: "100" },
-                { value: "250", label: "250" },
-              ]}
-              value={searchParams.get("pageSize") || "100"}
-              onChange={(value) => updateParams({ pageSize: value || "100" })}
-            />
-          </div>
-
-          <Accordion
-            items={[
-              {
-                value: "dates",
-                title: "Date range",
-                content: (
-                  <div className={classes.dateGrid}>
-                    {DATE_FILTERS.map((filter) => (
-                      <TextInput
-                        key={filter.param}
-                        label={filter.label}
-                        type="date"
-                        value={searchParams.get(filter.param) || ""}
-                        onChange={(e) =>
-                          updateParams({
-                            [filter.param]: e.currentTarget.value || undefined,
-                          })
-                        }
-                      />
-                    ))}
-                  </div>
-                ),
-              },
+          <Segmented
+            size="sm"
+            label="Status"
+            value={status}
+            onChange={(value) =>
+              updateParams({
+                isCompleteFilter: value === ALL ? undefined : value,
+              })
+            }
+            options={[
+              { value: ALL, label: "All" },
+              { value: "false", label: "In progress" },
+              { value: "true", label: "Completed" },
             ]}
           />
-        </Stack>
-      </Panel>
-
-      <Stack gap={2}>
-        <Text size="sm" weight={600}>
-          {filteredTotal.toLocaleString()} results
-        </Text>
-
-        <Table striped dense minWidth={1000}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Draft</Table.Th>
-              {SORT_COLUMNS.map(({ column, label }) => (
-                <SortTh
-                  key={column}
-                  column={column}
-                  label={label}
-                  active={searchParams.get("sortBy")}
-                  icon={renderSortIcon(column)}
-                  onClick={handleSortChange}
+        </div>
+        <div className={classes.filterRow}>
+          <Select
+            size="sm"
+            className={classes.refine}
+            aria-label="Mode"
+            options={[{ value: ALL, label: "Any mode" }, ...modeOptions]}
+            value={searchParams.get("modeFilter") || ALL}
+            onChange={(value) =>
+              updateParams({ modeFilter: value === ALL ? undefined : value })
+            }
+          />
+          <Select
+            size="sm"
+            className={classes.refine}
+            aria-label="Type"
+            options={[{ value: ALL, label: "Any type" }, ...typeOptions]}
+            value={searchParams.get("typeFilter") || ALL}
+            onChange={(value) =>
+              updateParams({ typeFilter: value === ALL ? undefined : value })
+            }
+          />
+          <Select
+            size="sm"
+            className={classes.refine}
+            aria-label="Phase"
+            options={[{ value: ALL, label: "Any phase" }, ...phaseOptions]}
+            value={searchParams.get("phaseFilter") || ALL}
+            onChange={(value) =>
+              updateParams({ phaseFilter: value === ALL ? undefined : value })
+            }
+          />
+          <Popover
+            side="bottom"
+            align="start"
+            width={320}
+            title="Date range"
+            trigger={
+              <Button size="sm" icon={<IconCalendar size={15} />}>
+                {datesSet ? `Dates (${datesSet})` : "Dates"}
+              </Button>
+            }
+          >
+            <div className={classes.dateGrid}>
+              {DATE_FILTERS.map((filter) => (
+                <TextInput
+                  key={filter.param}
+                  size="sm"
+                  label={filter.label}
+                  type="date"
+                  value={searchParams.get(filter.param) || ""}
+                  onChange={(e) =>
+                    updateParams({
+                      [filter.param]: e.currentTarget.value || undefined,
+                    })
+                  }
                 />
               ))}
-              <Table.Th>Actions</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {draftsData.length === 0 && (
-              <Table.Tr>
-                <Table.Td colSpan={10}>
-                  <Stack gap={2} align="center" className={classes.empty}>
-                    <IconSearch size={28} />
-                    <Text size="sm" tone="muted">
-                      No records match current parameters
-                    </Text>
-                  </Stack>
-                </Table.Td>
-              </Table.Tr>
-            )}
+            </div>
+          </Popover>
+          {hasActiveFilters && (
+            <Button
+              size="sm"
+              variant="tertiary"
+              icon={<IconX size={14} />}
+              onClick={clearAllFilters}
+            >
+              Clear filters
+            </Button>
+          )}
+        </div>
+        <div className={classes.presets}>
+          <span>Shortcuts</span>
+          {QUICK_FILTERS.map((filter) => (
+            <Chip
+              key={filter.label}
+              pressed={activePreset === filter.label}
+              onChange={(on) =>
+                on
+                  ? updateParams({
+                      modeFilter: undefined,
+                      phaseFilter: undefined,
+                      isCompleteFilter: undefined,
+                      ...filter.updates,
+                    })
+                  : updateParams({
+                      modeFilter: undefined,
+                      phaseFilter: undefined,
+                      isCompleteFilter: undefined,
+                    })
+              }
+            >
+              {filter.label}
+            </Chip>
+          ))}
+        </div>
+      </section>
 
+      {draftsData.length === 0 ? (
+        <div className={classes.empty}>
+          <IconSearch size={26} />
+          <Text weight={600}>No drafts match these filters</Text>
+          {hasActiveFilters && (
+            <Button size="sm" onClick={clearAllFilters}>
+              Clear filters
+            </Button>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className={classes.table}>
+            <Table dense minWidth={940}>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Draft</Table.Th>
+                  <SortTh {...sortProps("mode")} label="Format" />
+                  <SortTh {...sortProps("progress")} label="Progress" />
+                  <SortTh {...sortProps("players")} label="Players" />
+                  <SortTh {...sortProps("updatedAt")} label="Last activity" />
+                  <SortTh {...sortProps("createdAt")} label="Created" />
+                  <Table.Th className={classes.actionsHead}>
+                    <span className="visually-hidden">Actions</span>
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {draftsData.map((draft) => (
+                  <Table.Tr key={draft.id}>
+                    <Table.Td>
+                      <DraftName draft={draft} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Format draft={draft} />
+                    </Table.Td>
+                    <Table.Td>
+                      <DraftProgress draft={draft} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Players draft={draft} />
+                    </Table.Td>
+                    <Table.Td>
+                      <time className={classes.when} dateTime={draft.updatedAt}>
+                        {formatDateTime(draft.updatedAt)}
+                      </time>
+                    </Table.Td>
+                    <Table.Td>
+                      <time className={classes.when} dateTime={draft.createdAt}>
+                        {formatDateTime(draft.createdAt)}
+                      </time>
+                    </Table.Td>
+                    <Table.Td>
+                      <Actions draft={draft} onDelete={setDeleting} />
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </div>
+
+          {/* Phones: one card per draft instead of a sideways-scrolling table. */}
+          <ul className={classes.cards}>
             {draftsData.map((draft) => (
-              <Table.Tr key={draft.id}>
-                <Table.Td>
-                  <Text size="sm" weight={600} className={classes.mono}>
-                    {shortId(draft.id)}
-                  </Text>
-                  <Text size="xs" tone="muted">
-                    {draft.urlName ?? "—"}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Tag tone={MODE_TONES[draft.mode] ?? "neutral"}>
-                    {getModeLabel(draft.mode)}
-                  </Tag>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs" tone="muted">
-                    {draft.type ?? "unknown"}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Tag tone={draft.isComplete ? "success" : "gold"}>
-                    {draft.isComplete ? "Complete" : "Active"}
-                  </Tag>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs" tone="muted">
-                    {getPhaseLabel(draft.phase)}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <div className={classes.progress}>
-                    <Text size="xs" tone="muted" className={classes.mono}>
-                      {draft.selectionsCount}/{draft.pickOrderCount} (
-                      {draft.progressPercent.toFixed(0)}%)
-                    </Text>
-                    <Progress
-                      value={Math.min(draft.progressPercent, 100)}
-                      tone={progressTone(draft.progressPercent)}
-                      size="xs"
-                    />
-                  </div>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs" weight={600}>
-                    {draft.playerCount}p
-                  </Text>
-                  <Text
-                    size="xs"
-                    tone="muted"
-                    truncate
-                    className={classes.players}
-                  >
-                    {draft.playerNames || "—"}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs" tone="muted" className={classes.mono}>
-                    {formatDateTime(draft.createdAt)}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs" tone="muted" className={classes.mono}>
+              <li key={draft.id} className={classes.card}>
+                <div className={classes.cardTop}>
+                  <DraftName draft={draft} />
+                  <Actions draft={draft} onDelete={setDeleting} />
+                </div>
+                <Format draft={draft} />
+                <DraftProgress draft={draft} />
+                <div className={classes.cardFoot}>
+                  <Players draft={draft} />
+                  <time className={classes.when} dateTime={draft.updatedAt}>
                     {formatDateTime(draft.updatedAt)}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Row gap={1} wrap={false}>
-                    <Tooltip label="Open draft">
-                      <Link
-                        to={`/draft/${draft.urlName ?? draft.id}`}
-                        className={classes.iconLink}
-                        aria-label="Open draft"
-                      >
-                        <IconEye size={15} />
-                      </Link>
-                    </Tooltip>
-                    <Tooltip label="Raw JSON">
-                      <a
-                        href={`/admin/drafts/${draft.urlName ?? draft.id}/raw`}
-                        className={classes.iconLink}
-                        aria-label="Raw JSON"
-                      >
-                        <IconDatabase size={15} />
-                      </a>
-                    </Tooltip>
-                    <Form method="delete" onSubmit={handleDeleteSubmit}>
-                      <input type="hidden" value={draft.id} name="id" />
-                      <IconButton
-                        type="submit"
-                        variant="danger"
-                        size="sm"
-                        label="Delete draft"
-                      >
-                        <IconTrash size={15} />
-                      </IconButton>
-                    </Form>
-                  </Row>
-                </Table.Td>
-              </Table.Tr>
+                  </time>
+                </div>
+              </li>
             ))}
-          </Table.Tbody>
-        </Table>
-      </Stack>
+          </ul>
+        </>
+      )}
 
-      <Row justify="between" gap={3}>
-        <Text size="xs" tone="muted">
-          Showing {draftsData.length} of {filteredTotal.toLocaleString()}{" "}
-          filtered &middot; {stats.scopedDrafts.toLocaleString()} in scope
-          &middot; {stats.allDrafts.toLocaleString()} total
+      <footer className={classes.foot}>
+        <Text size="sm" tone="muted">
+          {draftsData.length > 0
+            ? `${((currentPage - 1) * pageSize + 1).toLocaleString()}–${((currentPage - 1) * pageSize + draftsData.length).toLocaleString()} of ${filteredTotal.toLocaleString()}`
+            : "0 results"}
         </Text>
-        <Pagination
-          total={Math.max(totalPages, 1)}
-          page={currentPage}
-          onChange={(page) => updateParams({ page: page.toString() }, false)}
-        />
-      </Row>
+        <div className={classes.footRight}>
+          <Select
+            size="sm"
+            aria-label="Rows per page"
+            options={["25", "50", "100", "250"].map((n) => ({
+              value: n,
+              label: `${n} per page`,
+            }))}
+            value={String(pageSize)}
+            onChange={(value) => updateParams({ pageSize: value || "100" })}
+          />
+          <Pagination
+            total={Math.max(totalPages, 1)}
+            page={currentPage}
+            onChange={(page) => updateParams({ page: page.toString() }, false)}
+          />
+        </div>
+      </footer>
+
+      <Modal
+        opened={!!deleting}
+        onClose={() => setDeleting(null)}
+        size="sm"
+        title="Delete this draft?"
+        footer={
+          <>
+            <Button variant="tertiary" onClick={() => setDeleting(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              icon={<IconTrash size={15} />}
+              onClick={confirmDelete}
+            >
+              Delete draft
+            </Button>
+          </>
+        }
+      >
+        {deleting && (
+          <Text size="sm" tone="muted">
+            <b className={classes.strong}>
+              {deleting.urlName ?? shortId(deleting.id)}
+            </b>{" "}
+            and all its picks are removed for everyone. This can&apos;t be
+            undone.
+          </Text>
+        )}
+      </Modal>
     </Stack>
   );
 }
 
-function StatPanel({
-  label,
-  value,
-  detail,
+type DraftRow = ReturnType<
+  typeof useLoaderData<typeof loader>
+>["drafts"][number];
+
+function DraftName({ draft }: { draft: DraftRow }) {
+  return (
+    <div className={classes.name}>
+      <Link to={`/draft/${draft.urlName ?? draft.id}`} className={classes.url}>
+        {draft.urlName ?? shortId(draft.id)}
+      </Link>
+      <span className={classes.id}>{shortId(draft.id)}</span>
+    </div>
+  );
+}
+
+function Format({ draft }: { draft: DraftRow }) {
+  return (
+    <div className={classes.format}>
+      <Tag tone={MODE_TONES[draft.mode] ?? "neutral"}>
+        {getModeLabel(draft.mode)}
+      </Tag>
+      <span>{draft.type ?? "unknown"}</span>
+    </div>
+  );
+}
+
+function DraftProgress({ draft }: { draft: DraftRow }) {
+  const pct = Math.min(draft.progressPercent, 100);
+  return (
+    <div className={classes.progress}>
+      <div className={classes.progressText}>
+        <span className={cx(classes.state, draft.isComplete && classes.done)}>
+          {draft.isComplete ? "Complete" : getPhaseLabel(draft.phase)}
+        </span>
+        <span className={classes.count}>
+          {draft.selectionsCount}/{draft.pickOrderCount}
+        </span>
+      </div>
+      <Progress
+        value={pct}
+        tone={draft.isComplete ? "success" : "ion"}
+        size="xs"
+        label="Picks made"
+      />
+    </div>
+  );
+}
+
+function Players({ draft }: { draft: DraftRow }) {
+  return (
+    <div className={classes.players}>
+      <b>{draft.playerCount}p</b>
+      <span title={draft.playerNames || undefined}>
+        {draft.playerNames || "No names"}
+      </span>
+    </div>
+  );
+}
+
+function Actions({
+  draft,
+  onDelete,
 }: {
-  label: string;
-  value: string;
-  detail?: string;
+  draft: DraftRow;
+  onDelete: (d: DraftRow) => void;
 }) {
   return (
-    <div className={classes.stat}>
-      <Text size="xs" tone="muted" weight={600}>
-        {label}
-      </Text>
-      <span className={classes.statValue}>{value}</span>
-      {detail && (
-        <Text size="xs" tone="muted">
-          {detail}
-        </Text>
-      )}
-    </div>
+    <Row gap={1} wrap={false} className={classes.actions}>
+      <Tooltip label="Raw JSON">
+        <a
+          href={`/admin/drafts/${draft.urlName ?? draft.id}/raw`}
+          className={classes.iconLink}
+          aria-label="Raw JSON"
+        >
+          <IconBraces size={15} />
+        </a>
+      </Tooltip>
+      <IconButton
+        variant="danger"
+        size="sm"
+        label="Delete draft"
+        onClick={() => onDelete(draft)}
+      >
+        <IconTrash size={15} />
+      </IconButton>
+    </Row>
   );
 }
 
@@ -602,25 +682,29 @@ function SortTh({
   column,
   label,
   active,
-  icon,
+  order,
   onClick,
 }: {
   column: SortBy;
   label: string;
-  active: string | null;
-  icon: ReactNode;
+  active: string;
+  order: string;
   onClick: (column: SortBy) => void;
 }) {
   const isActive = active === column;
+  const asc = order === "asc";
   return (
-    <Table.Th aria-sort={isActive ? "other" : undefined}>
+    <Table.Th
+      aria-sort={isActive ? (asc ? "ascending" : "descending") : undefined}
+    >
       <button
         type="button"
         className={cx(classes.sortBtn, isActive && classes.sortActive)}
         onClick={() => onClick(column)}
       >
         {label}
-        {icon}
+        {isActive &&
+          (asc ? <IconChevronUp size={12} /> : <IconChevronDown size={12} />)}
       </button>
     </Table.Th>
   );
