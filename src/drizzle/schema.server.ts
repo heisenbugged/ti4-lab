@@ -223,3 +223,94 @@ export const draftPresets = sqliteTable("draftPresets", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
+
+/** People who signed in with Discord. `id` is the Discord user id. */
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey(),
+  username: text("username").notNull(),
+  globalName: text("globalName"),
+  avatar: text("avatar"),
+  createdAt: text("createdAt")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  lastSeenAt: text("lastSeenAt")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
+/**
+ * A group's public page of drafts and slice sets. Each Discord account owns
+ * one; anyone with the link can view it, only the owner can edit it.
+ */
+export const hubs = sqliteTable(
+  "hubs",
+  {
+    id: text("id").primaryKey(),
+    ownerId: text("ownerId")
+      .notNull()
+      .unique()
+      .references(() => users.id),
+    slug: text("slug").notNull().unique(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    createdAt: text("createdAt")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updatedAt")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    slugIdx: index("hubs_slug_index").on(table.slug),
+  }),
+);
+
+/** Drafts on a hub: created while signed in, started by the bot, or imported. */
+export const hubDrafts = sqliteTable(
+  "hubDrafts",
+  {
+    hubId: text("hubId")
+      .notNull()
+      .references(() => hubs.id),
+    draftId: text("draftId")
+      .notNull()
+      .references(() => drafts.id),
+    /** "created" | "discord" | "imported" */
+    source: text("source").notNull(),
+    label: text("label"),
+    archivedAt: text("archivedAt"),
+    addedAt: text("addedAt")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.hubId, table.draftId] }),
+    draftIdx: index("hub_drafts_draft_id_index").on(table.draftId),
+  }),
+);
+
+/** Named slice sets on a hub. Each one is a draft preset, so the bot can start it too. */
+export const hubSliceSets = sqliteTable(
+  "hubSliceSets",
+  {
+    id: text("id").primaryKey(),
+    hubId: text("hubId")
+      .notNull()
+      .references(() => hubs.id),
+    presetId: text("presetId")
+      .notNull()
+      .references(() => draftPresets.id),
+    title: text("title").notNull(),
+    archivedAt: text("archivedAt"),
+    addedAt: text("addedAt")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    hubPresetUnique: unique("hub_slice_sets_hub_preset_unique").on(
+      table.hubId,
+      table.presetId,
+    ),
+    hubIdx: index("hub_slice_sets_hub_id_index").on(table.hubId),
+  }),
+);

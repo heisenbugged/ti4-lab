@@ -50,7 +50,7 @@
 
 @media (min-width: 1200px) {
   .stylebox {
-    grid-template-columns: 200px minmax(0, 1fr);
+    grid-template-columns: max-content minmax(0, 1fr);
   }
 }
 

@@ -20,8 +20,6 @@ export type DraftFormatDescriptionData = {
 };
 
 type Props = {
-  /** Fade in when mounted (format switch only, not page load). */
-  fadeIn?: boolean;
   data: DraftFormatDescriptionData;
   title: string;
 };
@@ -36,9 +34,9 @@ const ICONS = {
 };
 
 /** What the hovered or chosen style plays like, with four feature chips. */
-export function DraftFormatDescription({ data, title, fadeIn = false }: Props) {
+export function DraftFormatDescription({ data, title }: Props) {
   return (
-    <div className={fadeIn ? `${styles.desc} ui-fade-in` : styles.desc}>
+    <div className={styles.desc}>
       <h3 className={styles.title}>{title}</h3>
       <p className={styles.text}>{data.description}</p>
       <ul className={styles.chips}>

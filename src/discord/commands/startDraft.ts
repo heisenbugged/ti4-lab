@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { DiscordData, DiscordPlayer } from "~/types";
 import { draftPresetByName } from "~/drizzle/draftPreset.server";
+import { addDraftToUserHub } from "~/drizzle/hub.server";
 import {
   createDraftFromPreset,
   DraftPresetError,
@@ -102,6 +103,8 @@ async function startDraftFromPreset(
       playersFromDiscordData(discordData),
       discordData,
     );
+    // Whoever ran the command gets it on their hub, if they have one.
+    await addDraftToUserHub(interaction.user.id, id, "discord");
     const draftUrl = `${global.env.baseUrl}/draft/${prettyUrl}`;
 
     await interaction.editReply({

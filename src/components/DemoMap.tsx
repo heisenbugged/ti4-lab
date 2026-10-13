@@ -19,15 +19,13 @@ import { playerColors } from "~/data/factionData";
 import legend from "./DemoMap.module.css";
 
 type Props = {
-  /** Fade in when mounted (used when switching formats, not on page load). */
-  fadeIn?: boolean;
   id: string;
   map: DemoTile[];
   padding: number;
   titles: string[];
 };
 
-export function DemoMap({ id, map, padding, titles, fadeIn = false }: Props) {
+export function DemoMap({ id, map, padding, titles }: Props) {
   const { ref, width, height } = useDimensions<HTMLDivElement>();
   const n = calculateConcentricCircles(map.length);
   const gap = 3;
@@ -47,7 +45,7 @@ export function DemoMap({ id, map, padding, titles, fadeIn = false }: Props) {
         animateChanges: false,
       }}
     >
-      <div ref={ref} className={fadeIn ? "ui-fade-in" : undefined} style={{ width: "100%", height: `${clampedHeight}px` }}>
+      <div ref={ref} style={{ width: "100%", height: `${clampedHeight}px` }}>
         {width > 0 &&
           map
             .filter((t) => !!t.position)

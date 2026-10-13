@@ -1,0 +1,8 @@
+.placeholder { display: inline-block; width: 28px; height: 28px; }
+.trigger { display: grid; place-items: center; padding: 2px; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+.trigger:hover .avatar { box-shadow: 0 0 0 2px var(--rule-hover); }
+.trigger:focus-visible { outline: 2px solid var(--ion); outline-offset: 2px; }
+.avatar { display: grid; place-items: center; flex: none; border-radius: 50%; background: color-mix(in oklab, var(--discord) 30%, var(--hull-raised)); color: var(--text); font-weight: 700; object-fit: cover; box-shadow: 0 0 0 1px var(--rule-strong); }
+.who { display: grid; gap: 2px; padding: 8px 10px 6px; min-width: 0; }
+.who b { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who small { font-size: 12px; color: var(--text-muted); }

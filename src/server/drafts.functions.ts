@@ -1,6 +1,8 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { sessionUserId } from "~/auth/session.server";
 import { notifyPick } from "~/discord/notify.server";
+import { addDraftToUserHub } from "~/drizzle/hub.server";
 import { buildInitialDraft } from "~/draft/buildInitialDraft";
 import {
   applyTexasFactionCommit,
@@ -100,6 +102,7 @@ export const createDraft = createServerFn({ method: "POST" })
     const draft: Draft = withDraftOrder(body);
 
     const { prettyUrl, id } = await insertDraft(draft, presetUrl);
+    await addDraftToUserHub(await sessionUserId(), id, "created");
     if (draft.integrations?.discord) {
       await notifyPick(id, prettyUrl, draft);
     }
@@ -141,9 +144,11 @@ export const createMultiDraft = createServerFn({ method: "POST" })
       drafts.push(withDraftOrder(initial));
     }
 
+    const userId = await sessionUserId();
     const draftUrlNames: string[] = [];
     for (const draft of drafts) {
-      const { prettyUrl } = await insertDraft(draft);
+      const { prettyUrl, id } = await insertDraft(draft);
+      await addDraftToUserHub(userId, id, "created");
       draftUrlNames.push(prettyUrl);
     }
 

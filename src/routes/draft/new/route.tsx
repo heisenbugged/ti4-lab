@@ -1,10 +1,12 @@
-import { IconDeviceFloppy, IconPlayerPlay } from "@tabler/icons-react";
+import { IconBrandDiscordFilled, IconDeviceFloppy, IconPlayerPlay } from "@tabler/icons-react";
 import { createFileRoute, useLocation, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { PlanetFinder } from "~/routes/draft/$id/-components/PlanetFinder";
 import { draftStore, useDraft } from "~/draftStore";
 import { useCreateDraft } from "~/hooks/useCreateDraft";
 import "./-handoff";
+import { stashBuilderDraft, takeStashedBuilderDraft } from "./-resume";
+import { signInHref, useViewer } from "~/hooks/useViewer";
 import { LoadingOverlay } from "~/components/LoadingOverlay";
 import { SlicesTable } from "../-components/SlicesTable";
 import { DiscordBanner } from "~/components/DiscordBanner";
@@ -19,7 +21,7 @@ import { AvailableMinorFactionsSection } from "./-sections/AvailableMinorFaction
 import { AvailableReferenceCardPacksSection } from "./-sections/AvailableReferenceCardPacksSection";
 import { ConnectedFactionSettingsModal } from "./-components/ConnectedFactionSettingsModal";
 import { OriginalArtToggle } from "~/components/OriginalArtToggle";
-import { SaveDraftPresetModal } from "./-components/SaveDraftPresetModal";
+import { SaveDraftPresetModal, SaveToHubModal } from "./-components/SaveDraftPresetModal";
 import { BuilderSection } from "./-sections/BuilderSection";
 import { MAPS } from "~/routes/draft/prechoice/-maps";
 import { Button, Code, Heading, Text, useDisclosure } from "~/ui";
@@ -42,6 +44,8 @@ function DraftNew() {
   const draftIsValid = validationErrors.length === 0;
   const [savePresetOpened, { close: closeSavePreset, open: openSavePreset }] =
     useDisclosure(false);
+  const [saveHubOpened, { close: closeSaveHub, open: openSaveHub }] =
+    useDisclosure(false);
 
   const showFullMap =
     config.modifiableMapTiles.length > 0 ||
@@ -52,6 +56,16 @@ function DraftNew() {
 
   useEffect(() => {
     if (!handoff) {
+      // Back from Discord sign-in with the draft parked in this tab.
+      const stashed = takeStashedBuilderDraft();
+      if (stashed) {
+        actions.initializeDraftFromSavedState(stashed);
+        if (new URLSearchParams(window.location.search).get("resume") === "save") {
+          openSaveHub();
+        }
+        router.history.replace("/draft/new", {});
+        return;
+      }
       navigate({ to: "/draft/prechoice" });
       return;
     }
@@ -92,6 +106,13 @@ function DraftNew() {
   }, [initialized, isTexasStyle, draftIsValid, createDraft, draft]);
 
   const handleCreate = () => createDraft(draft);
+  const signedIn = Boolean(useViewer());
+
+  // Signing in leaves the page: park the draft so it's still here afterwards.
+  const signInAndSaveToHub = () => {
+    stashBuilderDraft(draft);
+    window.location.href = signInHref("/draft/new?resume=save");
+  };
 
   const advancedOptions = (
     <div className={classes.createColumn}>
@@ -127,17 +148,27 @@ function DraftNew() {
           Save for later
         </Heading>
         <Text size="sm" tone="muted">
-          Save this map, slices and settings as a named preset. Continue from
-          it later in TI4 Lab, or start it in Discord with{" "}
+          Save this map, slices and settings to your hub under any name, where
+          you can search for it and start a new draft in one click. Or save it
+          as a preset to continue from later, or start in Discord with{" "}
           <Code>/labdraft preset:&lt;name&gt;</Code>.
         </Text>
-        <Button
-          icon={<IconDeviceFloppy />}
-          disabled={!draftIsValid}
-          onClick={openSavePreset}
-        >
-          Save as preset
-        </Button>
+        <div className={classes.saveActions}>
+          <Button
+            icon={signedIn ? <IconDeviceFloppy /> : <IconBrandDiscordFilled />}
+            disabled={!draftIsValid}
+            onClick={signedIn ? openSaveHub : signInAndSaveToHub}
+          >
+            {signedIn ? "Save to hub" : "Sign in and save to hub"}
+          </Button>
+          <Button
+            variant="tertiary"
+            disabled={!draftIsValid}
+            onClick={openSavePreset}
+          >
+            Save as preset
+          </Button>
+        </div>
       </section>
     </div>
   );
@@ -170,6 +201,11 @@ function DraftNew() {
         draft={draft}
         opened={savePresetOpened}
         onClose={closeSavePreset}
+      />
+      <SaveToHubModal
+        draft={draft}
+        opened={saveHubOpened}
+        onClose={closeSaveHub}
       />
       <PlanetFinder />
     </>

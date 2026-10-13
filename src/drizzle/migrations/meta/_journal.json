@@ -106,6 +106,13 @@
       "when": 1790955709463,
       "tag": "0014_rapid_makkari",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1791907973029,
+      "tag": "0015_discord_hubs",
+      "breakpoints": true
     }
   ]
 }

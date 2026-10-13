@@ -173,11 +173,6 @@ function DraftPrechoice() {
   }, [mapSlicesString, selectedDraftType, player, setPlayers, map, slices]);
 
   const mapType = hoveredMapType ?? map.selectedMapType;
-  // Crossfade the demo map and description only once the format has changed, never on page load.
-  const firstMapType = useRef(mapType);
-  const switchedRef = useRef(false);
-  if (mapType !== firstMapType.current) switchedRef.current = true;
-  const formatSwitched = switchedRef.current;
   const playerCount = player.players.length;
 
   const maxSlices = useMemo(() => {
@@ -355,8 +350,6 @@ function DraftPrechoice() {
 
   const demoMap = mapType && (
     <DemoMap
-      key={mapType}
-      fadeIn={formatSwitched}
       id="prechoice-map"
       map={MAPS[mapType].map}
       titles={MAPS[mapType].titles}
@@ -430,8 +423,6 @@ function DraftPrechoice() {
                 <div className={classes.mapwrap}>{demoMap}</div>
               </div>
               <DraftFormatDescription
-                key={mapType}
-                fadeIn={formatSwitched}
                 data={MAPS[mapType].descriptionData}
                 title={MAPS[mapType].title}
               />

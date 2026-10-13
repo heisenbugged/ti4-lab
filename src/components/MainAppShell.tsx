@@ -3,6 +3,7 @@ import { Link, useMatchRoute } from "@tanstack/react-router";
 import { IconBrandDiscordFilled, IconMenu2 } from "@tabler/icons-react";
 import { ButtonAnchor, Drawer, IconButton, cx } from "~/ui";
 import { Logo } from "~/components/Logo";
+import { AccountButton } from "~/components/Account/AccountButton";
 import { trackButtonClick } from "~/lib/analytics";
 import classes from "./MainAppShell.module.css";
 
@@ -24,6 +25,7 @@ export function MainAppShell({ children, headerRightSection, flush, wide }: Prop
 
   const items = [
     { to: "/draft/prechoice", label: "Draft", active: matches("/draft", true) },
+    { to: "/hub", label: "Hub", active: matches("/hub", true) },
     { to: "/map-generator", label: "Map generator", active: matches("/map-generator") },
     { to: "/map-presets", label: "Community maps", active: matches("/map-presets") || matches("/maps", true) },
     { to: "/about", label: "About", active: matches("/about") },
@@ -55,6 +57,7 @@ export function MainAppShell({ children, headerRightSection, flush, wide }: Prop
           <ButtonAnchor href={DISCORD_INVITE_URL} target="_blank" rel="noreferrer" size="sm" icon={<IconBrandDiscordFilled />} className={classes.desktopOnly}>
             Join Discord
           </ButtonAnchor>
+          <AccountButton />
           <IconButton label="Menu" className={classes.burger} onClick={() => setMenuOpen(true)}>
             <IconMenu2 />
           </IconButton>

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from "./routes/index";
 import { Route as AboutRouteRouteImport } from "./routes/about/route";
 import { Route as AdminRouteRouteImport } from "./routes/admin/route";
 import { Route as DraftRouteRouteImport } from "./routes/draft/route";
+import { Route as HubRouteRouteImport } from "./routes/hub/route";
 import { Route as MapGeneratorRouteImport } from "./routes/map-generator";
 import { Route as MapGeneratorDotpngRouteImport } from "./routes/map-generator[.]png";
 import { Route as MapPresetsRouteRouteImport } from "./routes/map-presets/route";
@@ -26,6 +27,8 @@ import { Route as DraftNewRouteRouteImport } from "./routes/draft/new/route";
 import { Route as DraftPrechoiceRouteRouteImport } from "./routes/draft/prechoice/route";
 import { Route as DraftTournamentRouteRouteImport } from "./routes/draft/tournament/route";
 import { Route as DraftChar123idChar125DotpngRouteImport } from "./routes/draft/{$id}[.]png";
+import { Route as HubIndexRouteImport } from "./routes/hub/index";
+import { Route as HubSlugRouteImport } from "./routes/hub/$slug";
 import { Route as MapPresetChar123idChar125DotpngRouteImport } from "./routes/map-preset/{$id}[.]png";
 import { Route as MapsSlugRouteImport } from "./routes/maps/$slug";
 import { Route as MultidraftIdRouteImport } from "./routes/multidraft/$id";
@@ -35,6 +38,8 @@ import { Route as VoicesIndexRouteImport } from "./routes/voices/index";
 import { Route as VoicesIdRouteImport } from "./routes/voices/$id";
 import { Route as VoicesCallbackRouteImport } from "./routes/voices/callback";
 import { Route as VoicesLogoutRouteImport } from "./routes/voices/logout";
+import { Route as AuthDiscordIndexRouteImport } from "./routes/auth/discord/index";
+import { Route as AuthDiscordCallbackRouteImport } from "./routes/auth/discord/callback";
 import { Route as DraftIdIndexRouteImport } from "./routes/draft/$id/index";
 import { Route as DraftIdRawRouteImport } from "./routes/draft/$id/raw";
 import { Route as DraftIdReplayRouteRouteImport } from "./routes/draft/$id/replay/route";
@@ -58,6 +63,11 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
 const DraftRouteRoute = DraftRouteRouteImport.update({
   id: "/draft",
   path: "/draft",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const HubRouteRoute = HubRouteRouteImport.update({
+  id: "/hub",
+  path: "/hub",
   getParentRoute: () => rootRouteImport,
 } as any);
 const MapGeneratorRoute = MapGeneratorRouteImport.update({
@@ -126,6 +136,16 @@ const DraftChar123idChar125DotpngRoute =
     path: "/{$id}.png",
     getParentRoute: () => DraftRouteRoute,
   } as any);
+const HubIndexRoute = HubIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => HubRouteRoute,
+} as any);
+const HubSlugRoute = HubSlugRouteImport.update({
+  id: "/$slug",
+  path: "/$slug",
+  getParentRoute: () => HubRouteRoute,
+} as any);
 const MapPresetChar123idChar125DotpngRoute =
   MapPresetChar123idChar125DotpngRouteImport.update({
     id: "/map-preset/{$id}.png",
@@ -172,6 +192,16 @@ const VoicesLogoutRoute = VoicesLogoutRouteImport.update({
   path: "/logout",
   getParentRoute: () => VoicesRouteRoute,
 } as any);
+const AuthDiscordIndexRoute = AuthDiscordIndexRouteImport.update({
+  id: "/auth/discord/",
+  path: "/auth/discord/",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AuthDiscordCallbackRoute = AuthDiscordCallbackRouteImport.update({
+  id: "/auth/discord/callback",
+  path: "/auth/discord/callback",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const DraftIdIndexRoute = DraftIdIndexRouteImport.update({
   id: "/$id/",
   path: "/$id/",
@@ -198,6 +228,7 @@ export interface FileRoutesByFullPath {
   "/about": typeof AboutRouteRoute;
   "/admin": typeof AdminRouteRouteWithChildren;
   "/draft": typeof DraftRouteRouteWithChildren;
+  "/hub": typeof HubRouteRouteWithChildren;
   "/map-presets": typeof MapPresetsRouteRoute;
   "/multidraft": typeof MultidraftRouteRouteWithChildren;
   "/voices": typeof VoicesRouteRouteWithChildren;
@@ -211,6 +242,7 @@ export interface FileRoutesByFullPath {
   "/draft/prechoice": typeof DraftPrechoiceRouteRoute;
   "/draft/tournament": typeof DraftTournamentRouteRoute;
   "/draft/{$id}.png": typeof DraftChar123idChar125DotpngRoute;
+  "/hub/$slug": typeof HubSlugRoute;
   "/map-preset/{$id}.png": typeof MapPresetChar123idChar125DotpngRoute;
   "/maps/$slug": typeof MapsSlugRoute;
   "/multidraft/$id": typeof MultidraftIdRoute;
@@ -218,10 +250,13 @@ export interface FileRoutesByFullPath {
   "/voices/$id": typeof VoicesIdRoute;
   "/voices/callback": typeof VoicesCallbackRoute;
   "/voices/logout": typeof VoicesLogoutRoute;
+  "/hub/": typeof HubIndexRoute;
   "/soundboard/": typeof SoundboardIndexRoute;
   "/voices/": typeof VoicesIndexRoute;
   "/draft/$id/replay": typeof DraftIdReplayRouteRoute;
+  "/auth/discord/callback": typeof AuthDiscordCallbackRoute;
   "/draft/$id/raw": typeof DraftIdRawRoute;
+  "/auth/discord/": typeof AuthDiscordIndexRoute;
   "/draft/$id/": typeof DraftIdIndexRoute;
   "/admin/drafts/$id/raw": typeof AdminDraftsIdRawRoute;
 }
@@ -242,6 +277,7 @@ export interface FileRoutesByTo {
   "/draft/prechoice": typeof DraftPrechoiceRouteRoute;
   "/draft/tournament": typeof DraftTournamentRouteRoute;
   "/draft/{$id}.png": typeof DraftChar123idChar125DotpngRoute;
+  "/hub/$slug": typeof HubSlugRoute;
   "/map-preset/{$id}.png": typeof MapPresetChar123idChar125DotpngRoute;
   "/maps/$slug": typeof MapsSlugRoute;
   "/multidraft/$id": typeof MultidraftIdRoute;
@@ -249,10 +285,13 @@ export interface FileRoutesByTo {
   "/voices/$id": typeof VoicesIdRoute;
   "/voices/callback": typeof VoicesCallbackRoute;
   "/voices/logout": typeof VoicesLogoutRoute;
+  "/hub": typeof HubIndexRoute;
   "/soundboard": typeof SoundboardIndexRoute;
   "/voices": typeof VoicesIndexRoute;
   "/draft/$id/replay": typeof DraftIdReplayRouteRoute;
+  "/auth/discord/callback": typeof AuthDiscordCallbackRoute;
   "/draft/$id/raw": typeof DraftIdRawRoute;
+  "/auth/discord": typeof AuthDiscordIndexRoute;
   "/draft/$id": typeof DraftIdIndexRoute;
   "/admin/drafts/$id/raw": typeof AdminDraftsIdRawRoute;
 }
@@ -262,6 +301,7 @@ export interface FileRoutesById {
   "/about": typeof AboutRouteRoute;
   "/admin": typeof AdminRouteRouteWithChildren;
   "/draft": typeof DraftRouteRouteWithChildren;
+  "/hub": typeof HubRouteRouteWithChildren;
   "/map-presets": typeof MapPresetsRouteRoute;
   "/multidraft": typeof MultidraftRouteRouteWithChildren;
   "/voices": typeof VoicesRouteRouteWithChildren;
@@ -275,6 +315,7 @@ export interface FileRoutesById {
   "/draft/prechoice": typeof DraftPrechoiceRouteRoute;
   "/draft/tournament": typeof DraftTournamentRouteRoute;
   "/draft/{$id}.png": typeof DraftChar123idChar125DotpngRoute;
+  "/hub/$slug": typeof HubSlugRoute;
   "/map-preset/{$id}.png": typeof MapPresetChar123idChar125DotpngRoute;
   "/maps/$slug": typeof MapsSlugRoute;
   "/multidraft/$id": typeof MultidraftIdRoute;
@@ -282,10 +323,13 @@ export interface FileRoutesById {
   "/voices/$id": typeof VoicesIdRoute;
   "/voices/callback": typeof VoicesCallbackRoute;
   "/voices/logout": typeof VoicesLogoutRoute;
+  "/hub/": typeof HubIndexRoute;
   "/soundboard/": typeof SoundboardIndexRoute;
   "/voices/": typeof VoicesIndexRoute;
   "/draft/$id/replay": typeof DraftIdReplayRouteRoute;
+  "/auth/discord/callback": typeof AuthDiscordCallbackRoute;
   "/draft/$id/raw": typeof DraftIdRawRoute;
+  "/auth/discord/": typeof AuthDiscordIndexRoute;
   "/draft/$id/": typeof DraftIdIndexRoute;
   "/admin/drafts_/$id/raw": typeof AdminDraftsIdRawRoute;
 }
@@ -296,6 +340,7 @@ export interface FileRouteTypes {
     | "/about"
     | "/admin"
     | "/draft"
+    | "/hub"
     | "/map-presets"
     | "/multidraft"
     | "/voices"
@@ -309,6 +354,7 @@ export interface FileRouteTypes {
     | "/draft/prechoice"
     | "/draft/tournament"
     | "/draft/{$id}.png"
+    | "/hub/$slug"
     | "/map-preset/{$id}.png"
     | "/maps/$slug"
     | "/multidraft/$id"
@@ -316,10 +362,13 @@ export interface FileRouteTypes {
     | "/voices/$id"
     | "/voices/callback"
     | "/voices/logout"
+    | "/hub/"
     | "/soundboard/"
     | "/voices/"
     | "/draft/$id/replay"
+    | "/auth/discord/callback"
     | "/draft/$id/raw"
+    | "/auth/discord/"
     | "/draft/$id/"
     | "/admin/drafts/$id/raw";
   fileRoutesByTo: FileRoutesByTo;
@@ -340,6 +389,7 @@ export interface FileRouteTypes {
     | "/draft/prechoice"
     | "/draft/tournament"
     | "/draft/{$id}.png"
+    | "/hub/$slug"
     | "/map-preset/{$id}.png"
     | "/maps/$slug"
     | "/multidraft/$id"
@@ -347,10 +397,13 @@ export interface FileRouteTypes {
     | "/voices/$id"
     | "/voices/callback"
     | "/voices/logout"
+    | "/hub"
     | "/soundboard"
     | "/voices"
     | "/draft/$id/replay"
+    | "/auth/discord/callback"
     | "/draft/$id/raw"
+    | "/auth/discord"
     | "/draft/$id"
     | "/admin/drafts/$id/raw";
   id:
@@ -359,6 +412,7 @@ export interface FileRouteTypes {
     | "/about"
     | "/admin"
     | "/draft"
+    | "/hub"
     | "/map-presets"
     | "/multidraft"
     | "/voices"
@@ -372,6 +426,7 @@ export interface FileRouteTypes {
     | "/draft/prechoice"
     | "/draft/tournament"
     | "/draft/{$id}.png"
+    | "/hub/$slug"
     | "/map-preset/{$id}.png"
     | "/maps/$slug"
     | "/multidraft/$id"
@@ -379,10 +434,13 @@ export interface FileRouteTypes {
     | "/voices/$id"
     | "/voices/callback"
     | "/voices/logout"
+    | "/hub/"
     | "/soundboard/"
     | "/voices/"
     | "/draft/$id/replay"
+    | "/auth/discord/callback"
     | "/draft/$id/raw"
+    | "/auth/discord/"
     | "/draft/$id/"
     | "/admin/drafts_/$id/raw";
   fileRoutesById: FileRoutesById;
@@ -392,6 +450,7 @@ export interface RootRouteChildren {
   AboutRouteRoute: typeof AboutRouteRoute;
   AdminRouteRoute: typeof AdminRouteRouteWithChildren;
   DraftRouteRoute: typeof DraftRouteRouteWithChildren;
+  HubRouteRoute: typeof HubRouteRouteWithChildren;
   MapPresetsRouteRoute: typeof MapPresetsRouteRoute;
   MultidraftRouteRoute: typeof MultidraftRouteRouteWithChildren;
   VoicesRouteRoute: typeof VoicesRouteRouteWithChildren;
@@ -402,6 +461,8 @@ export interface RootRouteChildren {
   MapsSlugRoute: typeof MapsSlugRoute;
   SoundboardIdRoute: typeof SoundboardIdRoute;
   SoundboardIndexRoute: typeof SoundboardIndexRoute;
+  AuthDiscordCallbackRoute: typeof AuthDiscordCallbackRoute;
+  AuthDiscordIndexRoute: typeof AuthDiscordIndexRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -432,6 +493,13 @@ declare module "@tanstack/react-router" {
       path: "/draft";
       fullPath: "/draft";
       preLoaderRoute: typeof DraftRouteRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/hub": {
+      id: "/hub";
+      path: "/hub";
+      fullPath: "/hub";
+      preLoaderRoute: typeof HubRouteRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/map-generator": {
@@ -525,6 +593,20 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof DraftChar123idChar125DotpngRouteImport;
       parentRoute: typeof DraftRouteRoute;
     };
+    "/hub/": {
+      id: "/hub/";
+      path: "/";
+      fullPath: "/hub/";
+      preLoaderRoute: typeof HubIndexRouteImport;
+      parentRoute: typeof HubRouteRoute;
+    };
+    "/hub/$slug": {
+      id: "/hub/$slug";
+      path: "/$slug";
+      fullPath: "/hub/$slug";
+      preLoaderRoute: typeof HubSlugRouteImport;
+      parentRoute: typeof HubRouteRoute;
+    };
     "/map-preset/{$id}.png": {
       id: "/map-preset/{$id}.png";
       path: "/map-preset/{$id}.png";
@@ -587,6 +669,20 @@ declare module "@tanstack/react-router" {
       fullPath: "/voices/logout";
       preLoaderRoute: typeof VoicesLogoutRouteImport;
       parentRoute: typeof VoicesRouteRoute;
+    };
+    "/auth/discord/": {
+      id: "/auth/discord/";
+      path: "/auth/discord";
+      fullPath: "/auth/discord/";
+      preLoaderRoute: typeof AuthDiscordIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/auth/discord/callback": {
+      id: "/auth/discord/callback";
+      path: "/auth/discord/callback";
+      fullPath: "/auth/discord/callback";
+      preLoaderRoute: typeof AuthDiscordCallbackRouteImport;
+      parentRoute: typeof rootRouteImport;
     };
     "/draft/$id/": {
       id: "/draft/$id/";
@@ -661,6 +757,20 @@ const DraftRouteRouteWithChildren = DraftRouteRoute._addFileChildren(
   DraftRouteRouteChildren,
 );
 
+interface HubRouteRouteChildren {
+  HubSlugRoute: typeof HubSlugRoute;
+  HubIndexRoute: typeof HubIndexRoute;
+}
+
+const HubRouteRouteChildren: HubRouteRouteChildren = {
+  HubSlugRoute: HubSlugRoute,
+  HubIndexRoute: HubIndexRoute,
+};
+
+const HubRouteRouteWithChildren = HubRouteRoute._addFileChildren(
+  HubRouteRouteChildren,
+);
+
 interface MultidraftRouteRouteChildren {
   MultidraftIdRoute: typeof MultidraftIdRoute;
 }
@@ -696,6 +806,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRouteRoute: AboutRouteRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   DraftRouteRoute: DraftRouteRouteWithChildren,
+  HubRouteRoute: HubRouteRouteWithChildren,
   MapPresetsRouteRoute: MapPresetsRouteRoute,
   MultidraftRouteRoute: MultidraftRouteRouteWithChildren,
   VoicesRouteRoute: VoicesRouteRouteWithChildren,
@@ -706,6 +817,8 @@ const rootRouteChildren: RootRouteChildren = {
   MapsSlugRoute: MapsSlugRoute,
   SoundboardIdRoute: SoundboardIdRoute,
   SoundboardIndexRoute: SoundboardIndexRoute,
+  AuthDiscordCallbackRoute: AuthDiscordCallbackRoute,
+  AuthDiscordIndexRoute: AuthDiscordIndexRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
