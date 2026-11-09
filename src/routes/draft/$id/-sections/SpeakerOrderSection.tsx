@@ -19,18 +19,13 @@ export function SpeakerOrderSection() {
     activePlayer.speakerOrder === undefined;
 
   const positions = hydratedPlayers.map((_, idx) => speakerOrdinal(idx + 1));
-  const open = positions.filter(
-    (_, idx) => !hydratedPlayers.some((p) => p.speakerOrder === idx),
-  ).length;
   const youHave =
     currentlyPicking && activePlayer?.speakerOrder !== undefined
       ? speakerOrdinal(activePlayer.speakerOrder + 1)
       : undefined;
   const meta = youHave
     ? `You have ${youHave === "Speaker" ? "speaker" : youHave}.`
-    : canSelect
-      ? `${open} of ${positions.length} open. Select one.`
-      : `${open} of ${positions.length} open.`;
+    : undefined;
 
   return (
     <section className={classes.sec}>

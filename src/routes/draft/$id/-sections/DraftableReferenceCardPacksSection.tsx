@@ -31,15 +31,11 @@ export function DraftableReferenceCardPacksSection() {
   ) {
     return null;
   }
-  const taken = hydratedPlayers.filter(
-    (p) => p.referenceCardPackIdx !== undefined,
-  ).length;
 
   return (
     <section className={classes.sec}>
       <SectionHeader
         title="Faction reference card packs"
-        meta={`${referenceCardPacks.length - taken} of ${referenceCardPacks.length} open.${canSelect ? " Select one." : ""}`}
       />
       <div className={classes.packs}>
         {referenceCardPacks.map((pack, packIdx) => {

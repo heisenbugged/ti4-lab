@@ -34,12 +34,10 @@ export function DraftablePlayerColorsSection() {
     activePlayer.factionColor === undefined;
 
   if (!draftPlayerColors) return null;
-  const taken = hydratedPlayers.filter((p) => p.factionColor).length;
   return (
     <section className={classes.sec}>
       <SectionHeader
         title="In-game colour"
-        meta={`${colors.length - taken} of ${colors.length} open.${canSelect ? " Select one." : ""}`}
       />
       <div className={classes.colors}>
         {colors.map((color) => {

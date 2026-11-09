@@ -12,14 +12,7 @@ import classes from "../-components/DraftLayout.module.css";
 
 export function DraftableFactionsSection() {
   const playerFactionPool = useDraft((state) => state.draft.playerFactionPool);
-  const factions = useDraft((state) => state.draft.availableFactions);
-  const { hydratedPlayers, currentlyPicking, activePlayer } = useHydratedDraft();
-
-  const taken = factions.filter((f) =>
-    hydratedPlayers.some((p) => p.faction === f || p.minorFaction === f),
-  ).length;
-  const canSelect =
-    currentlyPicking && !!activePlayer && activePlayer.faction === undefined;
+  const { currentlyPicking, activePlayer } = useHydratedDraft();
   const youHave =
     currentlyPicking && activePlayer?.faction
       ? allFactions[activePlayer.faction].name
@@ -28,7 +21,7 @@ export function DraftableFactionsSection() {
     ? "Each player picks from their own factions."
     : youHave
       ? `You have ${youHave}.`
-      : `${factions.length - taken} of ${factions.length} open.${canSelect ? " Select one." : ""}`;
+      : undefined;
 
   return (
     <section className={classes.sec}>

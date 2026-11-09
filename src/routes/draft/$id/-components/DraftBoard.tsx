@@ -24,7 +24,8 @@ type Props = {
 
 /**
  * One scroll, no tabs. Desktop: pick order and player cards on top, the pool on the left,
- * the full map pinned on the right. Phone: one column with the map first.
+ * the full map pinned on the right. Phone: one column — player cards, slice summary,
+ * the pool, then the map at the bottom.
  */
 export function DraftBoard({ children, stickyTop }: Props) {
   const settings = useDraft((state) => state.draft.settings);
@@ -49,8 +50,17 @@ export function DraftBoard({ children, stickyTop }: Props) {
         {settings.draftSpeaker && <SpeakerOrderSection />}
         <DraftableFactionsSection />
         <DraftableMinorFactionsSection />
+        {!isPresetMapDraft && (
+          <div className={classes.phoneOnly}>
+            <SliceSummarySection />
+          </div>
+        )}
         {!isPresetMapDraft && <SlicesSection />}
-        {!isPresetMapDraft && !showMap && <SliceSummarySection />}
+        {!isPresetMapDraft && !showMap && (
+          <div className={classes.notPhone}>
+            <SliceSummarySection />
+          </div>
+        )}
         {settings.draftGameMode === "twilightsFall" && (
           <DraftableReferenceCardPacksSection />
         )}
@@ -60,7 +70,11 @@ export function DraftBoard({ children, stickyTop }: Props) {
 
       {showMap && (
         <div className={classes.table}>
-          {!isPresetMapDraft && <SliceSummarySection />}
+          {!isPresetMapDraft && (
+            <div className={classes.notPhone}>
+              <SliceSummarySection />
+            </div>
+          )}
           <div className={classes.mapPin}>
             <MapSection />
           </div>

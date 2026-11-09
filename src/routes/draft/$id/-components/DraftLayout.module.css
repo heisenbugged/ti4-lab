@@ -1,6 +1,6 @@
 /*
  * Live draft layout: one scroll. Desktop: pick order and player cards across the top,
- * then the pool on the left and the full map pinned on the right. Phone: map first.
+ * then the pool on the left and the full map pinned on the right. Phone: map last.
  */
 .board {
   --stack-top: calc(var(--header-h) + var(--sat) + 66px);
@@ -23,6 +23,7 @@
 /* The map column: the slice summary scrolls by, the map itself stays pinned. */
 .table { grid-area: table; align-self: stretch; display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
 .mapPin { position: sticky; top: calc(var(--stack-top) + var(--space-4)); min-width: 0; }
+.phoneOnly { display: none; }
 
 /* Pick order bar */
 .orderbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-4); min-width: 0; }
@@ -69,11 +70,13 @@
 }
 
 @media (max-width: 759.98px) {
-  .board { grid-template-columns: minmax(0, 1fr); grid-template-areas: "order" "table" "players" "pool"; gap: var(--space-5); }
+  .board { grid-template-columns: minmax(0, 1fr); grid-template-areas: "order" "players" "pool" "table"; gap: var(--space-5); }
   .noTable { grid-template-areas: "order" "players" "pool"; }
   .table { position: static; }
   .mapPin { position: static; }
   .pool { gap: var(--space-6); }
+  .phoneOnly { display: block; }
+  .notPhone { display: none; }
   .progress { display: none; }
   .url { order: 5; flex-basis: 100%; }
   .orderTitle { margin-right: auto; }

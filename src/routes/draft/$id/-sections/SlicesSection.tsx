@@ -38,15 +38,13 @@ export function SlicesSection() {
   const isTwilightsFallFullWidth =
     draftGameMode === "twilightsFall" && !nucleusStyle;
 
-  const taken = hydratedPlayers.filter((p) => p.sliceIdx !== undefined).length;
-  const open = slices.length - taken;
   const youHave =
     currentlyPicking && activePlayer?.sliceIdx !== undefined
       ? slices[activePlayer.sliceIdx]?.name
       : undefined;
   const meta = youHave
     ? `You have ${youHave}.`
-    : `${open} of ${slices.length} open.${canSelectSlice ? " Select one." : ""}`;
+    : undefined;
 
   return (
     <section className={classes.sec}>

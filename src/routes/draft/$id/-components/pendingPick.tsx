@@ -94,7 +94,7 @@ export function PendingPickProvider({ children }: { children: ReactNode }) {
         }
       >
         <Text size="sm" tone="muted">
-          This is your pick for this turn. Everyone sees it straight away.
+          This is your pick for this turn.
         </Text>
       </Modal>
     </PendingPickContext.Provider>

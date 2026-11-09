@@ -21,15 +21,11 @@ export function DraftableMinorFactionsSection() {
     activePlayer.minorFaction === undefined;
 
   if (!factions) return null;
-  const taken = factions.filter((f) =>
-    hydratedPlayers.some((p) => p.minorFaction === f),
-  ).length;
 
   return (
     <section className={classes.sec}>
       <SectionHeader
         title="Minor factions"
-        meta={`${factions.length - taken} of ${factions.length} open.${canSelect ? " Select one." : ""}`}
       />
       <div className={classes.factions}>
         {factions.map((factionId) => {
