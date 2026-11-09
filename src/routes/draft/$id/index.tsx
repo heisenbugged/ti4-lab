@@ -12,7 +12,6 @@ import { getDraft } from "~/server/drafts.functions";
 import { useHydratedDraft } from "~/hooks/useHydratedDraft";
 import { PlanetFinder } from "./-components/PlanetFinder";
 import { useNotifyActivePlayer } from "~/hooks/useNotifyActivePlayer";
-import { useDraftTabTitle } from "~/hooks/useDraftTabTitle";
 import { FinalizedDraft } from "./-components/FinalizedDraft";
 import {
   SyncDraftContext,
@@ -43,7 +42,6 @@ export const Route = createFileRoute("/draft/$id/")({
 
 function RunningDraft() {
   useNotifyActivePlayer();
-  useDraftTabTitle();
   const result = Route.useLoaderData();
   const syncDraftContextValue = useDraftSyncMutations();
   const draftStore = useDraft();
